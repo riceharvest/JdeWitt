@@ -36,6 +36,11 @@ def main():
     gguf=sub.add_parser('gguf-inspect',help='GGUF metadata/tensor header inventory; optional second file for the diff, no model loads')
     gguf.add_argument('file',type=Path)
     gguf.add_argument('other',type=Path,nargs='?',default=None)
+    editg=sub.add_parser('gguf-edit',help='Edit quantized GGUF tensors via dequant->edit->requant; everything else byte-verbatim, no model')
+    editg.add_argument('input',type=Path)
+    editg.add_argument('output',type=Path)
+    editg.add_argument('--tensor',action='append',required=True,metavar='NAME=DELTA.NPY',
+                       help='float32 delta npy matching the tensor shape; repeatable')
     near=sub.add_parser('suite-near-dup',help='Report reworded duplicate prompts across suite files; files are never modified')
     near.add_argument('suite',type=Path,nargs='+')
     near.add_argument('--threshold',type=float,default=0.8)
@@ -162,6 +167,9 @@ def main():
         elif args.command=='gguf-inspect':
             from .agent import gguf_inspect
             result=gguf_inspect(args.file,args.other)
+        elif args.command=='gguf-edit':
+            from .agent import gguf_edit
+            result=gguf_edit(args.input,args.output,args.tensor)
         elif args.command=='suite-near-dup':
             from .agent import suite_near_dup
             result=suite_near_dup(args.suite,args.threshold)

@@ -372,6 +372,26 @@ def score_sensitivity(directory,min_confidences=(0.5,0.7,0.9)):
             'note':'Offline recount of saved verdicts under alternative decision floors; no rejudging happened.'}
 
 
+def gguf_edit(path, out, specs):
+    """Edit quantized GGUF tensors: dequantize -> add delta -> requantize in place.
+
+    ``specs`` are ``NAME=DELTA.NPY`` pairs holding float32 deltas with the
+    tensor's shape. Everything outside the edited tensors (header, metadata,
+    tensor info, all other tensor bytes) is copied byte for byte; offsets do
+    not move because each edited tensor keeps its exact block count.
+    """
+    import numpy as np
+    from .ggufio import edit_tensors
+    deltas = {}
+    for spec in specs:
+        name, sep, file = spec.partition('=')
+        if not sep or not name or not file:
+            raise ValueError('spec format is NAME=DELTA.NPY')
+        with open(file, 'rb') as f:
+            deltas[name] = np.load(f)
+    return edit_tensors(path, out, deltas)
+
+
 def gguf_inspect(path,other=None):
     """GGUF metadata and tensor inventory read from the file header; tensor data is never loaded."""
     from gguf import GGUFReader
