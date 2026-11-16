@@ -46,6 +46,21 @@ def main():
     near.add_argument('--threshold',type=float,default=0.8)
     stats=sub.add_parser('suite-stats',help='Descriptive statistics for one suite file; no model loads')
     stats.add_argument('suite',type=Path)
+    sub.add_parser('presets',help='List evidence-gated preset profiles; presets without evidence are refused')
+    abl=sub.add_parser('abliterate',help='One command: build a validated auto-search config from MODEL + --suites + policy and run it (--dry-run to only validate)')
+    abl.add_argument('model',type=Path)
+    abl.add_argument('--suites',type=Path,required=True,help='Directory containing directions.jsonl, selection.jsonl, holdout.jsonl')
+    abl.add_argument('--output',type=Path,required=True)
+    abl.add_argument('--policy',choices=['standard','strict'],default='standard')
+    abl.add_argument('--total-trials',type=int)
+    abl.add_argument('--rank',type=int,default=2)
+    abl.add_argument('--revision',required=True,help='Pinned model revision or content hash')
+    abl.add_argument('--license',required=True,dest='license_id',help='Model license identifier')
+    abl.add_argument('--defaults',type=Path,help='JSON object of run fields (converter, quantizer, llama_server, ...)')
+    abl.add_argument('--preset')
+    abl.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
+                     help='Override dotted paths in the built {run, candidates, total_trials} document')
+    abl.add_argument('--dry-run',action='store_true',help='Validate the built configuration instead of running the search')
     cache=sub.add_parser('corpus-cache',help='Inventory the dataset import cache; --prune-older-than N previews/deletes old unpinned revisions')
     cache.add_argument('--prune-older-than',type=int,metavar='DAYS')
     cache.add_argument('--execute',action='store_true',help='Actually delete prune candidates instead of previewing')
@@ -74,8 +89,9 @@ def main():
         command.add_argument('config',type=Path)
         command.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
                              help='Override a JSON field before validation (dot path; value parsed as JSON, else string)')
+        command.add_argument('--preset',help='Evidence-gated preset profile applied under the explicit config')
     for name,help_text in (('tree-search','Experimental J-space partial-forward beam search; B70 only, no certified export'),
-                          ('validate-tree','Read-only tree configuration/provenance checks, no model runtime imports')):
+                           ('validate-tree','Read-only tree configuration/provenance checks, no model runtime imports')):
         command=sub.add_parser(name,help=help_text)
         command.add_argument('config',type=Path)
     for name,help_text in (('tree-ranker-data','Join recorded trajectories to independent answer labels; enforce split isolation'),
@@ -151,11 +167,25 @@ def main():
         elif args.command in {'auto','validate-auto'}:
             from .auto import AutoConfig,run_auto,validate_auto
             obj=json.loads(args.config.read_text())
+            if args.preset:
+                from .presets import apply_preset
+                obj=apply_preset(obj,args.preset)
             if args.set:
                 from .overrides import apply_overrides
                 obj=apply_overrides(obj,args.set)
             config=AutoConfig.from_json(obj)
             result=validate_auto(config) if args.command=='validate-auto' else run_auto(config)
+        elif args.command=='presets':
+            from .presets import available_presets
+            result={'presets':available_presets(),
+                    'rule':'Presets without an evidence reference are refused at load time.'}
+        elif args.command=='abliterate':
+            from .abliterate import build_config
+            from .auto import AutoConfig,run_auto,validate_auto
+            document=build_config(args.model,args.suites,args.output,args.policy,args.total_trials,args.rank,
+                                  args.revision,args.license_id,args.defaults,args.preset,args.set)
+            config=AutoConfig.from_json(document)
+            result=validate_auto(config) if args.dry_run else run_auto(config)
         elif args.command=='about':
             from .agent import about
             result=about()
