@@ -41,6 +41,15 @@ def main():
     editg.add_argument('output',type=Path)
     editg.add_argument('--tensor',action='append',required=True,metavar='NAME=DELTA.NPY',
                        help='float32 delta npy matching the tensor shape; repeatable')
+    fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
+    fp4.add_argument('input',type=Path)
+    fp4.add_argument('output',type=Path)
+    fp4.add_argument('--format',choices=['mxfp4','nvfp4'],required=True)
+    fp4.add_argument('--weights',required=True,help='safetensors tensor name holding packed fp4 nibbles (U8)')
+    fp4.add_argument('--delta',type=Path,required=True,help='float32 npy delta matching the logical element count')
+    fp4.add_argument('--scales',required=True,help='safetensors tensor name holding block scales (U8: E8M0 or E4M3)')
+    fp4.add_argument('--global-scale',type=float,default=None,help='NVFP4 global scale, if not stored in the file')
+    fp4.add_argument('--global-scale-tensor',default=None,help='NVFP4 global scale stored as an F32/F64 tensor')
     near=sub.add_parser('suite-near-dup',help='Report reworded duplicate prompts across suite files; files are never modified')
     near.add_argument('suite',type=Path,nargs='+')
     near.add_argument('--threshold',type=float,default=0.8)
@@ -252,6 +261,12 @@ def main():
         elif args.command=='gguf-edit':
             from .agent import gguf_edit
             result=gguf_edit(args.input,args.output,args.tensor)
+        elif args.command=='fp4-edit':
+            from .fp4 import safetensors_fp4_edit
+            if args.output.exists():
+                raise FileExistsError(args.output)
+            result=safetensors_fp4_edit(args.input,args.output,getattr(args,'format'),args.weights,args.delta,
+                                        args.scales,args.global_scale_tensor,args.global_scale)
         elif args.command=='suite-near-dup':
             from .agent import suite_near_dup
             result=suite_near_dup(args.suite,args.threshold)

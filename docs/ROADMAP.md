@@ -34,9 +34,11 @@ how breadth happens later.
 
 - Stable machine-readable error codes for every expected failure
   (errors.py already separates them; give them codes, document the table).
-- Published JSON schemas for run-status, methods, architectures,
-  validate-* and import-suite output; the commands enforce them at emit
-  time, so no test harness is needed.
+- Published JSON schemas for run-status, studies, describe-run, validate-auto/
+  abliterate dry-run, methods and architectures output; the CLI enforces them
+  at emit time, so a writer that drifts fails the command instead of a test
+  harness. Artifact schemas (files/evidence/signature/scoring-manifest) ship
+  under `schemas` / `verify-artifact`.
 - `describe-run CONFIG`: static budget report — trial accounting,
   family-disjointness matrix, projected generation volume, suite slices.
   Pure config arithmetic; refuse anything validate-run would refuse.
@@ -62,6 +64,11 @@ public refusal-removal tool edits quantized sources natively.
   importance matrix. Q4_K/Q5_K first, then NVFP4/MXFP4 safetensors.
   Same tensor-verification contract as merged-resident: every stored
   finalist checked against the operator that produced it.
+  Landed: `gguf-edit` (tile-wise, GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16)
+  and `fp4-edit` (MXFP4 E8M0-block32 / NVFP4 E4M3-block16 + global scale,
+  E2M1 RNE ties-to-even, safetensors byte-verbatim outside the edited
+  tensor pair). Editing the merged-resident model inside a live run stays
+  GATED behind a real B70 edit+load proof.
 - This reopens NF4/quant trial weights honestly: the guarantee comes from
   the requant round-trip check, not from pretending a dequantized base
   equals the source.

@@ -81,7 +81,12 @@ quantized block layout: tile-wise dequant, FP32 delta, requant to the
 identical block count; every other byte of the file, header included, is
 copied verbatim and tensor offsets never move.
 The GGML block codecs (Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16) are vendored as
-numpy ports of llama.cpp's reference routines. `release-keygen KEY`,
+numpy ports of llama.cpp's reference routines. `fp4-edit INPUT OUTPUT
+--format {mxfp4,nvfp4} --weights NAME --delta DELTA.NPY --scales NAME
+[--global-scale|--global-scale-tensor NAME]` does the same contract for
+MXFP4/NVFP4 safetensors checkpoints (E2M1 digits, E8M0/E4M3 block scales,
+RNE ties-to-even); zero-delta edits preserve dequantized values exactly.
+`release-keygen KEY`,
 `release-sign DIR --secret KEY` and `release-verify-signature DIR [--public KEY]`
 sign and verify an Ed25519 signature over a machine-readable reproduction
 index; `release-claims DIR` and `claim-add DIR --claim/--evidence/--verified-by`
