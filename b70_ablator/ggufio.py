@@ -9,6 +9,7 @@ llama.cpp with no flags. No model, no device — numpy only.
 """
 import shutil
 import mmap
+import math
 import numpy as np
 from pathlib import Path
 from .quants import CODECS
@@ -60,19 +61,37 @@ def edit_tensors(path, out_path, deltas):
         try:
             new_blocks = []
             for name, tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta in plans:
-                raw = np.frombuffer(mm, dtype=np.uint8, count=n_bytes, offset=offset).copy()
-                values = dequantize(raw, n).reshape(shape)
-                edited = values + delta
-                if not np.isfinite(edited).all():
-                    raise ValueError(f'edited tensor {name} contains NaN/Inf')
                 nb = n // els
-                new_raw = quantize(np.ascontiguousarray(edited.reshape(-1)))
-                if new_raw.size != n_bytes:
-                    raise ValueError(f'requantized {name}: {new_raw.size} bytes != original {n_bytes}')
-                changed = np.any((new_raw.reshape(nb, bs) != raw.reshape(nb, bs)), axis=-1)
-                rms = float(np.sqrt(((edited - values) ** 2).mean()))
-                mean_sq = float((values ** 2).mean())
-                new_blocks.append((name, offset, new_raw, int(nb), int(changed.sum()), rms,
+                # Dequant-tile-apply-requant: the FP32 working set stays bounded
+                # (~64 MiB of values) no matter how large the tensor is.
+                blocks_per_tile = max(1, (1 << 24) // els)
+                new_raw = np.empty(n_bytes, dtype=np.uint8)
+                changed_blocks = np.zeros(nb, dtype=bool)
+                delta_sq = sum_sq = 0.0
+                flat_delta = delta.reshape(-1)
+                count = 0
+                for start in range(0, nb, blocks_per_tile):
+                    tile = min(blocks_per_tile, nb - start)
+                    byte0, byte1 = start * bs, (start + tile) * bs
+                    raw_tile = np.frombuffer(mm, dtype=np.uint8, count=byte1 - byte0,
+                                            offset=offset + byte0).copy()
+                    values = dequantize(raw_tile, tile * els).reshape(-1)
+                    piece_delta = flat_delta[start * els:(start + tile) * els]
+                    edited = values + piece_delta
+                    if not np.isfinite(edited).all():
+                        raise ValueError(f'edited tensor {name} contains NaN/Inf')
+                    piece = quantize(np.ascontiguousarray(edited))
+                    if piece.size != byte1 - byte0:
+                        raise ValueError(f'requantized {name}: block produced {piece.size} '
+                                         f'bytes, expected {byte1 - byte0}')
+                    new_raw[byte0:byte1] = piece
+                    changed_blocks[start:start + tile] = np.any(piece.reshape(tile, bs) != raw_tile.reshape(tile, bs), axis=-1)
+                    delta_sq += float((piece_delta ** 2).sum())
+                    sum_sq += float((values ** 2).sum())
+                    count += tile * els
+                rms = float(math.sqrt(delta_sq / count)) if count else 0.0
+                mean_sq = float(sum_sq / count) if count else 0.0
+                new_blocks.append((name, offset, new_raw, int(nb), int(changed_blocks.sum()), rms,
                                    rms / mean_sq if mean_sq else 0.0, dtype))
         finally:
             mm.close()
