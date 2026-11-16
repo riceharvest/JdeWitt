@@ -27,10 +27,16 @@ written into the item and stays GATED.
    Landed: both commands shipped with emit-time schemas. Proven live —
    Q4_K_M vs its gguf-edit output: 320/321 bit-identical, only
    blk.0.ssm_alpha.weight differs (rel_rms 0.017815, same dtype);
-   Q4_K_M vs Q5_K_M: 316 of 321 tensors differ across dtypes,
-   rel_rms min/median/max 0.000945/0.070176/0.190611, 0 shape mismatches,
-   0 codec refusals, full-model pass in 94s; safetensors fixtures with a
-   hand-computed expected rel_rms matched to the printed digit.
+   Q4_K_M vs Q5_K_M cross-dtype: CORRECTED — the original numbers
+   (rel_rms 0.000945/0.070176/0.190611 over 316 tensors) were measured
+   through a buffer bug that sliced the second file at the first file's
+   block width, so they were meaningless; a follow-up commit then hid the
+   whole comparison behind a byte_size_changed skip. Now cross-dtype
+   tensors decode per side with their own block size: 158 bit-identical,
+   163 compared by value (packed_bytes per row), rel_rms min/median/max
+   0.079626/0.081328/0.092237, 0 shape mismatches, 0 codec refusals,
+   full-model pass in 40s; safetensors fixtures with a hand-computed
+   expected rel_rms matched to the printed digit.
 
 2. FP8 everywhere.
    E4M3/E5M2 codecs in quants.py and `fp8-edit` for safetensors with

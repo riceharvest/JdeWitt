@@ -1257,7 +1257,7 @@ def gguf_tensor_diff(a, b, limit=100):
     tensors_b = {t.name: t for t in reader_b.tensors}
     shared = sorted(set(tensors_a) & set(tensors_b))
     states = {'shared': len(shared), 'bit_identical': 0, 'value_differs': 0,
-              'shape_changed': 0, 'codec_unsupported': 0, 'byte_size_changed': 0}
+              'shape_changed': 0, 'codec_unsupported': 0, 'packed_size_changed': 0}
     rel = []
     differing = []
     chunk = 1 << 24
@@ -1290,35 +1290,32 @@ def gguf_tensor_diff(a, b, limit=100):
                     if identical:
                         states['bit_identical'] += 1
                         continue
-                if size_a != size_b:
-                    states['byte_size_changed'] += 1
-                    differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
-                                      'bytes_before': size_a, 'bytes_after': size_b, 'rel_rms': None})
-                    continue
                 if dtype_a not in deq or dtype_b not in deq:
                     states['codec_unsupported'] += 1
                     differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
-                                      'rel_rms': None})
+                                      'rel_rms': None, 'note': 'no decoder wired for this dtype'})
                     continue
-                sum_sq = diff_sq = 0.0
                 bs_a, els_a, deq_a = deq[dtype_a]
                 bs_b, els_b, deq_b = deq[dtype_b]
-                n_a = size_a // bs_a * els_a
-                n_b = size_b // bs_b * els_b
-                if n_a != n_b:
+                nb_a, nb_b = size_a // bs_a, size_b // bs_b
+                if els_a != els_b or nb_a != nb_b or nb_a * bs_a != size_a or nb_b * bs_b != size_b:
                     states['codec_unsupported'] += 1
                     differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
-                                      'rel_rms': None})
+                                      'rel_rms': None,
+                                      'note': f'block grids differ ({els_a}x{nb_a} vs {els_b}x{nb_b}) '
+                                              f'or a tensor is not block-aligned'})
                     continue
+                size_changed = size_a != size_b
+                if size_changed:
+                    states['packed_size_changed'] += 1
+                sum_sq = diff_sq = 0.0
                 blocks_per_tile = max(1, (chunk // max(els_a, els_b)))
-                nb = size_a // bs_a
-                for start in range(0, nb, blocks_per_tile):
-                    tile = min(blocks_per_tile, nb - start)
-                    byte0, byte1 = start * bs_a, (start + tile) * bs_a
-                    raw_a = np.frombuffer(mm_a, dtype=np.uint8,
-                                          count=byte1 - byte0, offset=offset_a + byte0).copy()
-                    raw_b = np.frombuffer(mm_b, dtype=np.uint8,
-                                          count=byte1 - byte0, offset=offset_b + byte0).copy()
+                for start in range(0, nb_a, blocks_per_tile):
+                    tile = min(blocks_per_tile, nb_a - start)
+                    raw_a = np.frombuffer(mm_a, dtype=np.uint8, count=tile * bs_a,
+                                          offset=offset_a + start * bs_a).copy()
+                    raw_b = np.frombuffer(mm_b, dtype=np.uint8, count=tile * bs_b,
+                                          offset=offset_b + start * bs_b).copy()
                     va = deq_a(raw_a, tile * els_a).reshape(-1)
                     vb = deq_b(raw_b, tile * els_b).reshape(-1)
                     diff = va - vb
@@ -1331,6 +1328,8 @@ def gguf_tensor_diff(a, b, limit=100):
                        'rel_rms': round(rel_rms, 6)}
                 if dtype_a == dtype_b:
                     row['same_dtype'] = True
+                if size_changed:
+                    row['packed_bytes'] = [size_a, size_b]
                 differing.append(row)
         finally:
             mm_a.close()
@@ -1350,7 +1349,9 @@ def gguf_tensor_diff(a, b, limit=100):
             'differing_tensors': differing[:limit],
             'note': 'Header and dequant measurement only, no inference: bit_identical tensors match '
                     'byte-for-byte; value_differs reports RMS difference after full dequant, '
-                    'relative to the first file, using the pinned GGML block codecs.'}
+                    'relative to the first file, using the pinned GGML block codecs. Cross-dtype '
+                    'tensors (packed_size_changed) are decoded per side with their own block size '
+                    'and compared by value; rows carry packed_bytes when the stored widths differ.'}
 
 
 def verdict_audit(directory, limit=25):
