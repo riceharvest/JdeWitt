@@ -87,6 +87,21 @@ def eval_cached(suite,generator,judge,directory,sandbox_image,generation_identit
 
 
 def run(config,*,selection_only=False,expected_winner=None):
+    """Lifecycle-wrapped pipeline run; events.jsonl is append-only telemetry."""
+    from .events import emit
+    events=Path(config.output)/'events.jsonl'
+    emit(events,'run-start',model=str(config.model),method=getattr(config,'method','?'),
+         trials=getattr(config,'trials','?'),selection_only=selection_only)
+    try:
+        result=_run_body(config,selection_only=selection_only,expected_winner=expected_winner)
+    except BaseException as error:
+        emit(events,'run-failed',error=str(error)[:500])
+        raise
+    emit(events,'run-complete')
+    return result
+
+
+def _run_body(config,*,selection_only=False,expected_winner=None):
     if getattr(config,'consistency',None) is None:
         raise ValueError('Explicit consistency policy required; legacy run settings must be reviewed')
     ConsistencyPolicy.from_json(config.consistency)
@@ -352,7 +367,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 raise optuna.TrialPruned(str(e)) from e
             finally:
                 backend.editor.reset()
-        execute_trials(study,objective,config.trials,output/'CANCEL')
+        execute_trials(study,objective,config.trials,output/'CANCEL',events_path=output/'events.jsonl')
         feasible=[t for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')]
         feasible.sort(key=lambda t:(t.value,t.user_attrs['report']['capability_drop'],t.user_attrs['report']['full_reply_kl']))
         finalists=feasible[:config.finalists]

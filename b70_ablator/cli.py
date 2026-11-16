@@ -64,6 +64,9 @@ def main():
     cache=sub.add_parser('corpus-cache',help='Inventory the dataset import cache; --prune-older-than N previews/deletes old unpinned revisions')
     cache.add_argument('--prune-older-than',type=int,metavar='DAYS')
     cache.add_argument('--execute',action='store_true',help='Actually delete prune candidates instead of previewing')
+    runev=sub.add_parser('run-events',help='Tail the append-only lifecycle event log for a run directory')
+    runev.add_argument('output',type=Path)
+    runev.add_argument('--tail',type=int,default=50)
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -233,6 +236,9 @@ def main():
         elif args.command=='corpus-cache':
             from .sources import corpus_cache_prune, corpus_cache_report
             result=corpus_cache_prune(args.prune_older_than,args.execute) if args.prune_older_than else corpus_cache_report()
+        elif args.command=='run-events':
+            from .events import read_events
+            result={'events':read_events(args.output/'events.jsonl',args.tail)}
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

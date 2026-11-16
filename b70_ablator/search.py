@@ -178,9 +178,10 @@ def build_study(path, provenance, seed, startup_trials):
     return study
 
 
-def execute_trials(study,objective,total,cancel_path=None):
+def execute_trials(study,objective,total,cancel_path=None,events_path=None):
     """Resume RUNNING attempts before asking for new ones; never spend budget twice."""
     from .errors import CancelRequested
+    from .events import emit
     if type(total) is not int or total<1:
         raise ValueError('Positive trial execution budget required')
     attempted=[t for t in study.trials if t.state!=optuna.trial.TrialState.WAITING]
@@ -192,15 +193,27 @@ def execute_trials(study,objective,total,cancel_path=None):
             raise CancelRequested('run-cancel requested: stopped before asking for a new trial; unfinished attempts stay resumable')
         if pending:
             trial=pending.pop(0)
+            if events_path is not None:
+                emit(events_path,'trial-resume',number=trial.number)
         else:
             trial=study.ask()
             attempted.append(trial)
+            if events_path is not None:
+                emit(events_path,'trial-ask',number=trial.number)
         try:
             value=objective(trial)
         except optuna.TrialPruned:
             study.tell(trial,state=optuna.trial.TrialState.PRUNED)
+            if events_path is not None:
+                emit(events_path,'trial-pruned',number=trial.number)
+        except BaseException as error:
+            if events_path is not None:
+                emit(events_path,'trial-failed',number=trial.number,error=str(error)[:400])
+            raise
         else:
             study.tell(trial,value)
+            if events_path is not None:
+                emit(events_path,'trial-complete',number=trial.number,value=value)
         # Unexpected errors leave this exact attempt RUNNING for explicit resume.
 
 
