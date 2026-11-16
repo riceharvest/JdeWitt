@@ -168,6 +168,11 @@ class PhasedHF:
         copied={**response,'sequence':response['sequence'].to(target.device)}
         return target.residual_at_answer(prompt,copied).detach().cpu()
 
+    def residual_mean_at_answer(self,prompt,response):
+        target=self.phases.target()
+        copied={**response,'sequence':response['sequence'].to(target.device)}
+        return target.residual_mean_at_answer(prompt,copied).detach().cpu()
+
     def module_io_at_answer(self,prompt,response):
         target=self.phases.target()
         copied={**response,'sequence':response['sequence'].to(target.device)}

@@ -68,12 +68,14 @@ def finite_option(options, name, low=0., high=float('inf'), integer=False):
 
 
 def validate_method_options(method, options):
-    common={'winsorization_quantile','massive_threshold','massive_ratio','row_normalization','layer_profile'}
+    common={'winsorization_quantile','massive_threshold','massive_ratio','row_normalization','layer_profile','capture'}
     specific={'whitened-svd':{'ridge'},'leace':{'ridge'},'som':{'som_steps','som_learning_rate'},
               'nullspace':{'nullspace_deflations'},
               'ara':{'steps','learning_rate','neighbors','preserve','steer','overcorrect','repulsion_cap'}}
     if not isinstance(options,dict) or set(options)-(common|specific.get(method,set())):
         raise ValueError('Unknown method_options or options for a different method')
+    if options.get('capture','last') not in {'last','answer-mean'}:
+        raise ValueError("capture must be 'last' or 'answer-mean'")
     for key in specific.get(method,set())-{'overcorrect'}:
         finite_option(options,key,high=1. if key=='som_learning_rate' else float('inf'),integer=key in {'steps','neighbors','som_steps','nullspace_deflations'})
     if method=='ara':

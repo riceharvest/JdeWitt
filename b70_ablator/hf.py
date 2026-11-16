@@ -242,6 +242,35 @@ class HFModel:
         return torch.stack(captured)
 
     @torch.inference_mode()
+    def residual_mean_at_answer(self, prompt, response=None):
+        """Mean-pooled residual stream over the visible answer span (RepEng-style rEF).
+
+        The last token alone mostly encodes where generation stopped; pooling every
+        visible answer token lets answer-content directions surface at all.
+        """
+        response = response if response is not None else self.generate(prompt)
+        boundary = self.boundary_contract.boundary(self.tokenizer, response['generated_ids'],
+                                                   response['thinking_open'], response.get('final_marker'))
+        start = response['prompt_length'] + boundary + 1
+        end = response['prompt_length'] + len(response['generated_ids'])
+        if end - start < 1:
+            raise ValueError('Answer has too few visible tokens to mean-pool')
+        captured, handles = [], []
+        for layer in self.editor.layers:
+            def hook(module, args, output, start=start, end=end):
+                hidden = output[0] if isinstance(output, tuple) else output
+                captured.append(residual_vector(hidden, self.config, slice(start, end)).detach().float().clone())
+            handles.append(layer.register_forward_hook(hook))
+        try:
+            self.model(response['sequence'], use_cache=False)
+        finally:
+            for handle in handles:
+                handle.remove()
+        if len(captured) != len(self.editor.layers):
+            raise ValueError('Residual hooks did not cover every layer')
+        return torch.stack(captured)
+
+    @torch.inference_mode()
     def module_io_at_answer(self, prompt, response):
         boundary=self.boundary_contract.boundary(self.tokenizer,response['generated_ids'],response['thinking_open'],response.get('final_marker'))
         prefix=response['sequence'][:,:response['prompt_length']+boundary]
@@ -326,18 +355,24 @@ class HFModel:
             self._source_context.__exit__(None,None,None)
 
 
-def residual_vector(hidden, config):
+def residual_vector(hidden, config, positions=None):
+    """One residual vector: the last position by default, or mean-pooled over a slice."""
     text_config=getattr(config,'text_config',config)
     width=text_config.hidden_size
-    vector=hidden[0,-1]
-    if config.model_type in {'qwen4_exp','qwen4_exp_text'}:
-        streams=getattr(text_config,'hc_count',None)
-        if type(streams) is not int or streams<2 or vector.numel()!=streams*width:
+    if positions is None:
+        rows=hidden[0][-1:]
+        single=True
+    else:
+        rows=hidden[0, positions]
+        single=False
+    streams=getattr(text_config,'hc_count',None) if config.model_type in {'qwen4_exp','qwen4_exp_text'} else None
+    if streams is not None:
+        if type(streams) is not int or streams<2 or rows.shape[-1]!=streams*width:
             raise ValueError('Qwen4 hyperconnection residual width differs from the explicit adapter')
-        vector=vector.reshape(streams,width).mean(0)
-    if vector.shape!=(width,):
+        rows=rows.reshape(rows.shape[0],streams,width).mean(dim=1)
+    if rows.shape[-1]!=width:
         raise ValueError('Residual width needs an explicit architecture adapter')
-    return vector
+    return rows[0] if single else rows.mean(dim=0)
 
 
 def preflight_hf(model_id, revision, suites, ctx_size, max_tokens, trust_remote_code=False):

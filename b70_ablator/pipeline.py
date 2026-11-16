@@ -244,12 +244,14 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         else:
             captures=[]
             captured_io={}
+            capture=(getattr(config,'method_options',None) or {}).get('capture','last')
             # Capture all small activation records before loading the judge.
             for task in direction_tasks:
                 response=backend.generate(task['prompt'])
                 answer=extract_answer(response['content'],response['finish_reason'],response['thinking_open'],response.get('final_marker'))
                 if answer.complete:
-                    residual=backend.residual_at_answer(task['prompt'],response)
+                    residual=(backend.residual_mean_at_answer(task['prompt'],response)
+                              if capture=='answer-mean' else backend.residual_at_answer(task['prompt'],response))
                     captures.append((task,answer.text,residual))
                     if getattr(config,'method','directional')=='ara':
                         captured_io[task['id']]=backend.module_io_at_answer(task['prompt'],response)
