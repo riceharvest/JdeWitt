@@ -352,7 +352,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 raise optuna.TrialPruned(str(e)) from e
             finally:
                 backend.editor.reset()
-        execute_trials(study,objective,config.trials)
+        execute_trials(study,objective,config.trials,output/'CANCEL')
         feasible=[t for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')]
         feasible.sort(key=lambda t:(t.value,t.user_attrs['report']['capability_drop'],t.user_attrs['report']['full_reply_kl']))
         finalists=feasible[:config.finalists]

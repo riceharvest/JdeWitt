@@ -52,7 +52,13 @@ they are not refusal-quality results on pretrained checkpoints.
 prerequisites without loading weights or creating outputs.
 `b70-ablator run-status OUTPUT` reads persisted trial state without model
 loads, database creation or schema migration. Successes are JSON on stdout;
-expected errors are JSON on stderr with nonzero exit codes.
+expected errors are JSON on stderr with nonzero exit codes and a stable
+`code` field (`SEARCH_REJECTED`, `FILE_NOT_FOUND`, `STATE_DB_ERROR`, ...) so
+agent drivers branch without string matching. `b70-ablator about` reports
+installation and provenance metadata; `studies RUNS_ROOT` summarizes every
+`study.db` under a root read-only; `run-cancel OUTPUT` requests that the
+scheduler stop before its next trial request without signalling any live
+process.
 
 `b70-ablator architectures` includes a pinned July–October release inventory
 with explicit unsupported entries. Adapter registration is not a live B70

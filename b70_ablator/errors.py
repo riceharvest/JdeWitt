@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Expected experiment outcomes, distinct from infrastructure/programming failures."""
+import json
+import sqlite3
+import subprocess
 
 
 class SearchRejected(RuntimeError):
@@ -16,3 +19,28 @@ class DirectionRejected(ValueError):
 
 class HoldoutRejected(RuntimeError):
     """The sealed winner failed; never use this as a fallback-selection signal."""
+
+
+class CancelRequested(RuntimeError):
+    """run-cancel stopped the scheduler before asking for a new trial."""
+
+
+def error_code(exception):
+    """Stable machine-readable code for expected CLI/API failures."""
+    for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
+                      (UnsupportedMethod, 'UNSUPPORTED_METHOD'),
+                      (DirectionRejected, 'DIRECTION_REJECTED'),
+                      (HoldoutRejected, 'HOLDOUT_REJECTED'),
+                      (CancelRequested, 'CANCEL_REQUESTED'),
+                      (json.JSONDecodeError, 'INVALID_JSON'),
+                      (FileExistsError, 'FILE_EXISTS'),
+                      (FileNotFoundError, 'FILE_NOT_FOUND'),
+                      (PermissionError, 'PERMISSION_DENIED'),
+                      (sqlite3.Error, 'STATE_DB_ERROR'),
+                      (subprocess.SubprocessError, 'SUBPROCESS_ERROR'),
+                      (ValueError, 'INPUT_ERROR'),
+                      (RuntimeError, 'OPERATION_FAILED'),
+                      (OSError, 'IO_ERROR')):
+        if isinstance(exception, cls):
+            return code
+    return type(exception).__name__.upper()

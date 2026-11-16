@@ -174,8 +174,9 @@ def build_study(path, provenance, seed, startup_trials):
     return study
 
 
-def execute_trials(study,objective,total):
+def execute_trials(study,objective,total,cancel_path=None):
     """Resume RUNNING attempts before asking for new ones; never spend budget twice."""
+    from .errors import CancelRequested
     if type(total) is not int or total<1:
         raise ValueError('Positive trial execution budget required')
     attempted=[t for t in study.trials if t.state!=optuna.trial.TrialState.WAITING]
@@ -183,6 +184,8 @@ def execute_trials(study,objective,total):
         raise ValueError('Execution budget is smaller than already attempted trials')
     pending=[optuna.Trial(study,t._trial_id) for t in attempted if t.state==optuna.trial.TrialState.RUNNING]
     while pending or len(attempted)<total:
+        if cancel_path is not None and Path(cancel_path).exists():
+            raise CancelRequested('run-cancel requested: stopped before asking for a new trial; unfinished attempts stay resumable')
         if pending:
             trial=pending.pop(0)
         else:

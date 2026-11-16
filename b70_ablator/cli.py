@@ -9,20 +9,27 @@ import sqlite3
 
 class AgentParser(argparse.ArgumentParser):
     def error(self,message):
-        print(json.dumps({'error':{'type':'ArgumentError','message':message}}),file=sys.stderr)
+        print(json.dumps({'error':{'code':'ARGUMENT_ERROR','type':'ArgumentError','message':message}}),file=sys.stderr)
         raise SystemExit(2)
 
 
 def main():
     parser=AgentParser(description='B70-only ablation with real answer and quantized release gates')
+    from . import __version__
+    parser.add_argument('--version',action='version',version=f'b70-ablator {__version__}')
     sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('doctor',help='Run a real XPU kernel on the B70')
+    sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
     progress=sub.add_parser('run-status',help='Read-only search state, no model loads or DB migrations')
     progress.add_argument('directory',type=Path)
+    studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
+    studies_p.add_argument('directory',type=Path)
+    cancel_p=sub.add_parser('run-cancel',help='Ask a study to stop before its next trial request; no process signalling')
+    cancel_p.add_argument('directory',type=Path)
     for name,help_text in (('auto','Select methods within one explicit trial budget, then certify only the global winner'),
                            ('validate-auto','Validate automatic method selection without model loads or output writes')):
         command=sub.add_parser(name,help=help_text)
@@ -95,9 +102,15 @@ def main():
             from .auto import AutoConfig,run_auto,validate_auto
             config=AutoConfig.from_json(json.loads(args.config.read_text()))
             result=validate_auto(config) if args.command=='validate-auto' else run_auto(config)
+        elif args.command=='about':
+            from .agent import about
+            result=about()
         elif args.command in {'validate-run','run-status'}:
             from .agent import validate_run,run_status
             result=validate_run(args.config) if args.command=='validate-run' else run_status(args.directory)
+        elif args.command in {'studies','run-cancel'}:
+            from .agent import studies, request_cancel
+            result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)
         elif args.command in {'import-suite','validate-import'}:
             from .sources import import_suites,validate_import
             spec=json.loads(args.spec.read_text())
@@ -172,7 +185,8 @@ def main():
             atomic_json(args.output/'evaluation-metadata.json',{'artifact_sha256':sha256_file(args.model),'judge_sha256':before,'suite_digest':digest(suite),'settings':{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()},'report':result})
         print(json.dumps(result,indent=2,allow_nan=False))
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
-        print(json.dumps({'error':{'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)
+        from .errors import error_code
+        print(json.dumps({'error':{'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)
         raise SystemExit(1) from e
 
 

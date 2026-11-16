@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 import json
+import time
 import urllib.request
 import urllib.error
 from urllib.parse import urlparse
@@ -7,14 +8,17 @@ from .scoring import Judgment, extract_answer
 
 
 class ChatClient:
-    def __init__(self, url, model, max_tokens, timeout=120, ctx_size=None):
+    def __init__(self, url, model, max_tokens, timeout=120, ctx_size=None, max_concurrency=8):
         parsed = urlparse(url)
         if parsed.scheme != 'http' or parsed.hostname not in {'localhost', '127.0.0.1', '::1'} or parsed.username or parsed.password:
             raise ValueError('Only credential-free loopback endpoints are allowed')
         if max_tokens <= 0:
             raise ValueError('Positive token budget required')
+        if type(max_concurrency) is not int or max_concurrency < 1:
+            raise ValueError('max_concurrency must be a positive integer')
         self.url, self.model = url.rstrip('/'), model
         self.max_tokens, self.timeout = max_tokens, timeout
+        self.max_concurrency = max_concurrency
         if ctx_size is not None and (type(ctx_size) is not int or not max_tokens < ctx_size):
             raise ValueError('Context must exceed the output budget')
         self.ctx_size = ctx_size
@@ -30,8 +34,22 @@ class ChatClient:
         with opener.open(request, timeout=self.timeout) as response:
             return json.loads(response.read(8 * 1024 * 1024))
 
+    def _retry(self, path, payload=None, attempts=3):
+        """Retry only idempotent metadata/templating calls; generations are never retried blindly."""
+        for attempt in range(attempts):
+            try:
+                return self._request(path, payload)
+            except (urllib.error.HTTPError, urllib.error.URLError) as error:
+                retryable = error.code >= 500 if isinstance(error, urllib.error.HTTPError) else True
+                if isinstance(error, urllib.error.HTTPError):
+                    error.close()
+                if not retryable or attempt == attempts - 1:
+                    raise
+                time.sleep(0.5 * (attempt + 1))
+        raise AssertionError('retry loop exited without returning or raising')
+
     def verify(self):
-        ids = {r['id'] for r in self._request('/models')['data']}
+        ids = {r['id'] for r in self._retry('/models')['data']}
         if self.model not in ids:
             raise ValueError(f'Expected model {self.model!r}, endpoint has {sorted(ids)}')
 
@@ -47,7 +65,7 @@ class ChatClient:
             raise ValueError('A generation batch cannot be empty')
         # Requests remain loopback-only and are bounded by the admitted batch.
         # Yield input order so each durable answer stays bound to the right ID.
-        with ThreadPoolExecutor(max_workers=len(prompts)) as pool:
+        with ThreadPoolExecutor(max_workers=min(self.max_concurrency,len(prompts))) as pool:
             futures=[pool.submit(self.generate,prompt,min_tokens=min_tokens) for prompt in prompts]
             try:
                 for future in futures:
@@ -59,7 +77,7 @@ class ChatClient:
     def count_prompt(self,payload):
         if self._counter_mode=='native-count':
             try:
-                return self._request('/chat/completions/input_tokens',payload).get('input_tokens')
+                return self._retry('/chat/completions/input_tokens',payload).get('input_tokens')
             except urllib.error.HTTPError as error:
                 code=error.code
                 error.close()
@@ -67,10 +85,10 @@ class ChatClient:
                     raise
                 self._counter_mode='apply-template'
         native=ChatClient(self.url.removesuffix('/v1'),self.model,self.max_tokens,self.timeout)
-        prompt=native._request('/apply-template',payload).get('prompt')
+        prompt=native._retry('/apply-template',payload).get('prompt')
         if not isinstance(prompt,str):
             raise ValueError('Cannot count this server template without a verified adapter')
-        tokens=native._request('/tokenize',{'content':prompt,'add_special':True,'parse_special':True}).get('tokens')
+        tokens=native._retry('/tokenize',{'content':prompt,'add_special':True,'parse_special':True}).get('tokens')
         if not isinstance(tokens,list) or any(type(t) is not int for t in tokens):
             raise ValueError('Server returned an invalid prompt token count')
         return len(tokens)
