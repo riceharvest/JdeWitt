@@ -69,6 +69,10 @@ def main():
     runev.add_argument('--tail',type=int,default=50)
     smetrics=sub.add_parser('study-metrics',help='Per-trial parameter/value rollup from a study sqlite, read-only')
     smetrics.add_argument('run',type=Path)
+    sub.add_parser('schemas',help='List published JSON Schemas for on-disk artifacts')
+    art=sub.add_parser('verify-artifact',help='Check one artifact against its published schema; shape and version only')
+    art.add_argument('file',type=Path)
+    art.add_argument('--name',help='Schema name; inferred from the file name by default')
     robust=sub.add_parser('robustness-report',help='Worst-case pass rate of saved scores across multiple suites (e.g. main + attacks)')
     robust.add_argument('--eval',action='append',nargs=3,required=True,metavar='LABEL SUITE SCORES_DIR')
     robust.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
@@ -247,6 +251,12 @@ def main():
         elif args.command=='study-metrics':
             from .agent import study_metrics
             result=study_metrics(args.run)
+        elif args.command=='schemas':
+            from .schemas import SCHEMAS
+            result={'schemas':[{'file':name,'description':schema['description']} for name,schema in sorted(SCHEMAS.items())]}
+        elif args.command=='verify-artifact':
+            from .schemas import validate_artifact
+            result=validate_artifact(args.file,args.name)
         elif args.command=='robustness-report':
             from .agent import robustness_report
             result=robustness_report(args.eval,args.pass_on)
