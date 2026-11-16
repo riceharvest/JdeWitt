@@ -8,20 +8,24 @@ Work is tagged:
 - CODE — CPU-verifiable, no model, no B70. Ship by running the command.
 - GATED — needs real B70 / real checkpoints before any claim changes.
 
-Status: all CODE items on this roadmap are landed and pushed. Highlights:
-quant-native GGUF editing (GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16 codecs,
-tile-wise gguf-edit, gguf-inspect), method breadth (nullspace, answer-mean
-rEF capture, family-weighted whitened-SVD), evidence chain (claims ledger,
-ed25519 release signing with repro index, published artifact JSON Schemas),
-agent ops (stable error codes, about/studies/study-metrics/run-cancel/
-run-events, describe-run, --set/--preset, abliterate one-command flow,
-events.jsonl, injectable clock), and offline evaluation (Wilson + bootstrap
-+ paired permutation stats, score-compare, judge-ensemble, score-sensitivity,
-robustness-report, family-decay, suite-stats/suite-diff/suite-near-dup, corpus-cache
-report/prune). Still GATED (needs real B70 / real checkpoints, by design):
-method-winner claims, quant-edited model behaviour, judge calibration gains,
-throughput claims, per-family preset profiles (the preset mechanism ships;
-presets without evidence references are refused at load time).
+Status: every CODE item on this roadmap is landed and pushed. Highlights:
+quant-native editing (GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16 gguf-edit,
+MXFP4/NVFP4 fp4-edit for safetensors), method breadth (nullspace,
+answer-mean rEF capture, family-weighted whitened-SVD, multi-objective
+TPE with Pareto-front finalists), evidence chain (chained claims ledger,
+ed25519 release signing with repro index, published artifact +
+command-output JSON Schemas enforced at emit time, sha-bound fitted-plan
+registry with gate labels), agent ops (stable error codes,
+about/studies/study-metrics/run-cancel/run-events/describe-run,
+--set/--preset, abliterate flow, events, injectable clock, GPU lock,
+per-job budgets), and offline evaluation (Wilson + bootstrap + paired
+permutation stats, score-compare, judge-ensemble, score-sensitivity,
+robustness-report, family-decay, suite-stats/suite-diff/suite-near-dup,
+corpus-cache, curated jailbreak-slice import spec). Still GATED (needs
+real B70 / real checkpoints, by design): method-winner claims,
+quant-edited model behaviour, judge calibration gains, throughput claims,
+per-family preset profiles (the preset mechanism ships; presets without
+evidence references are refused at load time).
 
 No CI and no new test suites on this roadmap. Verification is: run it,
 read the artifact, keep the honest claims table current. The existing CPU
@@ -142,6 +146,16 @@ Breadth of honest evidence is what "best tool" means in practice.
   HarmBench-style held-outs, code exec tasks via the existing ast-based
   executor, long-context math. Family-ID discipline unchanged: authored
   families, no invented groupings.
+  Landed: `examples/jailbreak-slices/import.json` — revision-pinned
+  StrongREJECT (Machlovi mirror of the gated walledai original),
+  JailbreakBench harmful behaviors, HarmBench behaviors (huihui-ai
+  mirror of the official CSV) and a harmless-alpaca overrefusal control,
+  cross-source jaccard dedupe (StrongREJECT recycles AdvBench/DAN
+  prompts), authored row-group families, disjoint selection/holdout by
+  offset; imported live once (409 selection / 421 holdout tasks,
+  per-file sha256 provenance). The jailbreak "benign" CSVs in these
+  corpora are duplicates of the harmful list, so the harmless control
+  comes from a separate corpus.
 - Adversarial robustness reporting: `family-decay --fitted SUITE SCORES --held
   SUITE SCORES` reports pass-rate decay on authored families the fitted run
   never saw and warns loudly when families leak between the two suites;

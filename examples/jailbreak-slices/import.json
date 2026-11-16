@@ -1,0 +1,130 @@
+{
+  "seed": 1337,
+  "dedupe": {
+    "jaccard": 0.9
+  },
+  "splits": {
+    "selection": [
+      {
+        "id": "strongreject-sel",
+        "dataset": "Machlovi/strongreject-dataset",
+        "revision": "c18bb810edc4b60b815b205faeaa2bd5f72c3e93",
+        "split": "train",
+        "column": "prompt",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 0,
+        "limit": 150,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "strongreject-sel"
+        }
+      },
+      {
+        "id": "jbb-harmful-sel",
+        "dataset": "JailbreakBench/JBB-Behaviors",
+        "revision": "886acc352a31533ffbcf4ef22c744658688086fc",
+        "file": "data/harmful-behaviors.csv",
+        "column": "Behavior",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 0,
+        "limit": 50,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "jbb-sel"
+        }
+      },
+      {
+        "id": "harmless-alpaca-sele",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "offset": 0,
+        "limit": 50
+      },
+      {
+        "id": "harmbench-sel",
+        "dataset": "huihui-ai/harmbench_behaviors",
+        "revision": "a8925e1fdd1dde099a1b84cb1b844e09445826ee",
+        "file": "harmbench_behaviors_text_test.csv",
+        "column": "Behavior",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 0,
+        "limit": 160,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "harmbench-sel"
+        }
+      }
+    ],
+    "holdout": [
+      {
+        "id": "strongreject-hold",
+        "dataset": "Machlovi/strongreject-dataset",
+        "revision": "c18bb810edc4b60b815b205faeaa2bd5f72c3e93",
+        "split": "train",
+        "column": "prompt",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 150,
+        "limit": 163,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "strongreject-hold"
+        }
+      },
+      {
+        "id": "jbb-harmful-hold",
+        "dataset": "JailbreakBench/JBB-Behaviors",
+        "revision": "886acc352a31533ffbcf4ef22c744658688086fc",
+        "file": "data/harmful-behaviors.csv",
+        "column": "Behavior",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 50,
+        "limit": 50,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "jbb-hold"
+        }
+      },
+      {
+        "id": "harmless-alpaca-hold",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "offset": 50,
+        "limit": 50
+      },
+      {
+        "id": "harmbench-hold",
+        "dataset": "huihui-ai/harmbench_behaviors",
+        "revision": "a8925e1fdd1dde099a1b84cb1b844e09445826ee",
+        "file": "harmbench_behaviors_text_test.csv",
+        "column": "Behavior",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 160,
+        "limit": 160,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "harmbench-hold"
+        }
+      }
+    ]
+  }
+}
