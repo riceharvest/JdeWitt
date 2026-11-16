@@ -55,6 +55,20 @@ def _trial_rows(db_path):
             for n,state,value,feasible in rows]
 
 
+def _run_lock_held(root):
+    import fcntl
+    lock=root/'.run.lock'
+    if not lock.is_file():
+        return None
+    try:
+        with lock.open('r+') as handle:
+            fcntl.flock(handle,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            fcntl.flock(handle,fcntl.LOCK_UN)
+        return False
+    except OSError:
+        return True
+
+
 def run_status(directory):
     root=Path(directory).resolve()
     if not root.is_dir():
@@ -64,8 +78,9 @@ def run_status(directory):
     return {'output':str(root),'trial_counts':dict(Counter(t['state'] for t in trials)),
             'trials':trials,'best_feasible':min(candidates,key=lambda t:t['value']) if candidates else None,
             'cancel_requested':(root/'CANCEL').is_file(),
+            'run_lock_held':_run_lock_held(root),
             'release_present':(root/'release').is_dir(),'release_verified':False,
-            'note':'RUNNING is an unfinished resumable trial, not proof of a live process. Use verify-release for bundle integrity.'}
+            'note':'RUNNING is an unfinished resumable trial, not proof of a live process; run_lock_held=true means a worker currently holds this study. Use verify-release for bundle integrity.'}
 
 
 def request_cancel(directory):
