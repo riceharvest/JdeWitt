@@ -31,6 +31,10 @@ No CI and no new test suites on this roadmap. Verification is: run it,
 read the artifact, keep the honest claims table current. The existing CPU
 suite stays as-is.
 
+The next queue of code-only work lives in `docs/PLAN-NEXT.md` (2026-11-16):
+checkpoint content diff, FP8 codecs/editing, Q2_K/Q3_K completion,
+verdict-audit, a direction interchange format, and the rest.
+
 ## Phase 0 — Operations surface (CODE)
 
 Everything here makes the tool drivable by an agent at scale, which is
