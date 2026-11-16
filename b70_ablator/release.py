@@ -207,9 +207,31 @@ def rank_quantized(candidates, baseline, max_capability_drop, require_consistenc
     return [c for _,c in sorted(ranked,key=lambda pair:pair[0])]
 
 
+GPU_LOCK_PATH = Path(os.environ.get('B70_ABLATOR_GPU_LOCK', '/tmp/b70-ablator-gpu.lock'))
+
+
+def acquire_gpu_lock(timeout):
+    """Serialise B70 GPU jobs across processes; there is exactly one GPU."""
+    lock_path = Path(GPU_LOCK_PATH)
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open('a+')
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return handle
+        except OSError:
+            if time.monotonic() >= deadline:
+                handle.close()
+                raise RuntimeError(
+                    f'B70 GPU is held by another b70-ablator job; waited {timeout}s '
+                    '(override with B70_ABLATOR_GPU_WAIT or kill the holding job)')
+            time.sleep(.5)
+
+
 class ManagedGGUF:
     """Own one local Vulkan server. Refuse partial offload, changed artifacts or wrong models."""
-    def __init__(self, artifact, server, ctx_size, max_tokens, log, startup_timeout=120,parallel=1):
+    def __init__(self, artifact, server, ctx_size, max_tokens, log, startup_timeout=120, parallel=1, gpu_wait=None):
         if type(parallel) is not int or parallel<1:
             raise ValueError('Server parallel slot count must be a positive integer')
         self.parallel=parallel
@@ -217,6 +239,8 @@ class ManagedGGUF:
         self.server, self.ctx_size, self.max_tokens = str(server), ctx_size, max_tokens
         self.log, self.startup_timeout = Path(log), startup_timeout
         self.process = None
+        wait = gpu_wait if gpu_wait is not None else float(os.environ.get('B70_ABLATOR_GPU_WAIT', '300'))
+        self.gpu_wait = 0.0 if wait is None else float(wait)
 
     def command(self,device,port,alias):
         # llama.cpp divides the context across slots. Preserve ctx_size for
@@ -228,6 +252,7 @@ class ManagedGGUF:
             '--no-webui','--verbosity','4','--cors-origins','localhost','--no-cors-credentials']
 
     def __enter__(self):
+        self._gpu_lock = acquire_gpu_lock(self.gpu_wait)
         devices = subprocess.run([self.server,'--list-devices'], text=True,capture_output=True,check=True).stdout
         match = re.search(r'^\s*(Vulkan\d+):.*(?:B70|BMG G31)',devices,re.MULTILINE)
         if not match:
@@ -280,6 +305,13 @@ class ManagedGGUF:
                 self.process.wait(timeout=10)
         if hasattr(self,'log_file'):
             self.log_file.close()
+        gpu_lock = getattr(self,'_gpu_lock',None)
+        if gpu_lock is not None:
+            try:
+                fcntl.flock(gpu_lock,fcntl.LOCK_UN)
+            finally:
+                gpu_lock.close()
+                self._gpu_lock = None
         if hasattr(self,'artifact_hash') and sha256_file(self.artifact) != self.artifact_hash:
             raise RuntimeError('Artifact changed during evaluation')
 

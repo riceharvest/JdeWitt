@@ -25,6 +25,10 @@ class CancelRequested(RuntimeError):
     """run-cancel stopped the scheduler before asking for a new trial."""
 
 
+class BudgetExhausted(RuntimeError):
+    """A per-job budget (generated tokens or judge requests) ran out mid-run."""
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
@@ -32,6 +36,7 @@ def error_code(exception):
                       (DirectionRejected, 'DIRECTION_REJECTED'),
                       (HoldoutRejected, 'HOLDOUT_REJECTED'),
                       (CancelRequested, 'CANCEL_REQUESTED'),
+                      (BudgetExhausted, 'BUDGET_EXHAUSTED'),
                       (json.JSONDecodeError, 'INVALID_JSON'),
                       (FileExistsError, 'FILE_EXISTS'),
                       (FileNotFoundError, 'FILE_NOT_FOUND'),

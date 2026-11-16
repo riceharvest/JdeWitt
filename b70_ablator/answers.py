@@ -149,10 +149,14 @@ class AnswerStore:
                 'missing':len(self.inputs)-completed,'generation_digest':self.manifest['generation_digest']}
 
 
-def generate_answers(suite,generator,store,refusal_floor=None,batch_policy=None):
+def generate_answers(suite,generator,store,refusal_floor=None,batch_policy=None,budget=None):
     from .batching import plan_batches,validate_batch_policy
+    if budget is not None and (type(budget) is not int or budget < 1):
+        raise ValueError('generation budget must be a positive integer token count')
     validate_batch_policy(batch_policy)
     generated,reused,batches=0,0,0
+    budget_used=0
+    exhausted=False
     with exclusive(store.directory,'.generation.lock'):
         pending=[task for task in suite if store.get(task) is None]
         reused=len(suite)-len(pending)
@@ -184,16 +188,29 @@ def generate_answers(suite,generator,store,refusal_floor=None,batch_policy=None)
                     raise ValueError('Backend did not confirm the requested refusal floor')
                 store.put(task,response)
                 generated+=1
+                if budget is not None:
+                    tokens=response.get('completion_tokens')
+                    budget_used+=int(tokens or 0)
+                    if budget_used>=budget:
+                        exhausted=True
+                        break
                 # One verified ledger scan up front, not a full reread after
                 # every prompt. The generation lock owns this completed count.
                 atomic_json(store.directory/'progress.json',{'stage':'generation','total':len(suite),
                     'completed':reused+generated,'missing':len(suite)-reused-generated,
                     'generation_digest':store.manifest['generation_digest']})
-            sentinel=object()
-            if next(responses,sentinel) is not sentinel:
-                raise ValueError('Batch backend returned too many answers')
+            if not exhausted:
+                sentinel=object()
+                if next(responses,sentinel) is not sentinel:
+                    raise ValueError('Batch backend returned too many answers')
+            if exhausted:
+                break
     result={**store.status(),'generated':generated,'reused':reused,'batches':batches}
-    atomic_json(store.directory/'progress.json',{'stage':'generation-complete',**result})
+    if budget is not None:
+        result['budget']=budget
+        result['budget_used']=budget_used
+        result['budget_exhausted']=exhausted
+    atomic_json(store.directory/'progress.json',{'stage':'budget-exhausted' if exhausted else 'generation-complete',**result})
     return result
 
 
@@ -278,8 +295,11 @@ def score_status(directory,store):
             'completed':len(rows),'total':len(store.inputs),'invalid':invalid,'report_current':complete}
 
 
-def score_answers(suite,store,judge,directory,identity,sandbox_image='python:3.12-slim',retry_invalid=False,incumbent=None):
+def score_answers(suite,store,judge,directory,identity,sandbox_image='python:3.12-slim',retry_invalid=False,incumbent=None,max_judge_requests=None):
     # Check all inputs BEFORE writing reports or calling a judge.
+    from .errors import BudgetExhausted
+    if max_judge_requests is not None and (type(max_judge_requests) is not int or max_judge_requests < 1):
+        raise ValueError('max_judge_requests must be a positive integer')
     responses={r['id']:store.get(r) for r in suite}
     if any(r is None for r in responses.values()):
         raise ValueError('Cannot score: saved answers are missing')
@@ -313,7 +333,8 @@ def score_answers(suite,store,judge,directory,identity,sandbox_image='python:3.1
             atomic_json(path,manifest)
         if hasattr(judge,'bind_rubrics'):
             judge.bind_rubrics([r for r in suite if r['kind']=='refusal'])
-        for task in suite:
+        fresh=0
+        for task_index,task in enumerate(suite):
             path=directory/'items'/(digest(task['id'])+'.json')
             row=None
             if path.exists():
@@ -327,6 +348,10 @@ def score_answers(suite,store,judge,directory,identity,sandbox_image='python:3.1
                 record={'scoring_digest':scoring_digest,'answer_digest':digest(responses[task['id']]),'row':row}
                 record['record_digest']=digest(record)
                 atomic_json(path,record)
+                fresh+=1
+                if max_judge_requests is not None and fresh>=max_judge_requests and task_index<len(suite)-1:
+                    raise BudgetExhausted(f'Judge request budget {max_judge_requests} exhausted after {fresh} '
+                                          'fresh scores; saved items persist and rerunning continues from them')
             rows.append(row)
             atomic_json(directory/'progress.json',{'stage':'scoring','completed':len(rows),'total':len(suite),
                                                    'invalid':sum(r['status']!='ok' for r in rows)})

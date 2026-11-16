@@ -22,6 +22,7 @@ def add_arguments(sub):
     generate.add_argument('--refusal-floor',type=int)
     generate.add_argument('--batch-max-sequences',type=int)
     generate.add_argument('--batch-token-budget',type=int)
+    generate.add_argument('--max-generated-tokens',type=int,help='Stop cleanly after generating this many completion tokens; rerun resumes')
     generate.add_argument('--output',type=Path,required=True,help='Persistent answer directory')
     score=sub.add_parser('score',help='Judge saved answers without loading the target model')
     score.add_argument('--mode',dest='scoring_mode',choices=['judge','refusal-check'],default='judge')
@@ -37,6 +38,7 @@ def add_arguments(sub):
     score.add_argument('--sandbox-image',default='python:3.12-slim')
     score.add_argument('--output',type=Path,required=True)
     score.add_argument('--retry-invalid',action='store_true',help='Retry invalid judge results; keep valid scores')
+    score.add_argument('--max-judge-requests',type=int,help='Fresh judge calls allowed this run; raises BUDGET_EXHAUSTED with saved items intact')
     status=sub.add_parser('status',help='Read saved job progress without starting any model')
     status.add_argument('--answers',type=Path,required=True)
     status.add_argument('--scores',type=Path)
@@ -70,10 +72,10 @@ def generate_job(args):
               'transport_sha256':sha256_file(Path(__file__).with_name('transport.py'))}
     store=AnswerStore(args.output,suite,identity)
     if not store.status()['missing']:
-        return generate_answers(suite,None,store,refusal_floor=floor,batch_policy=batch)
+        return generate_answers(suite,None,store,refusal_floor=floor,batch_policy=batch,budget=args.max_generated_tokens)
     slots={'parallel':batch['max_sequences']} if batch else {}
     with ManagedGGUF(args.model,args.server,args.ctx_size,args.max_tokens,args.output/'target-server.log',**slots) as client:
-        return generate_answers(suite,client,store,refusal_floor=floor,batch_policy=batch)
+        return generate_answers(suite,client,store,refusal_floor=floor,batch_policy=batch,budget=args.max_generated_tokens)
 
 
 def calibrate_cached(judge,records,args,identity):
@@ -107,7 +109,7 @@ def score_job(args):
     if args.scoring_mode=='refusal-check':
         identity={'scoring_mode':'refusal-check','framework_sources':source_identity(),
                   'sandbox_image_id':sandbox_identity(args.sandbox_image) if any(r['kind']=='code' for r in suite) else None}
-        return score_answers(suite,store,RefusalChecker(),args.output,identity,args.sandbox_image)
+        return score_answers(suite,store,RefusalChecker(),args.output,identity,args.sandbox_image,max_judge_requests=args.max_judge_requests)
     required=('server','judge_artifact','calibration','judge_max_tokens','ctx_size','judge_min_confidence','judge_min_accuracy')
     missing=[key for key in required if getattr(args,key) is None]
     if missing:
@@ -130,12 +132,12 @@ def score_job(args):
     status=score_status(args.output,store)
     if status.get('report_current') and not (args.retry_invalid and status['invalid']):
         calibrate_cached(None,calibration,args,identity)
-        return score_answers(suite,store,None,args.output,identity,args.sandbox_image)
+        return score_answers(suite,store,None,args.output,identity,args.sandbox_image,max_judge_requests=args.max_judge_requests)
     with ManagedGGUF(args.judge_artifact,args.server,args.ctx_size,args.judge_max_tokens,args.output/'judge-server.log') as client:
         args.judge_url,args.judge_model=client.url,client.model
         judge=verify_judge(args)
         calibrate_cached(judge,calibration,args,identity)
-        result=score_answers(suite,store,judge,args.output,identity,args.sandbox_image,args.retry_invalid)
+        result=score_answers(suite,store,judge,args.output,identity,args.sandbox_image,args.retry_invalid,max_judge_requests=args.max_judge_requests)
         verify_judge(args)
         if before!=sha256_file(args.judge_artifact):
             raise ValueError('Judge changed during scoring')
