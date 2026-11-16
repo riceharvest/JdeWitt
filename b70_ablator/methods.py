@@ -19,8 +19,9 @@ SOURCES = {
     'rdo': ['https://arxiv.org/abs/2502.17420'],
     'router-prebias': ['https://github.com/p-e-w/heretic/issues/322'],
     'sae': ['https://github.com/elder-plinius/OBLITERATUS'],
+    'nullspace': ['https://arxiv.org/abs/2301.12627'],
 }
-DIRECTION_METHODS = {'directional','projected','mpoa','svd','whitened-svd','som','leace'}
+DIRECTION_METHODS = {'directional','projected','mpoa','svd','whitened-svd','som','leace','nullspace'}
 # Methods whose operator is a plain per-layer projection, so a per-layer
 # strength profile can be attached. LEACE supplies its own left/right factors
 # and ARA its own learned factors; neither consumes a layer profile.
@@ -69,11 +70,12 @@ def finite_option(options, name, low=0., high=float('inf'), integer=False):
 def validate_method_options(method, options):
     common={'winsorization_quantile','massive_threshold','massive_ratio','row_normalization','layer_profile'}
     specific={'whitened-svd':{'ridge'},'leace':{'ridge'},'som':{'som_steps','som_learning_rate'},
+              'nullspace':{'nullspace_deflations'},
               'ara':{'steps','learning_rate','neighbors','preserve','steer','overcorrect','repulsion_cap'}}
     if not isinstance(options,dict) or set(options)-(common|specific.get(method,set())):
         raise ValueError('Unknown method_options or options for a different method')
     for key in specific.get(method,set())-{'overcorrect'}:
-        finite_option(options,key,high=1. if key=='som_learning_rate' else float('inf'),integer=key in {'steps','neighbors','som_steps'})
+        finite_option(options,key,high=1. if key=='som_learning_rate' else float('inf'),integer=key in {'steps','neighbors','som_steps','nullspace_deflations'})
     if method=='ara':
         v=options.get('overcorrect')
         if type(v) not in (int,float) or not math.isfinite(v) or v<0:
@@ -188,12 +190,45 @@ def fit_directions(records, rank, method='directional', options=None, seed=0):
             neighborhood = torch.exp(-(topology[None,:]-winner[:,None]).square()/(2*radius**2))
             prototypes += lr*(1-step/steps)*neighborhood[:,:,None]*(sample[:,None,:]-prototypes)
         matrix = prototypes-good.mean(0)[:,None,:]
+    elif method == 'nullspace':
+        deflations = finite_option(options, 'nullspace_deflations', integer=True)
+        return nullspace_directions(matrix, rank, deflations)
     elif method != 'svd':
         raise ValueError(f'Unknown direction method {method!r}')
     _,singular,vh = torch.linalg.svd(matrix,full_matrices=False)
     if rank < 1 or rank > vh.shape[1] or (singular[:,rank-1]<=1e-7).any():
         raise DirectionRejected('Insufficient independent direction rank')
     return vh[:,:rank,:].contiguous()
+
+
+def nullspace_directions(matrix, rank, deflations):
+    """Null-space projection family (RepEng-style): greedy deflated contrast basis.
+
+    ``matrix`` is the per-layer batch of good/bad contrasts [layers, families,
+    features]. Direction k is the mean contrast that survives after projecting
+    out directions < k, sharpened by ``deflations`` power passes that
+    re-weight each contrast by its own projection on the running direction.
+    Deterministic, no optimizer, orthonormal by construction — a genuinely
+    different basis from the singular vectors SVD would pick when contrast
+    signs are mixed. Returns [layers, rank, features].
+    """
+    import torch
+    residual = matrix
+    directions = []
+    for _ in range(rank):
+        d = residual.mean(dim=-2)
+        for _ in range(max(deflations - 1, 0)):
+            weights = (residual * d.unsqueeze(-2)).sum(dim=-1)
+            d = (residual * weights.unsqueeze(-1)).sum(dim=-2)
+        for previous in directions:
+            d = d - previous * (previous * d).sum(dim=-1, keepdim=True)
+        norms = d.norm(dim=-1)
+        if float(norms.min()) <= 1e-8:
+            raise DirectionRejected('Null-space direction is degenerate')
+        d = d / norms.unsqueeze(-1)
+        directions.append(d)
+        residual = residual - d.unsqueeze(-2) * (residual * d.unsqueeze(-2)).sum(dim=-1, keepdim=True)
+    return torch.stack(directions, dim=1).contiguous()
 
 
 def fit_ara(weight, good_x, good_y, bad_x, bad_y, rank, options, seed):
