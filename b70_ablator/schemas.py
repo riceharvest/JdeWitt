@@ -180,6 +180,32 @@ SCHEMAS = {
                        'release_identities': {'type': 'object'}, 'files': {'type': 'object'},
                        'claims': {'type': 'object'}, 'ledger_digests': {'type': 'object'},
                        'signatures': {'type': 'object'}, 'note': {'type': 'string'}}},
+    'gguf-tensor-diff.command.json': {
+        'description': 'gguf-tensor-diff output contract.',
+        'type': 'object',
+        'required': ['before', 'after', 'tensor_count_before', 'tensor_count_after',
+                     'only_in_before', 'only_in_after', 'summary', 'rel_rms',
+                     'differing_tensors', 'note'],
+        'properties': {'before': {'type': 'string'}, 'after': {'type': 'string'},
+                       'tensor_count_before': {'type': 'integer'},
+                       'tensor_count_after': {'type': 'integer'},
+                       'only_in_before': {'type': 'array'}, 'only_in_after': {'type': 'array'},
+                       'summary': {'type': 'object'},
+                       'rel_rms': {'type': 'object'},
+                       'differing_tensors': {'type': 'array'}, 'note': {'type': 'string'}}},
+    'safetensors-diff.command.json': {
+        'description': 'safetensors-diff output contract.',
+        'type': 'object',
+        'required': ['before', 'after', 'tensor_count_before', 'tensor_count_after',
+                     'only_in_before', 'only_in_after', 'summary', 'rel_rms',
+                     'differing_tensors', 'note'],
+        'properties': {'before': {'type': 'string'}, 'after': {'type': 'string'},
+                       'tensor_count_before': {'type': 'integer'},
+                       'tensor_count_after': {'type': 'integer'},
+                       'only_in_before': {'type': 'array'}, 'only_in_after': {'type': 'array'},
+                       'summary': {'type': 'object'},
+                       'rel_rms': {'type': 'object'},
+                       'differing_tensors': {'type': 'array'}, 'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -202,6 +228,8 @@ EMIT_SCHEMAS = {
     'hub-census': 'hub-census.command.json',
     'run-ls': 'run-ls.command.json',
     'release-diff': 'release-diff.command.json',
+    'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
+    'safetensors-diff': 'safetensors-diff.command.json',
 }
 
 

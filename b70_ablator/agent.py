@@ -835,3 +835,254 @@ def run_ls(output):
     return {'output': str(root.resolve()), 'entries': entries, 'unexpected_entries': sorted(unexpected),
             'note': 'The contract lists artifacts the pipeline may write; absence is stage-dependent. '
                     'Anything outside it is reported by name, never hidden — UUID payloads included.'}
+
+
+def _e5m2_decode_table():
+    """E5M2 -> float32 table (safetensors F8_E5M2 storage), built once."""
+    import numpy as np
+    table = np.zeros(256, dtype=np.float32)
+    for code in range(256):
+        sign = -1.0 if code & 0x80 else 1.0
+        exp = (code >> 2) & 0x1F
+        man = code & 0x03
+        if exp == 0x1F:
+            value = float('nan') if man else float('inf')
+        elif exp == 0:
+            value = man * 2.0 ** -16
+        else:
+            value = (1.0 + man / 4.0) * 2.0 ** (exp - 15)
+        table[code] = sign * value
+    return table
+
+
+_E5M2 = None  # built lazily on first F8_E5M2 tensor
+
+
+_ST_FLOAT_DTYPES = {'F32': 'float32', 'F16': 'float16', 'F64': 'float64'}
+
+
+def safetensors_tensor_diff(a, b, limit=100):
+    """Compare two safetensors checkpoints by content, no model loads."""
+    import json
+    import mmap
+    import numpy as np
+    from pathlib import Path
+    a, b = Path(a), Path(b)
+    for p in (a, b):
+        if not p.is_file():
+            raise FileNotFoundError(str(p))
+
+    def header(path):
+        with open(path, 'rb') as f:
+            size = int.from_bytes(f.read(8), 'little')
+            if size <= 0 or size > (1 << 28):
+                raise ValueError(f'{path}: implausible safetensors header length {size}')
+            return json.loads(f.read(size)), 8 + size
+
+    head_a, base_a = header(a)
+    head_b, base_b = header(b)
+    names_a = {n for n in head_a if n != '__metadata__'}
+    names_b = {n for n in head_b if n != '__metadata__'}
+    shared = sorted(names_a & names_b)
+    states = {'shared': len(shared), 'bit_identical': 0, 'value_differs': 0,
+              'shape_changed': 0, 'byte_only_dtype': 0, 'missing_dtype': 0}
+    rel = []
+    differing = []
+    chunk = 1 << 24
+    with open(a, 'rb') as fa, open(b, 'rb') as fb:
+        mm_a = mmap.mmap(fa.fileno(), 0, access=mmap.MAP_SHARED)
+        mm_b = mmap.mmap(fb.fileno(), 0, access=mmap.MAP_SHARED)
+        try:
+            for name in shared:
+                info_a, info_b = head_a[name], head_b[name]
+                if list(info_a['shape']) != list(info_b['shape']):
+                    states['shape_changed'] += 1
+                    continue
+                dtype_a, dtype_b = info_a['dtype'], info_b['dtype']
+                begin_a, end_a = info_a['data_offsets']
+                begin_b, end_b = info_b['data_offsets']
+                n_bytes = end_a - begin_a
+                if n_bytes != end_b - begin_a:
+                    states['missing_dtype'] += 1  # byte size cannot match a shared shape/dtype
+                    continue
+                raw_a = np.frombuffer(mm_a, dtype=np.uint8, count=n_bytes, offset=base_a + begin_a).copy()
+                raw_b = np.frombuffer(mm_b, dtype=np.uint8, count=n_bytes, offset=base_b + begin_b).copy()
+                if np.array_equal(raw_a, raw_b):
+                    states['bit_identical'] += 1
+                    continue
+                if dtype_a != dtype_b:
+                    states['value_differs'] += 1
+                    differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
+                                      'rel_rms': None})
+                    continue
+                floats = _st_tensor_values(np, dtype_a, raw_a)
+                if floats is None:
+                    states['byte_only_dtype'] += 1
+                    differing.append({'name': name, 'dtype_before': dtype_a, 'rel_rms': None,
+                                      'byte_identical': False})
+                    continue
+                others = _st_tensor_values(np, dtype_b, raw_b)
+                if others is None or floats.shape != others.shape:
+                    states['byte_only_dtype'] += 1
+                    continue
+                sum_sq = diff_sq = 0.0
+                for start in range(0, floats.shape[0], chunk):
+                    va = floats[start:start + chunk].astype(np.float32, copy=False)
+                    vb = others[start:start + chunk].astype(np.float32, copy=False)
+                    diff = va - vb
+                    sum_sq += float((va * va).sum())
+                    diff_sq += float((diff * diff).sum())
+                rel_rms = float(np.sqrt(diff_sq / sum_sq)) if sum_sq > 0 else float('inf')
+                rel.append(rel_rms)
+                states['value_differs'] += 1
+                differing.append({'name': name, 'dtype_before': dtype_a,
+                                  'rel_rms': round(rel_rms, 8)})
+        finally:
+            mm_a.close()
+            mm_b.close()
+    summary = {'n': 0}
+    if rel:
+        ordered = sorted(rel)
+        summary = {'n': len(ordered), 'min': round(ordered[0], 8),
+                   'median': round(ordered[len(ordered) // 2], 8),
+                   'max': round(ordered[-1], 8)}
+    differing.sort(key=lambda row: (row.get('rel_rms') or 0.0), reverse=True)
+    return {'before': str(a), 'after': str(b),
+            'tensor_count_before': len(names_a), 'tensor_count_after': len(names_b),
+            'only_in_before': sorted(names_a - names_b)[:limit],
+            'only_in_after': sorted(names_b - names_a)[:limit],
+            'summary': states, 'rel_rms': summary,
+            'differing_tensors': differing[:limit],
+            'note': 'Content comparison only, no inference: bit_identical means every stored byte '
+                    'matches; value_differs reports the RMS difference relative to the first file. '
+                    'Integer and unsupported float storages are compared by bytes only.'}
+
+
+def _st_tensor_values(np, dtype, raw):
+    """Decode a safetensors float storage to a float array, or None if byte-only."""
+    global _E5M2
+    if dtype in _ST_FLOAT_DTYPES:
+        return np.frombuffer(raw, dtype=_ST_FLOAT_DTYPES[dtype])
+    if dtype == 'BF16':
+        return (np.frombuffer(raw, dtype=np.uint16).astype(np.uint32) << 16).view(np.float32)
+    if dtype == 'F8_E4M3':
+        from .fp4 import _E4M3_DECODE
+        return _E4M3_DECODE[raw]
+    if dtype == 'F8_E5M2':
+        if _E5M2 is None:
+            _E5M2 = _e5m2_decode_table()
+        return _E5M2[raw]
+    return None
+
+
+def gguf_tensor_diff(a, b, limit=100):
+    """Compare two GGUF checkpoints tensor-by-tensor: byte identity plus dequant error."""
+    import mmap
+    import numpy as np
+    from pathlib import Path
+    from gguf import GGUFReader
+    from .ggufio import CODECS
+    a, b = Path(a), Path(b)
+    for p in (a, b):
+        if not p.is_file():
+            raise FileNotFoundError(str(p))
+    reader_a = GGUFReader(str(a))
+    reader_b = GGUFReader(str(b))
+    tensors_a = {t.name: t for t in reader_a.tensors}
+    tensors_b = {t.name: t for t in reader_b.tensors}
+    shared = sorted(set(tensors_a) & set(tensors_b))
+    states = {'shared': len(shared), 'bit_identical': 0, 'value_differs': 0,
+              'shape_changed': 0, 'codec_unsupported': 0, 'byte_size_changed': 0}
+    rel = []
+    differing = []
+    chunk = 1 << 24
+    with open(a, 'rb') as fa, open(b, 'rb') as fb:
+        mm_a = mmap.mmap(fa.fileno(), 0, access=mmap.MAP_SHARED)
+        mm_b = mmap.mmap(fb.fileno(), 0, access=mmap.MAP_SHARED)
+        try:
+            for name in shared:
+                ta, tb = tensors_a[name], tensors_b[name]
+                shape_a = tuple(int(x) for x in np.asarray(ta.shape).ravel())
+                shape_b = tuple(int(x) for x in np.asarray(tb.shape).ravel())
+                if shape_a != shape_b:
+                    states['shape_changed'] += 1
+                    continue
+                dtype_a, dtype_b = ta.tensor_type.name, tb.tensor_type.name
+                offset_a, offset_b = int(ta.data_offset), int(tb.data_offset)
+                size_a, size_b = int(ta.n_bytes), int(tb.n_bytes)
+                if size_a == size_b and size_a <= chunk:
+                    if mm_a[offset_a:offset_a + size_a] == mm_b[offset_b:offset_b + size_b]:
+                        states['bit_identical'] += 1
+                        continue
+                elif size_a == size_b:
+                    identical = True
+                    for start in range(0, size_a, chunk):
+                        count = min(chunk, size_a - start)
+                        if mm_a[offset_a + start:offset_a + start + count] != \
+                                mm_b[offset_b + start:offset_b + start + count]:
+                            identical = False
+                            break
+                    if identical:
+                        states['bit_identical'] += 1
+                        continue
+                if size_a != size_b:
+                    states['byte_size_changed'] += 1
+                    differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
+                                      'bytes_before': size_a, 'bytes_after': size_b, 'rel_rms': None})
+                    continue
+                if dtype_a not in CODECS or dtype_b not in CODECS:
+                    states['codec_unsupported'] += 1
+                    differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
+                                      'rel_rms': None})
+                    continue
+                sum_sq = diff_sq = 0.0
+                bs_a, els_a, _, deq_a = CODECS[dtype_a]
+                bs_b, els_b, _, deq_b = CODECS[dtype_b]
+                n_a = size_a // bs_a * els_a
+                n_b = size_b // bs_b * els_b
+                if n_a != n_b:
+                    states['codec_unsupported'] += 1
+                    differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
+                                      'rel_rms': None})
+                    continue
+                blocks_per_tile = max(1, (chunk // max(els_a, els_b)))
+                nb = size_a // bs_a
+                for start in range(0, nb, blocks_per_tile):
+                    tile = min(blocks_per_tile, nb - start)
+                    byte0, byte1 = start * bs_a, (start + tile) * bs_a
+                    raw_a = np.frombuffer(mm_a, dtype=np.uint8,
+                                          count=byte1 - byte0, offset=offset_a + byte0).copy()
+                    raw_b = np.frombuffer(mm_b, dtype=np.uint8,
+                                          count=byte1 - byte0, offset=offset_b + byte0).copy()
+                    va = deq_a(raw_a, tile * els_a).reshape(-1)
+                    vb = deq_b(raw_b, tile * els_b).reshape(-1)
+                    diff = va - vb
+                    sum_sq += float((va * va).sum())
+                    diff_sq += float((diff * diff).sum())
+                rel_rms = float(np.sqrt(diff_sq / sum_sq)) if sum_sq > 0 else float('inf')
+                rel.append(rel_rms)
+                states['value_differs'] += 1
+                row = {'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
+                       'rel_rms': round(rel_rms, 6)}
+                if dtype_a == dtype_b:
+                    row['same_dtype'] = True
+                differing.append(row)
+        finally:
+            mm_a.close()
+            mm_b.close()
+    summary = {'n': 0}
+    if rel:
+        ordered = sorted(rel)
+        summary = {'n': len(ordered), 'min': round(ordered[0], 6),
+                   'median': round(ordered[len(ordered) // 2], 6),
+                   'max': round(ordered[-1], 6)}
+    differing.sort(key=lambda row: (row.get('rel_rms') or 0.0), reverse=True)
+    return {'before': str(a), 'after': str(b),
+            'tensor_count_before': len(tensors_a), 'tensor_count_after': len(tensors_b),
+            'only_in_before': sorted(set(tensors_a) - set(tensors_b))[:limit],
+            'only_in_after': sorted(set(tensors_b) - set(tensors_a))[:limit],
+            'summary': states, 'rel_rms': summary,
+            'differing_tensors': differing[:limit],
+            'note': 'Header and dequant measurement only, no inference: bit_identical tensors match '
+                    'byte-for-byte; value_differs reports RMS difference after full dequant, '
+                    'relative to the first file, using the pinned GGML block codecs.'}

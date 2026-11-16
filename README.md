@@ -70,7 +70,12 @@ a run directory against its artifact contract, hashing small files and
 reporting anything unexpected by name. `gguf-inspect FILE [OTHER]`
 reads GGUF metadata and the tensor inventory from the header and, with a
 second file, diffs quant tensor dtypes and every metadata key by digest
-(single-file mode includes those per-key digests); `suite-near-dup SUITE ...` reports
+(single-file mode includes those per-key digests); `gguf-tensor-diff A B`
+and `safetensors-diff A B` prove content, not just headers: every
+byte-identical tensor, plus the relative RMS dequant error for the ones
+that differ (edited-file proof: 320/321 tensors bit-identical;
+Q4_K vs Q5_K on the same weights: median relative RMS 0.070176);
+`suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's
 first-occurrence semantics, without modifying anything. Configurations
 declaring an unsupported `schema_version` are refused before anything loads.

@@ -86,6 +86,12 @@ def main():
                        help='Set metadata key to a JSON value (string/number/bool/array); repeatable')
     editm.add_argument('--unset',action='append',default=[],metavar='KEY',
                        help='Remove a metadata key; repeatable')
+    gdiff=sub.add_parser('gguf-tensor-diff',help='Compare two GGUF files tensor-by-tensor: byte identity plus dequant error, no model')
+    gdiff.add_argument('before',type=Path)
+    gdiff.add_argument('after',type=Path)
+    sdiff=sub.add_parser('safetensors-diff',help='Compare two safetensors checkpoints tensor-by-tensor: byte identity plus relative RMS, no model')
+    sdiff.add_argument('before',type=Path)
+    sdiff.add_argument('after',type=Path)
     fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     fp4.add_argument('input',type=Path)
     fp4.add_argument('output',type=Path)
@@ -321,6 +327,12 @@ def main():
         elif args.command=='gguf-meta':
             from .agent import gguf_meta
             result=gguf_meta(args.input,args.output,args.set,args.unset)
+        elif args.command=='gguf-tensor-diff':
+            from .agent import gguf_tensor_diff
+            result=gguf_tensor_diff(args.before,args.after)
+        elif args.command=='safetensors-diff':
+            from .agent import safetensors_tensor_diff
+            result=safetensors_tensor_diff(args.before,args.after)
         elif args.command=='fp4-edit':
             from .fp4 import safetensors_fp4_edit
             if args.output.exists():
