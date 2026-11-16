@@ -69,7 +69,8 @@ reference including the recommended agent action; `run-ls OUTPUT` inventories
 a run directory against its artifact contract, hashing small files and
 reporting anything unexpected by name. `gguf-inspect FILE [OTHER]`
 reads GGUF metadata and the tensor inventory from the header and, with a
-second file, diffs quant tensor dtypes; `suite-near-dup SUITE ...` reports
+second file, diffs quant tensor dtypes and every metadata key by digest
+(single-file mode includes those per-key digests); `suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's
 first-occurrence semantics, without modifying anything. Configurations
 declaring an unsupported `schema_version` are refused before anything loads.

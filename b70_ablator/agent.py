@@ -535,10 +535,22 @@ def gguf_inspect(path,other=None):
                              [int(x) for x in tensor.shape]) for tensor in reader.tensors}
         return {'file':str(file),'size_bytes':int(file.stat().st_size),'tensor_count':len(reader.tensors),
                 'data_bytes':total,'metadata':metadata,'tensors_by_dtype':by_dtype,'largest_tensors':largest}, schema
+    def metadata_digests(file):
+        # Every header key hashed from raw bytes; values never appear in output.
+        import hashlib
+        from .ggufio import parse_gguf_header
+        parsed=parse_gguf_header(file)
+        return {name.decode(): hashlib.sha256(raw).hexdigest() for name, _tag, raw in parsed['entries']}
     single,schema=report(path)
     if other is None:
+        single['metadata_digests']=metadata_digests(path)
+        single['metadata_note']='metadata_digests covers every header key; values are never printed.'
         return single
     compared,second_schema=report(other)
+    before_digests,after_digests=metadata_digests(path),metadata_digests(other)
+    shared_keys=set(before_digests)&set(after_digests)
+    metadata_changed=[{'key':key,'before_sha256':before_digests[key],'after_sha256':after_digests[key]}
+                      for key in sorted(shared_keys) if before_digests[key]!=after_digests[key]]
     shared=set(schema)&set(second_schema)
     dtype_changed=[{'name':name,'before':schema[name][0],'after':second_schema[name][0]}
                    for name in sorted(shared) if schema[name][0]!=second_schema[name][0]]
@@ -548,11 +560,13 @@ def gguf_inspect(path,other=None):
             'diff':{'only_in_before':sorted(set(schema)-shared)[:200],
                     'only_in_after':sorted(set(second_schema)-shared)[:200],
                     'dtype_changed':dtype_changed[:200],'shape_changed':shape_changed[:200],
-                    'metadata_only_in_before':sorted(set(single['metadata'])-set(compared['metadata']))[:50],
-                    'metadata_only_in_after':sorted(set(compared['metadata'])-set(single['metadata']))[:50],
+                    'metadata_changed':metadata_changed[:200],
+                    'metadata_only_in_before':sorted(set(before_digests)-set(after_digests))[:50],
+                    'metadata_only_in_after':sorted(set(after_digests)-set(before_digests))[:50],
                     'counts':{'shared_tensors':len(shared),'dtype_changed':len(dtype_changed),
-                              'shape_changed':len(shape_changed)}},
-            'note':'Header inventory only; tensor contents were not compared and no inference was run.'}
+                              'shape_changed':len(shape_changed),'metadata_changed':len(metadata_changed)}},
+            'note':'Header inventory only; tensor contents were not compared and no inference was run. '
+                   'Metadata is compared by digest for every header key; values are never printed.'}
 
 
 def about():
