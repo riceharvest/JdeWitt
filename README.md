@@ -143,7 +143,11 @@ across every implemented method with the global-winner discipline, requiring
 nothing it cannot prove. `--preset NAME` applies evidence-gated profile files
 (refused without an evidence reference); `presets` lists them. `run-events
 OUTPUT` tails the append-only `events.jsonl` lifecycle log; `study-metrics RUN`
-rolls up parameters/values from a study sqlite read-only. `suite-stats SUITE`
+rolls up parameters/values from a study sqlite read-only.
+`studies-compare PATH...` (run dirs or study.db files) rolls that up across
+studies: budget spent to reach each study's best feasible trial, cost
+curves, and per-parameter best-value shares — counts read read-only, not a
+statistical test. `suite-stats SUITE`
 describes one suite and `corpus-cache` reports (or, with `--prune-older-than
 N --execute`, deletes unpinned old revisions of) the dataset import cache.
 `robustness-report --eval LABEL SUITE SCORES_DIR` reports worst-case pass rate

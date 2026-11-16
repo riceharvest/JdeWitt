@@ -1278,3 +1278,74 @@ def direction_export(registry, key, out, dtype='bf16'):
                       'deltas. Applying them to quantized weights needs an architecture-specific '
                       'tensor-name mapping, which is verified separately.')
     return result
+
+
+def _study_trial_params(db_path):
+    if not db_path.exists():
+        return {}
+    with sqlite3.connect(db_path.as_uri()+'?mode=ro',uri=True,timeout=1) as connection:
+        connection.execute('PRAGMA query_only=ON')
+        rows=connection.execute('''SELECT t.number,tp.param_name,tp.param_value FROM trials t
+            JOIN studies s ON s.study_id=t.study_id
+            LEFT JOIN trial_params tp ON tp.trial_id=t.trial_id
+            WHERE s.study_name='b70-ablator' ''').fetchall()
+    out={}
+    for number,name,value in rows:
+        if name is not None:
+            out.setdefault(number,{})[name]=value
+    return out
+
+
+def studies_compare(paths):
+    """Read-only rollup across several study databases: per-study budget
+    spent to reach the best feasible trial, cost curves, and per-parameter
+    best-value shares. SQLite opened mode=ro with query_only; nothing is
+    written or migrated. No models, no statistics beyond counts."""
+    databases=[]
+    params_roll={}
+    for path in paths:
+        db=Path(path)
+        if db.is_dir():
+            db=db/'study.db'
+        if not db.is_file():
+            raise FileNotFoundError(db)
+        rows=_trial_rows(db)
+        params=_study_trial_params(db)
+        feasible=[t for t in rows if t['state']=='COMPLETE' and t['feasible'] and t['value'] is not None]
+        best=min((t['value'] for t in feasible), default=None)
+        trials_to_best=None
+        if best is not None:
+            for t in sorted(feasible,key=lambda t:t['number']):
+                if t['value']<=best:
+                    trials_to_best=t['number']
+                    break
+        curve=[]
+        running=None
+        for t in sorted(rows,key=lambda t:t['number']):
+            if t['state']=='COMPLETE' and t['feasible'] and t['value'] is not None:
+                running=t['value'] if running is None else min(running,t['value'])
+                curve.append({'trials_evaluated':t['number']+1,'best_so_far':running})
+        stride=max(1,len(curve)//64)
+        databases.append({'study':str(db),'trials':len(rows),
+                          'state_counts':dict(Counter(t['state'] for t in rows)),
+                          'feasible':len(feasible),'best':best,'trials_to_best':trials_to_best,
+                          'cost_curve':curve[::stride]+([curve[-1]] if curve and (len(curve)-1)%stride else [])})
+        for number,values in params.items():
+            trial=next((t for t in rows if t['number']==number),None)
+            if not (trial and trial['state']=='COMPLETE' and trial['feasible'] and trial['value'] is not None):
+                continue
+            for name,value in values.items():
+                bucket=params_roll.setdefault(name,{}).setdefault(str(value),
+                    {'feasible':0,'best_count':0,'value_sum':0.0})
+                bucket['feasible']+=1
+                bucket['value_sum']+=trial['value']
+                if best is not None and trial['value']<=best:
+                    bucket['best_count']+=1
+    param_stats={name:{value:{'feasible':bucket['feasible'],
+                              'best_count':bucket['best_count'],
+                              'best_value_share':bucket['best_count']/bucket['feasible'] if bucket['feasible'] else None,
+                              'mean_value':round(bucket['value_sum']/bucket['feasible'],6) if bucket['feasible'] else None}
+                       for value,bucket in sorted(values.items())}
+                for name,values in sorted(params_roll.items())}
+    return {'databases':databases,'param_stats':param_stats,
+            'note':'Read-only rollup of persisted Optuna state. best_value_share is the fraction of feasible trials with that parameter value that hit the study best; it is a count, not a statistical test.'}

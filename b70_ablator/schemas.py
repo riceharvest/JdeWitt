@@ -133,6 +133,12 @@ SCHEMAS = {
         'properties': {'output': {'type': 'string'}, 'tensors': {'type': 'integer'},
                        'metadata_entries': {'type': 'integer'},
                        'data_base': {'type': 'integer'}, 'file_size': {'type': 'integer'}}},
+    'studies-compare.command.json': {
+        'description': 'studies-compare output contract.',
+        'type': 'object',
+        'required': ['databases', 'param_stats', 'note'],
+        'properties': {'databases': {'type': 'array'}, 'param_stats': {'type': 'object'},
+                       'note': {'type': 'string'}}},
     'verdict-audit.command.json': {
         'description': 'verdict-audit output contract.',
         'type': 'object',
@@ -265,6 +271,7 @@ EMIT_SCHEMAS = {
     'verdict-audit': 'verdict-audit.command.json',
     'direction-export': 'direction-export.command.json',
     'gguf-delta-pack': 'gguf-delta-pack.command.json',
+    'studies-compare': 'studies-compare.command.json',
     'suite-stats': 'suite-stats.command.json',
     'suite-diff': 'suite-diff.command.json',
     'study-metrics': 'study-metrics.command.json',

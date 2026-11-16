@@ -110,10 +110,15 @@ written into the item and stays GATED.
    found a corrupted payload + orphan dir in report mode, removed both
    with --execute and rewrote the index; candidates went to zero.
 
-7. `studies compare DB1 DB2 ...`: read-only SQLite over several
-   study.db files — per-parameter and per-method win rates, budget spent
-   per accepted finalist, cost curves. Same read-only URI + `PRAGMA
-   query_only=ON` discipline as study-metrics.
+7. `studies-compare PATH...`. — LANDED.
+   Read-only SQLite over several study.db files (or run directories):
+   per-study state counts, budget (trial number) spent to reach the best
+   feasible trial, decimated cost curves, and per-parameter-value
+   best-value shares with means. Same read-only URI + `PRAGMA
+   query_only=ON` discipline as study-metrics. Proven on the repo's two
+   scratch studies (6-trial MO-TPE study: best 1.025 reached at trial 5,
+   5 feasible; empty study reports honest zeros); emit schema falsified.
+   Honest limitation stamped in the note: shares are counts, not a test.
 
 8. score-compare hardening: effect size (Cohen's h) alongside the Wilson
    intervals, and Holm–Bonferroni adjustment across suites so the

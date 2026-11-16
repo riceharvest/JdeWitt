@@ -214,6 +214,8 @@ def main():
     progress.add_argument('directory',type=Path)
     studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
     studies_p.add_argument('directory',type=Path)
+    scmp=sub.add_parser('studies-compare',help='Cross-study rollup: budget to best, cost curves, per-parameter best-value shares; read-only sqlite')
+    scmp.add_argument('paths',type=Path,nargs='+',help='study.db files or run directories containing one')
     cancel_p=sub.add_parser('run-cancel',help='Ask a study to stop before its next trial request; no process signalling')
     cancel_p.add_argument('directory',type=Path)
     for name,help_text in (('auto','Select methods within one explicit trial budget, then certify only the global winner'),
@@ -443,6 +445,9 @@ def main():
         elif args.command=='plan-prune':
             from .registry import prune_registry
             result=prune_registry(args.registry,args.execute)
+        elif args.command=='studies-compare':
+            from .agent import studies_compare
+            result=studies_compare(args.paths)
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)
