@@ -179,6 +179,10 @@ def main():
     sdiff=sub.add_parser('safetensors-diff',help='Compare two safetensors checkpoints tensor-by-tensor: byte identity plus relative RMS, no model')
     sdiff.add_argument('before',type=Path)
     sdiff.add_argument('after',type=Path)
+    pdiff=sub.add_parser('pt-diff',help='Compare two torch .pt checkpoints tensor-by-tensor: byte identity, relative RMS and cosine, no model')
+    pdiff.add_argument('before',type=Path)
+    pdiff.add_argument('after',type=Path)
+    pdiff.add_argument('--limit',type=int,default=100,help='max differing tensors to list')
     edit8=sub.add_parser('fp8-edit',help='Edit FP8 (E4M3/E5M2) safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     edit8.add_argument('input',type=Path)
     edit8.add_argument('output',type=Path)
@@ -471,6 +475,9 @@ def main():
         elif args.command=='safetensors-diff':
             from .agent import safetensors_tensor_diff
             result=safetensors_tensor_diff(args.before,args.after)
+        elif args.command=='pt-diff':
+            from .agent import pt_tensor_diff
+            result=pt_tensor_diff(args.before,args.after,args.limit)
         elif args.command=='fp8-edit':
             from .fp8 import safetensors_fp8_edit
             result=safetensors_fp8_edit(args.input,args.output,getattr(args,'format'),args.weights,args.delta,

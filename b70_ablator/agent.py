@@ -891,6 +891,108 @@ RUN_ARTIFACTS = {
 }
 
 
+def pt_tensor_diff(a, b, limit=100):
+    """Compare two torch .pt checkpoints by content, no model loads.
+
+    Handles state_dicts and the pipeline's saved payloads (a tuple of dicts
+    for directions + audit) by flattening containers into dotted leaf
+    paths. Tensors report byte identity, then relative RMS and cosine for
+    float leaves; scalars report equality with truncated repr. Cosine 1
+    means the delta is a positive scalar multiple.
+    """
+    import torch
+    a, b = Path(a), Path(b)
+    for p_ in (a, b):
+        if not p_.is_file():
+            raise FileNotFoundError(str(p_))
+    raw_a = torch.load(a, map_location='cpu', weights_only=True)
+    raw_b = torch.load(b, map_location='cpu', weights_only=True)
+
+    def flatten(obj, prefix, leaves):
+        if isinstance(obj, torch.Tensor):
+            leaves[prefix] = obj.detach().to('cpu')
+        elif isinstance(obj, dict):
+            for key in obj:
+                flatten(obj[key], f'{prefix}.{key}' if prefix else str(key), leaves)
+        elif isinstance(obj, (list, tuple)):
+            for i, item in enumerate(obj):
+                flatten(item, f'{prefix}.{i}' if prefix else str(i), leaves)
+        else:
+            leaves[prefix] = obj
+
+    leaves_a, leaves_b = {}, {}
+    flatten(raw_a, '', leaves_a)
+    flatten(raw_b, '', leaves_b)
+    names_a, names_b = set(leaves_a), set(leaves_b)
+    shared = sorted(names_a & names_b)
+    states = {'shared': len(shared), 'bit_identical': 0, 'value_differs': 0,
+              'shape_changed': 0, 'not_comparable': 0}
+    comparable = []
+    differing = []
+    for name in shared:
+        va, vb = leaves_a[name], leaves_b[name]
+        if isinstance(va, torch.Tensor) or isinstance(vb, torch.Tensor):
+            if not (isinstance(va, torch.Tensor) and isinstance(vb, torch.Tensor)):
+                states['not_comparable'] += 1
+                if len(differing) < limit:
+                    differing.append({'name': name, 'note': 'tensor on one side, scalar on the other'})
+                continue
+            ta, tb = va, vb
+            if ta.shape != tb.shape:
+                states['shape_changed'] += 1
+                differing.append({'name': name, 'shapes': [list(ta.shape), list(tb.shape)]})
+                continue
+            if ta.dtype.is_floating_point and tb.dtype.is_floating_point:
+                if torch.equal(ta, tb):
+                    states['bit_identical'] += 1
+                    continue
+                states['value_differs'] += 1
+                fa, fb = ta.reshape(-1).double(), tb.reshape(-1).double()
+                denom = (fa * fa).sum().item()
+                delta_sq = (fa - fb).pow(2).sum().item()
+                rel = float((delta_sq / denom) ** 0.5) if denom else None
+                nrm_a, nrm_b = fa.norm(), fb.norm()
+                cos = float(fa @ fb / (nrm_a * nrm_b)) if float(nrm_a) and float(nrm_b) else None
+                row = {'name': name, 'rel_rms': rel, 'cosine': cos,
+                       'l2_delta': float(delta_sq ** 0.5)}
+                if denom == 0:
+                    row['note'] = 'before tensor is all zero; relative RMS and cosine are undefined'
+                comparable.append(row)
+                if len(differing) < limit:
+                    differing.append(row)
+            else:
+                if torch.equal(ta, tb):
+                    states['bit_identical'] += 1
+                else:
+                    states['not_comparable'] += 1
+                    if len(differing) < limit:
+                        differing.append({'name': name, 'note': f'{ta.dtype} tensors differ'})
+        else:
+            if va == vb:
+                states['bit_identical'] += 1
+            else:
+                states['value_differs'] += 1
+                if len(differing) < limit:
+                    differing.append({'name': name,
+                                      'before': repr(va)[:100], 'after': repr(vb)[:100]})
+    summary = {'n': len(comparable)}
+    rels = sorted(r['rel_rms'] for r in comparable if r['rel_rms'] is not None)
+    cosines = sorted(r['cosine'] for r in comparable if r['cosine'] is not None)
+    if rels:
+        summary.update({'rel_rms_min': rels[0], 'rel_rms_median': rels[len(rels) // 2],
+                        'rel_rms_max': rels[-1]})
+    if cosines:
+        summary.update({'cosine_min': cosines[0], 'cosine_median': cosines[len(cosines) // 2],
+                        'cosine_max': cosines[-1]})
+    return {'before': str(a), 'after': str(b), 'states': states, 'summary': summary,
+            'differing': differing,
+            'missing_in_after': sorted(names_a - names_b),
+            'missing_in_before': sorted(names_b - names_a),
+            'note': 'Containers are flattened to dotted leaf paths; tensors report byte identity, '
+                    'then relative RMS and cosine for float leaves; scalars report equality with '
+                    'truncated repr. A missing leaf means the two files disagree on structure.'}
+
+
 def run_ls(output):
     """Artifact-contract inventory of a run output directory. File reads only."""
     from .storage import file_digest

@@ -150,6 +150,13 @@ bit-for-bit, quantisation error stays inside half the largest bin
 edits requant inside the same bound. The nibble packing order follows the
 bnb kernel convention but has not been confirmed against a real
 bitsandbytes checkpoint yet — treat that one detail as asserted.
+`pt-diff BEFORE AFTER` compares two torch `.pt` checkpoints (state_dicts or the
+pipeline's directions+audit payloads; containers flatten to dotted leaf paths):
+tensors report byte identity, then relative RMS, cosine and L2 delta — cosine 1
+means the delta is a positive scalar multiple — and a zero base tensor reports
+relative RMS and cosine as undefined instead of a misleading zero. Scalars
+compare by equality. Pair it with `gguf-tensor-diff` and `safetensors-diff` to
+ask how far two fits drifted without loading a model.
 `run-doctor OUTPUT` answers "why does this run look stuck, broken or idle" in one
 read-only pass: it aggregates lock liveness, study-db integrity, stale RUNNING
 trials with no live worker, a broken `events.jsonl` tail, checkpoint
