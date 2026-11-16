@@ -103,6 +103,7 @@ def register_plan(registry, run_output, gates_path=None, allow_unmeasured=False)
             'model': config['model'], 'revision': provenance.get('resolved_revision'),
             'method': config.get('method'), 'method_options': config.get('method_options') or {},
             'rank': config.get('rank'), 'seed': config.get('seed'),
+            'generation_fingerprint': (pointer.get('metadata') or {}).get('generation_fingerprint'),
             'suite_digests': {'directions': provenance.get('directions_digest'),
                               'selection': provenance.get('selection_digest'),
                               'holdout': provenance.get('holdout_digest')},
@@ -155,12 +156,17 @@ def load_plan(registry, key, expect=None, device='cpu'):
     return {'plan': directions, 'audit': audit, 'meta': meta, 'geometry': geometry}
 
 
-def warm_start_candidates(registry, method, method_options=None, directions_digest=None,
-                          model=None, revision=None, require_gates=False):
-    """Registered plans that fit the search context; optionally only same-checkpoint ones.
+GEOMETRY_KEYS = ('architecture', 'layers', 'hidden_size', 'rank', 'dtype', 'quantization', 'edit_groups', 'boundary')
 
-    Omitting ``model``/``revision`` searches across checkpoints (family
-    transfer); geometry is checked at load_plan time, never here.
+
+def warm_start_candidates(registry, method, method_options=None, directions_digest=None,
+                          geometry=None, require_gates=False, same_model=None, same_revision=None):
+    """Registered plans that fit the search context.
+
+    A plan transfers only when the method, options, suite digest, and every
+    given target geometry key (the checkpoint fingerprint minus model and
+    revision) match. A plan with no recorded fingerprint is ineligible,
+    never a wildcard; unmeasured entries stay labelled.
     """
     method_options = method_options or {}
     want = digest(method_options)
@@ -174,8 +180,22 @@ def warm_start_candidates(registry, method, method_options=None, directions_dige
             continue
         if require_gates and not entry.get('measured'):
             continue
-        same = (model is None or entry.get('model') == model) and \
-               (revision is None or entry.get('revision') == revision)
-        out.append(dict(entry, same_checkpoint=bool(model is not None and revision is not None and same),
-                        transferable=not same))
+        meta = _read_json(Path(registry) / 'plans' / entry['key'] / 'meta.json')
+        fingerprint = meta.get('generation_fingerprint')
+        reason = 'eligible'
+        if geometry is not None:
+            if not fingerprint:
+                reason = 'no recorded generation fingerprint'
+            else:
+                mismatch = [k for k in GEOMETRY_KEYS if k in fingerprint and fingerprint.get(k) != geometry.get(k)]
+                missing = sorted(set(geometry) - set(fingerprint))
+                if mismatch:
+                    reason = 'geometry mismatch: ' + ', '.join(mismatch)
+                elif missing:
+                    reason = 'target geometry not recorded: ' + ', '.join(missing)
+        out.append({k: meta.get(k) for k in ('key', 'model', 'revision', 'method', 'rank', 'seed', 'measured', 'registered_at')} | {
+            'eligible': reason == 'eligible', 'reason': reason,
+            'same_model': same_model is None or meta.get('model') == same_model,
+            'same_revision': same_revision is None or meta.get('revision') == same_revision})
+    out.sort(key=lambda e: (not e['same_model'], not e['same_revision'], not e['measured'], -1 if e['measured'] else 0, e['registered_at']))
     return out

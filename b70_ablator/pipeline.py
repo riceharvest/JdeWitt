@@ -127,6 +127,40 @@ def _run_body(config,*,selection_only=False,expected_winner=None):
         return _run(config,phases)
 
 
+def _warm_start_directions(config,backend,provenance,checkpoint_identity,direction_file,output):
+    """Transfer a registered fitted plan into this run when weight geometry proves compatible.
+
+    Geometry must match on every checkpoint-fingerprint key except model and
+    revision (same family, different checkpoint); the suite digest, method and
+    options must match exactly. Ineligible or corrupt candidates are recorded
+    and skipped; the run then fits from scratch. The transferred plan is
+    saved under this run's identity so trial provenance stays uniform.
+    """
+    from .registry import GEOMETRY_KEYS, RegistryError, load_plan, warm_start_candidates
+    geometry={k:v for k,v in backend.fingerprint.items() if k in GEOMETRY_KEYS}
+    notes=[]
+    for cand in warm_start_candidates(config.warm_start_registry,config.method,config.method_options,
+                                      provenance['directions_digest'],geometry=geometry,same_model=config.model):
+        if not cand['eligible']:
+            notes.append({'key':cand['key'],'skipped':cand['reason']})
+            continue
+        try:
+            loaded=load_plan(config.warm_start_registry,cand['key'],expect={'rank':config.rank},device='cpu')
+        except (RegistryError,FileNotFoundError) as e:
+            notes.append({'key':cand['key'],'skipped':str(e)})
+            continue
+        directions=move_plan(loaded['plan'],backend.device)
+        audit={'warm_start':{'key':cand['key'],'model':cand['model'],'revision':cand['revision'],
+                             'measured':cand['measured'],'source_fit':loaded['audit']},
+               'skipped_candidates':notes}
+        save_checkpoint(direction_file,move_plan(directions,'cpu'),checkpoint_identity,
+            {'warm_start':audit['warm_start'],'generation_fingerprint':backend.fingerprint})
+        atomic_json(output/'direction-stability.json',audit)
+        return directions,audit
+    atomic_json(output/'direction-stability.json',{'warm_start':{'attempted':True,'candidates':notes}})
+    return None,{}
+
+
 def _run(config,phases,*,selection_only=False,expected_winner=None):
     configure_compiler_paths()
     output=Path(config.output).resolve()
@@ -238,10 +272,14 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         checkpoint_identity=direction_identity(generation_identity,provenance['directions_digest'],config.method,
             config.method_options or {},scoring_identity,config.consistency,config.seed)
         saved=load_checkpoint(direction_file,checkpoint_identity)
+        directions=direction_audit=None
         if saved is not None:
             directions,direction_audit=saved
             directions=move_plan(directions,backend.device)
-        else:
+        elif getattr(config,'warm_start_registry',None):
+            directions,direction_audit=_warm_start_directions(config,backend,provenance,
+                checkpoint_identity,direction_file,output)
+        if directions is None:
             captures=[]
             captured_io={}
             capture=(getattr(config,'method_options',None) or {}).get('capture','last')
@@ -272,7 +310,8 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 backend.editor if method=='ara' else None)
             directions=move_plan(directions,backend.device)
             direction_audit.update({'attempted':len(direction_tasks),'accepted':len(accepted)})
-            save_checkpoint(direction_file,move_plan(directions,'cpu'),checkpoint_identity,direction_audit)
+            save_checkpoint(direction_file,move_plan(directions,'cpu'),checkpoint_identity,
+                dict(direction_audit,generation_fingerprint=fingerprint))
             atomic_json(output/'direction-stability.json',direction_audit)
         # Bind generated trial answers to the exact committed learned operator,
         # not merely rank/strength. Same-shaped plans from other methods differ.

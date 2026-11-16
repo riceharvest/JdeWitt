@@ -104,8 +104,12 @@ that beat plain last-token SVD and make the searcher arbitrate them.
   `plan-register RUN_OUTPUT [--gates EVIDENCE|--allow-unmeasured]` refuses
   unprovenanced or tampered fits, `plan-list`/`plan-show`/`plan-load` carry
   gate state and refuse geometry mismatches on transfer. Unmeasured entries
-  are labelled forever. Searcher-side warm-start consumption is wired when
-  a B70 run can prove the transfer; the registry itself is CPU-verifiable.
+  are labelled forever. Runs consume the registry through the
+  `warm_start_registry` run-config field: a fit transfers only when method,
+  options, suite digest and every weight-geometry key (checkpoint fingerprint
+  minus model/revision) match; ineligible or fingerprint-less candidates are
+  recorded in `direction-stability.json` and the run fits from scratch.
+  Proving a real cross-revision transfer on B70 checkpoints stays GATED.
 - GATED: which of these actually wins is decided by the searcher on real
   checkpoints, never by prose.
 

@@ -72,6 +72,7 @@ class RunConfig:
     screening: dict | None = None
     schema_version: int | None = None
     objectives: list | None = None
+    warm_start_registry: str | None = None
 
     @classmethod
     def from_json(cls,obj):
@@ -90,7 +91,7 @@ class RunConfig:
             raise ValueError('scoring_mode must be judge or refusal-check')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch','screening','schema_version','objectives'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:
@@ -117,6 +118,8 @@ class RunConfig:
                     or len(set(config.objectives)) != len(config.objectives)
                     or any(m not in MO_METRICS for m in config.objectives)):
                 raise ValueError(f'objectives must be 2-4 unique names from {sorted(MO_METRICS)}; the first is the primary objective used by warm starts and display')
+        if config.warm_start_registry is not None and not (isinstance(config.warm_start_registry,str) and config.warm_start_registry.strip()):
+            raise ValueError('warm_start_registry must be a non-empty path to a plan registry directory')
         thresholds=('max_capability_drop',)+ (('judge_min_confidence','judge_min_accuracy') if config.scoring_mode=='judge' else ())
         for name in thresholds:
             v=getattr(config,name)

@@ -121,7 +121,12 @@ The fitted-plan registry is the warm-start library:
 tensors by sha256 with run provenance (or an explicit UNMEASURED label),
 and `plan-load` refuses tampered payloads and geometry mismatches, so a
 plan can transfer across checkpoints in a family only when it can carry
-the target's shapes. New method surface: `method: "nullspace"` (greedy
+the target's shapes. Runs consume it via `"warm_start_registry": "path"`
+in run.json: an eligible fit (same method, options, suite digest, and all
+weight-geometry keys) transfers under the run's identity and records the
+source fit in `direction-stability.json`; skipped candidates say why.
+That is the directions warm start, separate from the `warm_starts`
+hyperparameter file. New method surface: `method: "nullspace"` (greedy
 deflated contrast basis), `method_options.capture: "answer-mean"` (RepEng-style
 mean-pooled answer activations instead of the last token) and
 `method_options.family_weighting: "balanced"` (variant-count weighted
