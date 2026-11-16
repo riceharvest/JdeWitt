@@ -8,6 +8,13 @@ Work is tagged:
 - CODE — CPU-verifiable, no model, no B70. Ship by running the command.
 - GATED — needs real B70 / real checkpoints before any claim changes.
 
+Status: all Phase 0 items are landed, plus the offline evaluation tooling
+from Phases 3 and 4 (Wilson/sign-test stats, score-compare, judge-ensemble,
+score-sensitivity, suite-near-dup, gguf-inspect). Everything still open is
+GATED (quantized-native editing numerics, method winners, judge calibration,
+throughput) or was deliberately deferred (hot-path event logging, clock
+injection, signing tooling).
+
 No CI and no new test suites on this roadmap. Verification is: run it,
 read the artifact, keep the honest claims table current. The existing CPU
 suite stays as-is.

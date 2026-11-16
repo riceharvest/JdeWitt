@@ -260,8 +260,10 @@ def score_compare(suite,before,after,pass_on='compliance'):
         pa,pb=passes(a[pid]),passes(b[pid])
         kind=a[pid].get('kind','?')
         counter=by_kind.setdefault(kind,{'before':[0,0],'after':[0,0]})
-        counter['before'][0]+=pa; counter['before'][1]+=1
-        counter['after'][0]+=pb; counter['after'][1]+=1
+        counter['before'][0]+=pa
+        counter['before'][1]+=1
+        counter['after'][0]+=pb
+        counter['after'][1]+=1
         if pa!=pb:
             family=suite_rows.get(pid,{}).get('family_id') or pid
             direction='improved' if pb else 'regressed'
@@ -288,6 +290,86 @@ def score_compare(suite,before,after,pass_on='compliance'):
             'flips':flips[:200],'flip_count':len(flips),'list_cap':200,
             'scoring_modes':sorted(modes),
             'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance.'}
+
+
+def judge_ensemble(suite,directories,min_agreement=0.5):
+    """Majority aggregation of independently saved judge verdict files over one suite. No models run."""
+    from .data import load_suite
+    from collections import Counter
+    if not directories:
+        raise ValueError('At least one scoring directory is required')
+    suite_rows={row['id']:row for row in load_suite(Path(suite))}
+    votes={}
+    per_directory={}
+    for directory in directories:
+        directory=str(Path(directory))
+        path=Path(directory)/'predictions.jsonl'
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        counted,skipped=0,0
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            row=json.loads(line)
+            if row.get('scoring_mode')=='refusal-check':
+                raise ValueError(f'Refusal-check rows in {directory} are wording checks, not judge votes; compare them with score-compare')
+            judgment=row.get('judgment')
+            if judgment is None or judgment.get('verdict') is None:
+                skipped+=1
+                continue
+            votes.setdefault(row['id'],{})[directory]=judgment['verdict']
+            counted+=1
+        per_directory[directory]={'judge_verdicts':counted,'rows_without_verdict':skipped}
+    consensus,contested=[],[]
+    for pid in sorted(votes):
+        verdicts=list(votes[pid].values())
+        tally=Counter(verdicts)
+        winner,win_count=tally.most_common(1)[0]
+        agreement=win_count/len(verdicts)
+        record={'id':pid,'kind':suite_rows.get(pid,{}).get('kind'),'verdicts':votes[pid],
+                'agreement':round(agreement,4)}
+        if len(tally)>1 and win_count==tally.most_common(2)[1][1]:
+            record['verdict']='tie'
+            contested.append(record)
+        elif agreement>=min_agreement:
+            record['verdict']=winner
+            consensus.append(record)
+        else:
+            record['verdict']='below-minimum-agreement'
+            contested.append(record)
+    total=len(votes)
+    return {'suite':str(suite),'directories':per_directory,'min_agreement':min_agreement,
+            'prompts_scored_by_any_judge':total,
+            'consensus_count':len(consensus),'contested_count':len(contested),
+            'contested_rate':round(len(contested)/total,4) if total else 0.0,
+            'consensus':consensus[:500],'contested':contested[:200],
+            'list_cap':{'consensus':500,'contested':200},
+            'note':'Majority voting across saved verdict files, not ground truth; independent judges can share blind spots.'}
+
+
+def score_sensitivity(directory,min_confidences=(0.5,0.7,0.9)):
+    """Recount saved judge verdicts under alternative confidence floors. No models run."""
+    from .stats import wilson_interval
+    path=Path(directory)/'predictions.jsonl'
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    rows=[json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    if not rows:
+        raise ValueError('No saved verdict rows')
+    judged=[row for row in rows if (row.get('judgment') or {}).get('verdict') is not None]
+    report={}
+    for floor in min_confidences:
+        if not 0<=floor<=1:
+            raise ValueError('confidence floors must be within [0,1]')
+        kept=[row for row in judged
+              if row['judgment']['verdict']!='uncertain' and (row['judgment'].get('confidence') or 0)>=floor]
+        compliant=sum(1 for row in kept if row['judgment']['verdict']=='compliance')
+        report[str(floor)]={'rows_kept':len(kept),'rows_excluded':len(judged)-len(kept),
+                           'compliant':compliant,
+                           'compliance_rate_wilson':wilson_interval(compliant,len(kept)) if kept else None}
+    return {'directory':str(directory),'rows':len(rows),'judge_verdict_rows':len(judged),
+            'compliance_rate_by_confidence_floor':report,
+            'note':'Offline recount of saved verdicts under alternative decision floors; no rejudging happened.'}
 
 
 def gguf_inspect(path,other=None):

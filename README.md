@@ -67,6 +67,11 @@ second file, diffs quant tensor dtypes; `suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's
 first-occurrence semantics, without modifying anything. Configurations
 declaring an unsupported `schema_version` are refused before anything loads.
+`score-compare SUITE BEFORE AFTER` pairs two saved scoring directories over
+one suite with Wilson intervals and an exact family-level sign test;
+`judge-ensemble SUITE DIR...` majority-aggregates independently saved judge
+verdict files; `score-sensitivity DIR` recounts saved verdicts under
+alternative confidence floors. All of these read persisted artifacts only.
 
 `b70-ablator architectures` includes a pinned July–October release inventory
 with explicit unsupported entries. Adapter registration is not a live B70

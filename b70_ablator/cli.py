@@ -44,6 +44,14 @@ def main():
     compare.add_argument('before',type=Path)
     compare.add_argument('after',type=Path)
     compare.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
+    ensemble=sub.add_parser('judge-ensemble',help='Majority aggregation of independently saved judge verdict files over one suite; no models')
+    ensemble.add_argument('suite',type=Path)
+    ensemble.add_argument('directory',type=Path,nargs='+')
+    ensemble.add_argument('--min-agreement',type=float,default=0.5)
+    sensitivity=sub.add_parser('score-sensitivity',help='Offline recount of saved verdicts under alternative confidence floors; no models')
+    sensitivity.add_argument('directory',type=Path)
+    sensitivity.add_argument('--floor',action='append',type=float,dest='min_confidences',
+                             help='Confidence floor to recount under; repeatable (default 0.5 0.7 0.9)')
     progress=sub.add_parser('run-status',help='Read-only search state, no model loads or DB migrations')
     progress.add_argument('directory',type=Path)
     studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
@@ -142,6 +150,12 @@ def main():
         elif args.command=='describe-run':
             from .agent import describe_run
             result=describe_run(args.config,args.set)
+        elif args.command=='judge-ensemble':
+            from .agent import judge_ensemble
+            result=judge_ensemble(args.suite,args.directory,args.min_agreement)
+        elif args.command=='score-sensitivity':
+            from .agent import score_sensitivity
+            result=score_sensitivity(args.directory,args.min_confidences or (0.5,0.7,0.9))
         elif args.command=='score-compare':
             from .agent import score_compare
             result=score_compare(args.suite,args.before,args.after,args.pass_on)
