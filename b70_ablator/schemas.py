@@ -53,7 +53,59 @@ SCHEMAS = {
         'properties': {'version': {'const': 2}, 'suite_digest': {'type': 'string'},
                        'generation_digest': {'type': 'string'}, 'identity': {'type': 'object'},
                        'sandbox_image': {'type': 'string'}, 'scoring_digest': {'type': 'string'}}},
+    'run-status.command.json': {
+        'description': 'run-status output contract.',
+        'type': 'object',
+        'required': ['output', 'trial_counts', 'trials', 'cancel_requested', 'release_present', 'note'],
+        'properties': {'output': {'type': 'string'}, 'trial_counts': {'type': 'object'},
+                       'trials': {'type': 'array'}, 'note': {'type': 'string'}}},
+    'studies.command.json': {
+        'description': 'studies output contract.',
+        'type': 'object',
+        'required': ['root', 'study_count', 'studies', 'note'],
+        'properties': {'root': {'type': 'string'}, 'study_count': {'type': 'integer'},
+                       'studies': {'type': 'array'}, 'note': {'type': 'string'}}},
+    'describe-run.command.json': {
+        'description': 'describe-run output contract.',
+        'type': 'object',
+        'required': ['config', 'status', 'suites', 'budget_estimates_upper_bounds', 'note'],
+        'properties': {'config': {'type': 'string'}, 'status': {'type': 'string'},
+                       'suites': {'type': 'object'}, 'split_family_collisions': {'type': 'array'},
+                       'budget_estimates_upper_bounds': {'type': 'object'}, 'note': {'type': 'string'}}},
+    'validate-auto.command.json': {
+        'description': 'validate-auto / abliterate dry-run output contract.',
+        'type': 'object',
+        'required': ['status', 'trial_budget', 'candidates', 'models_loaded', 'output_created'],
+        'properties': {'status': {'const': 'metadata-valid'}, 'trial_budget': {'type': 'integer'},
+                       'candidates': {'type': 'array'}, 'holdout_policy': {'type': 'string'}}},
+    'methods.command.json': {
+        'description': 'methods output contract.',
+        'type': 'object',
+        'required': ['scope', 'methods', 'edit_surface']},
+    'architectures.command.json': {
+        'description': 'architectures output contract.',
+        'type': 'object',
+        'required': ['scope', 'architectures']},
     }
+
+EMIT_SCHEMAS = {
+    'run-status': 'run-status.command.json',
+    'studies': 'studies.command.json',
+    'describe-run': 'describe-run.command.json',
+    'validate-auto': 'validate-auto.command.json',
+    'abliterate': 'validate-auto.command.json',
+    'methods': 'methods.command.json',
+    'architectures': 'architectures.command.json',
+}
+
+
+def enforce(command, value):
+    """Command-output contract enforcement at emit time; raise if the writer drifted."""
+    name = EMIT_SCHEMAS[command]
+    problems = validate_against(value, SCHEMAS[name])
+    if problems:
+        raise ValueError(f'{command} output violates published schema {name}: '
+                         + '; '.join(problems[:3]) + (f' ({len(problems)} total)' if len(problems) > 3 else ''))
 
 
 def validate_against(value, schema, path='$'):

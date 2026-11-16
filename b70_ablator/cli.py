@@ -390,6 +390,9 @@ def main():
                 if before!=sha256_file(args.judge_artifact):
                     raise ValueError('Judge changed during evaluation')
             atomic_json(args.output/'evaluation-metadata.json',{'artifact_sha256':sha256_file(args.model),'judge_sha256':before,'suite_digest':digest(suite),'settings':{k:str(v) if isinstance(v,Path) else v for k,v in vars(args).items()},'report':result})
+        from .schemas import EMIT_SCHEMAS, enforce
+        if args.command in EMIT_SCHEMAS:
+            enforce(args.command,result)
         print(json.dumps(result,indent=2,allow_nan=False))
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
