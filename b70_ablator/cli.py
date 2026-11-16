@@ -186,6 +186,13 @@ def main():
     edit8.add_argument('--scales',required=True,help='F32 scale tensor name')
     edit8.add_argument('--scale-mode',choices=('tensor','block'),default='block')
     edit8.add_argument('--axis',choices=('row','col'),default='row',help='block axis for block scales')
+    nf4=sub.add_parser('nf4-edit',help='Edit bitsandbytes-style NF4 safetensors (U8 packed + absmax) via dequant->edit->requant; everything else byte-verbatim, no model')
+    nf4.add_argument('input',type=Path)
+    nf4.add_argument('output',type=Path)
+    nf4.add_argument('--weights',required=True,help='U8 packed tensor name (two 4-bit codes per byte)')
+    nf4.add_argument('--delta',type=Path,required=True,help='float32 npy delta matching the unpacked tensor shape')
+    nf4.add_argument('--scales',required=True,help='F32 or F16 absmax tensor name (one per 64-element block)')
+    nf4.add_argument('--blocksize',type=int,default=64)
     fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     fp4.add_argument('input',type=Path)
     fp4.add_argument('output',type=Path)
@@ -466,6 +473,9 @@ def main():
             from .fp8 import safetensors_fp8_edit
             result=safetensors_fp8_edit(args.input,args.output,getattr(args,'format'),args.weights,args.delta,
                                         args.scales,args.scale_mode,args.axis)
+        elif args.command=='nf4-edit':
+            from .nf4 import safetensors_nf4_edit
+            result=safetensors_nf4_edit(args.input,args.output,args.weights,args.delta,args.scales,args.blocksize)
         elif args.command=='fp4-edit':
             from .fp4 import safetensors_fp4_edit
             if args.output.exists():

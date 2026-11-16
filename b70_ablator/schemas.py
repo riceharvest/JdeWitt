@@ -269,6 +269,25 @@ SCHEMAS = {
                        'scales': {'type': 'string'}, 'elements': {'type': 'integer'},
                        'scale_mode': {'type': 'string'},
                        'axis': {}, 'block': {}, 'note': {'type': 'string'}}},
+    'fp4-edit.command.json': {
+        'description': 'fp4-edit output contract.',
+        'type': 'object',
+        'required': ['input', 'output', 'format', 'tensor', 'scales', 'elements',
+                     'block', 'global_scale', 'note'],
+        'properties': {'input': {'type': 'string'}, 'output': {'type': 'string'},
+                       'format': {'type': 'string'}, 'tensor': {'type': 'string'},
+                       'scales': {'type': 'string'}, 'elements': {'type': 'integer'},
+                       'block': {'type': 'integer'}, 'global_scale': {},
+                       'note': {'type': 'string'}}},
+    'nf4-edit.command.json': {
+        'description': 'nf4-edit output contract.',
+        'type': 'object',
+        'required': ['input', 'output', 'tensor', 'scales', 'elements', 'block',
+                     'scale_dtype', 'note'],
+        'properties': {'input': {'type': 'string'}, 'output': {'type': 'string'},
+                       'tensor': {'type': 'string'}, 'scales': {'type': 'string'},
+                       'elements': {'type': 'integer'}, 'block': {'type': 'integer'},
+                       'scale_dtype': {'type': 'string'}, 'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -300,6 +319,8 @@ EMIT_SCHEMAS = {
     'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
     'safetensors-diff': 'safetensors-diff.command.json',
     'fp8-edit': 'fp8-edit.command.json',
+    'fp4-edit': 'fp4-edit.command.json',
+    'nf4-edit': 'nf4-edit.command.json',
 }
 
 

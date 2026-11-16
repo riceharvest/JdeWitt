@@ -138,7 +138,18 @@ though block re-encoding may move bytes); `fp8-edit INPUT OUTPUT --format {e4m3,
 DeepSeek-style 128-element block scales — its E4M3/E5M2 encoders match
 torch's own fp8 conversion on 50k random values each, zero-delta edits
 come out byte-identical, and requantized codes and scales match the
-hand-computed expected bytes.
+hand-computed expected bytes. `nf4-edit INPUT OUTPUT --weights NAME --delta
+DELTA.NPY --scales NAME [--blocksize 64]` edits bitsandbytes-style NF4
+safetensors (U8 tensors holding two 4-bit codes per byte, plus an F32/F16
+absmax tensor per 64-element block). Its 16-value codebook is pinned to
+bitsandbytes 0.42.0 by file digest and was re-derived independently with a
+pure-stdlib normal-CDF inverse (max diff 1.08e-7, fp32 rounding); hand
+blocks decode to ±absmax and exactly zero, exact-grid data round-trips
+bit-for-bit, quantisation error stays inside half the largest bin
+(0.15160 ≤ 0.15190), zero-delta file edits are byte-identical, and delta
+edits requant inside the same bound. The nibble packing order follows the
+bnb kernel convention but has not been confirmed against a real
+bitsandbytes checkpoint yet — treat that one detail as asserted.
 `release-keygen KEY`,
 `release-sign DIR --secret KEY` and `release-verify-signature DIR [--public KEY]`
 sign and verify an Ed25519 signature over a machine-readable reproduction

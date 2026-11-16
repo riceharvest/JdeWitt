@@ -168,9 +168,14 @@ written into the item and stays GATED.
     codec silently lies. Split per size class; Q2/Q3_K first still pays
     the rent sooner.
 
-13. bitsandbytes NF4 (HF-quantized checkpoints, single- and double-quant):
-    one more source format `direction-export`-adjacent tooling can read.
-    Same block codec + real-file byte identity proof as every other codec.
+13. bitsandbytes NF4 — SINGLE-QUANT LANDED. `nf4-edit` for U8-packed
+    weights + F32/F16 absmax scales: codebook pinned to bnb 0.42.0 by
+    file sha256 and independently re-derived (max diff 1.08e-7); hand
+    blocks exact, grid roundtrip bit-exact, quant err 0.15160 <= 0.15190
+    (half largest bin), zero-delta file edit byte-identical, delta edit
+    requants inside the bound, schema enforced+falsified. Double-quant
+    (quantized absmax tensors) not implemented; nibble order asserted,
+    real bnb checkpoint confirmation still open.
 
 14. Two more curated import specs in the jailbreak-slices pattern: a code
     execution slice (runs through the existing ast-based executor) and a
