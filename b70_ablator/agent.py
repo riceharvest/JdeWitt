@@ -487,6 +487,21 @@ def gguf_edit(path, out, specs):
     return edit_tensors(path, out, deltas)
 
 
+def gguf_meta(path, out, assignments, unsets):
+    """Edit GGUF v3 metadata; ``assignments`` are ``KEY=JSON`` strings (JSON parsed, bare text = string)."""
+    from .ggufio import edit_metadata
+    sets = {}
+    for spec in assignments:
+        key, sep, text = spec.partition('=')
+        if not sep or not key:
+            raise ValueError('assignment format is KEY=VALUE')
+        try:
+            sets[key] = json.loads(text)
+        except json.JSONDecodeError:
+            sets[key] = text
+    return edit_metadata(path, out, sets, list(unsets))
+
+
 def gguf_inspect(path,other=None):
     """GGUF metadata and tensor inventory read from the file header; tensor data is never loaded."""
     from gguf import GGUFReader

@@ -79,6 +79,13 @@ def main():
     editg.add_argument('output',type=Path)
     editg.add_argument('--tensor',action='append',required=True,metavar='NAME=DELTA.NPY',
                        help='float32 delta npy matching the tensor shape; repeatable')
+    editm=sub.add_parser('gguf-meta',help='Edit GGUF metadata (chat templates, tokenizer fields); tensor data is copied verbatim, no model')
+    editm.add_argument('input',type=Path)
+    editm.add_argument('output',type=Path)
+    editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
+                       help='Set metadata key to a JSON value (string/number/bool/array); repeatable')
+    editm.add_argument('--unset',action='append',default=[],metavar='KEY',
+                       help='Remove a metadata key; repeatable')
     fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     fp4.add_argument('input',type=Path)
     fp4.add_argument('output',type=Path)
@@ -311,6 +318,9 @@ def main():
         elif args.command=='gguf-edit':
             from .agent import gguf_edit
             result=gguf_edit(args.input,args.output,args.tensor)
+        elif args.command=='gguf-meta':
+            from .agent import gguf_meta
+            result=gguf_meta(args.input,args.output,args.set,args.unset)
         elif args.command=='fp4-edit':
             from .fp4 import safetensors_fp4_edit
             if args.output.exists():

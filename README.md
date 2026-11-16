@@ -90,7 +90,13 @@ quantized block layout: tile-wise dequant, FP32 delta, requant to the
 identical block count; every other byte of the file, header included, is
 copied verbatim and tensor offsets never move.
 The GGML block codecs (Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16) are vendored as
-numpy ports of llama.cpp's reference routines. `fp4-edit INPUT OUTPUT
+numpy ports of llama.cpp's reference routines. `gguf-meta INPUT OUTPUT
+--set KEY=JSON --unset KEY` edits GGUF metadata (chat templates, tokenizer
+fields) in place-style: unedited entries copy byte-for-byte, the tensor data
+blob is copied intact with its relative offsets untouched, and the data base
+is re-aligned when the header changes size — verified on a real 672 MB Q4_K_M
+file, loads clean in GGUFReader after grow and shrink.
+`fp4-edit INPUT OUTPUT
 --format {mxfp4,nvfp4} --weights NAME --delta DELTA.NPY --scales NAME
 [--global-scale|--global-scale-tensor NAME]` does the same contract for
 MXFP4/NVFP4 safetensors checkpoints (E2M1 digits, E8M0/E4M3 block scales,

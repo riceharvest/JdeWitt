@@ -76,8 +76,10 @@ public refusal-removal tool edits quantized sources natively.
   Landed: `gguf-edit` (tile-wise, GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16)
   and `fp4-edit` (MXFP4 E8M0-block32 / NVFP4 E4M3-block16 + global scale,
   E2M1 RNE ties-to-even, safetensors byte-verbatim outside the edited
-  tensor pair). Editing the merged-resident model inside a live run stays
-  GATED behind a real B70 edit+load proof.
+  tensor pair). `gguf-meta` edits GGUF v3 header metadata (chat templates,
+  tokenizer fields) with the tensor blob copied intact and the data base
+  re-aligned on grow/shrink. Editing the merged-resident model inside a live
+  run stays GATED behind a real B70 edit+load proof.
 - This reopens NF4/quant trial weights honestly: the guarantee comes from
   the requant round-trip check, not from pretending a dequantized base
   equals the source.
