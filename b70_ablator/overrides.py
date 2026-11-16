@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""JSON configuration overrides for --set, applied before any configuration validation."""
+import json
+
+
+def apply_overrides(config, assignments):
+    """Override dotted JSON paths in a parsed configuration. Unknown top-level fields are refused."""
+    for assignment in assignments:
+        if '=' not in assignment:
+            raise ValueError('--set expects FIELD=VALUE')
+        path, text = assignment.split('=', 1)
+        path = path.strip()
+        if not path:
+            raise ValueError('--set field name cannot be empty')
+        try:
+            value = json.loads(text)
+        except json.JSONDecodeError:
+            value = text
+        keys = path.split('.')
+        if keys[0] not in config:
+            raise ValueError(f'--set target {keys[0]!r} is not a field of this configuration')
+        node = config
+        for key in keys[:-1]:
+            if key not in node:
+                node[key] = {}
+            elif not isinstance(node[key], dict):
+                raise ValueError(f'--set path segment {key!r} is not a JSON object')
+            node = node[key]
+        node[keys[-1]] = value
+    return config

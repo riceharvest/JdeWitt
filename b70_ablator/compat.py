@@ -6,6 +6,8 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
+from .answers import atomic_text
+
 
 def repair_export_metadata(directory):
     directory=Path(directory)
@@ -22,7 +24,7 @@ def repair_export_metadata(directory):
         raise ValueError('Unrecognized Spark tied-weight declaration; compatibility adapter must be reviewed')
     source=source.replace(broken,fixed)
     source='# B70-ablator compatibility fix: tie the output head to the real input embedding.\n'+source
-    path.write_text(source)
+    atomic_text(path,source)
     return ['spark_tied_embeddings']
 
 

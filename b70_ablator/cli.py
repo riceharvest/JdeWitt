@@ -24,8 +24,12 @@ def main():
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
+    validate.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
+                          help='Override a JSON field before validation (dot path; value parsed as JSON, else string)')
     describe=sub.add_parser('describe-run',help='Static suite/family/budget report; refuses what validate-run refuses, no model loads')
     describe.add_argument('config',type=Path)
+    describe.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
+                          help='Override a JSON field before reporting (dot path; value parsed as JSON, else string)')
     diff=sub.add_parser('suite-diff',help='Compare two suite files by id, content and family; no model loads')
     diff.add_argument('before',type=Path)
     diff.add_argument('after',type=Path)
@@ -39,6 +43,8 @@ def main():
                            ('validate-auto','Validate automatic method selection without model loads or output writes')):
         command=sub.add_parser(name,help=help_text)
         command.add_argument('config',type=Path)
+        command.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
+                             help='Override a JSON field before validation (dot path; value parsed as JSON, else string)')
     for name,help_text in (('tree-search','Experimental J-space partial-forward beam search; B70 only, no certified export'),
                           ('validate-tree','Read-only tree configuration/provenance checks, no model runtime imports')):
         command=sub.add_parser(name,help=help_text)
@@ -63,6 +69,8 @@ def main():
     validate_import_parser.add_argument('spec',type=Path)
     run=sub.add_parser('run',help='Run a resumable experiment through sealed quantized certification')
     run.add_argument('config',type=Path)
+    run.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
+                     help='Override a JSON field before the run (dot path; value parsed as JSON, else string)')
     train=sub.add_parser('train',help='Train local B70 SFT/DPO edit factors; output is unvalidated')
     train.add_argument('config',type=Path)
     verify=sub.add_parser('verify-release',help='Verify a finished release using only file reads, no models')
@@ -105,17 +113,24 @@ def main():
             result=bind_lens(args.lens,json.loads(args.model_identity.read_text()),args.output)
         elif args.command in {'auto','validate-auto'}:
             from .auto import AutoConfig,run_auto,validate_auto
-            config=AutoConfig.from_json(json.loads(args.config.read_text()))
+            obj=json.loads(args.config.read_text())
+            if args.set:
+                from .overrides import apply_overrides
+                obj=apply_overrides(obj,args.set)
+            config=AutoConfig.from_json(obj)
             result=validate_auto(config) if args.command=='validate-auto' else run_auto(config)
         elif args.command=='about':
             from .agent import about
             result=about()
-        elif args.command in {'validate-run','run-status'}:
-            from .agent import validate_run,run_status
-            result=validate_run(args.config) if args.command=='validate-run' else run_status(args.directory)
+        elif args.command=='validate-run':
+            from .agent import validate_run
+            result=validate_run(args.config,args.set)
+        elif args.command=='run-status':
+            from .agent import run_status
+            result=run_status(args.directory)
         elif args.command=='describe-run':
             from .agent import describe_run
-            result=describe_run(args.config)
+            result=describe_run(args.config,args.set)
         elif args.command=='suite-diff':
             from .agent import suite_diff
             result=suite_diff(args.before,args.after)
@@ -156,7 +171,11 @@ def main():
         elif args.command=='run':
             from .search import RunConfig
             from .pipeline import run
-            result=run(RunConfig.from_json(json.loads(args.config.read_text())))
+            obj=json.loads(args.config.read_text())
+            if args.set:
+                from .overrides import apply_overrides
+                obj=apply_overrides(obj,args.set)
+            result=run(RunConfig.from_json(obj))
         elif args.command=='train':
             from .training import train_job
             result=train_job(args.config)

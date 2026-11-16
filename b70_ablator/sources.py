@@ -14,6 +14,7 @@ import re
 import string
 from pathlib import Path
 
+from .answers import atomic_json, atomic_text
 from .data import canonical_prompt, digest, load_suite, validate_splits
 
 KINDS = ('refusal', 'harmless', 'math', 'code', 'direction')
@@ -438,7 +439,7 @@ def import_suites(spec, output):
         if not rows:
             raise ValueError(f'Split {split!r} is empty after dedupe')
         path = output / f'{split}.jsonl'
-        path.write_text(''.join(json.dumps(row, ensure_ascii=False, allow_nan=False) + '\n' for row in rows))
+        atomic_text(path, ''.join(json.dumps(row, ensure_ascii=False, allow_nan=False) + '\n' for row in rows))
         written[split] = {'path': str(path), 'tasks': len(rows), 'digest': digest(rows)}
     suites = {name: load_suite(entry['path']) for name, entry in written.items()}
     if len(suites) > 1:
@@ -456,7 +457,7 @@ def import_suites(spec, output):
               'not_checked': ['that a synthetic row grouping is a genuine topic family',
                               'that the imported prompts are harmful to this model',
                               'token budgets', 'model fit', 'refusal wording in the imported corpus']}
-    (output / 'import-provenance.json').write_text(json.dumps(report, indent=2, ensure_ascii=False) + '\n')
+    atomic_json(output / 'import-provenance.json', report)
     return report
 
 

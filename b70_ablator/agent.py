@@ -6,11 +6,15 @@ from pathlib import Path
 import sqlite3
 
 
-def validate_run(path):
+def validate_run(path,overrides=()):
     from .search import RunConfig
     from .validation import validate_run_inputs
     from .architectures import ARCHITECTURES
-    config=RunConfig.from_json(json.loads(Path(path).read_text()))
+    obj=json.loads(Path(path).read_text())
+    if overrides:
+        from .overrides import apply_overrides
+        obj=apply_overrides(obj,overrides)
+    config=RunConfig.from_json(obj)
     _,report=validate_run_inputs(config)
     for field in ('converter','quantizer','converter_python','llama_server'):
         if not Path(getattr(config,field)).is_file():
@@ -94,11 +98,15 @@ def studies(root):
             'note':'Counts read from persisted state only; RUNNING does not prove a live process.'}
 
 
-def describe_run(path):
+def describe_run(path,overrides=()):
     """Static budget/suite/family shape of a validated experiment. No model or GPU access."""
     from .search import RunConfig
     from .validation import validate_run_inputs
-    config=RunConfig.from_json(json.loads(Path(path).read_text()))
+    obj=json.loads(Path(path).read_text())
+    if overrides:
+        from .overrides import apply_overrides
+        obj=apply_overrides(obj,overrides)
+    config=RunConfig.from_json(obj)
     suites,report=validate_run_inputs(config)
 
     def split_stats(rows):

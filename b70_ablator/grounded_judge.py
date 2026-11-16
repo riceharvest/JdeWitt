@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 import json
 from pathlib import Path
+from .answers import atomic_json
 from .data import digest
 from .scoring import Judgment, extract_answer
 from .transport import Judge
@@ -56,10 +57,7 @@ class GroundedJudge(Judge):
                 raise ValueError('Frozen rubric changed or came from an unreviewed judge rewrite')
             pending[key]=record
         if self.cache_path is not None:
-            self.cache_path.parent.mkdir(parents=True,exist_ok=True)
-            temporary=self.cache_path.with_suffix('.new')
-            temporary.write_text(json.dumps(pending,ensure_ascii=False,indent=2))
-            temporary.replace(self.cache_path)
+            atomic_json(self.cache_path,pending)
         self.rubrics=pending
 
     def calibrate(self,records,min_accuracy):
