@@ -183,14 +183,20 @@ written into the item and stays GATED.
     (quantized absmax tensors) not implemented; nibble order asserted,
     real bnb checkpoint confirmation still open.
 
-11b. Next queue after this run's landings (106814f, 579c81c, 5188386, acdf5c8):
-     IQ4_XS decode — the one IQ codec with no codebook, so the nibble/sign
-     tables are hand-verifiable against ggml-quants.c and cross-checkable
-     against the pinned gguf.quants port; wire the port (labelled, not ours)
-     for the remaining IQ dequant types in gguf-tensor-diff so real IQ
-     checkpoints stop being codec_unsupported; needs a small real IQ GGUF
-     download for end-to-end proof. run-doctor already covers the audit gap
-     for half-written artifacts.
+11b. LANDED (this landing): IQ4_XS decode ported from the vendored
+     ggml-quants.c dequantize_row_iq4_xs and bit-exact vs the pinned
+     gguf.quants port on 163,840 random blocks plus 5 edge blocks (zero,
+     all-0xFF, d extremes, max-d); gguf-tensor-diff now falls back to the
+     pinned gguf port for IQ codebook types it cannot decode itself, with
+     per-row `decoder: pinned gguf.quants port (not ours)` labels and a
+     port_decoded summary count; dtypes neither can read (I8) get an
+     explanatory refusal; non-finite rel_rms from garbage scales reports
+     rel_rms=None with a note instead of crashing JSON emit (JSON was
+     refusing inf). Proven on a 3-tensor IQ GGUF fixture: IQ4_XS flip →
+     rel_rms 0.00152 ours; IQ2_XS flip → rel_rms 0.007319 labelled port;
+     I8 flip → codec_unsupported with note; quants-audit lists IQ4_XS as
+     decode-only. Still open: one small real downloaded IQ checkpoint for
+     an end-to-end non-synthetic proof.
 
 14. Two more curated import specs in the jailbreak-slices pattern: a code
     execution slice (runs through the existing ast-based executor) and a

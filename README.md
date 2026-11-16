@@ -78,7 +78,11 @@ byte-identical tensor, plus the relative RMS dequant error for the ones
 that differ (edited-file proof: 320/321 tensors bit-identical;
 Q4_K vs Q5_K on the same weights: 163 cross-dtype tensors compared
 by value, relative RMS 0.0796-0.0922;
-Q2_K/Q3_K tensors decode through the decode-only codec path);
+Q2_K/Q3_K and our own IQ4_XS decode through the decode-only codec
+path; remaining IQ codebook types decode through the pinned gguf.quants
+port and every such row is labelled `decoder: pinned gguf.quants port
+(not ours)` with a `port_decoded` count in the summary; dtypes neither
+decoder can read get an explanatory refusal instead of a bare null);
 `suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's
 first-occurrence semantics, without modifying anything. Configurations

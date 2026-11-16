@@ -433,7 +433,41 @@ def dequantize_q3_k(raw, n):
 # uniform edge fills. The reference quantizers (make_qkx3/make_qx_quants
 # search loops) are NOT ported yet, so gguf-edit keeps refusing Q2_K/Q3_K
 # requant; measurement-only for now.
+# IQ4_XS: 256 elements per 136 bytes. Layout (ggml-common.h block_iq4_xs):
+#   d (f16) | scales_h (u16) | scales_l[4] | qs[128]
+# per 32-element sub-block ib: ls = low nibble pair | 2 high bits from scales_h,
+# dl = d * (ls - 32); values from kvalues_iq4nl (int8, unscaled).
+# Ported from dequantize_row_iq4_xs (vendored ggml-quants.c:2759); cross-checked
+# byte-for-byte against the pinned gguf.quants port below.
+_KVALUES_IQ4NL = np.array([-127, -104, -83, -65, -49, -35, -22, -10,
+                           1, 13, 25, 38, 53, 69, 89, 113], dtype=np.float32)
+
+
+def dequantize_iq4_xs(raw, n):
+    nb = raw.size // 136
+    if nb * 136 != raw.size:
+        raise ValueError(f'iq4_xs input {raw.size} is not a whole number of 136-byte blocks')
+    blocks = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 136)
+    d = blocks[:, 0:2].view(np.float16).astype(np.float32).reshape(nb)
+    scales_h = blocks[:, 2:4].view(np.uint16).astype(np.uint32).reshape(nb)
+    scales_l = blocks[:, 4:8].astype(np.uint32)
+    qs = blocks[:, 8:].reshape(nb, 8, 16)
+    y = np.empty((nb, QK_K), dtype=np.float32)
+    for ib in range(8):
+        lo = (scales_l[:, ib // 2] >> (4 * (ib % 2))) & 0xF
+        hi = (scales_h >> (2 * ib)) & 3
+        dl = d * ((lo | (hi << 4)).astype(np.int32) - 32)
+        q = qs[:, ib, :]
+        y[:, 32 * ib:32 * ib + 16] = dl[:, None] * _KVALUES_IQ4NL[q & 0xF]
+        y[:, 32 * ib + 16:32 * ib + 32] = dl[:, None] * _KVALUES_IQ4NL[q >> 4]
+    out = y.reshape(-1)
+    if out.size < n:
+        raise ValueError(f'iq4_xs decoded {out.size} values, wanted {n}')
+    return out[:n]
+
+
 DECODE_ONLY = {
+    'IQ4_XS': (136, QK_K, dequantize_iq4_xs),
     'Q2_K': (84, QK_K, dequantize_q2_k),
     'Q3_K': (110, QK_K, dequantize_q3_k),
 }

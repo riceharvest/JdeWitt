@@ -1247,6 +1247,37 @@ def gguf_tensor_diff(a, b, limit=100):
     from .quants import DECODE_ONLY
     deq = {k: (bs, els, dec) for k, (bs, els, _q, dec) in CODECS.items()}
     deq.update(DECODE_ONLY)
+
+    port_cache = {}
+
+    def pinned_port(t_enum, dtype_name):
+        """Decode-only entry backed by the pinned gguf.quants port.
+
+        Used ONLY for dtypes this package has not ported itself (the IQ
+        codebook types). Rows decoded this way are labelled per row, and the
+        dtype counts into port_decoded, so no reader mistakes a borrowed
+        decoder for ours.
+        """
+        if dtype_name in port_cache:
+            return port_cache[dtype_name]
+        entry = None
+        try:
+            from gguf import quants as gq_port
+            from gguf.constants import GGML_QUANT_SIZES
+            els, bs = GGML_QUANT_SIZES[t_enum]
+
+            def dec(raw, n, t_enum=t_enum, bs=bs):
+                blocks = np.frombuffer(raw, dtype=np.uint8).reshape(-1, bs)
+                return np.asarray(gq_port.dequantize(blocks, t_enum),
+                                  dtype=np.float32).reshape(-1)
+
+            if int(gq_port.dequantize(np.zeros(bs, dtype=np.uint8).reshape(1, bs),
+                                      t_enum).size) == els:
+                entry = (bs, els, dec)
+        except Exception:
+            entry = None
+        port_cache[dtype_name] = entry
+        return entry
     a, b = Path(a), Path(b)
     for p in (a, b):
         if not p.is_file():
@@ -1257,7 +1288,8 @@ def gguf_tensor_diff(a, b, limit=100):
     tensors_b = {t.name: t for t in reader_b.tensors}
     shared = sorted(set(tensors_a) & set(tensors_b))
     states = {'shared': len(shared), 'bit_identical': 0, 'value_differs': 0,
-              'shape_changed': 0, 'codec_unsupported': 0, 'packed_size_changed': 0}
+              'shape_changed': 0, 'codec_unsupported': 0, 'packed_size_changed': 0,
+              'port_decoded': 0}
     rel = []
     differing = []
     chunk = 1 << 24
@@ -1290,13 +1322,26 @@ def gguf_tensor_diff(a, b, limit=100):
                     if identical:
                         states['bit_identical'] += 1
                         continue
-                if dtype_a not in deq or dtype_b not in deq:
+                decoder = 'ours'
+                da = deq.get(dtype_a)
+                db = deq.get(dtype_b)
+                if da is None:
+                    da = pinned_port(ta.tensor_type, dtype_a)
+                if db is None:
+                    db = pinned_port(tb.tensor_type, dtype_b)
+                if da is None or db is None:
                     states['codec_unsupported'] += 1
                     differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
-                                      'rel_rms': None, 'note': 'no decoder wired for this dtype'})
+                                      'rel_rms': None,
+                                      'note': 'neither our codec nor the pinned gguf.quants port '
+                                              'can decode one of these dtypes'})
                     continue
-                bs_a, els_a, deq_a = deq[dtype_a]
-                bs_b, els_b, deq_b = deq[dtype_b]
+                port_used = (da is not deq.get(dtype_a)) or (db is not deq.get(dtype_b))
+                if port_used:
+                    decoder = 'pinned gguf.quants port (not ours)'
+                    states['port_decoded'] += 1
+                bs_a, els_a, deq_a = da
+                bs_b, els_b, deq_b = db
                 nb_a, nb_b = size_a // bs_a, size_b // bs_b
                 if els_a != els_b or nb_a != nb_b or nb_a * bs_a != size_a or nb_b * bs_b != size_b:
                     states['codec_unsupported'] += 1
@@ -1322,14 +1367,20 @@ def gguf_tensor_diff(a, b, limit=100):
                     sum_sq += float((va * va).sum())
                     diff_sq += float((diff * diff).sum())
                 rel_rms = float(np.sqrt(diff_sq / sum_sq)) if sum_sq > 0 else float('inf')
-                rel.append(rel_rms)
+                row = {'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b}
+                if np.isfinite(rel_rms):
+                    rel.append(rel_rms)
+                    row['rel_rms'] = round(rel_rms, 6)
+                else:
+                    row['rel_rms'] = None
+                    row['note'] = 'relative RMS undefined: decoded data has no energy or has non-finite values'
                 states['value_differs'] += 1
-                row = {'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
-                       'rel_rms': round(rel_rms, 6)}
                 if dtype_a == dtype_b:
                     row['same_dtype'] = True
                 if size_changed:
                     row['packed_bytes'] = [size_a, size_b]
+                if decoder != 'ours':
+                    row['decoder'] = decoder
                 differing.append(row)
         finally:
             mm_a.close()
