@@ -13,6 +13,35 @@ class AgentParser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
+def command_manifest(parser):
+    """Self-description of the installed command surface, for driving agents."""
+    import argparse as _argparse
+    from .errors import EXPLAINER
+    from .schemas import EMIT_SCHEMAS
+    commands = []
+    for action in parser._actions:
+        if not isinstance(action, _argparse._SubParsersAction):
+            continue
+        for subaction in action._get_subactions():
+            child = action.choices[subaction.dest]
+            arguments = []
+            for argument in child._actions:
+                if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
+                    continue
+                choices = getattr(argument, 'choices', None)
+                arguments.append({'flags': list(argument.option_strings or [argument.dest]),
+                                  'dest': argument.dest, 'required': bool(argument.required),
+                                  'choices': [str(choice) for choice in choices] if choices else None})
+            commands.append({'command': subaction.dest, 'help': subaction.help or child.description,
+                             'arguments': arguments, 'schema_enforced': subaction.dest in EMIT_SCHEMAS})
+    commands.sort(key=lambda item: item['command'])
+    return {'scope': 'Self-description of the installed CLI; anything marked schema_enforced fails its own command if the writer drifts.',
+            'commands': commands,
+            'exit_codes': {'success': 0, 'stable_failure': 1, 'argument_error': 2},
+            'error_codes': [dict(row, code=code) for code, row in sorted(EXPLAINER.items())],
+            'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
+
+
 def main():
     parser=AgentParser(description='B70-only ablation with real answer and quantized release gates')
     from . import __version__
@@ -26,6 +55,11 @@ def main():
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
     hub.add_argument('--per-author',type=int,default=40,help='Cap newest text-generation repositories scanned per publisher')
+    sub.add_parser('commands',help='Self-description of the command surface, flags, exit codes and error-code reference; no model loads')
+    explain=sub.add_parser('explain-error',help='What one stable CLI error code means and what to do about it; no model loads')
+    explain.add_argument('code')
+    runls=sub.add_parser('run-ls',help='Artifact contract inventory of a run output directory; no model loads')
+    runls.add_argument('output',type=Path)
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
     validate.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
@@ -339,6 +373,14 @@ def main():
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author)
+        elif args.command=='commands':
+            result=command_manifest(parser)
+        elif args.command=='explain-error':
+            from .errors import explain_error
+            result=explain_error(args.code)
+        elif args.command=='run-ls':
+            from .agent import run_ls
+            result=run_ls(args.output)
         elif args.command in {'generate','score','status'}:
             from .job_cli import generate_job, score_job, status_job
             result={'generate':generate_job,'score':score_job,'status':status_job}[args.command](args)

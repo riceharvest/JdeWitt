@@ -754,3 +754,55 @@ def family_decay(fitted, held, pass_on='compliance'):
     result['note'] = ('Family membership is authored suite metadata. Decay is pass-rate difference on '
                       'families the fitted run never saw; judge noise is not subtracted.')
     return result
+
+
+RUN_ARTIFACTS = {
+    'provenance.json': 'model/suite/revision digests binding everything the run produced',
+    'direction-stability.json': 'fit audit including warm-start transfer records',
+    'prompt-budgets.json': 'generation token budget accounting',
+    'judge-calibration.json': 'judge agreement/accuracy checks recorded during the run',
+    'judge-rubrics.json': 'rubric cache used for grounded judging',
+    'warm-starts.json': 'hyperparameter warm-start records (not the plan registry)',
+    'quantized-ranking.json': 'finalist ranking under exported quants',
+    'events.jsonl': 'append-only lifecycle event log (read with run-events)',
+    'study.db': 'optuna storage (read with study-metrics and run-status)',
+    'directions.pt': 'fit checkpoint (payload name and sha in directions.checkpoint.json)',
+    'directions.checkpoint.json': 'integrity pointer for the fit payload',
+    'harmless-trajectories.pt': 'reference-answer checkpoint pointer',
+    'screen-baselines.pt': 'screening baseline checkpoint pointer',
+    'baseline-hf': 'unmodified-baseline answers directory',
+    'baseline-quants': 'baseline answer generation artifacts per quant',
+    'judge-checks': 'per-stage judge check outputs directory',
+    'release': 'release directory (files.json, evidence.json, signature.json when signed)',
+    'CANCEL': 'run-cancel flag; its presence explains a stopped scheduler',
+}
+
+
+def run_ls(output):
+    """Artifact-contract inventory of a run output directory. File reads only."""
+    from .storage import file_digest
+    root = Path(output)
+    if not root.is_dir():
+        raise FileNotFoundError(output)
+    entries = []
+    for name, role in sorted(RUN_ARTIFACTS.items()):
+        path = root / name
+        if not path.exists():
+            entries.append({'name': name, 'present': False, 'role': role})
+            continue
+        if path.is_dir():
+            entries.append({'name': name, 'present': True, 'kind': 'dir', 'role': role,
+                            'children': sorted(child.name for child in path.iterdir())})
+            continue
+        size = path.stat().st_size
+        row = {'name': name, 'present': True, 'kind': 'file', 'size_bytes': size, 'role': role}
+        if size <= 256 * 1024 * 1024:
+            row['sha256'] = file_digest(path)
+        else:
+            row['sha256'] = None
+            row['digest_note'] = 'not hashed: over 256 MiB'
+        entries.append(row)
+    unexpected = [entry.name for entry in root.iterdir() if entry.name not in RUN_ARTIFACTS]
+    return {'output': str(root.resolve()), 'entries': entries, 'unexpected_entries': sorted(unexpected),
+            'note': 'The contract lists artifacts the pipeline may write; absence is stage-dependent. '
+                    'Anything outside it is reported by name, never hidden — UUID payloads included.'}

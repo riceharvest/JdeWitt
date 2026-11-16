@@ -61,7 +61,13 @@ scheduler stop before its next trial request without signalling any live
 process. `describe-run CONFIG` reports the suite, family and budget shape of
 an experiment that `validate-run` would accept, as cost-planning counts
 rather than measurements; `suite-diff BEFORE AFTER` compares two suite files
-by id, prompt content and family assignment. `gguf-inspect FILE [OTHER]`
+by id, prompt content and family assignment. `commands` prints the entire
+command surface (flags, required-ness, schema enforcement, exit and error
+code tables) as machine-readable JSON so a driving agent never greps source
+or guesses flags; `explain-error CODE` prints one row of the error-code
+reference including the recommended agent action; `run-ls OUTPUT` inventories
+a run directory against its artifact contract, hashing small files and
+reporting anything unexpected by name. `gguf-inspect FILE [OTHER]`
 reads GGUF metadata and the tensor inventory from the header and, with a
 second file, diffs quant tensor dtypes; `suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's

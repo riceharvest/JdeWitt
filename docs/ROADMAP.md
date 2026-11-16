@@ -50,6 +50,11 @@ how breadth happens later.
   `run-cancel` writing a durable cancel flag honoured at trial boundaries.
 - `--version` and `about`: tool hash, NOTICE-pinned upstreams, dependency
   versions, asset digests (the provenance auto.py already assembles).
+- Agent ergonomics: `commands` self-describes the whole CLI (flags, exit
+  codes, error-code table, schema enforcement), `explain-error CODE`
+  explains one stable code and the right response, and `run-ls OUTPUT`
+  inventories a run directory against the artifact contract without
+  hiding anything the pipeline did not name.
 - `suite-diff`, `suite-stats`, corpus-cache `gc/prune`.
 - transport: cap generate_batch fanout (unbounded today), bounded retry
   with backoff for idempotent count/models calls only.

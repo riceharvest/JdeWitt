@@ -165,6 +165,12 @@ SCHEMAS = {
                        'model_types_seen': {'type': 'object'}, 'adapter_worklist': {'type': 'array'},
                        'supported_model_types': {'type': 'array'}, 'unresolved_gaps': {'type': 'array'},
                        'author_errors': {'type': 'array'}}},
+    'run-ls.command.json': {
+        'description': 'run-ls output contract.',
+        'type': 'object',
+        'required': ['output', 'entries', 'unexpected_entries', 'note'],
+        'properties': {'output': {'type': 'string'}, 'entries': {'type': 'array'},
+                       'unexpected_entries': {'type': 'array'}, 'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -185,6 +191,7 @@ EMIT_SCHEMAS = {
     'run-events': 'run-events.command.json',
     'plan-list': 'plan-list.command.json',
     'hub-census': 'hub-census.command.json',
+    'run-ls': 'run-ls.command.json',
 }
 
 
