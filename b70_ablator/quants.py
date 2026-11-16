@@ -366,3 +366,74 @@ CODECS = {
 
 def row_padded(n_elements, elements_per_block):
     return -(-n_elements // elements_per_block) * elements_per_block
+
+
+# Q2_K: 84 bytes per 256 elements — x = d*(sc&0xF)*q - dmin*(sc>>4), 16 subblocks of 16.
+# Subblock s gathers qs[32*(s//8) + 16*(s%2) + l] >> 2*((s//2)%4), i.e. the two nibble
+# halves interleave low/high 2-bit planes across the 64-byte qs field.
+_Q2K_IDX = np.fromfunction(lambda s, e: 32 * (s // 8) + 16 * (s % 2) + e, (16, 16), dtype=int)
+_Q2K_SHIFT = (2 * ((np.arange(16) // 2) % 4)).reshape(16, 1)
+# Q3_K gathers qs exactly like Q2_K; the high bit lives in hmask[16*(s//8)+l] at
+# bit position s//2 (m doubles across both halves).
+_Q3K_IDX = _Q2K_IDX
+_Q3K_SHIFT = _Q2K_SHIFT
+_Q3K_HM_IDX = np.fromfunction(lambda s, e: 16 * (s % 2) + e, (16, 16), dtype=int)
+_Q3K_MASK_BIT = (np.arange(16) // 2).reshape(16, 1)
+
+
+def dequantize_q2_k(raw, n):
+    """Exact port of ggml dequantize_row_q2_K."""
+    nb = n // QK_K
+    b = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 84)
+    sc = b[:, 0:16].astype(np.int32)
+    qs = b[:, 16:80].astype(np.int32)
+    dm = np.frombuffer(np.ascontiguousarray(b[:, 80:84].reshape(-1, 4).tobytes()),
+                       dtype=np.float16).reshape(nb, 2)
+    d = dm[:, 0:1].astype(np.float32)
+    dmin = dm[:, 1:2].astype(np.float32)
+    q = qs[:, _Q2K_IDX] >> _Q2K_SHIFT & 3
+    dl = d * (sc & 0xF)
+    ml = dmin * (sc >> 4)
+    return (dl[:, :, None] * q - ml[:, :, None]).reshape(nb * QK_K)
+
+
+def dequantize_q3_k(raw, n):
+    """Exact port of ggml dequantize_row_q3_K (S/M/L share this block layout)."""
+    nb = n // QK_K
+    b = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 110)
+    hm = b[:, 0:32].astype(np.int32)
+    qs = b[:, 32:96].astype(np.int32)
+    # C reads a 16-byte window (12 scale bytes + 4 pad) as 4 uint32 words; the
+    # high two bits of all sixteen 6-bit scales come from word 2 only, so the
+    # four pad bytes never influence the output values.
+    window = np.concatenate([b[:, 96:108], np.zeros((nb, 4), np.uint8)], axis=1)
+    aux = np.frombuffer(np.ascontiguousarray(window.tobytes()),
+                        dtype=np.uint32).reshape(nb, 4)
+    # C: aux[0..3] hold 16 int8 six-bit scales; the low four bits come from the
+    # nibbles of words 0,0,1 and the high two bits from bits 0/2/4/6 of word 2.
+    tmp = aux[:, 2:3]
+    kmask1, kmask2 = np.uint32(0x03030303), np.uint32(0x0F0F0F0F)
+    new0 = (aux[:, 0:1] & kmask2) | ((tmp & kmask1) << 4)
+    new1 = (aux[:, 1:2] & kmask2) | (((tmp >> 2) & kmask1) << 4)
+    new2 = ((aux[:, 0:1] >> 4) & kmask2) | (((tmp >> 4) & kmask1) << 4)
+    new3 = ((aux[:, 1:2] >> 4) & kmask2) | (((tmp >> 6) & kmask1) << 4)
+    aux_new = np.concatenate([new0, new1, new2, new3], axis=1).astype(np.uint32)
+    scales = aux_new.view(np.int8).reshape(nb, 16).astype(np.int32)
+    d = np.frombuffer(np.ascontiguousarray(b[:, 108:110].reshape(-1, 2).tobytes()),
+                      dtype=np.float16).reshape(nb, 1).astype(np.float32)
+    q = qs[:, _Q3K_IDX] >> _Q3K_SHIFT & 3
+    bit = (hm[:, _Q3K_HM_IDX] >> _Q3K_MASK_BIT) & 1
+    factor = q + 4 * bit - 4
+    dl = d * (scales - 32)
+    return (dl[:, :, None] * factor).reshape(nb * QK_K)
+
+
+# Read-only codecs: block_bytes, elements, dequantizer. Proven exact against
+# the independent gguf-package port on 770048 random elements per dtype plus
+# uniform edge fills. The reference quantizers (make_qkx3/make_qx_quants
+# search loops) are NOT ported yet, so gguf-edit keeps refusing Q2_K/Q3_K
+# requant; measurement-only for now.
+DECODE_ONLY = {
+    'Q2_K': (84, QK_K, dequantize_q2_k),
+    'Q3_K': (110, QK_K, dequantize_q3_k),
+}

@@ -50,13 +50,17 @@ written into the item and stays GATED.
    GGMLQuantizationType enum has no FP8 entries, so a GGUF-side codec
    could not be read or proven until the package moves.
 
-3. K-quant completion.
-   Q2_K and Q3_K (S/M/L subtypes), then the legacy 1-bit-fraction quants
-   Q4_1/Q5_0/Q5_1/Q8_1. Sub-4B territory lives on Q2_K/Q3_K and
-   `gguf-edit` currently refuses them. Port from the pinned GGML sources
-   already used for Q4_K/Q5_K/Q6_K; identity-prove on real blocks from
-   small GGUFs (compressed byte count + dequant equality like the Q6_K
-   audit), then a real zero-delta edit through `gguf-edit`.
+3. K-quant completion. — PARTLANDED: Q2_K/Q3_K dequant landed.
+   `dequantize_q2_k`/`dequantize_q3_k` in quants.py: numpy ports of
+   ggml_dequantize_row_q2k/q3k, 0/770,048 mismatches vs the independent
+   HF gguf.quants port on random blocks and uniform-byte edge fills
+   (incl. the dmin/d zero guards). Wired into gguf-tensor-diff as a
+   decode-only path (quants.DECODE_ONLY): self-diff of a written Q2_K
+   +Q3_K GGUF is bit-identical, a 1-byte flip in a Q3_K block is caught
+   (rel_rms 6.9e-05), and such files no longer crash the diff. Remaining:
+   the legacy 1-bit-fraction quants Q4_1/Q5_0/Q5_1/Q8_1, the Q2_K/Q3_K
+   quantizers (gguf-edit refuses them honestly until ported), then a
+   real zero-delta edit through gguf-edit.
 
 4. `verdict-audit SUITE DIR`.
    Compare every saved LLM-judge verdict against the deterministic

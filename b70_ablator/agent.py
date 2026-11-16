@@ -960,6 +960,9 @@ def gguf_tensor_diff(a, b, limit=100):
     from pathlib import Path
     from gguf import GGUFReader
     from .ggufio import CODECS
+    from .quants import DECODE_ONLY
+    deq = {k: (bs, els, dec) for k, (bs, els, _q, dec) in CODECS.items()}
+    deq.update(DECODE_ONLY)
     a, b = Path(a), Path(b)
     for p in (a, b):
         if not p.is_file():
@@ -1008,14 +1011,14 @@ def gguf_tensor_diff(a, b, limit=100):
                     differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
                                       'bytes_before': size_a, 'bytes_after': size_b, 'rel_rms': None})
                     continue
-                if dtype_a not in CODECS or dtype_b not in CODECS:
+                if dtype_a not in deq or dtype_b not in deq:
                     states['codec_unsupported'] += 1
                     differing.append({'name': name, 'dtype_before': dtype_a, 'dtype_after': dtype_b,
                                       'rel_rms': None})
                     continue
                 sum_sq = diff_sq = 0.0
-                bs_a, els_a, _, deq_a = CODECS[dtype_a]
-                bs_b, els_b, _, deq_b = CODECS[dtype_b]
+                bs_a, els_a, deq_a = deq[dtype_a]
+                bs_b, els_b, deq_b = deq[dtype_b]
                 n_a = size_a // bs_a * els_a
                 n_b = size_b // bs_b * els_b
                 if n_a != n_b:

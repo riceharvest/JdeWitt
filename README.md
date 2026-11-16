@@ -74,7 +74,8 @@ second file, diffs quant tensor dtypes and every metadata key by digest
 and `safetensors-diff A B` prove content, not just headers: every
 byte-identical tensor, plus the relative RMS dequant error for the ones
 that differ (edited-file proof: 320/321 tensors bit-identical;
-Q4_K vs Q5_K on the same weights: median relative RMS 0.070176);
+Q4_K vs Q5_K on the same weights: median relative RMS 0.070176;
+Q2_K/Q3_K tensors decode through the decode-only codec path);
 `suite-near-dup SUITE ...` reports
 reworded duplicate prompts across suite files with the importer's
 first-occurrence semantics, without modifying anything. Configurations
