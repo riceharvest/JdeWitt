@@ -17,7 +17,7 @@ agent ops (stable error codes, about/studies/study-metrics/run-cancel/
 run-events, describe-run, --set/--preset, abliterate one-command flow,
 events.jsonl, injectable clock), and offline evaluation (Wilson + bootstrap
 + paired permutation stats, score-compare, judge-ensemble, score-sensitivity,
-robustness-report, suite-stats/suite-diff/suite-near-dup, corpus-cache
+robustness-report, family-decay, suite-stats/suite-diff/suite-near-dup, corpus-cache
 report/prune). Still GATED (needs real B70 / real checkpoints, by design):
 method-winner claims, quant-edited model behaviour, judge calibration gains,
 throughput claims, per-family preset profiles (the preset mechanism ships;
@@ -124,8 +124,10 @@ Breadth of honest evidence is what "best tool" means in practice.
   HarmBench-style held-outs, code exec tasks via the existing ast-based
   executor, long-context math. Family-ID discipline unchanged: authored
   families, no invented groupings.
-- Adversarial robustness reporting: same release evaluated against
-  paraphrase families it was not fitted on; report decay, don't hide it.
+- Adversarial robustness reporting: `family-decay --fitted SUITE SCORES --held
+  SUITE SCORES` reports pass-rate decay on authored families the fitted run
+  never saw and warns loudly when families leak between the two suites;
+  report decay, don't hide it.
 - Judge calibration growth: multi-model disagreement logs on every run,
   back into the authored calibration ledger.
 - Claims ledger: every release directory carries a machine-readable

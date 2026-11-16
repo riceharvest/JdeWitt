@@ -593,3 +593,80 @@ def robustness_report(evaluations, pass_on='compliance'):
     reports.sort(key=lambda r: r['pass_rate'])
     return {'pass_on': pass_on, 'worst_suite': reports[0], 'suites': reports,
             'note': 'Aggregation of saved verdicts only; the attack suites themselves decide what this measures.'}
+
+
+def family_decay(fitted, held, pass_on='compliance'):
+    """Pass-rate decay of saved scores from fitted families to held-out families. Verdict files only, no models run.
+
+    ``fitted`` and ``held`` are each (suite_path, scores_directory). Families
+    come from authored suite metadata; a decay number is only as honest as
+    the family split, so leaking families are reported loudly, not merged.
+    """
+    from .data import load_suite
+    from .stats import wilson_interval
+
+    def side(label, suite_path, scores_directory):
+        rows = {row['id']: row for row in load_suite(Path(suite_path))}
+        predictions = Path(scores_directory) / 'predictions.jsonl'
+        if not predictions.is_file():
+            raise FileNotFoundError(predictions)
+        families: dict = {}
+        passed = total = 0
+        for line in predictions.read_text().splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            suite_row = rows.get(row['id'])
+            if suite_row is None:
+                raise ValueError(f'{label}: scored prompt {row["id"]} is not in {suite_path}')
+            if row.get('scoring_mode') == 'refusal-check':
+                ok = row.get('refusal_check', {}).get('result') == 'no_explicit_refusal'
+            else:
+                verdict = (row.get('judgment') or {}).get('verdict')
+                ok = verdict == 'compliance' if pass_on == 'compliance' else verdict in {'compliance', 'partial'}
+            family = suite_row.get('family_id') or row['id']
+            stats = families.setdefault(family, [0, 0])
+            stats[0] += int(ok)
+            stats[1] += 1
+            passed += int(ok)
+            total += 1
+        if not total:
+            raise ValueError(f'{label}: no scored prompts in {scores_directory}')
+        return families, passed, total
+
+    fitted_families, fitted_passed, fitted_total = side('fitted', *fitted)
+    held_families, held_passed, held_total = side('held', *held)
+    fitted_rate = fitted_passed / fitted_total
+    held_rate = held_passed / held_total
+
+    shared = sorted(set(fitted_families) & set(held_families))
+    novel = sorted(set(held_families) - set(fitted_families))
+
+    def family_row(family, stats):
+        p, t = stats
+        return {'family_id': family, 'passed': p, 'total': t, 'pass_rate': p / t}
+
+    held_rows = sorted((family_row(f, held_families[f]) for f in novel),
+                       key=lambda r: r['pass_rate'])
+    decayed = [dict(r, decay_vs_fitted=r['pass_rate'] - fitted_rate) for r in held_rows]
+    result = {
+        'pass_on': pass_on,
+        'fitted': {'suite': str(fitted[0]), 'passed': fitted_passed, 'total': fitted_total,
+                   'pass_rate': fitted_rate, 'families': len(fitted_families)},
+        'held': {'suite': str(held[0]), 'passed': held_passed, 'total': held_total,
+                 'pass_rate': held_rate, 'pass_rate_wilson': wilson_interval(held_passed, held_total),
+                 'families': len(held_families)},
+        'global_decay': held_rate - fitted_rate,
+        'novel_families': decayed,
+        'worst_novel_family': decayed[0] if decayed else None,
+        'best_novel_family': decayed[-1] if decayed else None,
+    }
+    if shared:
+        result['warning'] = (f'{len(shared)} families appear in both suites and were not held out; '
+                             'their decay numbers are meaningless as generalisation evidence')
+        result['shared_families'] = shared[:25]
+    if not novel:
+        result['warning'] = 'No family in the held suite is absent from the fitted suite; nothing here measures decay.'
+    result['note'] = ('Family membership is authored suite metadata. Decay is pass-rate difference on '
+                      'families the fitted run never saw; judge noise is not subtracted.')
+    return result

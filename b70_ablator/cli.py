@@ -76,6 +76,10 @@ def main():
     robust=sub.add_parser('robustness-report',help='Worst-case pass rate of saved scores across multiple suites (e.g. main + attacks)')
     robust.add_argument('--eval',action='append',nargs=3,required=True,metavar='LABEL SUITE SCORES_DIR')
     robust.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
+    fdecay=sub.add_parser('family-decay',help='Pass-rate decay from fitted families to held-out families over saved scores')
+    fdecay.add_argument('--fitted',nargs=2,required=True,metavar='SUITE SCORES_DIR')
+    fdecay.add_argument('--held',nargs=2,required=True,metavar='SUITE SCORES_DIR')
+    fdecay.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -260,6 +264,9 @@ def main():
         elif args.command=='robustness-report':
             from .agent import robustness_report
             result=robustness_report(args.eval,args.pass_on)
+        elif args.command=='family-decay':
+            from .agent import family_decay
+            result=family_decay(tuple(args.fitted),tuple(args.held),args.pass_on)
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

@@ -99,7 +99,9 @@ rolls up parameters/values from a study sqlite read-only. `suite-stats SUITE`
 describes one suite and `corpus-cache` reports (or, with `--prune-older-than
 N --execute`, deletes unpinned old revisions of) the dataset import cache.
 `robustness-report --eval LABEL SUITE SCORES_DIR` reports worst-case pass rate
-of saved scores across multiple suites. Generation and scoring jobs take
+of saved scores across multiple suites, and `family-decay --fitted SUITE
+SCORES --held SUITE SCORES` reports pass-rate decay on authored families the
+fitted run never saw (flagging any that leaked). Generation and scoring jobs take
 `--max-generated-tokens` / `--max-judge-requests` budgets, and every GPU job
 serializes on a cross-process B70 lock (`B70_ABLATOR_GPU_WAIT`,
 `B70_ABLATOR_GPU_LOCK`); artifact timestamps come from one injectable clock
