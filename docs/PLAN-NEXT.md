@@ -177,6 +177,15 @@ written into the item and stays GATED.
     (quantized absmax tensors) not implemented; nibble order asserted,
     real bnb checkpoint confirmation still open.
 
+11b. Next queue after this run's landings (106814f, 579c81c, 5188386, acdf5c8):
+     IQ4_XS decode — the one IQ codec with no codebook, so the nibble/sign
+     tables are hand-verifiable against ggml-quants.c and cross-checkable
+     against the pinned gguf.quants port; wire the port (labelled, not ours)
+     for the remaining IQ dequant types in gguf-tensor-diff so real IQ
+     checkpoints stop being codec_unsupported; needs a small real IQ GGUF
+     download for end-to-end proof. run-doctor already covers the audit gap
+     for half-written artifacts.
+
 14. Two more curated import specs in the jailbreak-slices pattern: a code
     execution slice (runs through the existing ast-based executor) and a
     long-context math slice. Authored families, revision-pinned, disjoint
