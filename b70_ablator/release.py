@@ -370,7 +370,7 @@ def add_claim(directory, claim, evidence, verified_by, release_identity=None):
     entry['digest'] = digest(entry)
     chain['entries'].append(entry)
     chain['ledger_digest'] = compute_evidence_digest(chain['entries'])
-    atomic_json(path := directory / 'evidence.json', chain)
+    atomic_json(directory / 'evidence.json', chain)
     return {'directory': str(directory.resolve()), 'entries': len(chain['entries']),
             'ledger_digest': chain['ledger_digest'], 'entry_digest': entry['digest']}
 
