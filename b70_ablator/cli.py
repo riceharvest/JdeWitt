@@ -91,6 +91,9 @@ def main():
     dexport.add_argument('key')
     dexport.add_argument('output',type=Path)
     dexport.add_argument('--dtype',choices=['bf16','f32'],default='bf16')
+    qaudit=sub.add_parser('quants-audit',help='Dequant/requant falsifier for the GGML codec ports over a real GGUF: byte identity + worst drift on bounded block samples; no model')
+    qaudit.add_argument('file',type=Path)
+    qaudit.add_argument('--blocks',type=int,default=4096,help='block samples per dtype')
     editm.add_argument('input',type=Path)
     editm.add_argument('output',type=Path)
     editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
@@ -379,6 +382,9 @@ def main():
         elif args.command=='direction-export':
             from .agent import direction_export
             result=direction_export(args.registry,args.key,args.output,args.dtype)
+        elif args.command=='quants-audit':
+            from .agent import quants_audit
+            result=quants_audit(args.file,args.blocks)
         elif args.command=='gguf-tensor-diff':
             from .agent import gguf_tensor_diff
             result=gguf_tensor_diff(args.before,args.after)

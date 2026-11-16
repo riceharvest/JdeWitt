@@ -130,10 +130,16 @@ written into the item and stays GATED.
    [0.125, 1.0, 1.0] Holm-adjust to [0.375, 1.0, 1.0]; emit schemas for
    both shapes, falsified.
 
-9. `quants-audit [GGUF]`: productize the codec proof — for each dtype in
-   a real file, dequant/requant the bounded block slice, report compressed
-   byte count, block count and max round-trip error. This is the standing
-   falsifier for every codec in this repo; run it after any quants.py change.
+9. `quants-audit GGUF [--blocks N]`. — LANDED.
+   Productized codec falsifier: for every tensor of an edit-capable dtype,
+   dequantize an evenly spaced bounded block sample from the real file and
+   requantize with the same port, reporting tensors, total/sampled blocks,
+   byte-identity rate, max absolute and max/std value drift. Decode-only
+   dtypes (Q2_K/Q3_K) are reported as not requant-auditable, unsupported
+   dtypes by count. Proven on the 672 MB Q4_K_M (F32 256/256, Q4_K 256/256
+   byte-identical; Q6_K 219/256 byte-identical, zero value change — scale
+   tie edges) and on the Q2_K/Q3_K fixture (decode-only listed, none
+   silently skipped). Run after any quants.py change. Emit schema falsified.
 
 10. `commands --completions bash|zsh`: generate shell completion from the
     same argparse tree `commands` already introspects. Agents and humans

@@ -1392,3 +1392,74 @@ def studies_compare(paths):
                 for name,values in sorted(params_roll.items())}
     return {'databases':databases,'param_stats':param_stats,
             'note':'Read-only rollup of persisted Optuna state. best_value_share is the fraction of feasible trials with that parameter value that hit the study best; it is a count, not a statistical test.'}
+
+
+def quants_audit(path, blocks_per_dtype=4096):
+    """Standing falsifier for the GGML codec ports: for every tensor of a
+    supported dtype in a real file, dequantize a bounded, evenly spaced block
+    sample and requantize it with the same codec. Byte identity is expected
+    except at rounding-tie edges, so any drift here means a codec broke.
+    Decode-only dtypes are reported honestly as un-auditable for requant.
+    """
+    import numpy as np
+    from gguf import GGUFReader
+    from .ggufio import CODECS
+    from .quants import DECODE_ONLY
+    reader = GGUFReader(str(path))
+    reports = {}
+    decode_only = {}
+    unsupported = {}
+    with open(path, 'rb') as f:
+        for tensor in reader.tensors:
+            dtype = tensor.tensor_type.name
+            n_bytes = int(tensor.n_bytes)
+            if dtype in DECODE_ONLY:
+                decode_only[dtype] = decode_only.get(dtype, {'tensors': 0, 'bytes': 0})
+                decode_only[dtype]['tensors'] += 1
+                decode_only[dtype]['bytes'] += n_bytes
+                continue
+            if dtype not in CODECS:
+                unsupported[dtype] = unsupported.get(dtype, 0) + 1
+                continue
+            block_bytes, block_elements, quantize, dequantize = CODECS[dtype]
+            nb = n_bytes // block_bytes
+            if nb * block_bytes != n_bytes:
+                raise ValueError(f'tensor {tensor.name}: {n_bytes} not a multiple of {block_bytes} for {dtype}')
+            rep = reports.setdefault(dtype, {'tensors': 0, 'blocks_total': 0, 'blocks_sampled': 0,
+                                             'bytes_per_block': block_bytes, 'elements_per_block': block_elements,
+                                             'byte_identical_blocks': 0, 'max_abs_change': 0.0,
+                                             'max_change_over_std': 0.0})
+            rep['tensors'] += 1
+            rep['blocks_total'] += nb
+            if rep['blocks_sampled'] >= blocks_per_dtype:
+                continue
+            remaining = blocks_per_dtype - rep['blocks_sampled']
+            stride = max(1, nb // remaining)
+            indices = list(range(0, nb, stride))[:remaining]
+            for index in indices:
+                offset = int(tensor.data_offset) + index * block_bytes
+                f.seek(offset)
+                raw = np.frombuffer(f.read(block_bytes), dtype=np.uint8)
+                values = dequantize(raw, block_elements)
+                requant = quantize(values)
+                if requant.size != block_bytes:
+                    raise ValueError(f'{tensor.name}: requant produced {requant.size} bytes, expected {block_bytes}')
+                back = dequantize(np.frombuffer(requant, dtype=np.uint8), block_elements)
+                identical = bool(np.array_equal(np.frombuffer(requant, np.uint8).reshape(-1),
+                                                raw.reshape(-1)))
+                rep['blocks_sampled'] += 1
+                rep['byte_identical_blocks'] += int(identical)
+                change = float(np.abs(back - values).max())
+                std = float(values.std())
+                rep['max_abs_change'] = max(rep['max_abs_change'], change)
+                if std > 0:
+                    rep['max_change_over_std'] = max(rep['max_change_over_std'], change / std)
+    def finish(rep):
+        rep['byte_identity_rate'] = rep['byte_identical_blocks'] / rep['blocks_sampled'] if rep['blocks_sampled'] else None
+        return rep
+    return {'file': str(path), 'dtypes_audited': sorted(reports),
+            'per_dtype': {dtype: finish(rep) for dtype, rep in sorted(reports.items())},
+            'decode_only_dtypes': {dtype: dict(rep, note='dequant verified elsewhere; no reference quantizer ported, requant not auditable')
+                                   for dtype, rep in sorted(decode_only.items())},
+            'unsupported_dtypes': dict(sorted(unsupported.items())),
+            'note': 'Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec; byte identity expected except at rounding-tie edges.'}

@@ -145,6 +145,14 @@ SCHEMAS = {
         'required': ['databases', 'param_stats', 'note'],
         'properties': {'databases': {'type': 'array'}, 'param_stats': {'type': 'object'},
                        'note': {'type': 'string'}}},
+    'quants-audit.command.json': {
+        'description': 'quants-audit output contract.',
+        'type': 'object',
+        'required': ['file', 'dtypes_audited', 'per_dtype', 'decode_only_dtypes',
+                     'unsupported_dtypes', 'note'],
+        'properties': {'file': {'type': 'string'}, 'dtypes_audited': {'type': 'array'},
+                       'per_dtype': {'type': 'object'}, 'decode_only_dtypes': {'type': 'object'},
+                       'unsupported_dtypes': {'type': 'object'}, 'note': {'type': 'string'}}},
     'verdict-audit.command.json': {
         'description': 'verdict-audit output contract.',
         'type': 'object',
@@ -279,6 +287,7 @@ EMIT_SCHEMAS = {
     'gguf-delta-pack': 'gguf-delta-pack.command.json',
     'suites-compare': 'suites-compare.command.json',
     'studies-compare': 'studies-compare.command.json',
+    'quants-audit': 'quants-audit.command.json',
     'suite-stats': 'suite-stats.command.json',
     'suite-diff': 'suite-diff.command.json',
     'study-metrics': 'study-metrics.command.json',
