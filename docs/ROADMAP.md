@@ -175,9 +175,15 @@ Breadth of honest evidence is what "best tool" means in practice.
 
 Not a phase, a rhythm: the July-October census model.
 
-- Quarterly Hub census -> adapter worklist. Current explicit gaps:
-  DeepSeek V4.1, Kimi K3 loaders, MiMo V2.6/Bolmo/Youtu wrappers,
-  custom Ling VL, draft-only Muse assistant, Qwen Drive planning models.
+- Quarterly Hub census -> adapter worklist: `hub-census` queries the live
+  Hub for new text-generation repositories from the tracked publishers,
+  labels them by config.json model_type against the adapter table, and
+  emits the worklist ordered by downloads (GGUF/MLX conversions counted
+  separately as derived artifacts). The 2026-11-16 run surfaced lfm3,
+  mimo_v2, dory, bolmo, ernie5_5_moe, llada2_moe, kimi_k3 and
+  nemotron_labs_sigma as adapter candidates. The human-curated gap list
+  (DeepSeek V4.1, custom Ling VL, draft-only Muse assistant, Qwen Drive
+  planning models) ships in the same JSON; nothing here claims support.
 - GGUF converter compatibility matrix per architecture: an export that
   llama.cpp cannot actually run is not a release. Smoke-load each
   exported quant on the B70 before the release entry says so. GATED.

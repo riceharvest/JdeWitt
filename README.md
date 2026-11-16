@@ -137,6 +137,11 @@ searcher decides on real checkpoints.
 with explicit unsupported entries. Adapter registration is not a live B70
 checkpoint or converter guarantee. It does not claim every new architecture
 or every refusal-removal technique is implemented.
+`b70-ablator hub-census` replaces the manual quarter update: it scans the
+live Hub for recent text-generation releases from the tracked publishers,
+matches their config.json model_type against the adapter table, and prints
+an adapter worklist ordered by downloads with GGUF/MLX conversions counted
+separately. It is a worklist generator, not a support claim.
 
 See [edit surface, layer profile and strength](docs/edit-surface.md) for the
 read/write projection operators, the measured per-layer profile and the strength

@@ -22,6 +22,10 @@ def main():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
+    hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
+    hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
+    hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
+    hub.add_argument('--per-author',type=int,default=40,help='Cap newest text-generation repositories scanned per publisher')
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
     validate.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
@@ -324,6 +328,9 @@ def main():
         elif args.command=='architectures':
             from .architectures import architecture_catalog
             result=architecture_catalog()
+        elif args.command=='hub-census':
+            from .hubcensus import hub_census
+            result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author)
         elif args.command in {'generate','score','status'}:
             from .job_cli import generate_job, score_job, status_job
             result={'generate':generate_job,'score':score_job,'status':status_job}[args.command](args)
