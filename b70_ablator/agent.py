@@ -301,9 +301,15 @@ def score_compare(suite,before,after,pass_on='compliance'):
         total=sum(1 for pid in rows if pid in ids)
         return {'passed':passed,'total':total,'pass_rate_wilson':wilson_interval(passed,total)} if total else \
             {'passed':0,'total':0,'pass_rate_wilson':None}
+    before_summary=summarize(a)
+    after_summary=summarize(b)
+    from .stats import cohens_h
+    effect=cohens_h(before_summary['passed'],before_summary['total'],
+                     after_summary['passed'],after_summary['total'])
     return {'suite':str(suite),'before':str(before),'after':str(after),'pass_on':pass_on,
             'shared_prompts':len(shared),
-            'before_summary':summarize(a),'after_summary':summarize(b),
+            'before_summary':before_summary,'after_summary':after_summary,
+            'effect_size_cohens_h':effect,
             'per_kind':{kind:{'before':f'{c["before"][0]}/{c["before"][1]}',
                               'after':f'{c["after"][0]}/{c["after"][1]}'} for kind,c in sorted(by_kind.items())},
             'unit_level':{'unit':'authored family_id, falling back to prompt id when absent',
@@ -313,6 +319,43 @@ def score_compare(suite,before,after,pass_on='compliance'):
             'flips':flips[:200],'flip_count':len(flips),'list_cap':200,
             'scoring_modes':sorted(modes),
             'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance.'}
+
+
+def suites_compare(families, pass_on='compliance'):
+    """Paired comparisons across several (suite, before, after) families with
+    Holm-Bonferroni adjusted sign-test p-values.
+
+    Surfacing every family's p-value together with the step-down adjustment
+    means a favorable suite cannot be reported without the family-wise cost
+    of having looked at all the others. Effect sizes use the same signed
+    Cohen's h convention as score_compare. No models run.
+    """
+    from .stats import holm_adjust
+    if not families or len(families) % 3:
+        raise ValueError('suites-compare expects SUITE BEFORE AFTER triples')
+    per_family = []
+    for index in range(0, len(families), 3):
+        suite, before, after = families[index:index + 3]
+        result = score_compare(suite, before, after, pass_on)
+        per_family.append({
+            'suite': str(suite), 'before': str(before), 'after': str(after),
+            'shared_prompts': result['shared_prompts'],
+            'before_pass_rate': result['before_summary']['pass_rate_wilson']['point']
+                if result['before_summary']['pass_rate_wilson'] else None,
+            'after_pass_rate': result['after_summary']['pass_rate_wilson']['point']
+                if result['after_summary']['pass_rate_wilson'] else None,
+            'effect_size_cohens_h': result['effect_size_cohens_h'],
+            'informative_units': result['unit_level']['improved'] + result['unit_level']['regressed'],
+            'sign_test_p_two_sided': result['unit_level']['sign_test']['p_two_sided'],
+        })
+    raw_p = [f['sign_test_p_two_sided'] for f in per_family]
+    adjusted = holm_adjust(raw_p)
+    for family, adjusted_p in zip(per_family, adjusted):
+        family['sign_test_p_holm_adjusted'] = adjusted_p
+    return {'families': per_family, 'tests_in_family': len(per_family),
+            'holm_min_adjusted_p': min(adjusted) if adjusted else None,
+            'note': 'Sign-test p-values per family with Holm-Bonferroni step-down adjustment; '
+                    'report the adjusted values, the raw minimum alone is a cherry-pick.'}
 
 
 def calibration_report(suite, directories, min_agreement=0.5, ledger=None):

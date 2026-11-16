@@ -120,10 +120,15 @@ written into the item and stays GATED.
    5 feasible; empty study reports honest zeros); emit schema falsified.
    Honest limitation stamped in the note: shares are counts, not a test.
 
-8. score-compare hardening: effect size (Cohen's h) alongside the Wilson
-   intervals, and Holm–Bonferroni adjustment across suites so the
-   "family sign test p=0.0117" class of results cannot be cherry-picked
-   across ten suites.
+8. score-compare hardening. — LANDED.
+   score-compare now emits signed Cohen's h for the overall pass rates.
+   New `suites-compare SUITE BEFORE AFTER ...` (n triples) runs the paired
+   comparison per family and Holm-Bonferroni-adjusts the family sign-test
+   p-values across all of them, exposing the adjusted minimum so a lucky
+   suite cannot be reported without the family-wise cost of the look-all.
+   Proven against hand computation: 0/4 -> 4/4 gives h = pi; p-values
+   [0.125, 1.0, 1.0] Holm-adjust to [0.375, 1.0, 1.0]; emit schemas for
+   both shapes, falsified.
 
 9. `quants-audit [GGUF]`: productize the codec proof — for each dtype in
    a real file, dequant/requant the bounded block slice, report compressed

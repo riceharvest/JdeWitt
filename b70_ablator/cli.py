@@ -194,6 +194,9 @@ def main():
     compare.add_argument('before',type=Path)
     compare.add_argument('after',type=Path)
     compare.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
+    scmp2=sub.add_parser('suites-compare',help='Several score-compare families with Holm-adjusted sign-test p-values so a lucky suite cannot hide the family-wise cost; no models')
+    scmp2.add_argument('families',type=Path,nargs='+',metavar='SUITE BEFORE AFTER ...')
+    scmp2.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     ensemble=sub.add_parser('judge-ensemble',help='Majority aggregation of independently saved judge verdict files over one suite; no models')
     ensemble.add_argument('suite',type=Path)
     ensemble.add_argument('directory',type=Path,nargs='+')
@@ -356,6 +359,9 @@ def main():
         elif args.command=='score-compare':
             from .agent import score_compare
             result=score_compare(args.suite,args.before,args.after,args.pass_on)
+        elif args.command=='suites-compare':
+            from .agent import suites_compare
+            result=suites_compare(args.families,args.pass_on)
         elif args.command=='gguf-inspect':
             from .agent import gguf_inspect
             result=gguf_inspect(args.file,args.other)

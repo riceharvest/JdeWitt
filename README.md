@@ -93,7 +93,11 @@ saved judge verdicts: agreement with Wilson bounds, dangerous disagreements
 (judge compliance vs explicit refusal wording) with evidence. All of these
 read persisted artifacts only.
 `score-compare` now also reports a deterministic family-level bootstrap of
-both pass rates and a paired sign-flip permutation test on per-prompt flips.
+both pass rates, a paired sign-flip permutation test on per-prompt flips and
+a signed Cohen's h for the overall rates; `suites-compare SUITE BEFORE
+AFTER ...` runs that comparison over several families and Holm-adjusts the
+sign-test p-values across all of them, so a lucky suite cannot be reported
+without the family-wise cost of looking at all the others.
 
 Quant-native editing: `gguf-edit INPUT OUTPUT --tensor NAME=DELTA.NPY`
 (repeatable) rewrites only the edited tensors in a new file, staying in the

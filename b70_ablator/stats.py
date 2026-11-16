@@ -91,3 +91,34 @@ def paired_permutation_test(differences, seed=0, resamples=None, confidence=0.95
         method = f'seeded sign-flip permutation ({resamples} resamples)'
     return {'units': n, 'observed_mean_difference': observed, 'p_two_sided': min(1.0, p),
             'confidence': confidence, 'method': method}
+
+
+def cohens_h(successes_a, total_a, successes_b, total_b):
+    """Cohen's h for two proportions: signed 2*asin(sqrt(p)) difference.
+
+    Positive h means the second proportion is larger. Undefined (None) only
+    when a denominator is zero; a zero-rate side uses the asin(0)=0 endpoint,
+    which is the standard convention.
+    """
+    if total_a <= 0 or total_b <= 0:
+        raise ValueError('cohens_h needs at least one trial per side')
+    pa = successes_a / total_a
+    pb = successes_b / total_b
+    return 2 * math.asin(math.sqrt(pb)) - 2 * math.asin(math.sqrt(pa))
+
+
+def holm_adjust(p_values):
+    """Holm-Bonferroni step-down adjustment of a list of p-values.
+
+    Returns adjusted p-values in the original order, each clipped to 1.0.
+    A family of k tests is thus kept at family-wise alpha under the (valid
+    but conservative) Holm procedure.
+    """
+    n = len(p_values)
+    order = sorted(range(n), key=lambda i: p_values[i])
+    adjusted = [1.0] * n
+    running = 0.0
+    for rank, i in enumerate(order):
+        running = max(running, (n - rank) * p_values[i])
+        adjusted[i] = min(1.0, running)
+    return adjusted
