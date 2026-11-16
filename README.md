@@ -106,7 +106,14 @@ file, loads clean in GGUFReader after grow and shrink.
 --format {mxfp4,nvfp4} --weights NAME --delta DELTA.NPY --scales NAME
 [--global-scale|--global-scale-tensor NAME]` does the same contract for
 MXFP4/NVFP4 safetensors checkpoints (E2M1 digits, E8M0/E4M3 block scales,
-RNE ties-to-even); zero-delta edits preserve dequantized values exactly.
+ties-to-even rounding, zero-delta edits preserve dequantized values exactly
+though block re-encoding may move bytes); `fp8-edit INPUT OUTPUT --format {e4m3,e5m2}
+--weights NAME --delta DELTA.NPY --scales NAME [--scale-mode
+{tensor,block}] [--axis {row,col}]` edits FP8 weights with per-tensor or
+DeepSeek-style 128-element block scales — its E4M3/E5M2 encoders match
+torch's own fp8 conversion on 50k random values each, zero-delta edits
+come out byte-identical, and requantized codes and scales match the
+hand-computed expected bytes.
 `release-keygen KEY`,
 `release-sign DIR --secret KEY` and `release-verify-signature DIR [--public KEY]`
 sign and verify an Ed25519 signature over a machine-readable reproduction

@@ -41,6 +41,14 @@ written into the item and stays GATED.
    verbatim, note what is value-preserving vs byte-preserving honestly.
    Verify: round-trip error vs torch.float8_e4m3fn on real checkpoint
    blocks, then a whole-file zero-delta edit with the byte-diff audit.
+   Landed: `fp8-edit` with emit schema. E4M3/E5M2 encoders match torch's
+   own fp8 conversion on 50000 random values each (0 mismatches, both
+   formats); 256x256 row-block and 64x128 per-tensor fixtures edited
+   through the CLI — zero-delta outputs are byte-identical, delta-edit
+   codes and scale_inv bytes match the hand-computed expected requant.
+   GGML F8_E4M3/E5M2 tensors stay blocked: the pinned gguf package's
+   GGMLQuantizationType enum has no FP8 entries, so a GGUF-side codec
+   could not be read or proven until the package moves.
 
 3. K-quant completion.
    Q2_K and Q3_K (S/M/L subtypes), then the legacy 1-bit-fraction quants

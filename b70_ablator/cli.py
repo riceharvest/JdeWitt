@@ -92,6 +92,15 @@ def main():
     sdiff=sub.add_parser('safetensors-diff',help='Compare two safetensors checkpoints tensor-by-tensor: byte identity plus relative RMS, no model')
     sdiff.add_argument('before',type=Path)
     sdiff.add_argument('after',type=Path)
+    edit8=sub.add_parser('fp8-edit',help='Edit FP8 (E4M3/E5M2) safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
+    edit8.add_argument('input',type=Path)
+    edit8.add_argument('output',type=Path)
+    edit8.add_argument('--format',choices=('e4m3','e5m2'),required=True)
+    edit8.add_argument('--weights',required=True)
+    edit8.add_argument('--delta',type=Path,required=True,help='float32 npy delta matching the tensor shape')
+    edit8.add_argument('--scales',required=True,help='F32 scale tensor name')
+    edit8.add_argument('--scale-mode',choices=('tensor','block'),default='block')
+    edit8.add_argument('--axis',choices=('row','col'),default='row',help='block axis for block scales')
     fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     fp4.add_argument('input',type=Path)
     fp4.add_argument('output',type=Path)
@@ -333,6 +342,10 @@ def main():
         elif args.command=='safetensors-diff':
             from .agent import safetensors_tensor_diff
             result=safetensors_tensor_diff(args.before,args.after)
+        elif args.command=='fp8-edit':
+            from .fp8 import safetensors_fp8_edit
+            result=safetensors_fp8_edit(args.input,args.output,getattr(args,'format'),args.weights,args.delta,
+                                        args.scales,args.scale_mode,args.axis)
         elif args.command=='fp4-edit':
             from .fp4 import safetensors_fp4_edit
             if args.output.exists():

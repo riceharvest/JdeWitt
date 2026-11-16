@@ -206,6 +206,16 @@ SCHEMAS = {
                        'summary': {'type': 'object'},
                        'rel_rms': {'type': 'object'},
                        'differing_tensors': {'type': 'array'}, 'note': {'type': 'string'}}},
+    'fp8-edit.command.json': {
+        'description': 'fp8-edit output contract.',
+        'type': 'object',
+        'required': ['input', 'output', 'format', 'tensor', 'scales', 'elements',
+                     'scale_mode', 'axis', 'block', 'note'],
+        'properties': {'input': {'type': 'string'}, 'output': {'type': 'string'},
+                       'format': {'type': 'string'}, 'tensor': {'type': 'string'},
+                       'scales': {'type': 'string'}, 'elements': {'type': 'integer'},
+                       'scale_mode': {'type': 'string'},
+                       'axis': {}, 'block': {}, 'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -230,6 +240,7 @@ EMIT_SCHEMAS = {
     'release-diff': 'release-diff.command.json',
     'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
     'safetensors-diff': 'safetensors-diff.command.json',
+    'fp8-edit': 'fp8-edit.command.json',
 }
 
 

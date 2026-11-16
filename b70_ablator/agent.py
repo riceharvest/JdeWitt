@@ -837,27 +837,6 @@ def run_ls(output):
                     'Anything outside it is reported by name, never hidden — UUID payloads included.'}
 
 
-def _e5m2_decode_table():
-    """E5M2 -> float32 table (safetensors F8_E5M2 storage), built once."""
-    import numpy as np
-    table = np.zeros(256, dtype=np.float32)
-    for code in range(256):
-        sign = -1.0 if code & 0x80 else 1.0
-        exp = (code >> 2) & 0x1F
-        man = code & 0x03
-        if exp == 0x1F:
-            value = float('nan') if man else float('inf')
-        elif exp == 0:
-            value = man * 2.0 ** -16
-        else:
-            value = (1.0 + man / 4.0) * 2.0 ** (exp - 15)
-        table[code] = sign * value
-    return table
-
-
-_E5M2 = None  # built lazily on first F8_E5M2 tensor
-
-
 _ST_FLOAT_DTYPES = {'F32': 'float32', 'F16': 'float16', 'F64': 'float64'}
 
 
@@ -969,9 +948,8 @@ def _st_tensor_values(np, dtype, raw):
         from .fp4 import _E4M3_DECODE
         return _E4M3_DECODE[raw]
     if dtype == 'F8_E5M2':
-        if _E5M2 is None:
-            _E5M2 = _e5m2_decode_table()
-        return _E5M2[raw]
+        from .fp8 import decode_e5m2
+        return decode_e5m2(raw)
     return None
 
 
