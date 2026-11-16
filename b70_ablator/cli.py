@@ -67,6 +67,11 @@ def main():
     runev=sub.add_parser('run-events',help='Tail the append-only lifecycle event log for a run directory')
     runev.add_argument('output',type=Path)
     runev.add_argument('--tail',type=int,default=50)
+    smetrics=sub.add_parser('study-metrics',help='Per-trial parameter/value rollup from a study sqlite, read-only')
+    smetrics.add_argument('run',type=Path)
+    robust=sub.add_parser('robustness-report',help='Worst-case pass rate of saved scores across multiple suites (e.g. main + attacks)')
+    robust.add_argument('--eval',action='append',nargs=3,required=True,metavar='LABEL SUITE SCORES_DIR')
+    robust.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -239,6 +244,12 @@ def main():
         elif args.command=='run-events':
             from .events import read_events
             result={'events':read_events(args.output/'events.jsonl',args.tail)}
+        elif args.command=='study-metrics':
+            from .agent import study_metrics
+            result=study_metrics(args.run)
+        elif args.command=='robustness-report':
+            from .agent import robustness_report
+            result=robustness_report(args.eval,args.pass_on)
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

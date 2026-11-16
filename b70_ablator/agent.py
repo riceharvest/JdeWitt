@@ -507,3 +507,89 @@ def suite_stats(path):
                              'p90': lengths[min(n - 1, int(0.9 * n))], 'max': lengths[-1]},
             'direction_labels': dict(direction_labels),
             'note': 'Structure statistics only; says nothing about difficulty or judgeability.'}
+
+
+def study_metrics(run):
+    """Per-trial parameter/value rollup read straight from a study's sqlite. Read-only."""
+    from optuna.trial import TrialState
+    db = Path(run) / 'study.db'
+    if not db.is_file():
+        raise FileNotFoundError(db)
+    states = {int(state): state.name for state in TrialState}
+    connection = sqlite3.connect(db.as_uri() + '?mode=ro', uri=True, timeout=1)
+    try:
+        connection.execute('PRAGMA query_only=ON')
+        trials = {}
+        for number, state, value, name, param_value, distribution in connection.execute(
+                "select t.number,t.state,tv.value,tp.param_name,tp.param_value,tp.distribution_json "
+                "from trials t "
+                "left join trial_values tv on tv.trial_id=t.trial_id and tv.objective=0 "
+                "left join trial_params tp on tp.trial_id=t.trial_id "
+                "order by t.number"):
+            trial = trials.setdefault(number, {'number': number, 'state': states.get(state, str(state)),
+                                               'value': value, 'params': {}})
+            if trial['value'] is None and value is not None:
+                trial['value'] = value
+            if name is not None:
+                trial['params'][name] = param_value
+                try:
+                    bounds = json.loads(distribution)
+                    if 'low' in bounds and 'high' in bounds:
+                        trial['params'][name] = {'value': param_value, 'low': bounds['low'], 'high': bounds['high']}
+                except (TypeError, ValueError):
+                    pass
+        feasible = [t for t in trials.values() if t['state'] == 'COMPLETE' and t['value'] is not None]
+        numeric = {}
+        for trial in feasible:
+            for key, v in trial['params'].items():
+                value = v['value'] if isinstance(v, dict) else v
+                if isinstance(value, (int, float)) and not isinstance(value, bool):
+                    numeric.setdefault(key, []).append(value)
+        ranges = {key: {'min': min(vals), 'max': max(vals),
+                        'mean': round(sum(vals) / len(vals), 6), 'n': len(vals)}
+                  for key, vals in sorted(numeric.items())}
+        best = min(feasible, key=lambda t: t['value']) if feasible else None
+    finally:
+        connection.close()
+    return {'study': str(db), 'trials': len(trials),
+            'state_counts': dict(Counter(t['state'] for t in trials.values())),
+            'best': best, 'complete_value_min': (min(t['value'] for t in feasible) if feasible else None),
+            'searched_ranges': ranges,
+            'note': 'Lower objective value is better in this tool\u2019s study direction.'}
+
+
+def robustness_report(evaluations, pass_on='compliance'):
+    """Worst-case pass rate of one saved model across several attack suites. Verdict files only, no models run.
+
+    ``evaluations`` is a list of (label, suite_path, scores_directory).
+    """
+    from .data import load_suite
+    from .stats import wilson_interval
+    if not evaluations:
+        raise ValueError('At least one --eval LABEL SUITE SCORES_DIR triple is required')
+    reports = []
+    for label, suite_path, scores_directory in evaluations:
+        load_suite(Path(suite_path))
+        predictions = Path(scores_directory) / 'predictions.jsonl'
+        if not predictions.is_file():
+            raise FileNotFoundError(predictions)
+        passed = total = 0
+        for line in predictions.read_text().splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if row.get('scoring_mode') == 'refusal-check':
+                ok = row.get('refusal_check', {}).get('result') == 'no_explicit_refusal'
+            else:
+                verdict = (row.get('judgment') or {}).get('verdict')
+                ok = verdict == 'compliance' if pass_on == 'compliance' else verdict in {'compliance', 'partial'}
+            passed += int(ok)
+            total += 1
+        if not total:
+            raise ValueError(f'{label}: no scored prompts in {scores_directory}')
+        reports.append({'label': label, 'suite': str(suite_path), 'passed': passed, 'total': total,
+                        'pass_rate': passed / total,
+                        'pass_rate_wilson': wilson_interval(passed, total)})
+    reports.sort(key=lambda r: r['pass_rate'])
+    return {'pass_on': pass_on, 'worst_suite': reports[0], 'suites': reports,
+            'note': 'Aggregation of saved verdicts only; the attack suites themselves decide what this measures.'}
