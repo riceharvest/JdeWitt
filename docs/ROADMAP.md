@@ -177,7 +177,10 @@ Breadth of honest evidence is what "best tool" means in practice.
   running multiple judges live in one run stays GATED.
 - Claims ledger: every release directory carries a machine-readable
   evidence summary (gates run, failures, holdout results, judge
-  calibration state). Consumers can diff claims between tools. This is
+  calibration state). Consumers can diff claims between tools: `release-diff A B`
+  reports file/claim/signature differences between two release directories by
+  digest only, and `verify-artifact --all DIR` schema-checks every published
+  artifact in a directory. This is
   the competitive differentiator nobody else will copy.
 
 ## Phase 5 — Architecture coverage (steady-state loop)

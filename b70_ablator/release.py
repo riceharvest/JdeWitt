@@ -425,6 +425,56 @@ def _openssl(*args, timeout=20, **kwargs):
         raise RuntimeError('openssl is required for release signing but was not found on PATH')
 
 
+def release_diff(a, b):
+    """File-set and claim-chain differences between two release directories. Read-only."""
+    a, b = Path(a), Path(b)
+
+    def side(directory):
+        record_file = directory / 'files.json'
+        if not record_file.is_file():
+            raise FileNotFoundError(str(record_file))
+        record = json.loads(record_file.read_text())
+        ledger = read_evidence(directory)
+        signature_file = directory / 'signature.json'
+        signature = None
+        if signature_file.is_file():
+            signature = json.loads(signature_file.read_text())
+        return {'record': record,
+                'files': record.get('files') or {},
+                'identity': record.get('release_identity'),
+                'entries': (ledger or {}).get('entries') or [],
+                'ledger_digest': (ledger or {}).get('ledger_digest'),
+                'signature': signature}
+    left, right = side(a), side(b)
+    only_a = sorted(set(left['files']) - set(right['files']))
+    only_b = sorted(set(right['files']) - set(left['files']))
+    changed = []
+    for name in sorted(set(left['files']) & set(right['files'])):
+        if left['files'][name].get('sha256') != right['files'][name].get('sha256'):
+            changed.append({'name': name, 'left_sha256': left['files'][name].get('sha256'),
+                            'right_sha256': right['files'][name].get('sha256')})
+    left_claims = {entry.get('digest'): entry for entry in left['entries']}
+    right_claims = {entry.get('digest'): entry for entry in right['entries']}
+    shared_claims = sorted(set(left_claims) & set(right_claims), key=lambda d: left_claims[d].get('seq', 0))
+    claims = {'identical': len(shared_claims),
+              'added_on_right': [{'seq': e.get('seq'), 'claim': e.get('claim')}
+                                 for d, e in sorted(right_claims.items(), key=lambda de: de[1].get('seq', 0)) if d not in left_claims],
+              'added_on_left': [{'seq': e.get('seq'), 'claim': e.get('claim')}
+                                for d, e in sorted(left_claims.items(), key=lambda de: de[1].get('seq', 0)) if d not in right_claims]}
+    left_key = (left['signature'] or {}).get('public_key_pem')
+    right_key = (right['signature'] or {}).get('public_key_pem')
+    return {'left': str(a.resolve()), 'right': str(b.resolve()),
+            'release_identities': {'left': left['identity'], 'right': right['identity'],
+                                   'same': left['identity'] == right['identity']},
+            'files': {'only_in_left': only_a, 'only_in_right': only_b, 'changed': changed,
+                      'identical': len(set(left['files']) & set(right['files'])) - len(changed)},
+            'claims': claims,
+            'ledger_digests': {'left': left['ledger_digest'], 'right': right['ledger_digest']},
+            'signatures': {'left': bool(left['signature']), 'right': bool(right['signature']),
+                           'same_public_key': left_key is not None and left_key == right_key},
+            'note': 'Byte-level digests compared from each release record; contents of changed files are never printed.'}
+
+
 def keygen(path):
     """Create a new Ed25519 release-signing key; never overwrites."""
     path = Path(path)

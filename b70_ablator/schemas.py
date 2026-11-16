@@ -171,6 +171,15 @@ SCHEMAS = {
         'required': ['output', 'entries', 'unexpected_entries', 'note'],
         'properties': {'output': {'type': 'string'}, 'entries': {'type': 'array'},
                        'unexpected_entries': {'type': 'array'}, 'note': {'type': 'string'}}},
+    'release-diff.command.json': {
+        'description': 'release-diff output contract.',
+        'type': 'object',
+        'required': ['left', 'right', 'release_identities', 'files', 'claims',
+                     'ledger_digests', 'signatures', 'note'],
+        'properties': {'left': {'type': 'string'}, 'right': {'type': 'string'},
+                       'release_identities': {'type': 'object'}, 'files': {'type': 'object'},
+                       'claims': {'type': 'object'}, 'ledger_digests': {'type': 'object'},
+                       'signatures': {'type': 'object'}, 'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -192,6 +201,7 @@ EMIT_SCHEMAS = {
     'plan-list': 'plan-list.command.json',
     'hub-census': 'hub-census.command.json',
     'run-ls': 'run-ls.command.json',
+    'release-diff': 'release-diff.command.json',
 }
 
 
@@ -257,3 +267,23 @@ def validate_artifact(path, name=None):
     problems = validate_against(document, SCHEMAS[name])
     return {'file': str(path.resolve()), 'schema': name, 'valid': not problems,
             'problems': problems, 'note': 'Shape and version only; digests and semantics are checked by release verify commands.'}
+
+
+def verify_all(directory):
+    """Check every published artifact found in a directory against its schema. Reads only."""
+    directory = Path(directory)
+    if not directory.is_dir():
+        raise FileNotFoundError(directory)
+    artifact_names = [name for name in SCHEMAS if not name.endswith('.command.json')]
+    checked, missing = [], []
+    for name in sorted(artifact_names):
+        path = directory / name
+        if not path.is_file():
+            missing.append(name)
+            continue
+        document = json.loads(path.read_text())
+        problems = validate_against(document, SCHEMAS[name])
+        checked.append({'file': str(path), 'schema': name, 'valid': not problems, 'problems': problems[:5]})
+    return {'directory': str(directory.resolve()), 'checked': checked, 'missing_schemas': missing,
+            'valid': all(row['valid'] for row in checked),
+            'note': 'Shape and version only; digests and semantics are checked by release verify commands.'}

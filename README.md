@@ -101,7 +101,10 @@ sign and verify an Ed25519 signature over a machine-readable reproduction
 index; `release-claims DIR` and `claim-add DIR --claim/--evidence/--verified-by`
 maintain a hash-chained evidence ledger where tampering is detected at read
 time. `schemas` lists published JSON Schemas for on-disk artifacts and
-`verify-artifact FILE` checks one offline against its schema.
+`verify-artifact FILE` checks one offline against its schema; with `--all`
+it checks every known artifact inside a directory. `release-diff A B`
+compares two release directories by file digests, claim chains and
+signing keys without printing file contents.
 
 Agent driving: `b70-ablator abliterate MODEL --suites DIR --output DIR --policy
 {standard,strict} [--dry-run]` builds a validated auto-search configuration
