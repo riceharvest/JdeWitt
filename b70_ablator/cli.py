@@ -131,6 +131,8 @@ def main():
     explain.add_argument('code')
     runls=sub.add_parser('run-ls',help='Artifact contract inventory of a run output directory; no model loads')
     runls.add_argument('output',type=Path)
+    rundoctor=sub.add_parser('run-doctor',help='One-shot read-only diagnosis of a run directory: why it looks stuck, broken or idle, with actions')
+    rundoctor.add_argument('output',type=Path)
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
     validate.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
@@ -568,6 +570,9 @@ def main():
         elif args.command=='run-ls':
             from .agent import run_ls
             result=run_ls(args.output)
+        elif args.command=='run-doctor':
+            from .agent import run_doctor
+            result=run_doctor(args.output)
         elif args.command in {'generate','score','status'}:
             from .job_cli import generate_job, score_job, status_job
             result={'generate':generate_job,'score':score_job,'status':status_job}[args.command](args)

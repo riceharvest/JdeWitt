@@ -920,6 +920,104 @@ def run_ls(output):
             'note': 'The contract lists artifacts the pipeline may write; absence is stage-dependent. '
                     'Anything outside it is reported by name, never hidden — UUID payloads included.'}
 
+def run_doctor(output):
+    """Diagnose a run directory: what is wrong (or nothing), with actions.
+
+    Read-only aggregation. It never starts, resumes or repairs anything; it
+    answers 'why does this run look stuck/broken' in one machine-readable
+    answer so a driving agent does not have to chain run-status, run-ls and
+    run-events and interpret sqlite bytes itself.
+    """
+    from .storage import file_digest
+    root = Path(output).resolve()
+    if not root.is_dir():
+        raise FileNotFoundError(root)
+    problems = []
+
+    def problem(code, detail, action):
+        problems.append({'code': code, 'detail': detail, 'action': action})
+
+    def try_json(path, label, code):
+        try:
+            raw = path.read_text()
+            if not raw.strip():
+                raise ValueError('file is empty')
+            json.loads(raw)
+        except Exception as exc:
+            problem(code, f'{label} present but unusable: {exc}',
+                    f'Inspect or delete {path.name}; the pipeline rewrites it when the stage reruns.')
+
+    db = root / 'study.db'
+    if db.is_file() and db.stat().st_size >= 16:
+        magic = db.read_bytes()[:16]
+        if magic != b'SQLite format 3\x00':
+            problem('STUDY_DB_CORRUPT', f'{db.name} does not start with the SQLite magic header',
+                    'The study storage is damaged; this run cannot continue. Move it aside and rerun with the same --output to refit.')
+    trial_counts = None
+    if db.is_file():
+        try:
+            trial_counts = dict(Counter(t['state'] for t in _trial_rows(db)))
+        except Exception as exc:
+            if not problems:
+                problem('STUDY_DB_CORRUPT', f'{db.name} cannot be opened read-only: {exc}',
+                        'The study storage is damaged; move it aside and rerun with the same --output to refit.')
+    lock = _run_lock_held(root)
+    if trial_counts is not None:
+        running = trial_counts.get('RUNNING', 0)
+        if running and lock is not True:
+            problem('STALE_RUNNING_TRIALS',
+                    f'{running} trial(s) marked RUNNING but no worker holds the run lock',
+                    'A worker died mid-trial. Rerun the same command with the same --output: unfinished trials are resumable; no process is running now.')
+    events = root / 'events.jsonl'
+    if events.is_file() and events.stat().st_size > 0:
+        tail = events.read_bytes()[-65536:]
+        last = tail.split(b'\n')[-1]
+        if tail[-1:] != b'\n':
+            problem('EVENTS_TAIL_BROKEN', 'events.jsonl ends with an unparsed partial line',
+                    'The append-only log was cut mid-write (kill or disk full); earlier lines stay valid. Safe to truncate the partial line.')
+        elif last.strip():
+            try:
+                json.loads(last)
+            except Exception:
+                problem('EVENTS_TAIL_BROKEN', 'the final complete line of events.jsonl is not valid JSON',
+                        'Earlier lines stay valid; delete the last line to keep the log appendable.')
+    pointer = root / 'directions.checkpoint.json'
+    if pointer.is_file():
+        try:
+            meta = json.loads(pointer.read_text())
+            payload = meta.get('payload')
+            digest = meta.get('sha256') or meta.get('digest')
+            pline = root / str(payload)
+            if not pline.is_file():
+                problem('FIT_PAYLOAD_MISSING', f'checkpoint pointer names payload {payload}, which does not exist',
+                        'The fit weights are gone; rerun the fitting stage (same --output) or drop the pointer to force a clean refit.')
+            elif digest and file_digest(pline) != digest:
+                problem('FIT_PAYLOAD_DIGEST_MISMATCH',
+                        f'payload {payload} hash does not match the pointer ({digest[:12]}...) expected',
+                        'Pointer and payload disagree: the checkpoint was altered. Rerun the fitting stage to rewrite both.')
+        except Exception as exc:
+            problem('CHECKPOINT_POINTER_CORRUPT', f'{pointer.name} present but unusable: {exc}',
+                    f'Delete {pointer.name}; the next fit stage rewrites it.')
+    if (root / 'provenance.json').is_file():
+        try_json(root / 'provenance.json', 'provenance.json', 'PROVENANCE_CORRUPT')
+    for name in ('prompt-budgets.json', 'judge-calibration.json', 'judge-rubrics.json',
+                 'direction-stability.json', 'warm-starts.json', 'quantized-ranking.json'):
+        if (root / name).is_file():
+            try_json(root / name, name, 'ARTIFACT_JSON_CORRUPT')
+    if (root / 'CANCEL').is_file() and lock is not True:
+        problem('CANCELLED_IDLE', 'CANCEL flag present and no worker holds the lock',
+                'The run was stopped by request and stays resumable: delete CANCEL and rerun with --output to continue.')
+    if not problems and lock is not True and (not trial_counts or sum(trial_counts.values()) == 0) \
+            and not (root / 'events.jsonl').is_file():
+        problem('NOTHING_RECORDED_YET', 'the run directory holds no trials, no events and no artifacts',
+                'Either the run never started or it was wiped before its first write; rerun the same command and watch run-events.')
+    healthy = not problems
+    return {'output': str(root), 'healthy': healthy, 'problems': problems,
+            'trial_counts': trial_counts, 'run_lock_held': lock,
+            'cancel_requested': (root / 'CANCEL').is_file(),
+            'note': 'Findings are read-only observations; nothing here starts, resumes or repairs work. '
+                    'healthy=true means every check that could run passed, not that results are good.'}
+
 
 _ST_FLOAT_DTYPES = {'F32': 'float32', 'F16': 'float16', 'F64': 'float64'}
 

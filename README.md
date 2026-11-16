@@ -150,6 +150,12 @@ bit-for-bit, quantisation error stays inside half the largest bin
 edits requant inside the same bound. The nibble packing order follows the
 bnb kernel convention but has not been confirmed against a real
 bitsandbytes checkpoint yet — treat that one detail as asserted.
+`run-doctor OUTPUT` answers "why does this run look stuck, broken or idle" in one
+read-only pass: it aggregates lock liveness, study-db integrity, stale RUNNING
+trials with no live worker, a broken `events.jsonl` tail, checkpoint
+pointer/payload mismatches, malformed contract JSON, cancel-idle state and an
+empty run — each as a stable code with a suggested action, `healthy=true` only
+when every check that could run passed.
 `release-keygen KEY`,
 `release-sign DIR --secret KEY` and `release-verify-signature DIR [--public KEY]`
 sign and verify an Ed25519 signature over a machine-readable reproduction

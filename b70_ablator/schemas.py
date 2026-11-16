@@ -288,6 +288,21 @@ SCHEMAS = {
                        'tensor': {'type': 'string'}, 'scales': {'type': 'string'},
                        'elements': {'type': 'integer'}, 'block': {'type': 'integer'},
                        'scale_dtype': {'type': 'string'}, 'note': {'type': 'string'}}},
+    'run-doctor.command.json': {
+        'description': 'run-doctor output contract.',
+        'type': 'object',
+        'required': ['output', 'healthy', 'problems', 'trial_counts',
+                     'run_lock_held', 'cancel_requested', 'note'],
+        'properties': {'output': {'type': 'string'}, 'healthy': {'type': 'boolean'},
+                       'problems': {'type': 'array', 'items': {
+                           'type': 'object',
+                           'required': ['code', 'detail', 'action'],
+                           'properties': {'code': {'type': 'string'},
+                                          'detail': {'type': 'string'},
+                                          'action': {'type': 'string'}}}},
+                       'trial_counts': {}, 'run_lock_held': {},
+                       'cancel_requested': {'type': 'boolean'},
+                       'note': {'type': 'string'}}},
     }
 
 EMIT_SCHEMAS = {
@@ -315,6 +330,7 @@ EMIT_SCHEMAS = {
     'plan-list': 'plan-list.command.json',
     'hub-census': 'hub-census.command.json',
     'run-ls': 'run-ls.command.json',
+    'run-doctor': 'run-doctor.command.json',
     'release-diff': 'release-diff.command.json',
     'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
     'safetensors-diff': 'safetensors-diff.command.json',
