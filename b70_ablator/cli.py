@@ -117,6 +117,11 @@ def main():
     ensemble.add_argument('suite',type=Path)
     ensemble.add_argument('directory',type=Path,nargs='+')
     ensemble.add_argument('--min-agreement',type=float,default=0.5)
+    calibration=sub.add_parser('calibration-report',help='Agreement statistics of independently saved judge runs against majority consensus; no models, no accuracy claim')
+    calibration.add_argument('suite',type=Path)
+    calibration.add_argument('directory',type=Path,nargs='+')
+    calibration.add_argument('--min-agreement',type=float,default=0.5)
+    calibration.add_argument('--ledger',type=Path,default=None,help='Authored calibration ledger to report alongside')
     sensitivity=sub.add_parser('score-sensitivity',help='Offline recount of saved verdicts under alternative confidence floors; no models')
     sensitivity.add_argument('directory',type=Path)
     sensitivity.add_argument('--floor',action='append',type=float,dest='min_confidences',
@@ -253,6 +258,9 @@ def main():
         elif args.command=='judge-ensemble':
             from .agent import judge_ensemble
             result=judge_ensemble(args.suite,args.directory,args.min_agreement)
+        elif args.command=='calibration-report':
+            from .agent import calibration_report
+            result=calibration_report(args.suite,args.directory,args.min_agreement,args.ledger)
         elif args.command=='score-sensitivity':
             from .agent import score_sensitivity
             result=score_sensitivity(args.directory,args.min_confidences or (0.5,0.7,0.9))

@@ -315,6 +315,78 @@ def score_compare(suite,before,after,pass_on='compliance'):
             'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance.'}
 
 
+def calibration_report(suite, directories, min_agreement=0.5, ledger=None):
+    """Calibration view over independently saved judge runs on one suite. No models run.
+
+    Reports agreement with majority consensus — consensus is not ground truth,
+    and this function never rewrites the authored calibration ledger; it only
+    hands a human the numbers to author from.
+    """
+    from .data import load_suite
+    from .stats import wilson_interval
+    from collections import Counter
+    if not directories:
+        raise ValueError('At least one scoring directory is required')
+    rows_per_dir = {}
+    for directory in directories:
+        path = Path(directory) / 'predictions.jsonl'
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        rows = {}
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if row.get('scoring_mode') == 'refusal-check':
+                raise ValueError(f'Refusal-check rows in {directory} are wording checks, not judge votes; compare them with score-compare')
+            judgment = row.get('judgment') or {}
+            if judgment.get('verdict') is None:
+                continue
+            rows[row['id']] = (judgment['verdict'], judgment.get('confidence'))
+        rows_per_dir[str(directory)] = rows
+    labels = sorted(rows_per_dir)
+    shared = set.intersection(*(set(rows) for rows in rows_per_dir.values())) if len(rows_per_dir) > 1 else set()
+    consensus = {}
+    for pid in shared:
+        verdicts = [rows_per_dir[label][pid][0] for label in labels]
+        top, count = Counter(verdicts).most_common(1)[0]
+        if count / len(verdicts) >= min_agreement:
+            consensus[pid] = top
+    per_judge = {}
+    for label, rows in sorted(rows_per_dir.items()):
+        common = sorted(set(rows) & shared)
+        confident_rows = [pid for pid in common if consensus.get(pid)]
+        agree = sum(1 for pid in confident_rows if rows[pid][0] == consensus[pid])
+        interval = wilson_interval(agree, len(confident_rows)) if confident_rows else None
+        confidences = [rows[pid][1] for pid in common if isinstance(rows[pid][1], (int, float))]
+        per_judge[label] = {'verdicts': len(rows), 'rows_in_common': len(common),
+                            'rows_with_consensus': len(confident_rows),
+                            'agreement_with_consensus': agree,
+                            'agreement_interval': {'lower': round(interval['lower'], 4),
+                                                   'upper': round(interval['upper'], 4)} if interval else None,
+                            'mean_confidence': round(sum(confidences) / len(confidences), 4) if confidences else None}
+    pairwise = {}
+    for index, first in enumerate(labels):
+        for second in labels[index + 1:]:
+            common = sorted(set(rows_per_dir[first]) & set(rows_per_dir[second]))
+            same = sum(1 for pid in common if rows_per_dir[first][pid][0] == rows_per_dir[second][pid][0])
+            pairwise[first + ' | ' + second] = {'common': len(common), 'same_verdict': same}
+    result = {'scope': 'Agreement with majority consensus across independently saved judge runs; '
+                       'consensus is not ground truth and no accuracy is claimed.',
+              'suite': str(suite), 'rows_in_suite': len(load_suite(Path(suite))),
+              'min_agreement': min_agreement, 'rows_with_consensus': len(consensus),
+              'per_judge': per_judge, 'pairwise_agreement': pairwise,
+              'note': 'Author the calibration ledger from these numbers; this report never rewrites it.'}
+    if ledger is not None:
+        from .storage import file_digest
+        path = Path(ledger)
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        result['authored_ledger'] = {'path': str(path), 'sha256': file_digest(path),
+                                     'contents': json.loads(path.read_text())}
+    return result
+
+
 def judge_ensemble(suite,directories,min_agreement=0.5):
     """Majority aggregation of independently saved judge verdict files over one suite. No models run."""
     from .data import load_suite

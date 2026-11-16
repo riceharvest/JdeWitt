@@ -164,8 +164,12 @@ Breadth of honest evidence is what "best tool" means in practice.
   SUITE SCORES` reports pass-rate decay on authored families the fitted run
   never saw and warns loudly when families leak between the two suites;
   report decay, don't hide it.
-- Judge calibration growth: multi-model disagreement logs on every run,
-  back into the authored calibration ledger.
+- Judge calibration growth: `calibration-report SUITE DIRS... [--ledger FILE]`
+  aggregates independently saved judge runs into per-judge agreement with
+  Wilson-bounded majority consensus plus pairwise agreement matrices, shown
+  next to the authored ledger. Consensus is not ground truth and no accuracy
+  is claimed; authoring the ledger from those numbers stays human, and
+  running multiple judges live in one run stays GATED.
 - Claims ledger: every release directory carries a machine-readable
   evidence summary (gates run, failures, holdout results, judge
   calibration state). Consumers can diff claims between tools. This is

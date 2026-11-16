@@ -71,7 +71,10 @@ declaring an unsupported `schema_version` are refused before anything loads.
 one suite with Wilson intervals and an exact family-level sign test;
 `judge-ensemble SUITE DIR...` majority-aggregates independently saved judge
 verdict files; `score-sensitivity DIR` recounts saved verdicts under
-alternative confidence floors. All of these read persisted artifacts only.
+alternative confidence floors. `calibration-report SUITE DIR...` reports
+per-judge agreement with majority consensus (Wilson intervals, pairwise
+matrices) beside an authored ledger file; consensus is not accuracy and the
+report never writes the ledger back. All of these read persisted artifacts only.
 `score-compare` now also reports a deterministic family-level bootstrap of
 both pass rates and a paired sign-flip permutation test on per-prompt flips.
 
