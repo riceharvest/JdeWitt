@@ -13,6 +13,76 @@ class AgentParser(argparse.ArgumentParser):
         raise SystemExit(2)
 
 
+def completion_script(parser, shell):
+    """Generate bash/zsh completion from the same argparse tree `commands` introspects.
+
+    The script is derived from the live parser, so it cannot drift from the
+    real flag surface; regenerate with `commands --completions bash > ...`.
+    """
+    import argparse as _argparse
+    prog = parser.prog or 'b70-ablator'
+    if prog.endswith('__main__.py') or '/' in prog:
+        prog = 'b70-ablator'
+    safe_prog = prog.replace('-', '_').replace('.', '_')
+    subactions = None
+    for action in parser._actions:
+        if isinstance(action, _argparse._SubParsersAction):
+            subactions = action
+    if subactions is None:
+        raise ValueError('parser has no subcommands')
+    commands = []
+    per_command_opts = {}
+    for subaction in subactions._get_subactions():
+        child = subactions.choices[subaction.dest]
+        opts = []
+        for argument in child._actions:
+            if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
+                continue
+            opts.extend(argument.option_strings or [])
+            if argument.metavar and not argument.option_strings:
+                opts.append('<' + argument.metavar.rstrip(']') + '>')
+        per_command_opts[subaction.dest] = ' '.join(sorted(set(opts)))
+        help_text = (subaction.help or child.description or '').replace(':', '-')
+        commands.append((subaction.dest, help_text))
+    command_names = ' '.join(sorted(name for name, _help in commands))
+    if shell == 'bash':
+        lines = [f'_{safe_prog}_completion() {{',
+                 '    local cur subcmd opts',
+                 '    cur="${COMP_WORDS[COMP_CWORD]}"',
+                 '    if [[ $COMP_CWORD -eq 1 ]]; then',
+                 f'        COMPREPLY=( $(compgen -W "{command_names}" -- "$cur") )',
+                 '        return',
+                 '    fi',
+                 '    subcmd="${COMP_WORDS[1]}"',
+                 '    opts="--help"',
+                 '    case "$subcmd" in']
+        for name, _help in sorted(commands):
+            lines.append(f'        {name}) opts="--help {per_command_opts[name]}" ;;')
+        lines += ['    esac',
+                  '    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )',
+                  '}',
+                  f'complete -o default -F _{safe_prog}_completion {prog}']
+        return '\n'.join(lines) + '\n'
+    if shell == 'zsh':
+        lines = ['#compdef ' + prog,
+                 f'_{safe_prog}() {{',
+                 '    local -a commands',
+                 '    commands=(']
+        for name, help_text in sorted(commands):
+            lines.append(f"        '{name}:{help_text}'")
+        lines += ['    )',
+                  '    if (( CURRENT == 2 )); then',
+                  "        _describe 'command' commands",
+                  '    else',
+                  '        _arguments -w -s -S',
+                  '        compadd -- --help',
+                  '    fi',
+                  '}',
+                  f'_{safe_prog}']
+        return '\n'.join(lines) + '\n'
+    raise ValueError(f'unsupported shell {shell!r}')
+
+
 def command_manifest(parser):
     """Self-description of the installed command surface, for driving agents."""
     import argparse as _argparse
@@ -55,7 +125,8 @@ def main():
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
     hub.add_argument('--per-author',type=int,default=40,help='Cap newest text-generation repositories scanned per publisher')
-    sub.add_parser('commands',help='Self-description of the command surface, flags, exit codes and error-code reference; no model loads')
+    cmdm=sub.add_parser('commands',help='Self-description of the command surface, flags, exit codes and error-code reference; no model loads')
+    cmdm.add_argument('--completions',choices=['bash','zsh'],help='Print a shell completion script generated from the live parser')
     explain=sub.add_parser('explain-error',help='What one stable CLI error code means and what to do about it; no model loads')
     explain.add_argument('code')
     runls=sub.add_parser('run-ls',help='Artifact contract inventory of a run output directory; no model loads')
@@ -477,6 +548,9 @@ def main():
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author)
         elif args.command=='commands':
+            if args.completions:
+                print(completion_script(parser,args.completions),end='')
+                return
             result=command_manifest(parser)
         elif args.command=='explain-error':
             from .errors import explain_error

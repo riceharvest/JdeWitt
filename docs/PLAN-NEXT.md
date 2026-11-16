@@ -141,9 +141,13 @@ written into the item and stays GATED.
    tie edges) and on the Q2_K/Q3_K fixture (decode-only listed, none
    silently skipped). Run after any quants.py change. Emit schema falsified.
 
-10. `commands --completions bash|zsh`: generate shell completion from the
-    same argparse tree `commands` already introspects. Agents and humans
-    get tab-completion for free, no hand-maintained list to drift.
+10. `commands --completions bash|zsh`. — LANDED.
+    Completion scripts generated from the live parser tree, so they cannot
+    drift from the real flags. Proven functional in bash: prefix `gguf-`
+    completes the five gguf-* commands and `gguf-edit --` completes
+    `--help --delta-gguf --strength --tensor`; 73 commands covered;
+    `bash -n` clean. The zsh script is emitted from the same introspection
+    but unverified — no zsh on this host to syntax-check it against.
 
 ## Tier 3 — hardening and the deep end
 

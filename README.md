@@ -64,7 +64,9 @@ rather than measurements; `suite-diff BEFORE AFTER` compares two suite files
 by id, prompt content and family assignment. `commands` prints the entire
 command surface (flags, required-ness, schema enforcement, exit and error
 code tables) as machine-readable JSON so a driving agent never greps source
-or guesses flags; `explain-error CODE` prints one row of the error-code
+or guesses flags; `commands --completions bash|zsh` emits a shell completion
+script generated from that same live parser tree;
+`explain-error CODE` prints one row of the error-code
 reference including the recommended agent action; `run-ls OUTPUT` inventories
 a run directory against its artifact contract, hashing small files and
 reporting anything unexpected by name. `gguf-inspect FILE [OTHER]`
