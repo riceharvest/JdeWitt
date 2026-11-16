@@ -129,6 +129,14 @@ def main():
     claimadd.add_argument('--evidence',required=True,help='Which artifact or run backs the assertion')
     claimadd.add_argument('--verified-by',required=True,help='Which gate or human produced it')
     claimadd.add_argument('--expected-identity')
+    keygen=sub.add_parser('release-keygen',help='Create an Ed25519 release-signing key (openssl ed25519)')
+    keygen.add_argument('key',type=Path)
+    signr=sub.add_parser('release-sign',help='Sign a verified release reproduction index (repro.json payload)')
+    signr.add_argument('directory',type=Path)
+    signr.add_argument('--secret',type=Path,required=True,help='Ed25519 private key from release-keygen')
+    verifyr=sub.add_parser('release-verify-signature',help='Verify a release signature; --public pins it to a known key')
+    verifyr.add_argument('directory',type=Path)
+    verifyr.add_argument('--public',type=Path,help='Pinned public key; without this only signature math is checked')
     evaluate=sub.add_parser('evaluate',help='Score a local GGUF with the same answer-level harness')
     evaluate.add_argument('--mode',dest='scoring_mode',choices=['judge','refusal-check'],default='judge')
     evaluate.add_argument('--model',type=Path,required=True)
@@ -250,6 +258,15 @@ def main():
         elif args.command=='claim-add':
             from .release import add_claim
             result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity)
+        elif args.command=='release-keygen':
+            from .release import keygen
+            result=keygen(args.key)
+        elif args.command=='release-sign':
+            from .release import sign_release
+            result=sign_release(args.directory,args.secret)
+        elif args.command=='release-verify-signature':
+            from .release import verify_signature
+            result=verify_signature(args.directory,args.public)
         elif args.command=='doctor':
             from .pipeline import configure_compiler_paths
             configure_compiler_paths()

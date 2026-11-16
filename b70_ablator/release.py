@@ -417,6 +417,112 @@ def evidence_summary(directory):
             'ledger_digest': chain['ledger_digest']}
 
 
+def _openssl(*args, timeout=20, **kwargs):
+    try:
+        return subprocess.run(['openssl', *args], capture_output=True, text=True,
+                              check=True, timeout=timeout, **kwargs)
+    except FileNotFoundError:
+        raise RuntimeError('openssl is required for release signing but was not found on PATH')
+
+
+def keygen(path):
+    """Create a new Ed25519 release-signing key; never overwrites."""
+    path = Path(path)
+    if path.exists():
+        raise FileExistsError(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    _openssl('genpkey', '-algorithm', 'ed25519', '-out', str(path))
+    os.chmod(path, 0o600)
+    public = _openssl('pkey', '-pubout', '-in', str(path)).stdout
+    return {'private_key': str(path.resolve()), 'public_key_pem': public,
+            'note': 'Protect the private key file (0600). Publish only the public key.'}
+
+
+def build_repro(directory):
+    """Machine-readable reproduction index: everything needed to re-derive the release byte-for-byte."""
+    directory = Path(directory)
+    record = json.loads((directory / 'files.json').read_text())
+    repro = {'version': 1,
+             'release_identity': record['release_identity'],
+             'files_index_digest': record['record_digest'],
+             'evaluation_sha256': sha256_file(directory / 'evaluation.json'),
+             'readme_sha256': sha256_file(directory / 'README.md'),
+             'files': {name: metadata['sha256'] for name, metadata in record['files'].items()}}
+    ledger = read_evidence(directory)
+    if ledger is not None:
+        repro['ledger_digest'] = ledger['ledger_digest']
+    repro['repro_digest'] = digest(repro)
+    return repro
+
+
+def sign_release(directory, secret_path):
+    """Sign the release reproduction index with an Ed25519 key. Refuses to guess or create a key."""
+    import base64
+    import tempfile
+    directory = Path(directory)
+    secret = Path(secret_path)
+    if not secret.is_file():
+        raise FileNotFoundError(f'Signing key not found: {secret} (create one with release-keygen)')
+    verify_release(directory)
+    repro = build_repro(directory)
+    message = json.dumps(repro, sort_keys=True, separators=(',', ':'))
+    with tempfile.TemporaryDirectory() as tmp:
+        message_path = Path(tmp) / 'message'
+        message_path.write_text(message)
+        signature_path = Path(tmp) / 'signature'
+        _openssl('pkeyutl', '-sign', '-inkey', str(secret), '-rawin',
+                 '-in', str(message_path), '-out', str(signature_path))
+        signature = base64.b64encode(signature_path.read_bytes()).decode()
+    public = _openssl('pkey', '-pubout', '-in', str(secret)).stdout
+    record = {'version': 1, 'algorithm': 'ed25519', 'public_key_pem': public,
+              'payload': repro, 'signature_base64': signature}
+    atomic_json(directory / 'signature.json', record)
+    return {'directory': str(directory.resolve()), 'repro_digest': repro['repro_digest'],
+            'public_key_sha256': hashlib.sha256(public.encode()).hexdigest(),
+            'note': 'Signs byte reproducibility, not model quality; store the public key where buyers can pin it.'}
+
+
+def verify_signature(directory, public_path=None):
+    """Verify a release signature; with public_path also pin authenticity to that key."""
+    import base64
+    import tempfile
+    directory = Path(directory)
+    path = directory / 'signature.json'
+    if path.is_symlink():
+        raise ValueError('Release signature cannot be a symlink')
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    record = json.loads(path.read_text())
+    if (record.get('version') != 1 or record.get('algorithm') != 'ed25519'
+            or set(record) != {'version', 'algorithm', 'public_key_pem', 'payload', 'signature_base64'}):
+        raise ValueError('Release signature shape mismatch')
+    repro = build_repro(directory)
+    if record['payload'] != repro:
+        raise ValueError('Signature payload does not match current release state')
+    message = json.dumps(record['payload'], sort_keys=True, separators=(',', ':')).encode()
+    signature = base64.b64decode(record['signature_base64'])
+    with tempfile.TemporaryDirectory() as tmp:
+        message_path = Path(tmp) / 'message'
+        signature_path = Path(tmp) / 'signature'
+        key_path = Path(tmp) / 'public.pem'
+        message_path.write_bytes(message)
+        signature_path.write_bytes(signature)
+        key_path.write_text(record['public_key_pem'])
+        try:
+            _openssl('pkeyutl', '-verify', '-pubin', '-inkey', str(key_path), '-rawin',
+                     '-in', str(message_path), '-sigfile', str(signature_path))
+        except subprocess.CalledProcessError:
+            raise ValueError('Release signature verification failed')
+    if public_path is not None:
+        pinned = Path(public_path).read_text().strip()
+        if pinned != record['public_key_pem'].strip():
+            raise ValueError('Signing key is not the pinned public key')
+    return {'valid': True, 'directory': str(directory.resolve()),
+            'repro_digest': repro['repro_digest'], 'release_identity': repro['release_identity'],
+            'authenticity': 'verified against pinned public key' if public_path else
+                            'signature math verified; not checked against a pinned public key'}
+
+
 def verify_release(directory,expected_identity=None):
     """Check exact file bytes; this does not certify a model's semantic quality."""
     directory=Path(directory)
@@ -428,14 +534,14 @@ def verify_release(directory,expected_identity=None):
         raise ValueError('Release index integrity mismatch')
     for name,metadata in record['files'].items():
         p=Path(name)
-        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name or name=='evidence.json':
+        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name or name in {'evidence.json','signature.json'}:
             raise ValueError('Invalid release index path')
         if set(metadata)!={'sha256','bytes'} or type(metadata['bytes']) is not int or metadata['bytes']<0:
             raise ValueError('Invalid release file metadata')
     if expected_identity is not None and record['release_identity']!=expected_identity:
         raise ValueError('Release identity mismatch')
     actual=release_inventory(directory)
-    if {k:v for k,v in actual.items() if k!='evidence.json'}!=record['files']:
+    if {k:v for k,v in actual.items() if k not in {'evidence.json','signature.json'}}!=record['files']:
         raise ValueError('Release file set/hash mismatch')
     evaluation=json.loads((directory/'evaluation.json').read_text())
     readme=(directory/'README.md').read_text()
