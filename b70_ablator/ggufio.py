@@ -381,3 +381,46 @@ def projection_delta(weight, directions, strength, side='output', row_normalizat
         ratio = np.where(new > 1e-12, old / np.maximum(new, 1e-12), 1.0)
         delta = delta * ratio - w + w * ratio
     return delta.astype(np.float32)
+
+
+# --- minimal GGUF v3 writer ---------------------------------------------------
+# Tensor dtype ids match the pinned gguf.constants.GGMLQuantizationType enum:
+# F32=0, F16=1, BF16=30. Dims are GGUF order (innermost first).
+
+FLOAT_DTYPE_IDS = {'f32': 0, 'f16': 1, 'bf16': 30}
+
+
+def write_gguf(path, metadata, tensors):
+    """Write a GGUF v3 file: ``metadata`` is {key: python value} (serialized by
+    _infer_type, so gguf-inspect/gguf-meta read it back), ``tensors`` is a list
+    of (name, dims, dtype_id, raw_bytes). Offsets are computed relative to the
+    aligned data base; nothing else is interpreted.
+    """
+    path = Path(path)
+    if path.exists():
+        raise ValueError(f'{path} already exists')
+    entries = []
+    for key, value in metadata.items():
+        tag, raw = _infer_type(value)
+        entries.append((key.encode(), tag, raw))
+    header = b'GGUF' + struct.pack('<I', 3) + \
+        struct.pack('<Q', len(tensors)) + struct.pack('<Q', len(entries))
+    for key, tag, raw in entries:
+        header += struct.pack('<Q', len(key)) + key + struct.pack('<I', tag) + raw
+    alignment = 32
+    infos_size = sum(8 + len(name.encode()) + 4 + 8 * len(dims) + 4 + 8 for name, dims, _t, _b in tensors)
+    data_base = (len(header) + infos_size + alignment - 1) // alignment * alignment
+    rebuilt = bytearray(header)
+    offset = 0
+    for name, dims, _dtype_id, raw in tensors:
+        nb = name.encode()
+        rebuilt += struct.pack('<Q', len(nb)) + nb + struct.pack('<I', len(dims)) + \
+            b''.join(struct.pack('<Q', d) for d in dims) + struct.pack('<I', _dtype_id) + struct.pack('<Q', offset)
+        offset += len(raw)
+    rebuilt += b'\x00' * (data_base - len(rebuilt))
+    with open(path, 'wb') as f:
+        f.write(rebuilt)
+        for _name, _dims, _dtype_id, raw in tensors:
+            f.write(raw)
+    return {'output': str(path), 'metadata_entries': len(entries), 'tensors': len(tensors),
+            'data_base': data_base, 'file_size': path.stat().st_size}

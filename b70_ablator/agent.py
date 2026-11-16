@@ -467,11 +467,13 @@ def score_sensitivity(directory,min_confidences=(0.5,0.7,0.9)):
             'note':'Offline recount of saved verdicts under alternative decision floors; no rejudging happened.'}
 
 
-def gguf_edit(path, out, specs):
+def gguf_edit(path, out, specs, delta_gguf=None, strength=1.0):
     """Edit quantized GGUF tensors: dequantize -> add delta -> requantize in place.
 
     ``specs`` are ``NAME=DELTA.NPY`` pairs holding float32 deltas with the
-    tensor's shape. Everything outside the edited tensors (header, metadata,
+    tensor's shape. ``delta_gguf`` is a GGUF delta file (gguf-delta-pack output)
+    whose float tensors are named like target tensors; each is added scaled by
+    ``strength``. Everything outside the edited tensors (header, metadata,
     tensor info, all other tensor bytes) is copied byte for byte; offsets do
     not move because each edited tensor keeps its exact block count.
     """
@@ -484,7 +486,46 @@ def gguf_edit(path, out, specs):
             raise ValueError('spec format is NAME=DELTA.NPY')
         with open(file, 'rb') as f:
             deltas[name] = np.load(f)
-    return edit_tensors(path, out, deltas)
+    if delta_gguf is not None:
+        from gguf import GGUFReader
+        from gguf.constants import GGMLQuantizationType
+        reader = GGUFReader(str(delta_gguf))
+        float_types = {int(GGMLQuantizationType.F32), int(GGMLQuantizationType.F16),
+                       int(GGMLQuantizationType.BF16)}
+        packed = str(delta_gguf)
+        names = []
+        for tensor in reader.tensors:
+            if tensor.tensor_type not in float_types:
+                raise ValueError(f'delta gguf tensor {tensor.name} is not float; refusing')
+            if tensor.tensor_type == GGMLQuantizationType.BF16:
+                # The reader byte-views BF16 as uint8 (2 bytes per value);
+                # pair bytes back into uint16 code units, then widen to f32.
+                u16 = np.frombuffer(np.asarray(tensor.data, dtype=np.uint8).tobytes(), dtype=np.uint16)
+                values = np.frombuffer((u16.astype(np.uint32) << 16).tobytes(), dtype=np.float32)
+            elif tensor.tensor_type == GGMLQuantizationType.F16:
+                values = np.asarray(tensor.data, dtype=np.float16).astype(np.float32).reshape(-1)
+            else:
+                values = np.asarray(tensor.data, dtype=np.float32).reshape(-1)
+            # tensor.shape is GGUF order (innermost first); numpy is row-major, reversed.
+            want = tuple(int(d) for d in reversed(tensor.shape))
+            if values.size != int(np.prod(want)):
+                raise ValueError(f'delta gguf tensor {tensor.name} has {values.size} values '
+                                 f'for shape {want}; refusing')
+            values = values.reshape(want)
+            if tensor.name in deltas:
+                raise ValueError(f'{tensor.name} appears in both --tensor specs and the delta gguf')
+            deltas[tensor.name] = values * strength
+            names.append(tensor.name)
+        if not names:
+            raise ValueError(f'delta gguf {packed} contains no tensors')
+        delta_gguf_names = names
+    else:
+        delta_gguf_names = []
+    result = edit_tensors(path, out, deltas)
+    result['delta_gguf'] = str(delta_gguf) if delta_gguf else None
+    result['delta_gguf_tensors'] = delta_gguf_names
+    result['strength'] = strength
+    return result
 
 
 def gguf_meta(path, out, assignments, unsets):
@@ -1146,3 +1187,94 @@ def verdict_audit(directory, limit=25):
             'check_method': 'explicit-wording-v1',
             'note': 'Judge agreement with a deterministic lexical wording check on saved answers; '
                     'the check is not a semantic oracle and agreement says nothing about correctness.'}
+
+
+def gguf_delta_pack(out, specs, metadata=None):
+    """Pack NAME=DELTA.NPY float32 deltas into a GGUF delta file (F32 tensors
+    named exactly like the target tensors) that `gguf-edit --delta-gguf` consumes.
+    The file is inspectable with gguf-inspect and signable like any other artifact.
+    """
+    import numpy as np
+    from .ggufio import write_gguf
+    tensors = []
+    for spec in specs:
+        name, sep, file = spec.partition('=')
+        if not sep or not name or not file:
+            raise ValueError('spec format is NAME=DELTA.NPY')
+        delta = np.load(file)
+        if delta.dtype not in (np.float32, np.float64):
+            raise ValueError(f'delta for {name} is {delta.dtype}; pack float32/float64 npys only')
+        # GGUF dims are innermost-first; np arrays are row-major, same order reversed.
+        tensors.append((name, tuple(reversed(delta.shape)), 0,
+                        np.ascontiguousarray(delta, dtype=np.float32).tobytes()))
+    meta = dict(metadata or {})
+    meta['b70ablator.format'] = 'delta-gguf-v1'
+    return write_gguf(out, meta, tensors)
+
+
+def direction_export(registry, key, out, dtype='bf16'):
+    """Export a registered fitted plan to a GGUF direction file.
+
+    Writes the plan tensors (F32 or BF16, exact bf16 round-to-nearest via
+    torch's own cast) plus method/geometry/provenance metadata that
+    gguf-inspect and gguf-meta already understand, so fitted directions
+    become portable, signable, inspectable files. Mapping plan tensors to
+    per-target-tensor deltas is architecture dependent and deliberately
+    not done here; the format version is stamped in the header.
+    """
+    import torch
+    from .registry import load_plan
+    from .ggufio import write_gguf, FLOAT_DTYPE_IDS
+    if dtype not in FLOAT_DTYPE_IDS:
+        raise ValueError(f'unsupported export dtype {dtype}; pick one of {sorted(FLOAT_DTYPE_IDS)}')
+    if Path(out).exists():
+        raise ValueError(f'{out} already exists')
+    loaded = load_plan(registry, key)
+    directions = loaded['plan']
+    meta = loaded['meta']
+    geometry = loaded['geometry']
+    tensors = []
+    for name, value in directions.items():
+        if not isinstance(value, torch.Tensor):
+            continue
+        if value.dtype not in (torch.float32, torch.bfloat16):
+            raise ValueError(f'plan tensor {name} has dtype {value.dtype}; only float exports supported')
+        if dtype == 'bf16':
+            raw = value.detach().to(torch.bfloat16).view(torch.uint16).cpu().numpy().tobytes()
+        else:
+            raw = value.detach().to(torch.float32).cpu().numpy().tobytes()
+        gguf_dims = tuple(reversed(tuple(value.shape)))  # GGUF order: innermost first
+        tensors.append((name, gguf_dims, FLOAT_DTYPE_IDS[dtype], raw))
+    if not tensors:
+        raise ValueError('plan contains no tensors to export')
+    metadata = {
+        'b70ablator.format': 'direction-gguf-v1',
+        'b70ablator.plan.key': str(key),
+        'b70ablator.export_dtype': dtype,
+        'b70ablator.payload_sha256': meta.get('payload_sha256', ''),
+    }
+    method = directions.get('method')
+    if isinstance(method, str):
+        metadata['b70ablator.plan.method'] = method
+    row_norm = directions.get('row_normalization')
+    if isinstance(row_norm, str):
+        metadata['b70ablator.plan.row_normalization'] = row_norm
+    for field in ('layers', 'rank', 'hidden'):
+        if field in geometry:
+            metadata[f'b70ablator.geometry.{field}'] = int(geometry[field])
+    audit = loaded['audit']
+    for field, value in audit.items() if isinstance(audit, dict) else ():
+        if isinstance(value, (int, float)) and not isinstance(value, bool):
+            metadata[f'b70ablator.audit.{field}'] = float(value)
+    metadata['b70ablator.provenance'] = json.dumps(
+        {k: v for k, v in meta.items() if k.endswith('_sha256') or k in
+         ('architecture', 'layers', 'hidden_size', 'rank', 'dtype', 'quantization',
+          'edit_groups', 'boundary', 'method', 'registered_at')},
+        sort_keys=True)
+    result = write_gguf(out, metadata, tensors)
+    result['plan_key'] = str(key)
+    result['format'] = 'direction-gguf-v1'
+    result['note'] = ('Plan container: tensors are fitted directions, not per-target-tensor '
+                      'deltas. Applying them to quantized weights needs an architecture-specific '
+                      'tensor-name mapping, which is verified separately.')
+    return result

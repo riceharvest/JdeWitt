@@ -77,9 +77,20 @@ def main():
     editg=sub.add_parser('gguf-edit',help='Edit quantized GGUF tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     editg.add_argument('input',type=Path)
     editg.add_argument('output',type=Path)
-    editg.add_argument('--tensor',action='append',required=True,metavar='NAME=DELTA.NPY',
+    editg.add_argument('--tensor',action='append',default=[],metavar='NAME=DELTA.NPY',
                        help='float32 delta npy matching the tensor shape; repeatable')
+    editg.add_argument('--delta-gguf',type=Path,default=None,
+                       help='GGUF delta file (gguf-delta-pack); float tensors named like target tensors')
+    editg.add_argument('--strength',type=float,default=1.0,help='multiplier applied to --delta-gguf tensors')
     editm=sub.add_parser('gguf-meta',help='Edit GGUF metadata (chat templates, tokenizer fields); tensor data is copied verbatim, no model')
+    dpack=sub.add_parser('gguf-delta-pack',help='Pack float32 delta npys into a GGUF delta file consumable by gguf-edit --delta-gguf; inspectable, signable')
+    dpack.add_argument('output',type=Path)
+    dpack.add_argument('specs',nargs='+',metavar='NAME=DELTA.NPY')
+    dexport=sub.add_parser('direction-export',help='Export a registered fitted plan as a GGUF direction file (tensors + method/geometry/provenance metadata); no model')
+    dexport.add_argument('registry',type=Path)
+    dexport.add_argument('key')
+    dexport.add_argument('output',type=Path)
+    dexport.add_argument('--dtype',choices=['bf16','f32'],default='bf16')
     editm.add_argument('input',type=Path)
     editm.add_argument('output',type=Path)
     editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
@@ -338,10 +349,18 @@ def main():
             result=gguf_inspect(args.file,args.other)
         elif args.command=='gguf-edit':
             from .agent import gguf_edit
-            result=gguf_edit(args.input,args.output,args.tensor)
+            if not args.tensor and args.delta_gguf is None:
+                raise ValueError('provide at least one --tensor NAME=DELTA.NPY or a --delta-gguf')
+            result=gguf_edit(args.input,args.output,args.tensor,args.delta_gguf,args.strength)
         elif args.command=='gguf-meta':
             from .agent import gguf_meta
             result=gguf_meta(args.input,args.output,args.set,args.unset)
+        elif args.command=='gguf-delta-pack':
+            from .agent import gguf_delta_pack
+            result=gguf_delta_pack(args.output,args.specs)
+        elif args.command=='direction-export':
+            from .agent import direction_export
+            result=direction_export(args.registry,args.key,args.output,args.dtype)
         elif args.command=='gguf-tensor-diff':
             from .agent import gguf_tensor_diff
             result=gguf_tensor_diff(args.before,args.after)

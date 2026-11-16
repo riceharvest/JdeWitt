@@ -81,14 +81,21 @@ written into the item and stays GATED.
 
 ## Tier 2 — surface, portability, statistics
 
-5. Direction interchange format.
-   `direction-export PLAN OUT.DIR.GGUF --strength s` writes fitted
-   directions as a GGUF (F32/BF16 tensors + method/layer/gate/provenance
-   metadata in the same header gguf-meta already understands), and
-   `gguf-edit --delta-gguf FILE` consumes it. Directions become portable,
-   inspectable, signable files — `gguf-inspect` already prints their
-   metadata. File layer is CODE; applying deltas to a live model stays
-   GATED like every other behavioural claim.
+5. Direction interchange format. — LANDED.
+   `gguf-delta-pack OUT FILE NAME=DELTA.NPY...` packs float deltas into a
+   GGUF (format tag `delta-gguf-v1`); `gguf-edit --delta-gguf FILE
+   --strength s` consumes any float-tensor GGUF whose tensors are named like
+   target tensors (BF16 byte-pair decode proven). `direction-export
+   REGISTRY KEY OUT [--dtype bf16|f32]` (format tag `direction-gguf-v1`)
+   writes registered plan tensors + method/geometry/payload/provenance
+   metadata via a new `ggufio.write_gguf`; a direction file fed to
+   `--delta-gguf` refuses with `no tensor 'basis' in file` on purpose —
+   plan→tensor-name mapping stays architecture-specific and GATED.
+   Proven: delta-gguf edit byte-identical to the npy path on the 672 MB
+   Q4_K_M; strength 0.5 halves the edit RMS exactly (0.000498 vs 0.000996);
+   bf16 plan export bit-exact vs torch bf16 cast, f32 exact vs plan;
+   exported files read clean by gguf-inspect (digests), gguf-meta and
+   gguf-tensor-diff. Emit schemas for both commands, falsified.
 
 6. Registry portability: `plan-bundle KEY -o FILE` (single-file archive of
    plan + payload + meta + gate state, digest-pinned) and `plan-unbundle

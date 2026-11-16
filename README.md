@@ -99,7 +99,14 @@ Quant-native editing: `gguf-edit INPUT OUTPUT --tensor NAME=DELTA.NPY`
 (repeatable) rewrites only the edited tensors in a new file, staying in the
 quantized block layout: tile-wise dequant, FP32 delta, requant to the
 identical block count; every other byte of the file, header included, is
-copied verbatim and tensor offsets never move.
+copied verbatim and tensor offsets never move. `--delta-gguf FILE` applies
+all float tensors of a GGUF delta file (packed by `gguf-delta-pack OUT FILE
+NAME=DELTA.NPY...`) scaled by `--strength`; proven byte-identical to the
+`--tensor` path and half the delta RMS at strength 0.5. Fitted plans ship
+portably: `direction-export REGISTRY KEY OUT.gguf [--dtype bf16|f32]` writes
+the plan tensors plus method/geometry/provenance metadata as a GGUF that
+`gguf-inspect`, `gguf-meta` and `gguf-tensor-diff` all read — bf16 exports
+are bit-exact against torch's own bf16 cast, f32 exact against the plan.
 The GGML block codecs (Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16) are vendored as
 numpy ports of llama.cpp's reference routines. `gguf-meta INPUT OUTPUT
 --set KEY=JSON --unset KEY` edits GGUF metadata (chat templates, tokenizer
