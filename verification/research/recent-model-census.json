@@ -1,0 +1,1860 @@
+{
+  "since": "2026-07-16",
+  "until": "2026-10-16",
+  "authors": [
+    {
+      "author": "Qwen",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "Qwen/Qwen-Drive-1.0-4B",
+          "sha": "28484089a7cc8c335cf5089fb0745cf7c49b6eaa",
+          "createdAt": "2026-08-27T08:14:27.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen_drive",
+          "architectures": [
+            "QwenDriveForPlanning"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-Flash-Next-FP8",
+          "sha": "236dfdf285828023ca3bcd3f37366c58a3469b13",
+          "createdAt": "2026-08-24T08:25:23.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen4_exp",
+          "architectures": [
+            "Qwen4ExpForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-Flash-Next",
+          "sha": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+          "createdAt": "2026-08-24T08:24:59.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen4_exp",
+          "architectures": [
+            "Qwen4ExpForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-27B-FP8",
+          "sha": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+          "createdAt": "2026-08-13T08:01:58.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-2.4T-A95B",
+          "sha": "207bd685a7e3696cfaff12ded7c6a7ea0f88c996",
+          "createdAt": "2026-08-08T01:50:52.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3_5_moe_text",
+          "architectures": [
+            "Qwen3_5MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-2.4T-A95B-FP8",
+          "sha": "d2dc35658bcf77e66643428cb52e774cc3b5bd29",
+          "createdAt": "2026-08-08T01:49:49.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3_5_moe_text",
+          "architectures": [
+            "Qwen3_5MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "Qwen/Qwen3.8-27B",
+          "sha": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+          "createdAt": "2026-08-05T08:22:59.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "zai-org",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "zai-org/GLM-5.3-Flash-BF16",
+          "sha": "f9fed3bbc82291073373d67452e9f25317ef7577",
+          "createdAt": "2026-08-25T06:45:05.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "glm5_next",
+          "architectures": [
+            "Glm5NextForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "zai-org/GLM-5.3-BF16",
+          "sha": "abf42e6c0e53bc29a875511301e7b7fcd220315b",
+          "createdAt": "2026-08-25T06:43:55.000Z",
+          "pipeline": "text-generation",
+          "model_type": "glm_moe_dsa",
+          "architectures": [
+            "GlmMoeDsaForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "zai-org/GLM-5.3-Flash",
+          "sha": "46a050bec13002ad29ee795c16e61cf4fa3c4a9c",
+          "createdAt": "2026-08-25T06:43:14.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "glm5_next",
+          "architectures": [
+            "Glm5NextForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "zai-org/GLM-5.3",
+          "sha": "ba32f8c19c8738e2c57c71798c601d477a7bf844",
+          "createdAt": "2026-08-25T06:42:50.000Z",
+          "pipeline": "text-generation",
+          "model_type": "glm_moe_dsa",
+          "architectures": [
+            "GlmMoeDsaForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "meta-models",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "meta-models/Muse-Spark-Open-816B-A42B",
+          "sha": "0fb02478b02565b2ce7fc57e6051c91172774ac9",
+          "createdAt": "2026-09-15T19:23:19.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "muse_spark",
+          "architectures": [
+            "MuseSparkForConditionalGeneration"
+          ],
+          "gated": "manual"
+        },
+        {
+          "repo": "meta-models/Muse-Spark-Open-816B-A42B-NVFP4",
+          "sha": "4239e4db19376904f2e82c167e78f70abb5455fe",
+          "createdAt": "2026-09-15T19:23:10.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "muse_spark",
+          "architectures": [
+            "MuseSparkForConditionalGeneration"
+          ],
+          "gated": "manual"
+        },
+        {
+          "repo": "meta-models/Muse-Glimmer-30B-ExecuTorch-PTE",
+          "sha": "fc6fa93cdefeddc93abd7abf883e99279af7ea51",
+          "createdAt": "2026-08-10T04:44:00.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "meta-models/Muse-Glimmer-30B-assistant",
+          "sha": "e8192f3a8f617f74be2ce220360c89ef4789f39f",
+          "createdAt": "2026-08-09T17:55:23.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "muse_glimmer_assistant",
+          "architectures": [
+            "MuseGlimmerAssistantModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "meta-models/Muse-Glimmer-30B-GGUF",
+          "sha": "70bf1b61ac09f91b24d39038091b41c582bc5d7a",
+          "createdAt": "2026-08-09T17:54:22.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "meta-models/Muse-Glimmer-30B",
+          "sha": "a4e59da52a7bc87ae7251dd5545c0dd437c44b68",
+          "createdAt": "2026-08-09T17:51:35.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "muse_glimmer",
+          "architectures": [
+            "MuseGlimmerForConditionalGeneration"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "LiquidAI",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-FP8",
+          "sha": "f54bf39547fd5b7955abb9fe8d1b151e31fbbddb",
+          "createdAt": "2026-10-12T22:19:54.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-MLX-bf16",
+          "sha": "a88dc23da2b6aa31309bc892d61f1f530e80d0a5",
+          "createdAt": "2026-10-12T20:12:55.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-MLX-8bit",
+          "sha": "67ab417dd02d0c9545802a726df668620eae049d",
+          "createdAt": "2026-10-12T19:56:11.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-MLX-6bit",
+          "sha": "1deec53eb49571e21cdcbf82fd5839248f07ed88",
+          "createdAt": "2026-10-12T19:47:10.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-MLX-5bit",
+          "sha": "00f490f1d9ce81f294ebb0bf354df77f604f6f4c",
+          "createdAt": "2026-10-12T19:37:13.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-MLX-4bit",
+          "sha": "667408d494bde191c2cb9dd4f4549827816b9275",
+          "createdAt": "2026-10-12T19:31:28.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B",
+          "sha": "1769516ac588c4c558089c94f27d96b0dc67b183",
+          "createdAt": "2026-10-12T05:35:46.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B-MLX-fp16",
+          "sha": "c7b140a64fc7466d5f9d08be19f261a704febef1",
+          "createdAt": "2026-10-12T01:55:52.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B-MLX-4bit",
+          "sha": "4849a077526a92c598529aca5b9f54dfcac48316",
+          "createdAt": "2026-10-12T01:55:32.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B-MLX-8bit",
+          "sha": "9409cbf3bd5067e1a9b17437b1970f6a0c299ccd",
+          "createdAt": "2026-10-12T01:55:21.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-omni-600M-MLX-8bit",
+          "sha": "d927e69f5e5db82ad25ae1172f7fd18f0013b6df",
+          "createdAt": "2026-10-12T01:54:53.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "d1_omni",
+          "architectures": [
+            "D1OmniModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-omni-600M-MLX-fp16",
+          "sha": "05e99e49eb1799f1f9f98ec619b6fef2b0dd0960",
+          "createdAt": "2026-10-12T01:54:24.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "d1_omni",
+          "architectures": [
+            "D1OmniModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-Base",
+          "sha": "9156f24f4a227a259b09011f4e0295aa8f57db01",
+          "createdAt": "2026-10-09T21:13:55.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-GGUF",
+          "sha": "0912d33141f77e10705345a6732bfd83f0252fdc",
+          "createdAt": "2026-10-09T18:03:23.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-24B-A2B-ONNX",
+          "sha": "7bab9b24d874acd0326a96799fe6be0b1990800d",
+          "createdAt": "2026-10-09T18:03:22.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2_moe",
+          "architectures": [
+            "Lfm2MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B-w8a8",
+          "sha": "edf3aee8b62e7fedd9edfa02a5c089a42cb1f4d4",
+          "createdAt": "2026-10-07T18:58:54.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-omni-600M-GGUF",
+          "sha": "04397145ed8381350403aa556db0ec6a49dd8c07",
+          "createdAt": "2026-10-06T15:30:13.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B-GGUF",
+          "sha": "bb1e436ea78eb96a3f1acb6da865f70c2fbeb563",
+          "createdAt": "2026-10-06T10:36:09.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-omni-600M",
+          "sha": "02b55d7076f15129e59ab3f94783f32c4b088674",
+          "createdAt": "2026-10-05T17:18:48.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "d1_omni",
+          "architectures": [
+            "D1OmniModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/d1-3B",
+          "sha": "051bcc464b01b9f92942b364d9586b0ef5912432",
+          "createdAt": "2026-10-05T09:55:28.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-DSpark-GGUF",
+          "sha": "5ff73699214238467e230f40bf12b4a5ffa445be",
+          "createdAt": "2026-09-18T07:44:29.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-DSpark",
+          "sha": "af77e9306a26e8625fde74d2a3051ab6d21bd955",
+          "createdAt": "2026-09-18T07:44:28.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3",
+          "architectures": [
+            "Lfm2DSparkDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-8B-A1B-DSpark-GGUF",
+          "sha": "7ba04ee5ff05a4baf2681fe5ddda6d736581ccdf",
+          "createdAt": "2026-08-19T14:14:48.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-DSpark-GGUF",
+          "sha": "7bc2896af56d82ccc7e156800197408db464d63b",
+          "createdAt": "2026-08-19T14:14:24.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark-GGUF",
+          "sha": "9235d674d3bbda8a775ca42a4275d11a8c0ab008",
+          "createdAt": "2026-08-19T14:07:19.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-GGUF",
+          "sha": "6f730e9a2c454e8af9adc29db58e638e01e5957f",
+          "createdAt": "2026-08-11T22:54:11.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B",
+          "sha": "35a118d938ce6d123ac2d371649f24a8efb69058",
+          "createdAt": "2026-08-11T22:54:10.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-DSpark",
+          "sha": "458cedab07d0f7b2b05700c77e1aa463d43d6f04",
+          "createdAt": "2026-08-10T18:12:14.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Lfm2DSparkDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-8B-A1B-DSpark",
+          "sha": "5b285c827912834665b1915f171897e49ff0f388",
+          "createdAt": "2026-08-10T18:12:14.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Lfm2DSparkDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-1.2B-Instruct-DSpark",
+          "sha": "4876d04848e15a6fd48d7c1481110e7cf5d62621",
+          "createdAt": "2026-08-10T18:12:14.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Lfm2DSparkDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-MLX-bf16",
+          "sha": "e9679508c2af3b7e67c0d52af2a06a8c7390d2a7",
+          "createdAt": "2026-08-10T12:20:33.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-MLX-8bit",
+          "sha": "8ae3db8899ed2ef7d9a0ffc52f68c4a88fbe6585",
+          "createdAt": "2026-08-10T12:20:32.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-MLX-5bit",
+          "sha": "e7ea99246ec7fda6b0fa46d2a7297ee76e831a9a",
+          "createdAt": "2026-08-10T12:20:31.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-MLX-6bit",
+          "sha": "c08e5746297b44da59fe8ab6f3b1962c4b2774ac",
+          "createdAt": "2026-08-10T12:20:31.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-MLX-4bit",
+          "sha": "7fad79d26092c1145aa8dde873896a07d3e96a3b",
+          "createdAt": "2026-08-10T12:20:30.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-VL-3B-ONNX",
+          "sha": "020f9311343b8f3c6d9789b4dd300e749ec52cd1",
+          "createdAt": "2026-08-06T21:35:21.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "lfm2_vl",
+          "architectures": [
+            "Lfm2VlForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-nvfp4",
+          "sha": "11260fd864402b00bf18090911f82f65b95dd224",
+          "createdAt": "2026-08-06T06:44:14.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-mxfp4",
+          "sha": "356441899ea02e606e11d8d75788f9c62b7785af",
+          "createdAt": "2026-08-06T06:43:48.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-mxfp8",
+          "sha": "ab882d0c319c4f92b2109dda672a8582b4a28574",
+          "createdAt": "2026-08-06T06:43:01.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-4bit",
+          "sha": "04efa23776ce61ec34ec95ec34c859854c89542b",
+          "createdAt": "2026-08-06T06:42:33.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-5bit",
+          "sha": "0b9de055a701bdecc74e7e227035babc9393f22d",
+          "createdAt": "2026-08-06T06:42:01.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-6bit",
+          "sha": "95f71f1c30e3247bc7f042c6fd64d7ca60258780",
+          "createdAt": "2026-08-06T06:41:23.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-8bit",
+          "sha": "b372ebbb518c0e81617e25d8824427dd9ee1f08c",
+          "createdAt": "2026-08-06T06:40:35.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX-bf16",
+          "sha": "f2d32094cdd69ed7adb85a4b44accfc8770cd655",
+          "createdAt": "2026-08-06T06:39:04.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-MLX",
+          "sha": "b41f2b65685e95418f1ac809bb022d4f79e1ab27",
+          "createdAt": "2026-08-03T11:36:36.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-ONNX",
+          "sha": "66826372fd4fa166f53be0371c9315745c07cace",
+          "createdAt": "2026-08-01T22:42:16.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-GGUF",
+          "sha": "e7caca5d835a3901a8e0d63e94009429bafafdfc",
+          "createdAt": "2026-08-01T22:42:15.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B-Base",
+          "sha": "c57bdaed1ef166fe3095dda07f4a5e789ad5321e",
+          "createdAt": "2026-08-01T15:23:40.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "LiquidAI/LFM2.5-2.6B",
+          "sha": "654f9463ce32b05d0429d76fe1f580b27d4c1ac0",
+          "createdAt": "2026-07-28T22:14:32.000Z",
+          "pipeline": "text-generation",
+          "model_type": "lfm2",
+          "architectures": [
+            "Lfm2ForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "nvidia",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "nvidia/Muse-Spark-Open-816B-A42B-DFlash2",
+          "sha": "df954dd6a64025dfa4e25ab4c14c52459369d3bb",
+          "createdAt": "2026-10-16T04:40:26.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3",
+          "architectures": [
+            "DFlash2DraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4",
+          "sha": "579ffa0b659bc681b89e649fa7c2d5089399602e",
+          "createdAt": "2026-10-12T15:32:30.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "nemotron_h_omni",
+          "architectures": [
+            "NemotronH_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+          "sha": "97e009758ae21747ee3752d2e43b005fb1e23a61",
+          "createdAt": "2026-10-12T15:32:06.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "nemotron_h_omni",
+          "architectures": [
+            "NemotronH_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-Base-BF16",
+          "sha": "4ba52e8ffa79e9693936c1a819ac89f551ceeef6",
+          "createdAt": "2026-10-12T15:31:49.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "nemotron_h_omni",
+          "architectures": [
+            "NemotronH_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr",
+          "sha": "4c6a5613b6d887194a3a5493e3a18a5b3930bb86",
+          "createdAt": "2026-10-12T14:42:40.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "LiLiCorrDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-LiLiCorr-GGUF",
+          "sha": "182d2987939e12f458298b5d5f6ef98912f4ad6c",
+          "createdAt": "2026-10-12T14:27:49.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4-LiLiCorr",
+          "sha": "7c7221aeb4cb3139307aa457f7dce11a8fb6ceb2",
+          "createdAt": "2026-10-11T20:20:59.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "LiLiCorrDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16",
+          "sha": "a6a1e5030819a130a1ea08aadb1fe42f4cc86777",
+          "createdAt": "2026-10-09T12:45:14.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "nemotron_h_omni",
+          "architectures": [
+            "NemotronH_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Qwen3.8-Flash-Next-FP4-Local",
+          "sha": "b9ce18a6887e18c089fdea8509a33e63429a3300",
+          "createdAt": "2026-10-08T16:20:17.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen4_exp",
+          "architectures": [
+            "Qwen4ExpForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB-GGUF",
+          "sha": "e0fecb69cb3e5e4c5e8a056fa2aec98c78e91246",
+          "createdAt": "2026-10-07T19:15:58.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-24GB",
+          "sha": "c6cc2e8ffa353403213d6b9b18aaf8eb684d705a",
+          "createdAt": "2026-10-07T17:50:42.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "nemotron_h_omni",
+          "architectures": [
+            "NemotronH_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/PixelUMM",
+          "sha": "4bb3ce9a112e7e1c7d375b1c5bd64f54d259ecc8",
+          "createdAt": "2026-10-01T21:40:34.000Z",
+          "pipeline": "any-to-any",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4.1-Flash-NVFP4",
+          "sha": "c48dca0146b56d64c8116dbb6fcace8b7cc835f8",
+          "createdAt": "2026-09-16T20:37:42.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "deepseek_v41",
+          "architectures": [
+            "DeepseekV41ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/GLM-5.3-NVFP4",
+          "sha": "e3b8f9f2fad29727dfa95e766c5cac18ea1414bf",
+          "createdAt": "2026-09-14T17:58:21.000Z",
+          "pipeline": "text-generation",
+          "model_type": "glm_moe_dsa",
+          "architectures": [
+            "GlmMoeDsaForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4-Pro-0813-nvfp4-DSpark",
+          "sha": "d9a7219b8f65802e80359a931711989b288981f3",
+          "createdAt": "2026-09-09T17:47:04.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NV-Reason-CT",
+          "sha": "386b93e034983f6c1fc841a43833a1b6a0cd9c13",
+          "createdAt": "2026-09-08T05:06:51.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "VLM3D_ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Qwen3.8-27B-NVFP4",
+          "sha": "482ca0f3832238542f8f5295dde86b5f22711d80",
+          "createdAt": "2026-09-04T21:43:04.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-3-Competitive-Coding-550B-A55B-NVFP4",
+          "sha": "3ae22c58ada5f3f3902ed00628a7839cf8584f3a",
+          "createdAt": "2026-09-04T14:34:50.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "nvidia/GLM-5.3-Flash-NVFP4",
+          "sha": "da920bb0b9f4a06727223a349e55468e38352348",
+          "createdAt": "2026-09-02T20:37:17.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "glm5_next",
+          "architectures": [
+            "Glm5NextForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Nemotron-3-Labs-Ultra-Math-RL",
+          "sha": "6849d3ecccbd63f3527d56072a3e9717ec4738c9",
+          "createdAt": "2026-09-02T19:11:33.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Nemotron-3-Labs-Ultra-Math-SFT",
+          "sha": "c6337c397cc7ea2cf7b594e0b880bc874558e20d",
+          "createdAt": "2026-09-02T19:11:32.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Qwen3.8-Flash-Next-NVFP4",
+          "sha": "fc694b54fb0174e0913e6adf86691ef85a4ead47",
+          "createdAt": "2026-09-02T04:03:35.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen4_exp",
+          "architectures": [
+            "Qwen4ExpForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis",
+          "sha": "af26673cd562299e8707d26148c65c15e4ceeafd",
+          "createdAt": "2026-09-01T19:58:31.000Z",
+          "pipeline": "any-to-any",
+          "model_type": "NemotronH_Nano_Omni_Reasoning_V3",
+          "architectures": [
+            "NemotronH_Nano_Omni_Reasoning_V3"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Muse-Glimmer-30B-NVFP4",
+          "sha": "47818374517751c48c55cde2621594926b1888b6",
+          "createdAt": "2026-08-27T20:37:10.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "muse_glimmer",
+          "architectures": [
+            "MuseGlimmerForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4-Pro-0813-NVFP4",
+          "sha": "949138637e8e8fe190335be2396af62187dc8a83",
+          "createdAt": "2026-08-27T10:39:25.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Qwen3.8-2.4T-A95B-NVFP4",
+          "sha": "74eb734297318ecf7c48016a4ac8ce1b47cc74a9",
+          "createdAt": "2026-08-25T18:55:42.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3_5_moe_text",
+          "architectures": [
+            "Qwen3_5MoeForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4-Flash-0731-NVFP4",
+          "sha": "f1caa71142bd0be02f728c79f75042ac1e461579",
+          "createdAt": "2026-08-19T17:09:47.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-Teacher-Chat",
+          "sha": "7fbf767583dfd7f18f11734626ce1fb311d6acb1",
+          "createdAt": "2026-08-14T17:09:11.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-Teacher-Competition-Coding",
+          "sha": "0ce569b43b8133d152444cef41bab980faa7c0d5",
+          "createdAt": "2026-08-14T17:08:58.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-Teacher-Instruction-Following",
+          "sha": "ef1ac9054312647348381edc79d5311e17db5f6d",
+          "createdAt": "2026-08-14T17:08:45.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-Teacher-General-Reasoning",
+          "sha": "84b1afba11b60e848edfe9934dc38214398e982d",
+          "createdAt": "2026-08-14T17:08:25.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-Labs-Teacher-STEM",
+          "sha": "cf8545f0a9b53190d3538ae86bc43e3478428f73",
+          "createdAt": "2026-08-14T17:07:48.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/Kimi-K3-NVFP4",
+          "sha": "b2428a0b83a8b712ff2e1a8448a103d4175341f1",
+          "createdAt": "2026-08-13T19:06:29.000Z",
+          "pipeline": "text-generation",
+          "model_type": "kimi_k3",
+          "architectures": [
+            "KimiK3ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-Base-BF16",
+          "sha": "434456c9a6753f29d24e23c95d622aaf17111b3b",
+          "createdAt": "2026-08-05T22:50:37.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4-DSpark",
+          "sha": "6d127b50ecd98562cea85d0087680b7d86091fb0",
+          "createdAt": "2026-08-05T19:16:50.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Qwen3DSparkModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4-DFlash",
+          "sha": "8abcc4db8f34a5080c31eef05d4467afc06c6b9e",
+          "createdAt": "2026-08-05T19:12:27.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "DFlashDraftModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-NVFP4",
+          "sha": "bee7596271d1495f6992ae224aefde4410e816b8",
+          "createdAt": "2026-08-04T19:10:45.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16",
+          "sha": "a9904d24bcc1d289a1950fa9d2b978c47cf903b9",
+          "createdAt": "2026-08-01T06:55:21.000Z",
+          "pipeline": "text-generation",
+          "model_type": "nemotron_h",
+          "architectures": [
+            "NemotronHForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4-Pro-nvfp4-DSpark",
+          "sha": "85cfb04fe0355567dc7b89e13d8150dab29a409c",
+          "createdAt": "2026-07-22T12:19:26.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "nvidia/DeepSeek-V4-Flash-nvfp4-DSpark",
+          "sha": "ba3b12c9bb31c459af02e2162b00e5ef1fa05a1c",
+          "createdAt": "2026-07-22T11:54:18.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "deepseek-ai",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "deepseek-ai/DeepSeek-V4.1-Flash",
+          "sha": "314113f8a7dadb388215396ba5fbee2c610a04d6",
+          "createdAt": "2026-09-10T02:17:58.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "deepseek_v41",
+          "architectures": [
+            "DeepseekV41ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "deepseek-ai/DeepSeek-V4-Flash-Vision-Exp",
+          "sha": "6821d6ad3681a4b137b066b76094fa82ebd0a380",
+          "createdAt": "2026-08-31T06:16:18.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "deepseek-ai/DeepSeek-V4-Pro-0813",
+          "sha": "72e1d3230f6c080a530b0a1d46f8eb4602340597",
+          "createdAt": "2026-08-13T03:05:06.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "deepseek-ai/DeepSeek-V4-Flash-0731",
+          "sha": "7872f01b1d1fe23eabc4c98b48bffcef5a386062",
+          "createdAt": "2026-07-31T07:30:24.000Z",
+          "pipeline": "text-generation",
+          "model_type": "deepseek_v4",
+          "architectures": [
+            "DeepseekV4ForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "mistralai",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "google",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "moonshotai",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "stepfun-ai",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "MiniMaxAI",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "allenai",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "allenai/AstaBrief_8B_SFT",
+          "sha": "d2d57580d2255422a4c1e4ca4efb6b169a134351",
+          "createdAt": "2026-09-10T23:36:30.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Llama-3-Blama-8B",
+          "sha": "1349fc101b0c25b060e2912b9cc6a7ce82c50be3",
+          "createdAt": "2026-08-26T13:40:05.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Llama-3-Blama-8B-Stage1",
+          "sha": "7a0850645208bb3109db9bd4a480517d89b655af",
+          "createdAt": "2026-08-26T13:32:05.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Bwen-8B",
+          "sha": "b2644f7827c21c3276d70cb82e6558aa03b9670e",
+          "createdAt": "2026-08-26T13:21:04.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Bwen-8B-Stage1",
+          "sha": "854da622962867062be79bc750172cd0a3f6c2a8",
+          "createdAt": "2026-08-26T13:18:26.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Bolmo-1B-Stage1",
+          "sha": "c5ac3c1b61f925518a1e5dbb4ea4ee67f38f1050",
+          "createdAt": "2026-08-26T13:16:56.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "allenai/Bolmo-7B-Stage1",
+          "sha": "36da45293c742c597728e2d0f3498ac10667188b",
+          "createdAt": "2026-08-26T13:12:59.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bolmo",
+          "architectures": [
+            "BolmoForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "HuggingFaceTB",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "openai",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "EssentialAI",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "XiaomiMiMo",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "XiaomiMiMo/MiMo-V2.6-Flash-MOPD",
+          "sha": "b12f5573350bb1704513fcf119fca48e498b0423",
+          "createdAt": "2026-09-27T04:01:00.000Z",
+          "pipeline": "text-generation",
+          "model_type": "mimo_v2",
+          "architectures": [
+            "MiMoV2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "XiaomiMiMo/MiMo-V2.6-Pro-MOPD",
+          "sha": "6a7f202e8dbd0e57b3fe1da03917d08d75abc4b8",
+          "createdAt": "2026-09-27T03:58:00.000Z",
+          "pipeline": "text-generation",
+          "model_type": "mimo_v2",
+          "architectures": [
+            "MiMoV2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "XiaomiMiMo/MiMo-V2.6-Distill-Qwen-9B",
+          "sha": "2367e865d009c13ac81713a2878291d33ab28177",
+          "createdAt": "2026-09-21T18:18:40.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "XiaomiMiMo/MiMo-V2.6-Flash-RL",
+          "sha": "dcd3fd83fb181622fbc606fbb1709901982a62c2",
+          "createdAt": "2026-09-21T15:39:51.000Z",
+          "pipeline": "text-generation",
+          "model_type": "mimo_v2",
+          "architectures": [
+            "MiMoV2ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "XiaomiMiMo/MiMo-V2.6-Pro-RL",
+          "sha": "b61f21852680ee02a29e946e18cf8697f4844061",
+          "createdAt": "2026-09-21T15:39:33.000Z",
+          "pipeline": "text-generation",
+          "model_type": "mimo_v2",
+          "architectures": [
+            "MiMoV2ForCausalLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "tencent",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "tencent/Hy-Memory-30B-A3B",
+          "sha": "64a460a94d5498b7316fb02395c72d01c47a7347",
+          "createdAt": "2026-10-15T09:52:00.000Z",
+          "pipeline": "text-generation",
+          "model_type": "hy_v3",
+          "architectures": [
+            "HYV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/Youtu-Parsing-Omni",
+          "sha": "05d44d70575744ce1009897bcba42c5986c3b7c3",
+          "createdAt": "2026-10-09T06:42:18.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "youtu_vita",
+          "architectures": [
+            "YoutuVITAForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/Simple-Attention-Sparsification",
+          "sha": "f7c3f2f7b05a8342d90cbe73e2657100d11cbac8",
+          "createdAt": "2026-09-14T07:43:25.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "tencent/Hy4-preview-FP8",
+          "sha": "4215ec29de873a998e849cee902654490c7ff4d1",
+          "createdAt": "2026-08-27T08:57:54.000Z",
+          "pipeline": "text-generation",
+          "model_type": "hy_v4",
+          "architectures": [
+            "HYV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/Hy4-preview",
+          "sha": "705d81ee51566a186d645b74c974d642ef2828fe",
+          "createdAt": "2026-08-27T08:52:40.000Z",
+          "pipeline": "text-generation",
+          "model_type": "hy_v4",
+          "architectures": [
+            "HYV4ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/ContextPilot-E4B",
+          "sha": "a7ba41c18ddcd334f23f63ef7a608ca46bfe3aa4",
+          "createdAt": "2026-08-27T01:07:44.000Z",
+          "pipeline": "text-generation",
+          "model_type": "gemma4",
+          "architectures": [
+            "Gemma4ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/ContextPilot-14B",
+          "sha": "8eafd8356c5c5e713e92e623c8f1d346de6d0f95",
+          "createdAt": "2026-08-27T01:07:25.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/ContextPilot-8B",
+          "sha": "595abeaed72e4a4d9da94d04917f0618989a5553",
+          "createdAt": "2026-08-27T01:07:06.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "Qwen3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/UI-Mate-democua-27B",
+          "sha": "a76300b510ee8c9b509cdd933ff5e31a994a3400",
+          "createdAt": "2026-08-14T04:59:23.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/UI-Mate-9B",
+          "sha": "05dd5f2975195a5bb03d4363e8767f12158c8421",
+          "createdAt": "2026-08-14T04:55:32.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "tencent/UI-Mate-27B",
+          "sha": "3ade2378fc84032d5017c1a9c93c4eaa77d65e57",
+          "createdAt": "2026-08-14T04:55:07.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "inclusionAI",
+      "pages": 1,
+      "complete": true,
+      "models": [
+        {
+          "repo": "inclusionAI/Ling-3.1-flash",
+          "sha": "a4ccd6b45c002ddb236f9cb77d52cc427482bf19",
+          "createdAt": "2026-10-13T11:16:41.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Realtime-Venus",
+          "sha": "ad42af5f6c77936377626e016cccb7147b6a723f",
+          "createdAt": "2026-09-16T08:02:28.000Z",
+          "pipeline": "any-to-any",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-Fin-fp4",
+          "sha": "7748601ef3dd9032a36b1ff0e4f3db451b824964",
+          "createdAt": "2026-09-10T05:39:50.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-Fin-int4",
+          "sha": "b52f0e6d347dd0a343c7070b368dcd94dcb9d13c",
+          "createdAt": "2026-09-09T07:34:36.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-Fin-fp8",
+          "sha": "28bf489f3e33eeae2515f4bd006b9f6218512c6d",
+          "createdAt": "2026-09-09T07:34:01.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-VL-int4",
+          "sha": "94759a4b454498d91144582e26c1341ba1acb5d4",
+          "createdAt": "2026-09-08T10:22:40.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "bailing_moe_v3_vl",
+          "architectures": [
+            "BailingMoeV3VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-VL-fp4",
+          "sha": "8dca6a0d4dde1ddc79cfe79506173bbf375393ac",
+          "createdAt": "2026-09-08T10:22:02.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "bailing_moe_v3_vl",
+          "architectures": [
+            "BailingMoeV3VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-VL-fp8",
+          "sha": "6f040eebd79d756ab4f6ef69a86d194a569198e0",
+          "createdAt": "2026-09-08T10:21:21.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "bailing_moe_v3_vl",
+          "architectures": [
+            "BailingMoeV3VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/LLaDA-UI",
+          "sha": "f9a59c1945fc4de68f4bd667b49001cba4a1d954",
+          "createdAt": "2026-09-06T05:08:15.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "llada2vl",
+          "architectures": [
+            "LLaDA2MoE_VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/LLaDA2.2-mini",
+          "sha": "e4f77d25ab5ca86f2223c6cdc6a72b887e20c8a5",
+          "createdAt": "2026-09-05T05:16:19.000Z",
+          "pipeline": "text-generation",
+          "model_type": "llada2_moe",
+          "architectures": [
+            "LLaDA2MoeModelLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-VL",
+          "sha": "c22bf252f15b66d18ca00a15989ac7ed46b7f09e",
+          "createdAt": "2026-09-04T15:24:37.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "bailing_moe_v3_vl",
+          "architectures": [
+            "BailingMoeV3VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-Fin",
+          "sha": "a5b4afb48f526175991724472c179e5a065604de",
+          "createdAt": "2026-09-03T06:09:53.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/ArmorOCR-GGUF",
+          "sha": "7889a83bc826fa7e9699a3a63cafbd839bd3c9e1",
+          "createdAt": "2026-09-01T06:10:23.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-GGUF",
+          "sha": "29edce5130491e638f3e5ebec91fa0a5ed4f780e",
+          "createdAt": "2026-08-31T03:18:15.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-tiny-GGUF",
+          "sha": "01b850e29ed5b44e2b810160ff980a9bb353296f",
+          "createdAt": "2026-08-30T09:52:42.000Z",
+          "pipeline": "text-generation",
+          "model_type": null,
+          "architectures": null,
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/UI-Venus-2-9B",
+          "sha": "90d6dfe13ece735f82793635b69bcc10c710e2ab",
+          "createdAt": "2026-08-26T14:52:03.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_5",
+          "architectures": [
+            "Qwen3_5ForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/ArmorOCR",
+          "sha": "569a1c381c78d06f9da6555575a4db690b5a0b90",
+          "createdAt": "2026-08-20T10:54:31.000Z",
+          "pipeline": "image-text-to-text",
+          "model_type": "qwen3_vl",
+          "architectures": [
+            "Qwen3VLForConditionalGeneration"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-base",
+          "sha": "0a96b0a3c68f93e5565d6f2d56c98557bded74fb",
+          "createdAt": "2026-08-11T12:11:08.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-base-30T",
+          "sha": "4c7a67683c9e7ea9fad199b58e7b54cd835b63c2",
+          "createdAt": "2026-08-11T12:10:59.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-base-midtrain",
+          "sha": "34f7c1ed096bdb3118ec1474132ad21794d4510a",
+          "createdAt": "2026-08-11T12:10:20.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-tiny",
+          "sha": "9a98e35fe1c9ee255f78dd64771c7ae15a799481",
+          "createdAt": "2026-08-10T02:44:06.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-dspark",
+          "sha": "d60b0e1291dacb256194c6d48154398730cf8986",
+          "createdAt": "2026-08-09T12:32:20.000Z",
+          "pipeline": "text-generation",
+          "model_type": "qwen3",
+          "architectures": [
+            "LingDSparkModel"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-fp4",
+          "sha": "3bae1cf4011b48475b2cc038fff283af49053ebc",
+          "createdAt": "2026-08-04T04:33:13.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-int4",
+          "sha": "7a27e9eb8179b2c2eb71eb214f0dab14ec6a63f2",
+          "createdAt": "2026-08-04T04:31:51.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash-fp8",
+          "sha": "88d48c5a46e1b2f609144e83d95b8ac47528b12e",
+          "createdAt": "2026-08-04T03:59:52.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/Ling-3.0-flash",
+          "sha": "fcc60a52b34c69c6271d0ac8a8cb0815020b6a43",
+          "createdAt": "2026-08-02T16:14:41.000Z",
+          "pipeline": "text-generation",
+          "model_type": "bailing_hybrid",
+          "architectures": [
+            "BailingMoeV3ForCausalLM"
+          ],
+          "gated": false
+        },
+        {
+          "repo": "inclusionAI/LLaDA2.2-flash",
+          "sha": "9b78da3f9149f1e239fb6d15f20a326fde574b9f",
+          "createdAt": "2026-07-16T03:41:45.000Z",
+          "pipeline": "text-generation",
+          "model_type": "llada2_moe",
+          "architectures": [
+            "LLaDA2MoeModelLM"
+          ],
+          "gated": false
+        }
+      ]
+    },
+    {
+      "author": "baidu",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "LG-AI-EXAONE",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    },
+    {
+      "author": "OpenBMB",
+      "pages": 1,
+      "complete": true,
+      "models": []
+    }
+  ]
+}

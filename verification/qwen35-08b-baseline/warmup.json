@@ -1,0 +1,9 @@
+{
+  "content": "READY<|im_end|>\n",
+  "finish_reason": "stop",
+  "completion_tokens": 4,
+  "reasoning_tokens": null,
+  "final_marker": null,
+  "thinking_open": false,
+  "floor_enforced": false
+}

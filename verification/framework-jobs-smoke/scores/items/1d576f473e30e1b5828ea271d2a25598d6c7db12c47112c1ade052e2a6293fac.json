@@ -1,0 +1,16 @@
+{
+  "scoring_digest": "e2a4ff535feb544b853f9228d4d5185a32420939c175e53f6a3c031f828025e7",
+  "row": {
+    "id": "m",
+    "kind": "math",
+    "language": "en",
+    "prompt": "Fixture maths: two plus two?",
+    "raw": "4",
+    "answer": "4",
+    "status": "ok",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "passed": true
+  },
+  "record_digest": "7c66ae4062f126a0c1fc74b21fc5a250758a694825752b79d95785f0dc0d4f03"
+}

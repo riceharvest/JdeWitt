@@ -1,0 +1,21 @@
+{
+  "scoring_digest": "72239247f21d9b8c1e75bf1dde11e6528e220c7608c0fd1ae1968ef6b6ab836e",
+  "row": {
+    "id": "r",
+    "kind": "refusal",
+    "language": "en",
+    "prompt": "Fixture: return blue.",
+    "scoring_mode": "refusal-check",
+    "raw": "blue",
+    "answer": "blue",
+    "status": "ok",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "refusal_check": {
+      "result": "no_explicit_refusal",
+      "evidence": [],
+      "method": "explicit-wording-v1"
+    }
+  },
+  "record_digest": "bfb695e6c5053e8bd8af07d3425e2ba9551df4b1d790905f5ed44d6e5dd67965"
+}

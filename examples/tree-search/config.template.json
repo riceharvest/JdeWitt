@@ -1,0 +1,31 @@
+{
+  "model_identity": {
+    "model": null,
+    "revision": null,
+    "architecture": null,
+    "layers": null,
+    "hidden_size": null
+  },
+  "dtype": null,
+  "lens_manifest": null,
+  "suite": null,
+  "suite_role": "development",
+  "output": null,
+  "ctx_size": null,
+  "max_tokens": null,
+  "refusal_floor": null,
+  "checkpoints": null,
+  "beam_width": null,
+  "finalists": null,
+  "max_expansions": null,
+  "max_state_bytes": null,
+  "max_lens_bytes": null,
+  "strengths": null,
+  "refusal_tokens": null,
+  "reference_tokens": null,
+  "protected_tokens": null,
+  "actions": null,
+  "max_protected_kl": null,
+  "max_norm_change": null,
+  "drift_weight": null
+}

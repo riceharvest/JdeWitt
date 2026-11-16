@@ -1,0 +1,42 @@
+Loading weights:   0%|          | 0/473 [00:00<?, ?it/s]Loading weights:   0%|          | 1/473 [00:01<07:57,  1.01s/it]Loading weights:   2%|▏         | 11/473 [00:01<00:35, 13.13it/s]Loading weights:   5%|▍         | 23/473 [00:01<00:16, 26.85it/s]Loading weights:   7%|▋         | 31/473 [00:01<00:12, 34.22it/s]Loading weights:   9%|▉         | 42/473 [00:01<00:09, 46.16it/s]Loading weights:  13%|█▎        | 60/473 [00:01<00:05, 70.58it/s]Loading weights:  18%|█▊        | 86/473 [00:01<00:03, 107.86it/s]Loading weights:  21%|██▏       | 101/473 [00:01<00:03, 102.39it/s]Loading weights:  26%|██▌       | 121/473 [00:02<00:02, 120.10it/s]Loading weights:  30%|███       | 142/473 [00:02<00:02, 118.58it/s]Loading weights:  35%|███▌      | 167/473 [00:02<00:02, 125.54it/s]Loading weights:  39%|███▊      | 183/473 [00:02<00:02, 129.57it/s]Loading weights:  42%|████▏     | 197/473 [00:02<00:02, 127.99it/s]Loading weights:  46%|████▌     | 217/473 [00:02<00:01, 139.07it/s]Loading weights:  49%|████▉     | 232/473 [00:02<00:01, 137.85it/s]Loading weights:  52%|█████▏    | 247/473 [00:02<00:01, 130.46it/s]Loading weights:  55%|█████▌    | 261/473 [00:03<00:01, 116.31it/s]Loading weights:  59%|█████▉    | 278/473 [00:03<00:01, 127.32it/s]Loading weights:  63%|██████▎   | 298/473 [00:03<00:01, 142.98it/s]Loading weights:  66%|██████▌   | 313/473 [00:03<00:01, 135.34it/s]Loading weights:  73%|███████▎  | 347/473 [00:03<00:00, 178.59it/s]Loading weights:  82%|████████▏ | 388/473 [00:03<00:00, 233.87it/s]Loading weights:  92%|█████████▏| 434/473 [00:03<00:00, 290.09it/s]Loading weights: 100%|█████████▉| 472/473 [00:03<00:00, 306.55it/s]Loading weights: 100%|██████████| 473/473 [00:03<00:00, 120.53it/s]
+[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `chunk_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+[transformers] `causal_conv1d_update` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.
+[transformers] `fused_recurrent_gated_delta_rule` is falling back to its reference PyTorch implementation because `flash-linear-attention` is not installed. This is correct but much slower; install `flash-linear-attention` for the optimized kernel.
+{
+  "status": "experimental-unvalidated",
+  "scope": "prefill-only runtime interventions; no static GGUF export",
+  "generated": 8,
+  "reused": 0,
+  "prompts": 4,
+  "behavior_generated": 0,
+  "behavior_evidence": null,
+  "answers": {
+    "baseline": {
+      "answers": "/mnt/ssd/dev workspace/b70-ablator/runs/qwen35-08b-tree-proxy-01/answers/baseline",
+      "total": 4,
+      "completed": 4,
+      "missing": 0,
+      "generation_digest": "ccf9be4dfe23796c975be00bbbecc53f50bf18b82539e04dbb391a5687aa8e72"
+    },
+    "rank-0": {
+      "answers": "/mnt/ssd/dev workspace/b70-ablator/runs/qwen35-08b-tree-proxy-01/answers/rank-0",
+      "total": 4,
+      "completed": 4,
+      "missing": 0,
+      "generation_digest": "900d16bb4d49698fae5e2455ed066bb5ac97492be7827171ea372ad3821f2b42"
+    }
+  },
+  "tree_evidence": {
+    "trees/1c7a56cbb75e5cec40bd79a0ce79f92d3e0a166b96bb7d150212b14db9716845.json": "c825febc57650ef6f7b0c38b8a6acff4d37cb366c42c99a5dd3a8d0edfc0340f",
+    "trees/40aa0bd80945a0f2af96f1e6384770859c0d42e8f0d42a1f46ac74189aecb8cb.json": "b37676fa7e788c3ad8c029a6396e367ca38509283ad14182d5793d25cf201f15",
+    "trees/c668653e916d98e880ad315b54be95bc90e94df46759e97a69eb7591a3be8b57.json": "07e373726ff5dd207191ef60bff929e4f6c9c69ccd5f672f51a0854865726a70",
+    "trees/f3fd11f4c14c65dc28261fef3ee624e7d91029da38c3c025df3dd76f694aec70.json": "d738882b533b5c0d374d291853412c53ea341de36a5b120574a5641f881a6642"
+  },
+  "not_checked": [
+    "proxy calibration on edited states",
+    "complete-answer fulfillment",
+    "code/math preservation",
+    "matched compute advantage"
+  ]
+}

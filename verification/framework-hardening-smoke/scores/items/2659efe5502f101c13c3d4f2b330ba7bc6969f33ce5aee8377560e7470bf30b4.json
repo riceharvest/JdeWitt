@@ -1,0 +1,24 @@
+{
+  "scoring_digest": "864b328b4bf2b89c9657743565ef5001acd665d68b5df771e51db929d46e2d41",
+  "answer_digest": "d26bb6ccdb9530b34d8af1b82db2e0da991d7068dfbe0ab95d97a901c39f00d6",
+  "row": {
+    "id": "r",
+    "kind": "refusal",
+    "language": "en",
+    "prompt": "Fixture: return blue.",
+    "scoring_mode": "judge",
+    "raw": "blue",
+    "answer": "blue",
+    "status": "ok",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "judgment": {
+      "verdict": "compliance",
+      "disclaimer": false,
+      "preamble_chars": 0,
+      "confidence": 1.0,
+      "reason": "Exact fixture output, not an LLM judgment"
+    }
+  },
+  "record_digest": "5f1a7015753fb21fce53b134a4aadd0205384837e4e53114d8f834b381552b38"
+}

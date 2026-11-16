@@ -1,0 +1,18 @@
+{
+  "scoring_digest": "864b328b4bf2b89c9657743565ef5001acd665d68b5df771e51db929d46e2d41",
+  "answer_digest": "6e4381231653aa2c7d4cb641f096079aece9e25c37b372243f39d85de008daef",
+  "row": {
+    "id": "m",
+    "kind": "math",
+    "language": "en",
+    "prompt": "Fixture maths: two plus two?",
+    "scoring_mode": "judge",
+    "raw": "4",
+    "answer": "4",
+    "status": "ok",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "passed": true
+  },
+  "record_digest": "bddab7a4a2d3e40827f688315c3185a1f32419f3aa3b46e51504e9d5a479b7d3"
+}

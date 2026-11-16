@@ -1,0 +1,131 @@
+{
+  "status": "imported",
+  "seed": 42,
+  "splits": {
+    "selection": {
+      "path": "verification/public-corpus-suites/selection.jsonl",
+      "tasks": 246,
+      "digest": "a0f83c47b7438cdeda4c808d485f08d2f13da356ddd1a6077942b43cfdbacae3"
+    },
+    "holdout": {
+      "path": "verification/public-corpus-suites/holdout.jsonl",
+      "tasks": 246,
+      "digest": "e7976dfcac7179e7a40a65fddeaf5a0f4cf5df3a21dd2fb252dbdaaa217142e5"
+    }
+  },
+  "sources": [
+    {
+      "dataset": "mlabonne/harmful_behaviors",
+      "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "ad845a73ae983b456961e020a53a08551d46019daa30530c8ccf4a4859140fb9",
+      "id": "advbench-train",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": "row-group",
+      "family_origin": "synthetic-row-group",
+      "family_count": 60
+    },
+    {
+      "dataset": "mlabonne/harmless_alpaca",
+      "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46",
+      "id": "alpaca-train",
+      "kind": "harmless",
+      "split": "selection",
+      "offset": 0,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": null,
+      "family_origin": null,
+      "family_count": 0
+    },
+    {
+      "id": "authored-capability",
+      "kind": "passthrough",
+      "split": "selection",
+      "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/selection.jsonl",
+      "file_sha256": "927fa35874911f27dbef07e2258df2a465c4e5cd62fea50ac1e844988518d669",
+      "rows_used": 6,
+      "duplicates_dropped": 0,
+      "kinds": [
+        "math",
+        "code"
+      ],
+      "family_strategy": null,
+      "family_origin": "authored-file",
+      "family_count": 0
+    },
+    {
+      "dataset": "mlabonne/harmful_behaviors",
+      "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "ad845a73ae983b456961e020a53a08551d46019daa30530c8ccf4a4859140fb9",
+      "id": "advbench-holdout",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 120,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": "row-group",
+      "family_origin": "synthetic-row-group",
+      "family_count": 60
+    },
+    {
+      "dataset": "mlabonne/harmless_alpaca",
+      "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46",
+      "id": "alpaca-holdout",
+      "kind": "harmless",
+      "split": "holdout",
+      "offset": 120,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": null,
+      "family_origin": null,
+      "family_count": 0
+    },
+    {
+      "id": "authored-capability-holdout",
+      "kind": "passthrough",
+      "split": "holdout",
+      "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/holdout.jsonl",
+      "file_sha256": "d0dcdcbf9711209734bd38732fa60e6b266330d8c2b44af60454f5e200deffc8",
+      "rows_used": 6,
+      "duplicates_dropped": 0,
+      "kinds": [
+        "math",
+        "code"
+      ],
+      "family_strategy": null,
+      "family_origin": "authored-file",
+      "family_count": 0
+    }
+  ],
+  "duplicates_dropped": 0,
+  "near_duplicates_dropped": 0,
+  "near_duplicate_detail": {},
+  "orphaned_family_rows_dropped": 0,
+  "orphaned_family_detail": {},
+  "categories": {
+    "selection": [],
+    "holdout": []
+  },
+  "synthetic_family_sources": 2,
+  "not_checked": [
+    "that a synthetic row grouping is a genuine topic family",
+    "that the imported prompts are harmful to this model",
+    "token budgets",
+    "model fit",
+    "refusal wording in the imported corpus"
+  ]
+}

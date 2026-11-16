@@ -1,0 +1,143 @@
+{
+  "status": "core-upgrade-verified-exhaustive-request-not-complete",
+  "verification": {
+    "tests_passed": 302,
+    "tests_failed": 0,
+    "tests_skipped": 0,
+    "xpu_tests": 19,
+    "xpu_evidence": "Real B70 operators and small fixture models, not a pretrained refusal-quality benchmark.",
+    "doctor": {
+      "torch": "2.14.1+xpu",
+      "device": "Intel(R) Arc(TM) Pro B70 Graphics",
+      "kernel_sum": 3680.0,
+      "kernel_finite": true,
+      "cpu_fallback": false
+    },
+    "lint": "passed",
+    "wheel_and_sdist_build": "passed",
+    "wheel_cli_probes": {
+      "artifact": "/mnt/ssd/dev workspace/b70-ablator/dist/b70_ablator-0.1.0-py3-none-any.whl",
+      "outside_source_tree": true,
+      "model_imports_blocked": true,
+      "probes": [
+        {
+          "command": "--help",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "command": "methods",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "command": "architectures",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "command": "train",
+          "exit_code": 0,
+          "passed": true
+        },
+        {
+          "command": "run-status",
+          "exit_code": 1,
+          "passed": true
+        }
+      ]
+    }
+  },
+  "methods": {
+    "directional": "implemented",
+    "projected": "implemented",
+    "mpoa": "implemented",
+    "svd": "implemented",
+    "whitened-svd": "implemented",
+    "som": "implemented",
+    "leace": "implemented",
+    "ara": "implemented",
+    "sft": "implemented",
+    "dpo": "implemented",
+    "rdo": "researched-not-implemented",
+    "router-prebias": "researched-not-implemented",
+    "sae": "researched-not-implemented"
+  },
+  "recent_architecture_census": {
+    "since": "2026-07-16",
+    "until": "2026-10-16",
+    "publishers": 21,
+    "model_types": 31,
+    "not_supported": [
+      "NemotronH_Nano_Omni_Reasoning_V3",
+      "bailing_moe_v3_vl",
+      "bolmo",
+      "d1_omni",
+      "deepseek_v41",
+      "kimi_k3",
+      "llada2_moe",
+      "llada2vl",
+      "mimo_v2",
+      "muse_glimmer_assistant",
+      "qwen_drive",
+      "youtu_vita"
+    ]
+  },
+  "limits": [
+    "No claim of fixing every Heretic issue.",
+    "RDO, SAE and router pre-bias are researched but not implemented.",
+    "No claim that all July-October model architectures are supported.",
+    "A real pretrained model compliance/capability benchmark and matched throughput comparison were not run.",
+    "Full-precision model weights plus workspace must fit one B70; no CPU offload or substitute GPU.",
+    "SFT/DPO output remains trained-unvalidated, with no optimizer-state resume or automatic holdout evaluation."
+  ],
+  "source_sha256": {
+    "__init__.py": "ea71f94ee4a483ff523269c88acb6c18d462dc4f8c388fd3f51d19ca43bd9f34",
+    "__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+    "agent.py": "bde8423d7bf072dff3843fa2118b737ef805c232e8c968fe8d3e859ade0a67c7",
+    "answers.py": "1205c4dc94ab8ed605d7b500a855e925f1e7c91883cfddac8333e88da1c51544",
+    "architectures.py": "be244c32c905263660851bffc1454491540ea3f8fc7cca40d820ee481df07bb6",
+    "arguments.py": "369563853fdb8f4f64cc43ca9f31eb0f443780b46d9f8cf4de5218fbeda3bc07",
+    "chat.py": "64c9c8898a9c6d99c308ed7298467e2f7f47501e1b6a801d55fbc12c0f454a11",
+    "cli.py": "e270dcf6a264b0e4377a2a11f6270e1f17a0f83d7f8d9868413a44209acd6539",
+    "compat.py": "894a12a1a6aa9ecd3f8d69970ff7453db1516fd418c13a1e09e55197d7450993",
+    "data.py": "1efe8037bf09485b9cb88e07130c735a949815cb3182c185be6cc723f3fc7444",
+    "editor.py": "f25a3e3f81164d4beac1d2274d8798363833a040fa8198b6867b165ed9d18361",
+    "erasure.py": "bc37151cfb8f22ffd3186caa5f0cd498e6dc1f1780013e0ec5d92970f16a6f26",
+    "evaluation.py": "efb17c365a6db04e5303ea642b8fc0670946ef0be3f57a8d0f7231f36e8f38b2",
+    "export.py": "c6a9962f24b027dec26b2d04a717b7be62cd3baaa342c70c1829520d9ac4e28d",
+    "grounded_judge.py": "61265ae1c6ce4fccdd8e8e49011d341c1a1fd3486d14befa4263683543c4d488",
+    "hf.py": "2c05ce54d18a4cfc20d01dd6a93f6d55a059da3ec4b485fd76e1abf573759474",
+    "job_cli.py": "fdd29011197773be778908437e2d21df135db39f25a1dd6ab35a18a44a9870e4",
+    "methods.py": "32e94443c849142ee7f1a3329e7aa8279b1f274772414e13899c383fc56e3db0",
+    "numerics.py": "bcfa398007dad458214ec0c61de117396447c1556ef2ce7b4086ac69339eacc4",
+    "phases.py": "0b9e8d8bf4b7ff9b905026555d60dada9803d57f35d32d08f0541236d9b12b44",
+    "pipeline.py": "de37cb0dc0c9f0ad1a097337b8d0c394b9ddb37bd920b246ea64ad5987b4c77a",
+    "plans.py": "a156075a81b10268c90651be3760525d13aeeb2d4050749000606db82576dca3",
+    "refusal_check.py": "4526907ad8b202e284b51be051314bbaca104573d63983af502d32326164c6c9",
+    "release.py": "14cb99a8a32ad6d383da4b2a9ce7fd17d9e6444d0baad91063a2335c4a983a27",
+    "scoring.py": "1aaa1f0002ee415f5059d78e07fccab0841dc08fd5c9362bef07a0373ebe6499",
+    "search.py": "2fe110ae31375232442af996366adbe3db37c7e551e9d71e0b5a43f41a070323",
+    "storage.py": "aa467d8d77cd79c30ab3ebca3fc9627dbd0b2302d0073a7b05f1150987ab9658",
+    "style_judge.py": "553ece0701b56d75d6c8df59dddec286db1be9c941d4af92dd5aa63ec134140a",
+    "training.py": "d9e9ecc3b954ec98cf6735e27b8d88764187adabdc06a47a36ca5add4ffee97c",
+    "transport.py": "9866874bf484330fd88b2d14ad87f65151671b1027f569c8abf79a6c436cec26",
+    "validation.py": "402d45c22ddc77894df13cb207186d81731dec5f8406b52f34da953a75f5312f"
+  },
+  "artifact_sha256": {
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "b70_ablator-0.1.0-py3-none-any.whl": "9145b6b5d78a36c353d39dd06ec8219e98c04d1096464cd830c0f9ffb980de8a",
+    "b70_ablator-0.1.0.tar.gz": "cfebf0fc2519aec78fa4ddfbad50f77e2df869bf12ac3d4172cbee93026537fa"
+  },
+  "evidence": [
+    "verification/extensions-pytest.xml",
+    "verification/extensions-tests.log",
+    "verification/extensions-lint.log",
+    "verification/extensions-build.log",
+    "verification/extensions-wheel-probes.json",
+    "verification/research/heretic-index.json",
+    "verification/research/recent-model-census.json",
+    "docs/agent-and-methods.md",
+    "docs/upstream-and-architectures.md"
+  ]
+}

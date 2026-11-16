@@ -1,0 +1,125 @@
+{
+  "feature": "public prompt-corpus import for the extraction/evaluation stage",
+  "commands": {
+    "validate-import": "b70-ablator validate-import SPEC.json (no downloads, no writes)",
+    "import-suite": "b70-ablator import-suite SPEC.json --output DIR"
+  },
+  "module": "b70_ablator/sources.py",
+  "docs": "docs/public-corpora.md",
+  "real_import": {
+    "spec": "examples/public-corpus/import.json",
+    "sources": [
+      {
+        "id": "advbench-train",
+        "kind": "refusal",
+        "origin": "synthetic-row-group",
+        "rows": 120,
+        "families": 60,
+        "dataset": "mlabonne/harmful_behaviors",
+        "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+        "file": "data/train-00000-of-00001.parquet",
+        "file_sha256": "ad845a73ae983b456961e020a53a08551d46019daa30530c8ccf4a4859140fb9"
+      },
+      {
+        "id": "alpaca-train",
+        "kind": "harmless",
+        "origin": null,
+        "rows": 120,
+        "families": 0,
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "file": "data/train-00000-of-00001.parquet",
+        "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46"
+      },
+      {
+        "id": "authored-capability",
+        "kind": "passthrough",
+        "origin": "authored-file",
+        "rows": 6,
+        "families": 0,
+        "dataset": null,
+        "revision": null,
+        "file": null,
+        "file_sha256": "927fa35874911f27dbef07e2258df2a465c4e5cd62fea50ac1e844988518d669"
+      },
+      {
+        "id": "advbench-holdout",
+        "kind": "refusal",
+        "origin": "synthetic-row-group",
+        "rows": 120,
+        "families": 60,
+        "dataset": "mlabonne/harmful_behaviors",
+        "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+        "file": "data/train-00000-of-00001.parquet",
+        "file_sha256": "ad845a73ae983b456961e020a53a08551d46019daa30530c8ccf4a4859140fb9"
+      },
+      {
+        "id": "alpaca-holdout",
+        "kind": "harmless",
+        "origin": null,
+        "rows": 120,
+        "families": 0,
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "file": "data/train-00000-of-00001.parquet",
+        "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46"
+      },
+      {
+        "id": "authored-capability-holdout",
+        "kind": "passthrough",
+        "origin": "authored-file",
+        "rows": 6,
+        "families": 0,
+        "dataset": null,
+        "revision": null,
+        "file": null,
+        "file_sha256": "d0dcdcbf9711209734bd38732fa60e6b266330d8c2b44af60454f5e200deffc8"
+      }
+    ],
+    "splits": {
+      "selection": {
+        "tasks": 246,
+        "digest": "a0f83c47b7438cdeda4c808d485f08d2f13da356ddd1a6077942b43cfdbacae3"
+      },
+      "holdout": {
+        "tasks": 246,
+        "digest": "e7976dfcac7179e7a40a65fddeaf5a0f4cf5df3a21dd2fb252dbdaaa217142e5"
+      }
+    },
+    "synthetic_family_sources": 2,
+    "duplicates_dropped": 0
+  },
+  "run_config": "examples/public-corpus/run.json validates: 16 authored directions + 246 imported selection + 246 imported holdout",
+  "refuses_to": [
+    "choose a split",
+    "invent maths or code tasks",
+    "guess a language",
+    "call a synthetic row grouping a genuine topic family",
+    "accept an unpinned revision",
+    "pick a data file when the repository exposes several and no split is given",
+    "write into a nonempty output directory",
+    "emit suites whose splits overlap"
+  ],
+  "tests": {
+    "non_xpu_passed": 335,
+    "xpu_passed": 19,
+    "lint": "clean",
+    "build": "wheel+sdist",
+    "new_test_files": [
+      "tests/test_sources.py",
+      "tests/test_public_corpus_example.py"
+    ]
+  },
+  "honest_limits": [
+    "Directions still require two languages; public corpora are English-only, so authored multilingual directions remain necessary.",
+    "Parquet corpora need the optional datasets extra (pyarrow); csv/json/jsonl/txt do not.",
+    "Row-group families are contiguous chunks, not topics. They are fine for the directional method (per-language means) but make rank-based methods meaningless.",
+    "Importing proves nothing about harmfulness, refusal wording, token budgets or model fit.",
+    "No ablation run has been performed on the imported suites yet."
+  ],
+  "artifacts": {
+    "holdout.jsonl": "9c7564959b113b5d51decba629b7f3ad43cb1d85371782d3edee6f470d2f1c22",
+    "import-provenance.json": "87575a623faa9d791ab9e29ce175176ad1f08879798b76b62d9cb8f8592b6479",
+    "selection.jsonl": "c3f54f15e5a9d279aa2e45f47cfb226cdafc5b8a81ffc591c63643413d0d2a82"
+  }
+}

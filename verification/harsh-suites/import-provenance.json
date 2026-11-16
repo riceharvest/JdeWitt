@@ -1,0 +1,738 @@
+{
+  "status": "imported",
+  "seed": 42,
+  "splits": {
+    "selection": {
+      "path": "verification/harsh-suites/selection.jsonl",
+      "tasks": 1340,
+      "digest": "d2da03757ab1be5a5c3b97043ed24af7ec1b53fcad6f2cfcdca8eb4d36241e12"
+    },
+    "holdout": {
+      "path": "verification/harsh-suites/holdout.jsonl",
+      "tasks": 989,
+      "digest": "03ea1ecc58d2562197d8764dd3f145a9515c07cdd4af6730f4a6dfa8a26781fb"
+    }
+  },
+  "sources": [
+    {
+      "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+      "file_sha256": "8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc",
+      "id": "hb-standard",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 200,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 6
+    },
+    {
+      "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+      "file_sha256": "8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc",
+      "id": "hb-contextual",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 100,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 6
+    },
+    {
+      "dataset": "walledai/StrongREJECT",
+      "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "603aa76bc6d546fc66da1dd5f170e775daa14cbba92ff32d56261987f1eb80e4",
+      "id": "strongreject",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 313,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 6
+    },
+    {
+      "dataset": "allenai/wildjailbreak",
+      "revision": "5ddc12a7894f842b0619b8e1c7ee496b198af009",
+      "file": "eval/eval.tsv",
+      "file_sha256": "eeb7e43aafa0151588f5cb8994b99adc0ee34a57819d92f43a6084f0b7fe4fa4",
+      "id": "wjb-harmful",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": 400,
+      "rows_used": 400,
+      "duplicates_dropped": 0,
+      "family_strategy": "row-group",
+      "family_origin": "synthetic-row-group",
+      "family_count": 200
+    },
+    {
+      "dataset": "allenai/wildjailbreak",
+      "revision": "5ddc12a7894f842b0619b8e1c7ee496b198af009",
+      "file": "eval/eval.tsv",
+      "file_sha256": "eeb7e43aafa0151588f5cb8994b99adc0ee34a57819d92f43a6084f0b7fe4fa4",
+      "id": "wjb-benign",
+      "kind": "harmless",
+      "split": "selection",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 210,
+      "duplicates_dropped": 0,
+      "family_strategy": null,
+      "family_origin": null,
+      "family_count": 0
+    },
+    {
+      "dataset": "mlabonne/harmless_alpaca",
+      "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46",
+      "id": "alpaca",
+      "kind": "harmless",
+      "split": "selection",
+      "offset": 0,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": null,
+      "family_origin": null,
+      "family_count": 0
+    },
+    {
+      "id": "authored-capability",
+      "kind": "passthrough",
+      "split": "selection",
+      "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/selection.jsonl",
+      "file_sha256": "927fa35874911f27dbef07e2258df2a465c4e5cd62fea50ac1e844988518d669",
+      "rows_used": 6,
+      "duplicates_dropped": 0,
+      "kinds": [
+        "math",
+        "code"
+      ],
+      "family_strategy": null,
+      "family_origin": "authored-file",
+      "family_count": 0
+    },
+    {
+      "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+      "file_sha256": "8d81accedd38eaaf8b760618622bb888417d1fd0c86eba65c427a16f1cbb4afc",
+      "id": "hb-copyright",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 100,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 1
+    },
+    {
+      "dataset": "JailbreakBench/JBB-Behaviors",
+      "revision": "886acc352a31533ffbcf4ef22c744658688086fc",
+      "file": "data/harmful-behaviors.csv",
+      "file_sha256": "4a8ec6832056b631eb092dccc60d37a61c3d441268268888b3d006288afeffa1",
+      "id": "jbb",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 100,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 10
+    },
+    {
+      "dataset": "mlabonne/harmful_behaviors",
+      "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "ad845a73ae983b456961e020a53a08551d46019daa30530c8ccf4a4859140fb9",
+      "id": "advbench",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 0,
+      "limit": 200,
+      "rows_used": 200,
+      "duplicates_dropped": 0,
+      "family_strategy": "row-group",
+      "family_origin": "synthetic-row-group",
+      "family_count": 100
+    },
+    {
+      "dataset": "walledai/MaliciousInstruct",
+      "revision": "4669349f48fea45dbacec02aaa9aca4fd7ac1c15",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "abdb5516e6ac81f9ffbcf0a588b1440fa7af4aea15443d1fd3af5fd0b8707418",
+      "id": "maliciousinstruct",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 100,
+      "duplicates_dropped": 0,
+      "family_strategy": "row-group",
+      "family_origin": "synthetic-row-group",
+      "family_count": 50
+    },
+    {
+      "dataset": "sorry-bench/sorry-bench-202406",
+      "revision": "b34822276edde97592eda99c0b56d306f8830469",
+      "file": "question.jsonl",
+      "file_sha256": "a7cde9d19c34634969da44bff0a247823bebf6c3b1488ac19c75559757699858",
+      "id": "sorry-bench",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 0,
+      "limit": null,
+      "rows_used": 450,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 45
+    },
+    {
+      "dataset": "mlabonne/harmless_alpaca",
+      "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "b13d6c60adef58f41897e5ae50245cb171fd0145768300ffe5857b382e080c46",
+      "id": "alpaca-holdout",
+      "kind": "harmless",
+      "split": "holdout",
+      "offset": 120,
+      "limit": 120,
+      "rows_used": 120,
+      "duplicates_dropped": 0,
+      "family_strategy": null,
+      "family_origin": null,
+      "family_count": 0
+    },
+    {
+      "id": "authored-capability-holdout",
+      "kind": "passthrough",
+      "split": "holdout",
+      "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/holdout.jsonl",
+      "file_sha256": "d0dcdcbf9711209734bd38732fa60e6b266330d8c2b44af60454f5e200deffc8",
+      "rows_used": 6,
+      "duplicates_dropped": 0,
+      "kinds": [
+        "math",
+        "code"
+      ],
+      "family_strategy": null,
+      "family_origin": "authored-file",
+      "family_count": 0
+    }
+  ],
+  "duplicates_dropped": 0,
+  "near_duplicates_dropped": 75,
+  "near_duplicate_detail": {
+    "selection": [
+      {
+        "id": "hb-standard-000176",
+        "duplicate_of": "hb-standard-000175"
+      },
+      {
+        "id": "hb-contextual-000002",
+        "duplicate_of": "hb-contextual-000001"
+      },
+      {
+        "id": "hb-contextual-000048",
+        "duplicate_of": "hb-contextual-000047"
+      },
+      {
+        "id": "hb-contextual-000050",
+        "duplicate_of": "hb-contextual-000049"
+      },
+      {
+        "id": "hb-contextual-000067",
+        "duplicate_of": "hb-contextual-000066"
+      },
+      {
+        "id": "hb-contextual-000068",
+        "duplicate_of": "hb-contextual-000066"
+      },
+      {
+        "id": "hb-contextual-000072",
+        "duplicate_of": "hb-contextual-000071"
+      },
+      {
+        "id": "hb-contextual-000086",
+        "duplicate_of": "hb-contextual-000085"
+      }
+    ],
+    "holdout": [
+      {
+        "id": "jbb-000004",
+        "duplicate_of": "hb-standard-000101"
+      },
+      {
+        "id": "jbb-000014",
+        "duplicate_of": "hb-standard-000143"
+      },
+      {
+        "id": "jbb-000024",
+        "duplicate_of": "hb-standard-000147"
+      },
+      {
+        "id": "jbb-000029",
+        "duplicate_of": "hb-standard-000108"
+      },
+      {
+        "id": "jbb-000039",
+        "duplicate_of": "strongreject-000143"
+      },
+      {
+        "id": "jbb-000051",
+        "duplicate_of": "hb-standard-000068"
+      },
+      {
+        "id": "jbb-000053",
+        "duplicate_of": "hb-standard-000070"
+      },
+      {
+        "id": "jbb-000054",
+        "duplicate_of": "hb-standard-000084"
+      },
+      {
+        "id": "jbb-000057",
+        "duplicate_of": "hb-standard-000121"
+      },
+      {
+        "id": "jbb-000060",
+        "duplicate_of": "hb-standard-000154"
+      },
+      {
+        "id": "jbb-000061",
+        "duplicate_of": "strongreject-000211"
+      },
+      {
+        "id": "jbb-000063",
+        "duplicate_of": "strongreject-000232"
+      },
+      {
+        "id": "jbb-000065",
+        "duplicate_of": "hb-standard-000063"
+      },
+      {
+        "id": "advbench-000013",
+        "duplicate_of": "strongreject-000187"
+      },
+      {
+        "id": "advbench-000025",
+        "duplicate_of": "strongreject-000290"
+      },
+      {
+        "id": "advbench-000036",
+        "duplicate_of": "strongreject-000159"
+      },
+      {
+        "id": "advbench-000045",
+        "duplicate_of": "jbb-000076"
+      },
+      {
+        "id": "advbench-000078",
+        "duplicate_of": "jbb-000020"
+      },
+      {
+        "id": "advbench-000083",
+        "duplicate_of": "strongreject-000213"
+      },
+      {
+        "id": "advbench-000084",
+        "duplicate_of": "strongreject-000260"
+      },
+      {
+        "id": "advbench-000094",
+        "duplicate_of": "strongreject-000155"
+      },
+      {
+        "id": "advbench-000130",
+        "duplicate_of": "strongreject-000158"
+      },
+      {
+        "id": "advbench-000136",
+        "duplicate_of": "strongreject-000211"
+      },
+      {
+        "id": "advbench-000147",
+        "duplicate_of": "strongreject-000144"
+      },
+      {
+        "id": "advbench-000158",
+        "duplicate_of": "strongreject-000261"
+      },
+      {
+        "id": "advbench-000196",
+        "duplicate_of": "strongreject-000185"
+      },
+      {
+        "id": "advbench-000197",
+        "duplicate_of": "jbb-000038"
+      },
+      {
+        "id": "maliciousinstruct-000039",
+        "duplicate_of": "strongreject-000064"
+      },
+      {
+        "id": "maliciousinstruct-000054",
+        "duplicate_of": "strongreject-000076"
+      },
+      {
+        "id": "maliciousinstruct-000055",
+        "duplicate_of": "strongreject-000068"
+      },
+      {
+        "id": "maliciousinstruct-000063",
+        "duplicate_of": "strongreject-000171"
+      },
+      {
+        "id": "maliciousinstruct-000066",
+        "duplicate_of": "strongreject-000173"
+      },
+      {
+        "id": "maliciousinstruct-000068",
+        "duplicate_of": "strongreject-000183"
+      },
+      {
+        "id": "maliciousinstruct-000069",
+        "duplicate_of": "strongreject-000175"
+      },
+      {
+        "id": "maliciousinstruct-000075",
+        "duplicate_of": "strongreject-000184"
+      },
+      {
+        "id": "maliciousinstruct-000081",
+        "duplicate_of": "strongreject-000189"
+      },
+      {
+        "id": "maliciousinstruct-000089",
+        "duplicate_of": "strongreject-000174"
+      },
+      {
+        "id": "maliciousinstruct-000090",
+        "duplicate_of": "strongreject-000128"
+      },
+      {
+        "id": "maliciousinstruct-000099",
+        "duplicate_of": "strongreject-000129"
+      },
+      {
+        "id": "sorry-bench-000003",
+        "duplicate_of": "hb-contextual-000032"
+      },
+      {
+        "id": "sorry-bench-000023",
+        "duplicate_of": "strongreject-000290"
+      },
+      {
+        "id": "sorry-bench-000028",
+        "duplicate_of": "hb-standard-000106"
+      },
+      {
+        "id": "sorry-bench-000029",
+        "duplicate_of": "hb-standard-000124"
+      },
+      {
+        "id": "sorry-bench-000033",
+        "duplicate_of": "strongreject-000215"
+      },
+      {
+        "id": "sorry-bench-000053",
+        "duplicate_of": "advbench-000167"
+      },
+      {
+        "id": "sorry-bench-000071",
+        "duplicate_of": "strongreject-000261"
+      },
+      {
+        "id": "sorry-bench-000075",
+        "duplicate_of": "hb-standard-000105"
+      },
+      {
+        "id": "sorry-bench-000084",
+        "duplicate_of": "strongreject-000232"
+      },
+      {
+        "id": "sorry-bench-000092",
+        "duplicate_of": "hb-standard-000014"
+      },
+      {
+        "id": "sorry-bench-000103",
+        "duplicate_of": "advbench-000058"
+      },
+      {
+        "id": "sorry-bench-000106",
+        "duplicate_of": "hb-standard-000028"
+      },
+      {
+        "id": "sorry-bench-000150",
+        "duplicate_of": "maliciousinstruct-000061"
+      },
+      {
+        "id": "sorry-bench-000151",
+        "duplicate_of": "maliciousinstruct-000062"
+      },
+      {
+        "id": "sorry-bench-000152",
+        "duplicate_of": "strongreject-000072"
+      },
+      {
+        "id": "sorry-bench-000160",
+        "duplicate_of": "hb-copyright-000050"
+      },
+      {
+        "id": "sorry-bench-000163",
+        "duplicate_of": "hb-copyright-000053"
+      },
+      {
+        "id": "sorry-bench-000183",
+        "duplicate_of": "hb-contextual-000053"
+      },
+      {
+        "id": "sorry-bench-000185",
+        "duplicate_of": "hb-contextual-000054"
+      },
+      {
+        "id": "sorry-bench-000190",
+        "duplicate_of": "hb-standard-000020"
+      },
+      {
+        "id": "sorry-bench-000192",
+        "duplicate_of": "strongreject-000012"
+      },
+      {
+        "id": "sorry-bench-000211",
+        "duplicate_of": "hb-standard-000109"
+      },
+      {
+        "id": "sorry-bench-000215",
+        "duplicate_of": "hb-standard-000023"
+      },
+      {
+        "id": "sorry-bench-000216",
+        "duplicate_of": "strongreject-000149"
+      },
+      {
+        "id": "sorry-bench-000270",
+        "duplicate_of": "hb-standard-000111"
+      },
+      {
+        "id": "sorry-bench-000280",
+        "duplicate_of": "hb-standard-000051"
+      },
+      {
+        "id": "sorry-bench-000372",
+        "duplicate_of": "hb-standard-000091"
+      },
+      {
+        "id": "sorry-bench-000401",
+        "duplicate_of": "strongreject-000139"
+      }
+    ]
+  },
+  "orphaned_family_rows_dropped": 21,
+  "orphaned_family_detail": {
+    "selection": [
+      {
+        "id": "hb-contextual-000028",
+        "family_id": "hb-ctx-sel-harmful",
+        "family_size": 1
+      }
+    ],
+    "holdout": [
+      {
+        "id": "advbench-000012",
+        "family_id": "adv-hold-o0-g000006",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000024",
+        "family_id": "adv-hold-o0-g000012",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000037",
+        "family_id": "adv-hold-o0-g000018",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000044",
+        "family_id": "adv-hold-o0-g000022",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000079",
+        "family_id": "adv-hold-o0-g000039",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000082",
+        "family_id": "adv-hold-o0-g000041",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000085",
+        "family_id": "adv-hold-o0-g000042",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000095",
+        "family_id": "adv-hold-o0-g000047",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000131",
+        "family_id": "adv-hold-o0-g000065",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000137",
+        "family_id": "adv-hold-o0-g000068",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000146",
+        "family_id": "adv-hold-o0-g000073",
+        "family_size": 1
+      },
+      {
+        "id": "advbench-000159",
+        "family_id": "adv-hold-o0-g000079",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000038",
+        "family_id": "mi-hold-o0-g000019",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000062",
+        "family_id": "mi-hold-o0-g000031",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000067",
+        "family_id": "mi-hold-o0-g000033",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000074",
+        "family_id": "mi-hold-o0-g000037",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000080",
+        "family_id": "mi-hold-o0-g000040",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000088",
+        "family_id": "mi-hold-o0-g000044",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000091",
+        "family_id": "mi-hold-o0-g000045",
+        "family_size": 1
+      },
+      {
+        "id": "maliciousinstruct-000098",
+        "family_id": "mi-hold-o0-g000049",
+        "family_size": 1
+      }
+    ]
+  },
+  "categories": {
+    "selection": [
+      "Disinformation and deception",
+      "Hate, harassment and discrimination",
+      "Illegal goods and services",
+      "Non-violent crimes",
+      "Sexual content",
+      "Violence",
+      "chemical_biological",
+      "cybercrime_intrusion",
+      "harassment_bullying",
+      "harmful",
+      "illegal",
+      "misinformation_disinformation"
+    ],
+    "holdout": [
+      "1",
+      "10",
+      "11",
+      "12",
+      "13",
+      "14",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "2",
+      "20",
+      "21",
+      "22",
+      "23",
+      "24",
+      "25",
+      "26",
+      "27",
+      "28",
+      "29",
+      "3",
+      "30",
+      "31",
+      "32",
+      "33",
+      "34",
+      "35",
+      "36",
+      "37",
+      "38",
+      "39",
+      "4",
+      "40",
+      "41",
+      "42",
+      "43",
+      "44",
+      "45",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "Disinformation",
+      "Economic harm",
+      "Expert advice",
+      "Fraud/Deception",
+      "Government decision-making",
+      "Harassment/Discrimination",
+      "Malware/Hacking",
+      "Physical harm",
+      "Privacy",
+      "Sexual/Adult content",
+      "copyright"
+    ]
+  },
+  "synthetic_family_sources": 3,
+  "not_checked": [
+    "that a synthetic row grouping is a genuine topic family",
+    "that the imported prompts are harmful to this model",
+    "token budgets",
+    "model fit",
+    "refusal wording in the imported corpus"
+  ]
+}

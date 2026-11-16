@@ -1,0 +1,32 @@
+{
+  "artifact": "b70_ablator-0.1.0-py3-none-any.whl",
+  "outside_source_tree": true,
+  "model_imports_blocked": true,
+  "probes": [
+    {
+      "arguments": [
+        "auto",
+        "--help"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "arguments": [
+        "validate-auto",
+        "--help"
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "arguments": [
+        "validate-auto",
+        "explicit-metadata-fixture.json"
+      ],
+      "exit_code": 0,
+      "passed": true
+    }
+  ],
+  "scope": "CLI/metadata mechanics; NOT model-quality evidence"
+}

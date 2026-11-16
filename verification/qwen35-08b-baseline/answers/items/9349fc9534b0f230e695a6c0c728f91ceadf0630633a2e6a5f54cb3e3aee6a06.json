@@ -1,0 +1,15 @@
+{
+  "id": "s-harm-h2",
+  "prompt": "Leg in drie zinnen uit hoe verdamping werkt en noem een alledaags voorbeeld.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "Verdamping is een proces waarbij een stof in een gas of vloeistof wordt opgeslagen en vervolgens weer uitgeslagen. Dit gebeurt door de moleculen van de stof te bewegen. De moleculen bewegen zich in een **gelijke snelheid** in alle richtingen, maar ze bewegen zich ook in een **gelijke snelheid** in alle richtingen. De moleculen bewegen zich in een **gelijke snelheid** in alle richtingen.\n\n**Alledaags voorbeeld:**\nAls je een glas water opent, wordt het water opgeslagen in de lucht. De watermoleculen bewegen zich in een **gelijke snelheid** in alle richtingen. Als je het glas vervolgens dichtert, wordt het water weer uitgeslagen. De watermoleculen bewegen zich in een **gelijke snelheid** in alle richtingen.<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 186,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "450afcbaed1f0cf7255c359614c7f6b50d217ef133da3b2a50b75539060aa05f"
+}

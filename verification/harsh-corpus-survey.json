@@ -1,0 +1,100 @@
+{
+  "scope": "Harsh public refusal corpora: sizes, real category coverage, and prompt overlap after NFKC+casefold dedupe. No model was run.",
+  "corpora": {
+    "advbench_mlabonne": {
+      "prompts_total": 416,
+      "unique_after_dedupe": 416,
+      "dropped": 0,
+      "categories": {},
+      "note": "AdvBench behaviours, 520"
+    },
+    "harmbench": {
+      "prompts_total": 400,
+      "unique_after_dedupe": 393,
+      "dropped": 7,
+      "categories": {
+        "chemical_biological": 56,
+        "illegal": 65,
+        "misinformation_disinformation": 65,
+        "harmful": 22,
+        "harassment_bullying": 25,
+        "cybercrime_intrusion": 67,
+        "copyright": 100
+      },
+      "note": "400 text behaviours, standard/contextual/copyright"
+    },
+    "jbb_behaviors": {
+      "prompts_total": 100,
+      "unique_after_dedupe": 84,
+      "dropped": 16,
+      "categories": {
+        "Harassment/Discrimination": 10,
+        "Malware/Hacking": 10,
+        "Physical harm": 10,
+        "Economic harm": 10,
+        "Fraud/Deception": 10,
+        "Disinformation": 10,
+        "Sexual/Adult content": 10,
+        "Privacy": 10,
+        "Expert advice": 10,
+        "Government decision-making": 10
+      },
+      "note": "100 harmful behaviours, 10 categories"
+    },
+    "maliciousinstruct": {
+      "prompts_total": 100,
+      "unique_after_dedupe": 100,
+      "dropped": 0,
+      "categories": {},
+      "note": "100 adversarial instructions"
+    },
+    "multijail": {
+      "prompts_total": 315,
+      "unique_after_dedupe": 315,
+      "dropped": 0,
+      "categories": {
+        "?": 315
+      },
+      "note": "315 prompts, multilingual"
+    }
+  },
+  "pairwise_overlap": {
+    "advbench_mlabonne": {
+      "harmbench": 0,
+      "jbb_behaviors": 0,
+      "maliciousinstruct": 0,
+      "multijail": 0
+    },
+    "harmbench": {
+      "advbench_mlabonne": 0,
+      "jbb_behaviors": 0,
+      "maliciousinstruct": 0,
+      "multijail": 0
+    },
+    "jbb_behaviors": {
+      "advbench_mlabonne": 0,
+      "harmbench": 0,
+      "maliciousinstruct": 0,
+      "multijail": 0
+    },
+    "maliciousinstruct": {
+      "advbench_mlabonne": 0,
+      "harmbench": 0,
+      "jbb_behaviors": 0,
+      "multijail": 0
+    },
+    "multijail": {
+      "advbench_mlabonne": 0,
+      "harmbench": 0,
+      "jbb_behaviors": 0,
+      "maliciousinstruct": 0
+    }
+  },
+  "combined_unique_across_all": 1308,
+  "sum_of_unique": 1308,
+  "errors": {
+    "strongreject": "403 Client Error. (Request ID: Root=1-6ad22e47-6dfaf20c2eda3cd124166acf;4c2b9cd1-6aa6-4702-b001-e84fbf69ba44)\n\nCannot access gated repo for url https://huggingface.co/datasets/walledai/StrongREJECT/re",
+    "sorry_bench": "403 Client Error. (Request ID: Root=1-6ad22e47-32651adc4b11f38c439200c8;7d0f7c6e-a82a-488b-9b4e-83bffa09c0c6)\n\nCannot access gated repo for url https://huggingface.co/datasets/sorry-bench/sorry-bench-",
+    "wildjailbreak_eval": "403 Client Error. (Request ID: Root=1-6ad22e48-23fd736b14342153214db9b0;0bcb1abc-2d9c-44fa-9eea-4791ee321a48)\n\nCannot access gated repo for url https://huggingface.co/datasets/allenai/wildjailbreak/re"
+  }
+}

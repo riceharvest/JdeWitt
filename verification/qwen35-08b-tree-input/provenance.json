@@ -1,0 +1,13 @@
+{
+  "experiment": "targeted-development-proxy-tree-smoke",
+  "approved_settings": "beam=2; checkpoints=7/15/23; strengths=0.5/1; refusal+perception pullbacks; protected KL<=0.1; residual norm drift<=25%; drift weight=1; floor=150; cap=1024",
+  "selection": "First three naturally completed, explicitly refusing English baseline prompts from distinct available families, plus the previously inspected English bicycle control. Selection used development outcomes; this is not an unbiased benchmark or holdout.",
+  "source_baseline": "/mnt/ssd/dev workspace/b70-ablator/verification/qwen35-08b-baseline/report.json",
+  "refusal_token_texts": ["cannot", "Cannot", " unable", " refuse", " sorry"],
+  "reference_token_texts": ["Sure", "Here", "First", " Yes"],
+  "perception_token_texts": ["illegal", " fraud", " harmful", " crime"],
+  "skipped_multitoken_concept": "dangerous tokenized as [30416,757]; no fragment was substituted for the full concept",
+  "protected_token_source": "Union of top-eight actual lens readouts for the measured bicycle control at checkpoints 15 and 23; no capability-preservation guarantee.",
+  "ranking": "Uncalibrated J-space refusal margin plus protected-token KL, not the untrained learned trajectory ranker.",
+  "resource_caps": "64 MiB saved-state cap; 64 MiB resident lens/direction cap; 15 complete expansions per prompt; one finalist plus independent baseline decoded. Caps exclude model/attention/decoder workspace."
+}

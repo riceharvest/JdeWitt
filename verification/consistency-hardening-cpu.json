@@ -1,0 +1,41 @@
+{
+  "purpose": "Consistency implementation verification, not model-quality evidence",
+  "project": "/mnt/ssd/dev workspace/b70-ablator",
+  "cpu_suite": {
+    "command": ".venv/bin/python -m pytest tests -m 'not xpu' -n 0 -q",
+    "passed": 161,
+    "gpu_tests_deselected": 9,
+    "elapsed_seconds": 82.54,
+    "exit_code": 0,
+    "gpu_initialization_guard": true
+  },
+  "lint": {
+    "command": ".venv/bin/python -m ruff check b70_ablator tests scripts conftest.py",
+    "result": "All checks passed"
+  },
+  "build": {
+    "command": "uv build",
+    "artifacts": [
+      "dist/b70_ablator-0.1.0.tar.gz",
+      "dist/b70_ablator-0.1.0-py3-none-any.whl"
+    ]
+  },
+  "coverage": [
+    "CPU FP16/BF16 rounding parity and immutable original weight storage",
+    "Original versus export dtype preflight",
+    "Startup and TPE future suggestion equality across restart",
+    "Partially suggested trial restart continuity",
+    "Direction sample/family coverage and split-subspace stability rejection",
+    "Shared first thinking-boundary extraction and nested/unknown-format rejection",
+    "Paired task regressions and independent-family decision evidence",
+    "Complete labeled scheduling fixtures including interruption and export-verification failure",
+    "Wheel assets and console entrypoint checks"
+  ],
+  "limitations": [
+    "GPU testing is paused at the user's request; no GPU tests were run after that instruction",
+    "Final current-code B70 export-verification checks remain pending",
+    "No complete real-model ablation, Q4/Q5 release-quality result, or throughput claim",
+    "Hardened runs require explicit reviewed consistency policy and family-annotated suites",
+    "Resident original-export parity requires unquantized original-precision weights fitting the B70"
+  ]
+}

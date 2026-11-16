@@ -1,0 +1,14 @@
+{
+  "id": "m",
+  "prompt": "Fixture maths: two plus two?",
+  "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655",
+  "response": {
+    "content": "4",
+    "finish_reason": "stop",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "final_marker": null,
+    "thinking_open": false
+  },
+  "record_digest": "749bf6247477e679e9a9a4b3dd1e5797a4020f24f658e12fc477e2610325e414"
+}

@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "suite_digest": "38b9b114efd776bdb76b24af5d8389e751f6833f38a29e56bde4e1ad3b53cc32",
+  "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655",
+  "identity": {
+    "scoring_mode": "refusal-check",
+    "framework_sources": {
+      "__init__.py": "ea71f94ee4a483ff523269c88acb6c18d462dc4f8c388fd3f51d19ca43bd9f34",
+      "__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+      "answers.py": "c09298d8a7fa1864043f8afbe5192950f8b9964fea503b7268495d05f6b15bd9",
+      "cli.py": "0bcdaf5a3c2752351cc78c91cacbdf20ccba7252d39483c5297fc019c08fdfb8",
+      "compat.py": "894a12a1a6aa9ecd3f8d69970ff7453db1516fd418c13a1e09e55197d7450993",
+      "data.py": "3d9cfab602213e34400b606386b601ece1c324626bce7e802fcae4d5673fabe3",
+      "editor.py": "4c2bb8b7a3d0194e3737cf08506caa62a5187d220773055c5d06e0e3dfa18f34",
+      "evaluation.py": "bdbf69af5f0425dcdc10f0d107cf5031a11aa3840116edf444f28b2b6afd1a7b",
+      "export.py": "11b0555e0761391a00ee08597ebc2e2eedc9cf024b77bc96c1c76010048e7f69",
+      "grounded_judge.py": "61265ae1c6ce4fccdd8e8e49011d341c1a1fd3486d14befa4263683543c4d488",
+      "hf.py": "f21aee009092765c0c7673edc845d0a7069563f750ff7020e3c7f6526242d33e",
+      "job_cli.py": "fdd29011197773be778908437e2d21df135db39f25a1dd6ab35a18a44a9870e4",
+      "numerics.py": "6ef4d28cfb97b1ee7ed6ff3446894d09d6d7406c4e824c707ca5dc990b30276d",
+      "phases.py": "29ee171d1f39b5daae60281bbd33927fa9dc61e386dee9351ec60819265ebf76",
+      "pipeline.py": "8ff6aedfeeb9b0dbef4b3393d70de62d8a756f1e016972c2e165dc9802e40b5f",
+      "refusal_check.py": "4526907ad8b202e284b51be051314bbaca104573d63983af502d32326164c6c9",
+      "release.py": "99d645024aede75c3be7b54ca780b5be1aebedd1c1fac3d2151c0ebeadf49f9c",
+      "scoring.py": "dadaa58845ab1f082af1e33e9a1ed48a73c2447d147b4b460c2328ad8d4ce568",
+      "search.py": "b0c66733a815b5f8daf8506d7085cf177ce77f682fa4346df24b2ffb68a9e332",
+      "style_judge.py": "553ece0701b56d75d6c8df59dddec286db1be9c941d4af92dd5aa63ec134140a",
+      "transport.py": "06373bf0d5008a102fbea79432d671eb9cd1adacf86efd7b737398d2ed00a8c8",
+      "assets/evidence-system.txt": "9e362029843d14f37ec16dfdd759e5a23cb0fcd54df4bb9feb0500082dc4e6b1",
+      "assets/rubric-system.txt": "92fdd977110fb701b9bc25926bb24204b4a26d02f6d1b81775bf922345904ea7",
+      "assets/style-system.txt": "14007769af1a6fbca8bdfbb3cd5fa574186f6bb9a40b1bba808ff344b331e914"
+    },
+    "sandbox_image_id": null
+  },
+  "sandbox_image": "python:3.12-slim",
+  "scoring_digest": "72239247f21d9b8c1e75bf1dde11e6528e220c7608c0fd1ae1968ef6b6ab836e"
+}

@@ -1,0 +1,18 @@
+{
+  "scoring_digest": "864b328b4bf2b89c9657743565ef5001acd665d68b5df771e51db929d46e2d41",
+  "answer_digest": "d26bb6ccdb9530b34d8af1b82db2e0da991d7068dfbe0ab95d97a901c39f00d6",
+  "row": {
+    "id": "r",
+    "kind": "refusal",
+    "language": "en",
+    "prompt": "Fixture: return blue.",
+    "scoring_mode": "judge",
+    "raw": "blue",
+    "answer": "blue",
+    "status": "judge_invalid",
+    "completion_tokens": 1,
+    "reasoning_tokens": 0,
+    "error": "Intentional fixture invalid judgment"
+  },
+  "record_digest": "99b0c4df06c632d7c5dcf4b9ca23d313b0124c6bec1862e97f98b0472a3e952f"
+}

@@ -1,0 +1,160 @@
+{
+  "scope": "Measurement correctness (token floor, categories) plus the harshest public corpus set. No model was run.",
+  "stage_1_token_floor": {
+    "why": "Without a minimum-token floor a refusal count is inflated by construction. A competing tool measured the same model at 30 tokens -> ~8/100 refusals, 50 -> ~18, 100 -> ~60, 150 -> ~60 (converged).",
+    "implementation": {
+      "gguf": "llama-server exposes no positional min_new_tokens, so the stop token is suppressed (ignore_eos) and the floor becomes that request's cap",
+      "hf": "real min_new_tokens positional floor",
+      "config": "refusal_floor (optional int, validated <= max_tokens)",
+      "cached": "floor_enforced rides in the saved answer so a cached result cannot be re-read as truncation",
+      "degenerate": "forced continuation past a natural stop yields filler; a degenerate-output filter classifies repetition and stop-token spam as refusal evidence without a judge call"
+    },
+    "bug_found_by_test": "bool(\"yes\") silently coerced a bogus floor flag to True; now rejected"
+  },
+  "stage_2_categories": {
+    "summarize": "by_category with an explicit uncategorised bucket, plus degenerate_total",
+    "gate": "category_regressions hard-fails a trial",
+    "new_signal": "category_stalled reports categories where refusals did not move at all, which is where harm survives in untouched experts",
+    "note": "per-task refusal regression already failed trials, so the category layer adds the stalled signal and reporting rather than new strictness"
+  },
+  "stage_3_harsh_corpora": {
+    "spec": "examples/harsh-corpus/import.json",
+    "run_config": "examples/harsh-corpus/run.json",
+    "splits": {
+      "selection": 1340,
+      "holdout": 989
+    },
+    "sources": [
+      {
+        "id": "hb-standard",
+        "kind": "refusal",
+        "rows": 200,
+        "families": 6,
+        "origin": "source-column"
+      },
+      {
+        "id": "hb-contextual",
+        "kind": "refusal",
+        "rows": 100,
+        "families": 6,
+        "origin": "source-column"
+      },
+      {
+        "id": "strongreject",
+        "kind": "refusal",
+        "rows": 313,
+        "families": 6,
+        "origin": "source-column"
+      },
+      {
+        "id": "wjb-harmful",
+        "kind": "refusal",
+        "rows": 400,
+        "families": 200,
+        "origin": "synthetic-row-group"
+      },
+      {
+        "id": "wjb-benign",
+        "kind": "harmless",
+        "rows": 210,
+        "families": 0,
+        "origin": null
+      },
+      {
+        "id": "alpaca",
+        "kind": "harmless",
+        "rows": 120,
+        "families": 0,
+        "origin": null
+      },
+      {
+        "id": "authored-capability",
+        "kind": "passthrough",
+        "rows": 6,
+        "families": 0,
+        "origin": "authored-file"
+      },
+      {
+        "id": "hb-copyright",
+        "kind": "refusal",
+        "rows": 100,
+        "families": 1,
+        "origin": "source-column"
+      },
+      {
+        "id": "jbb",
+        "kind": "refusal",
+        "rows": 100,
+        "families": 10,
+        "origin": "source-column"
+      },
+      {
+        "id": "advbench",
+        "kind": "refusal",
+        "rows": 200,
+        "families": 100,
+        "origin": "synthetic-row-group"
+      },
+      {
+        "id": "maliciousinstruct",
+        "kind": "refusal",
+        "rows": 100,
+        "families": 50,
+        "origin": "synthetic-row-group"
+      },
+      {
+        "id": "sorry-bench",
+        "kind": "refusal",
+        "rows": 450,
+        "families": 45,
+        "origin": "source-column"
+      },
+      {
+        "id": "alpaca-holdout",
+        "kind": "harmless",
+        "rows": 120,
+        "families": 0,
+        "origin": null
+      },
+      {
+        "id": "authored-capability-holdout",
+        "kind": "passthrough",
+        "rows": 6,
+        "families": 0,
+        "origin": "authored-file"
+      }
+    ],
+    "dedupe": {
+      "verbatim": 0,
+      "near_duplicate": 75,
+      "orphaned_family_rows": 21
+    },
+    "categories": {
+      "selection": 12,
+      "holdout": 56
+    },
+    "over_refusal_control": "WildJailbreak adversarial_benign (210 adversarial-form but benign prompts) plus alpaca"
+  },
+  "importer_features_added": [
+    "category from a column or literal",
+    "prompt template over several columns (HarmBench ContextString + Behavior)",
+    "list_column unwrapping (Sorry-Bench turns is a list literal)",
+    "where row filter (splits one file into harmful and benign sources)",
+    "explicit file override",
+    ".tsv support",
+    "cross-split near-duplicate dedupe",
+    "orphaned-family pruning after dedupe"
+  ],
+  "test_state": {
+    "non_xpu_passed": 360,
+    "lint": "clean",
+    "build": "wheel+sdist"
+  },
+  "honest_limits": [
+    "No model has been run against these suites. Nothing here is refusal-quality evidence.",
+    "Directions remain authored en/nl; MultiJail (10 languages) is imported-ready but matched multilingual harmless controls are still missing.",
+    "Synthetic row-group families remain for corpora with no category column (WildJailbreak, AdvBench, MaliciousInstruct); they are fine for per-language-mean methods and meaningless for per-family rank methods.",
+    "The judge swap is still pending: a small recent instruct model is needed, and Qwen3Guard/ZTC-Judge are the wrong shape (they label safety/trust, not compliance).",
+    "Method gaps remain untouched: discriminative layer selection, q/k/v as edit targets, wider strength ranges, expert-granular MoE projection."
+  ]
+}

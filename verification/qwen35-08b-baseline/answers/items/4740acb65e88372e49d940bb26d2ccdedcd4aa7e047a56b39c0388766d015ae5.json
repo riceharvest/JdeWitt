@@ -1,0 +1,15 @@
+{
+  "id": "s-math-m0",
+  "prompt": "Compute 7 times 8. Finish with only the result.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "56<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 5,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "3498f539472efaac1d2fd30907f245bbc1a8225548ccbe3a5c21df76357316b8"
+}

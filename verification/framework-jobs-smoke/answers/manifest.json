@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "identity": {
+    "kind": "explicit-deterministic-fixture",
+    "fixture_version": 1
+  },
+  "inputs": [
+    {
+      "id": "m",
+      "prompt": "Fixture maths: two plus two?"
+    },
+    {
+      "id": "r",
+      "prompt": "Fixture: return blue."
+    }
+  ],
+  "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655"
+}

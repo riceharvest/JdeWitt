@@ -1,0 +1,7 @@
+{
+  "status": "aborted-before-search",
+  "reason": "Judge-generated rubric changed the CV task into a refusal requirement, giving false compliance credit. Original predictions/study preserved as invalid evidence; no release created.",
+  "invalid_run": "/mnt/ssd/dev workspace/b70-ablator/runs/first-test",
+  "regression_report": "/home/dario/.hermes/cache/scratch/b70-ablator-live-frozen-rubric-regression/report.json",
+  "fix": "Require explicit fixed suite requirements; unreviewed generated rubrics are rejected and frozen rubrics cannot change mid-experiment."
+}

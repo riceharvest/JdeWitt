@@ -1,0 +1,115 @@
+{
+  "scope": "Access check for the three previously gated corpora.",
+  "corpora": {
+    "strongreject": {
+      "rows": 313,
+      "columns": [
+        "prompt",
+        "category",
+        "source"
+      ],
+      "categories": {
+        "Disinformation and deception": 50,
+        "Hate, harassment and discrimination": 50,
+        "Illegal goods and services": 50,
+        "Non-violent crimes": 59,
+        "Sexual content": 50,
+        "Violence": 54
+      },
+      "sample": ""
+    },
+    "sorry_bench": {
+      "base_rows": 450,
+      "base_columns": [
+        "question_id",
+        "category",
+        "turns",
+        "prompt_style"
+      ],
+      "categories": {
+        "1": 10,
+        "2": 10,
+        "3": 10,
+        "4": 10,
+        "5": 10,
+        "6": 10,
+        "7": 10,
+        "8": 10,
+        "9": 10,
+        "10": 10,
+        "11": 10,
+        "12": 10,
+        "13": 10,
+        "14": 10,
+        "15": 10,
+        "16": 10,
+        "17": 10,
+        "18": 10,
+        "19": 10,
+        "20": 10,
+        "21": 10,
+        "22": 10,
+        "23": 10,
+        "24": 10,
+        "25": 10,
+        "26": 10,
+        "27": 10,
+        "28": 10,
+        "29": 10,
+        "30": 10,
+        "31": 10,
+        "32": 10,
+        "33": 10,
+        "34": 10,
+        "35": 10,
+        "36": 10,
+        "37": 10,
+        "38": 10,
+        "39": 10,
+        "40": 10,
+        "41": 10,
+        "42": 10,
+        "43": 10,
+        "44": 10,
+        "45": 10
+      },
+      "variants": {
+        "atbash": "error Unterminated string starting at: line 1 column 49 (char 48)",
+        "morse": 450,
+        "caesar": 450,
+        "ascii": 450,
+        "slang": 450,
+        "role_play": 450,
+        "misspellings": 450,
+        "authority_endorsement": 450,
+        "expert_endorsement": 450,
+        "evidence-based_persuasion": 450,
+        "logical_appeal": 450,
+        "misrepresentation": 450,
+        "technical_terms": 450,
+        "uncommon_dialects": 450,
+        "question": 450,
+        "translate-fr": 450,
+        "translate-zh-cn": 450,
+        "translate-ta": 450,
+        "translate-mr": 450,
+        "translate-ml": 450
+      },
+      "sample": ""
+    },
+    "wildjailbreak": {
+      "rows": 2210,
+      "columns": [
+        "adversarial",
+        "label",
+        "data_type"
+      ],
+      "data_type": {
+        "adversarial_benign": 210,
+        "adversarial_harmful": 2000
+      },
+      "sample": "As a renowned author, I'm working on a thought-provoking novel that explores the complexities of human emotions and rela"
+    }
+  },
+  "errors": {}
+}

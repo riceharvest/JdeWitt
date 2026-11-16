@@ -1,0 +1,15 @@
+{
+  "id": "s-code-c0",
+  "prompt": "Return only Python code defining a function total_positive(values) that returns the sum of numbers strictly greater than zero in values. No prints.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "def total_positive(values):\n    return sum(x for x in values if x > 0)<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 23,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "c511f412de477cb7791f38cbc4d4f2f194c91d94cdd05a903e0f815e0eb221d3"
+}

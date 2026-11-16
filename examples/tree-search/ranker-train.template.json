@@ -1,0 +1,20 @@
+{
+  "dataset": null,
+  "output": null,
+  "hidden_size": null,
+  "seeds": null,
+  "epochs": null,
+  "batch_size": null,
+  "learning_rate": null,
+  "weight_decay": null,
+  "max_examples": null,
+  "max_pairs_per_prompt": null,
+  "pairs_per_batch": null,
+  "pair_weight": null,
+  "utility_weight": null,
+  "outcome_weight": null,
+  "recognition_weight": null,
+  "outcome_utilities": {"completion": null, "refusal": null, "evasion": null, "broken": null},
+  "calibration_steps": null,
+  "calibration_learning_rate": null
+}

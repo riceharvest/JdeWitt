@@ -1,0 +1,100 @@
+{
+  "status": "implemented-and-mechanically-verified",
+  "tests_passed": 322,
+  "tests_failed": 0,
+  "tests_skipped": 0,
+  "lint": "passed",
+  "build": "wheel-and-sdist-passed",
+  "wheel_probes": {
+    "artifact": "b70_ablator-0.1.0-py3-none-any.whl",
+    "outside_source_tree": true,
+    "model_imports_blocked": true,
+    "probes": [
+      {
+        "arguments": [
+          "auto",
+          "--help"
+        ],
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "arguments": [
+          "validate-auto",
+          "--help"
+        ],
+        "exit_code": 0,
+        "passed": true
+      },
+      {
+        "arguments": [
+          "validate-auto",
+          "explicit-metadata-fixture.json"
+        ],
+        "exit_code": 0,
+        "passed": true
+      }
+    ],
+    "scope": "CLI/metadata mechanics; NOT model-quality evidence"
+  },
+  "features": [
+    "Explicit shared trial budget across method/rank/options candidates",
+    "Serial B70-only existing run path",
+    "Selection-only pipeline stage never evaluates holdout or creates a release",
+    "Matched quantized baseline identity checks and existing capability/regression gates",
+    "Global winner committed before holdout with exact trial guard",
+    "No fallback after holdout failure",
+    "Content-bound resume of method selections and final completion",
+    "Typed method incompatibility/direction rejection distinguished from unexpected failures"
+  ],
+  "limits": [
+    "No pretrained-model multi-method comparison was launched.",
+    "Scheduling fixtures are not model-quality evidence.",
+    "Trial count is not a wall-clock or equal-compute budget.",
+    "Candidate methods, ranks, fitting options and budgets remain operator configured.",
+    "SFT/DPO training and researched-only methods are not auto-search candidates.",
+    "Original-precision model must fit entirely on the B70; no CPU weight offload.",
+    "Methods keep separate baseline caches; this pass makes no throughput improvement claim."
+  ],
+  "sources": {
+    "__init__.py": "ea71f94ee4a483ff523269c88acb6c18d462dc4f8c388fd3f51d19ca43bd9f34",
+    "__main__.py": "cf7390a2508a0fcad4777a4a629fc5212ab655cb45845975995f835676a834e3",
+    "agent.py": "bde8423d7bf072dff3843fa2118b737ef805c232e8c968fe8d3e859ade0a67c7",
+    "answers.py": "1205c4dc94ab8ed605d7b500a855e925f1e7c91883cfddac8333e88da1c51544",
+    "architectures.py": "be244c32c905263660851bffc1454491540ea3f8fc7cca40d820ee481df07bb6",
+    "arguments.py": "369563853fdb8f4f64cc43ca9f31eb0f443780b46d9f8cf4de5218fbeda3bc07",
+    "auto.py": "9c45381bd6d648cad1f85661db2f740ff64d058dcd8a244a05593bb7eee8d055",
+    "chat.py": "64c9c8898a9c6d99c308ed7298467e2f7f47501e1b6a801d55fbc12c0f454a11",
+    "cli.py": "0a68efec8618f7ac693fa25408de80198841767046bdcc3a8b8bd05d6ff6900f",
+    "compat.py": "894a12a1a6aa9ecd3f8d69970ff7453db1516fd418c13a1e09e55197d7450993",
+    "data.py": "1efe8037bf09485b9cb88e07130c735a949815cb3182c185be6cc723f3fc7444",
+    "editor.py": "f25a3e3f81164d4beac1d2274d8798363833a040fa8198b6867b165ed9d18361",
+    "erasure.py": "bc37151cfb8f22ffd3186caa5f0cd498e6dc1f1780013e0ec5d92970f16a6f26",
+    "errors.py": "82a0b40f4f6235ed52e16d6b3669ce53fa5dd79a5a409762c54d065f884d59ec",
+    "evaluation.py": "efb17c365a6db04e5303ea642b8fc0670946ef0be3f57a8d0f7231f36e8f38b2",
+    "export.py": "c6a9962f24b027dec26b2d04a717b7be62cd3baaa342c70c1829520d9ac4e28d",
+    "grounded_judge.py": "61265ae1c6ce4fccdd8e8e49011d341c1a1fd3486d14befa4263683543c4d488",
+    "hf.py": "2c05ce54d18a4cfc20d01dd6a93f6d55a059da3ec4b485fd76e1abf573759474",
+    "job_cli.py": "fdd29011197773be778908437e2d21df135db39f25a1dd6ab35a18a44a9870e4",
+    "methods.py": "88838ba1d472249ba2d8355c59caf43ac741182c4af60dc341eac459baacf700",
+    "numerics.py": "dc66ae58a20fe6e09d7ce0b85e1691036f5e89c0bbc57373c508a28870b62808",
+    "phases.py": "0b9e8d8bf4b7ff9b905026555d60dada9803d57f35d32d08f0541236d9b12b44",
+    "pipeline.py": "00eb843a59f0873064295ff7df20a457bf2fe648256fc8a89ef49f887a1a0af1",
+    "plans.py": "a156075a81b10268c90651be3760525d13aeeb2d4050749000606db82576dca3",
+    "refusal_check.py": "4526907ad8b202e284b51be051314bbaca104573d63983af502d32326164c6c9",
+    "release.py": "14cb99a8a32ad6d383da4b2a9ce7fd17d9e6444d0baad91063a2335c4a983a27",
+    "scoring.py": "1aaa1f0002ee415f5059d78e07fccab0841dc08fd5c9362bef07a0373ebe6499",
+    "search.py": "2fe110ae31375232442af996366adbe3db37c7e551e9d71e0b5a43f41a070323",
+    "storage.py": "aa467d8d77cd79c30ab3ebca3fc9627dbd0b2302d0073a7b05f1150987ab9658",
+    "style_judge.py": "553ece0701b56d75d6c8df59dddec286db1be9c941d4af92dd5aa63ec134140a",
+    "training.py": "d9e9ecc3b954ec98cf6735e27b8d88764187adabdc06a47a36ca5add4ffee97c",
+    "transport.py": "9866874bf484330fd88b2d14ad87f65151671b1027f569c8abf79a6c436cec26",
+    "validation.py": "402d45c22ddc77894df13cb207186d81731dec5f8406b52f34da953a75f5312f"
+  },
+  "artifacts": {
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "b70_ablator-0.1.0-py3-none-any.whl": "5a5bb3873f1bdf4c873465eea7dfa39b0998cf24bffb0d4f377d9196ef208149",
+    "b70_ablator-0.1.0.tar.gz": "fcf5cf8f88915d6d26dd994b6291ca310a49bfce4fcb7a194f9b15c26c37d0b7"
+  },
+  "documentation": "docs/automatic-selection.md"
+}

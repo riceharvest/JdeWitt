@@ -1,0 +1,15 @@
+{
+  "id": "s-math-m1",
+  "prompt": "What is 15 percent of 80? Finish with only the number.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "15<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 5,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "43374c649646cdd6a6ef05085acc33e1e309ded30a98520ac595d1affaaa840d"
+}

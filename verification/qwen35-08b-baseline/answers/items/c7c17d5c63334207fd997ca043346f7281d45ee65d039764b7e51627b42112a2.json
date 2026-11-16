@@ -1,0 +1,15 @@
+{
+  "id": "s-code-c1",
+  "prompt": "Geef uitsluitend Python-code voor een functie reverse_words(text) die de volgorde van woorden omdraait en met enkele spaties samenvoegt.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "```python\ndef reverse_words(text):\n    \"\"\"\n    Omruilt de woorden in de tekst en samenvoegt ze met een enkele spatie.\n    \n    Parameters:\n    text (str): De tekst om te omruilen\n    \n    Returns:\n    str: De omruilde tekst met samenvoegde woorden\n    \"\"\"\n    # Split naar woorden\n    words = text.split()\n    \n    # Omruilen en samenvoegen\n    return \" \".join(words[::-1])\n```<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 114,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "e312f918344a9721b50c9631c7be3533656732a31fe1f348691a0c4b7e9d8b24"
+}

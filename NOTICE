@@ -1,0 +1,10 @@
+B70-ablator is licensed AGPL-3.0-or-later.
+
+Projection formula and layer-profile mechanics derive from Heretic:
+https://github.com/p-e-w/heretic
+Inspected revision: 66a952b49b00bfd1854bdad769fee5fb225b53be
+Copyright (C) 2025-2026 Philipp Emanuel Weidmann + contributors.
+Adaptation date: 2026-10-12.
+
+This is a separate tool, not an upstream Heretic performance claim.
+Model artifacts remain subject to their original model licenses.

@@ -1,0 +1,223 @@
+{
+  "seed": 42,
+  "dedupe": {
+    "jaccard": 0.85,
+    "min_family_size": 2
+  },
+  "splits": {
+    "selection": [
+      {
+        "id": "hb-standard",
+        "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+        "template": "{Behavior}",
+        "kind": "refusal",
+        "language": "en",
+        "category": {
+          "column": "SemanticCategory"
+        },
+        "family": {
+          "strategy": "column",
+          "column": "SemanticCategory",
+          "group": "hb-std-sel"
+        },
+        "where": {
+          "column": "FunctionalCategory",
+          "equals": "standard"
+        }
+      },
+      {
+        "id": "hb-contextual",
+        "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+        "template": "{ContextString}\n\n{Behavior}",
+        "kind": "refusal",
+        "language": "en",
+        "category": {
+          "column": "SemanticCategory"
+        },
+        "family": {
+          "strategy": "column",
+          "column": "SemanticCategory",
+          "group": "hb-ctx-sel"
+        },
+        "where": {
+          "column": "FunctionalCategory",
+          "equals": "contextual"
+        }
+      },
+      {
+        "id": "strongreject",
+        "dataset": "walledai/StrongREJECT",
+        "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+        "split": "train",
+        "column": "prompt",
+        "kind": "refusal",
+        "language": "en",
+        "family": {
+          "strategy": "column",
+          "column": "category",
+          "group": "sr-sel"
+        },
+        "category": {
+          "column": "category"
+        }
+      },
+      {
+        "id": "wjb-harmful",
+        "dataset": "allenai/wildjailbreak",
+        "revision": "5ddc12a7894f842b0619b8e1c7ee496b198af009",
+        "split": "eval",
+        "column": "adversarial",
+        "kind": "refusal",
+        "language": "en",
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "wjb-sel"
+        },
+        "where": {
+          "column": "data_type",
+          "equals": "adversarial_harmful"
+        },
+        "limit": 400
+      },
+      {
+        "id": "wjb-benign",
+        "dataset": "allenai/wildjailbreak",
+        "revision": "5ddc12a7894f842b0619b8e1c7ee496b198af009",
+        "split": "eval",
+        "column": "adversarial",
+        "kind": "harmless",
+        "language": "en",
+        "where": {
+          "column": "data_type",
+          "equals": "adversarial_benign"
+        }
+      },
+      {
+        "id": "alpaca",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "limit": 120
+      },
+      {
+        "id": "authored-capability",
+        "passthrough": true,
+        "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/selection.jsonl",
+        "kinds": [
+          "math",
+          "code"
+        ]
+      }
+    ],
+    "holdout": [
+      {
+        "id": "hb-copyright",
+        "path": "/mnt/ssd/dev workspace/JdeWitt/verification/corpus/harmbench_behaviors_text_all.csv",
+        "template": "{Behavior}",
+        "kind": "refusal",
+        "language": "en",
+        "category": {
+          "column": "SemanticCategory"
+        },
+        "family": {
+          "strategy": "column",
+          "column": "SemanticCategory",
+          "group": "hb-cp-hold"
+        },
+        "where": {
+          "column": "FunctionalCategory",
+          "equals": "copyright"
+        }
+      },
+      {
+        "id": "jbb",
+        "dataset": "JailbreakBench/JBB-Behaviors",
+        "revision": "886acc352a31533ffbcf4ef22c744658688086fc",
+        "split": "train",
+        "column": "Goal",
+        "kind": "refusal",
+        "language": "en",
+        "family": {
+          "strategy": "column",
+          "column": "Category",
+          "group": "jbb-hold"
+        },
+        "category": {
+          "column": "Category"
+        },
+        "file": "data/harmful-behaviors.csv"
+      },
+      {
+        "id": "advbench",
+        "dataset": "mlabonne/harmful_behaviors",
+        "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+        "split": "train",
+        "column": "text",
+        "kind": "refusal",
+        "language": "en",
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "adv-hold"
+        },
+        "limit": 200
+      },
+      {
+        "id": "maliciousinstruct",
+        "dataset": "walledai/MaliciousInstruct",
+        "revision": "4669349f48fea45dbacec02aaa9aca4fd7ac1c15",
+        "split": "train",
+        "column": "prompt",
+        "kind": "refusal",
+        "language": "en",
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "mi-hold"
+        }
+      },
+      {
+        "id": "sorry-bench",
+        "dataset": "sorry-bench/sorry-bench-202406",
+        "revision": "b34822276edde97592eda99c0b56d306f8830469",
+        "split": "train",
+        "list_column": "turns",
+        "kind": "refusal",
+        "language": "en",
+        "category": {
+          "column": "category"
+        },
+        "family": {
+          "strategy": "column",
+          "column": "category",
+          "group": "sb-hold"
+        },
+        "file": "question.jsonl"
+      },
+      {
+        "id": "alpaca-holdout",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "offset": 120,
+        "limit": 120
+      },
+      {
+        "id": "authored-capability-holdout",
+        "passthrough": true,
+        "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/holdout.jsonl",
+        "kinds": [
+          "math",
+          "code"
+        ]
+      }
+    ]
+  }
+}

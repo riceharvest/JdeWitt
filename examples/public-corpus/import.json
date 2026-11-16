@@ -1,0 +1,81 @@
+{
+  "seed": 42,
+  "splits": {
+    "selection": [
+      {
+        "id": "advbench-train",
+        "dataset": "mlabonne/harmful_behaviors",
+        "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+        "split": "train",
+        "column": "text",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 0,
+        "limit": 120,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "advbench"
+        }
+      },
+      {
+        "id": "alpaca-train",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "offset": 0,
+        "limit": 120
+      },
+      {
+        "id": "authored-capability",
+        "passthrough": true,
+        "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/selection.jsonl",
+        "kinds": [
+          "math",
+          "code"
+        ]
+      }
+    ],
+    "holdout": [
+      {
+        "id": "advbench-holdout",
+        "dataset": "mlabonne/harmful_behaviors",
+        "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+        "split": "train",
+        "column": "text",
+        "kind": "refusal",
+        "language": "en",
+        "offset": 120,
+        "limit": 120,
+        "family": {
+          "strategy": "row-group",
+          "size": 2,
+          "group": "advbench"
+        }
+      },
+      {
+        "id": "alpaca-holdout",
+        "dataset": "mlabonne/harmless_alpaca",
+        "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+        "split": "train",
+        "column": "text",
+        "kind": "harmless",
+        "language": "en",
+        "offset": 120,
+        "limit": 120
+      },
+      {
+        "id": "authored-capability-holdout",
+        "passthrough": true,
+        "path": "/mnt/ssd/dev workspace/JdeWitt/examples/minicpm-v47/holdout.jsonl",
+        "kinds": [
+          "math",
+          "code"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "judge": "Qwen3.8-27B-UD-Q4_K_M",
+  "correct": 24,
+  "total": 24,
+  "by_language": {
+    "en": {"correct": 12, "total": 12},
+    "nl": {"correct": 12, "total": 12}
+  },
+  "scope": "Hand-authored calibration cases, not an ablation benchmark or evidence of model improvement.",
+  "execution": "The first invocation persisted 19 cases before timing out. The remaining 5 cases were run separately; completed cases were not rescored.",
+  "parts": [
+    "/home/dario/.hermes/cache/scratch/b70-ablator-live-reference-judge-qwen38-27b/predictions.jsonl",
+    "/home/dario/.hermes/cache/scratch/b70-ablator-live-reference-judge-qwen38-27b-remainder/predictions.jsonl"
+  ]
+}

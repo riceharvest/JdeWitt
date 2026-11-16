@@ -1,0 +1,27 @@
+{
+  "scope": "ManagedGGUF on the real B70: Vulkan device detection, proven full GPU offload, artifact/context identity and an ablator client round trip.",
+  "server": "/home/dario/llama.cpp-minicpm47/build-vulkan/bin/llama-server",
+  "artifacts": [
+    {
+      "quant": "Q4_K_M",
+      "artifact": "minicpm-v47-Q4_K_M.gguf",
+      "startup_seconds": 2.42,
+      "verified_alias_hash": "b70-67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+      "answer": "56",
+      "answer_complete": true,
+      "completion_tokens": 3,
+      "status": "gpu-serving-verified"
+    },
+    {
+      "quant": "Q5_K_M",
+      "artifact": "minicpm-v47-Q5_K_M.gguf",
+      "startup_seconds": 2.28,
+      "verified_alias_hash": "b70-e962fe011d4fca8d24ee631f483b8c871ed95a746f4e9d0ac3b0d48553f633af",
+      "answer": "56",
+      "answer_complete": true,
+      "completion_tokens": 3,
+      "status": "gpu-serving-verified"
+    }
+  ],
+  "all_verified": true
+}

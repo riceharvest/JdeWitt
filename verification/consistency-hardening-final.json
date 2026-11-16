@@ -1,0 +1,70 @@
+{
+  "purpose": "Verified implementation hardening; not proof of improved model quality",
+  "project": "/mnt/ssd/dev workspace/b70-ablator",
+  "cpu_suite": {
+    "command": ".venv/bin/python -m pytest tests -m 'not xpu' -n 0 -q",
+    "passed": 200,
+    "deselected": 9,
+    "elapsed_seconds": 101.99,
+    "exit_code": 0,
+    "gpu_initialization_guard": true
+  },
+  "hardware_unit_suite": {
+    "command": ".venv/bin/python -m pytest tests -m xpu -n 0 -q",
+    "passed": 9,
+    "deselected": 200,
+    "elapsed_seconds": 10.65,
+    "exit_code": 0,
+    "note": "Executed after the user said the GPU was free; these are hardware mechanics, not release-quality evaluation."
+  },
+  "targeted_final_cpu_check": {
+    "passed": 39,
+    "elapsed_seconds": 12.79,
+    "exit_code": 0,
+    "files": ["test_export_recovery.py", "test_storage_recovery.py", "test_release_integrity.py", "test_negative_controls.py", "test_cache_validation.py", "test_prompt_budgets.py"]
+  },
+  "lint": {
+    "command": ".venv/bin/python -m ruff check b70_ablator tests scripts conftest.py",
+    "result": "All checks passed!"
+  },
+  "build": {
+    "command": "uv build",
+    "exit_code": 0,
+    "artifacts": {
+      "dist/b70_ablator-0.1.0.tar.gz": {"bytes": 114757, "sha256": "68c305bc714c7357ed007fb250fb83ee26a69da1146a451769ac983f79753540"},
+      "dist/b70_ablator-0.1.0-py3-none-any.whl": {"bytes": 84340, "sha256": "6e89f6857a657717583c8388e605da5ab6adcafd4f9937ba5e219f19dc54cce8"}
+    }
+  },
+  "persisted_framework_smoke": {
+    "path": "verification/framework-hardening-smoke/verification.json",
+    "purpose": "Deterministic fixtures, not model answers",
+    "resumed_generation_calls": 1,
+    "reused_answers": 1,
+    "invalid_scores_before_retry": 1,
+    "invalid_scores_after_retry": 0,
+    "judge_calls_for_retry": 1,
+    "actual_console_status_completed": 2,
+    "actual_console_status_stage": "scoring-complete"
+  },
+  "verified_features": [
+    "Completed cache validates generation and scoring identities, every answer/score record, prediction rows and recomputed summary",
+    "Score records bind to exact saved response digests",
+    "Actual HF rendered template preflight reserves output tokens before device transfer; no tokenizer truncation",
+    "GGUF native prompt count and older-server apply-template/tokenize fallback with count readback",
+    "Immutable tensor checkpoint payloads with atomic identity/hash/audit pointers",
+    "Atomic safetensor shard writes and index commit",
+    "Bound per-step conversion ledger resumes verified BF16/Q4 steps after Q5 interruption",
+    "Independent finalized reflinks or streamed copies, never working-file hardlinks",
+    "Atomic staged release commit, exact release file hash/size index and idempotent identity checks",
+    "Actual verify-release console succeeds on an intact fixture and rejects changed files",
+    "Zero-edit and repeated reset preserve logits, generated tokens and original weight storage",
+    "Malformed/nonfinite/nonorthogonal edits fail without leaving partial active layers"
+  ],
+  "remaining": [
+    "Real B70 baseline/edit/export/reload/Q4/Q5 smoke is separate: runs/real-b70-roundtrip/verification.json. Consult its actual status, not this implementation report.",
+    "No hardened full search or sealed-holdout release is claimed.",
+    "Full experiments need explicit reviewed consistency thresholds and authored disjoint prompt families; legacy tiny examples cannot certify them.",
+    "Resident merged projection construction is not proven optimal or faster than live adapters.",
+    "No claim of fixing every upstream Heretic issue or universal refusal removal."
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "artifact": "/mnt/ssd/dev workspace/b70-ablator/dist/b70_ablator-0.1.0-py3-none-any.whl",
+  "outside_source_tree": true,
+  "model_imports_blocked": true,
+  "probes": [
+    {
+      "command": "--help",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "methods",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "architectures",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "train",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "command": "run-status",
+      "exit_code": 1,
+      "passed": true
+    }
+  ]
+}

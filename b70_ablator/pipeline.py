@@ -1,0 +1,425 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+import gc
+import json
+import os
+import shutil
+import subprocess
+from importlib.metadata import version
+from contextlib import contextmanager
+
+from dataclasses import asdict, replace
+from pathlib import Path
+from types import SimpleNamespace
+import optuna
+import torch
+from huggingface_hub import snapshot_download, hf_hub_download, model_info
+from .data import digest
+from .editor import ARCHITECTURES
+from .evaluation import DominatedTrial
+from .export import stream_merge, require_resident_precision, verify_resident_export
+from .hf import HFModel, require_b70, reply_boundary, BoundaryContract, preflight_hf
+from .plans import fit_plan, move_plan,direction_identity
+from .release import export_gguf, rank_quantized, ManagedGGUF, sha256_file, verify_quant, create_release
+from .scoring import summarize, extract_answer, search_rate, ConsistencyPolicy, paired_consistency
+from .validation import validate_experiment as validate_experiment,validate_run_inputs
+from .search import build_study, compatible_warm_starts, suggest_parameters, execute_trials
+from .transport import ChatClient
+from .grounded_judge import GroundedJudge, RUBRIC_SYSTEM, EVIDENCE_SYSTEM
+from .style_judge import STYLE_SYSTEM
+from .answers import AnswerStore, generate_answers, score_answers, completed_scores, exclusive, atomic_json
+from .storage import save_checkpoint, load_checkpoint
+from .phases import ModelPhases, PhasedHF, PhasedJudge
+from .refusal_check import RefusalChecker
+from .errors import SearchRejected,UnsupportedMethod,HoldoutRejected
+
+
+def cached_report(path,suite):
+    path=Path(path)
+    if not path.exists():
+        return None
+    obj=json.loads(path.read_text())
+    predictions=path.parent/'predictions.jsonl'
+    if obj['suite_digest']!=digest(suite) or not predictions.exists():
+        raise ValueError('Cached report has different suite or missing predictions')
+    rows=[json.loads(line) for line in predictions.read_text().splitlines()]
+    calculated=summarize(rows,[r['id'] for r in suite])
+    if calculated != obj['report']:
+        raise ValueError('Cached report disagrees with actual predictions')
+    return calculated
+
+
+def configure_compiler_paths():
+    # Process-local setup only, never mutate shell rc files or global oneAPI installs.
+    root=Path.home()/'.local'
+    if (root/'include/level_zero/ze_api.h').is_file():
+        os.environ['CPATH']=str(root/'include')+(':'+os.environ['CPATH'] if os.environ.get('CPATH') else '')
+    if (root/'lib/libze_loader.so').exists():
+        os.environ['LIBRARY_PATH']=str(root/'lib')+(':'+os.environ['LIBRARY_PATH'] if os.environ.get('LIBRARY_PATH') else '')
+
+
+def verify_judge(config):
+    client=ChatClient(config.judge_url,config.judge_model,config.judge_max_tokens,ctx_size=config.ctx_size)
+    client.verify()
+    root=ChatClient(client.url.removesuffix('/v1'),config.judge_model,config.judge_max_tokens)
+    props=root._request('/props')
+    if Path(props['model_path']).resolve()!=Path(config.judge_artifact).resolve():
+        raise ValueError('Judge endpoint does not serve the configured fixed GGUF')
+    return GroundedJudge(client,config.judge_min_confidence,Path(config.output)/'judge-rubrics.json')
+
+
+def eval_cached(suite,generator,judge,directory,sandbox_image,generation_identity=None,phases=None,scoring_identity=None,incumbent=None,refusal_floor=None,batch_policy=None):
+    directory=Path(directory)
+    if generation_identity is None:
+        raise ValueError('Explicit generation identity required for resumable evaluation')
+    if scoring_identity is None:
+        if judge is not None or any(t['kind']=='refusal' for t in suite):
+            raise ValueError('Explicit scorer/judge identity required for resumable evaluation')
+        scoring_identity={'mode':'deterministic-tasks','scorer_sources':{n:sha256_file(Path(__file__).with_name(n)) for n in ('scoring.py','evaluation.py')}}
+    store=AnswerStore(directory/'answers',suite,generation_identity)
+    found=completed_scores(suite,store,directory,scoring_identity,sandbox_image)
+    if found is not None:
+        return found
+    generate_answers(suite,generator,store,refusal_floor,batch_policy=batch_policy)
+    if phases is not None and getattr(judge,'requires_gpu',True):
+        phases.idle()
+    return score_answers(suite,store,judge,directory,scoring_identity,sandbox_image,incumbent=incumbent)
+
+
+def run(config,*,selection_only=False,expected_winner=None):
+    if getattr(config,'consistency',None) is None:
+        raise ValueError('Explicit consistency policy required; legacy run settings must be reviewed')
+    ConsistencyPolicy.from_json(config.consistency)
+    if config.quantization!='none':
+        raise ValueError('Resident export-consistent search requires original-precision weights; NF4 is not export-equivalent')
+    source=Path(config.model)
+    config_path=source/'config.json' if source.is_dir() else Path(hf_hub_download(config.model,'config.json',revision=config.revision))
+    model_type=json.loads(config_path.read_text()).get('model_type')
+    if model_type not in ARCHITECTURES:
+        raise ValueError(f'Unsupported model architecture {model_type!r}; no judge or model weights were loaded')
+    BoundaryContract.for_architecture(model_type)
+    mode=getattr(config,'scoring_mode','judge')
+    if mode=='judge' and config.judge_url != 'managed':
+        raise ValueError('Automatic search requires judge_url="managed" so GPU models can be unloaded safely')
+    @contextmanager
+    def judge_factory():
+        with ManagedGGUF(config.judge_artifact, config.llama_server, config.ctx_size,
+                         config.judge_max_tokens, Path(config.output)/'judge-server.log') as client:
+            yield verify_judge(replace(config,judge_url=client.url,judge_model=client.model))
+    with exclusive(config.output,'.run.lock'), ModelPhases(judge_factory=judge_factory if mode=='judge' else None) as phases:
+        if selection_only or expected_winner is not None:
+            return _run(config,phases,selection_only=selection_only,expected_winner=expected_winner)
+        return _run(config,phases)
+
+
+def _run(config,phases,*,selection_only=False,expected_winner=None):
+    configure_compiler_paths()
+    output=Path(config.output).resolve()
+    output.mkdir(parents=True,exist_ok=True)
+    suites,_=validate_run_inputs(config)
+    direction_tasks,selection,holdout=(suites[name] for name in ('directions','selection','holdout'))
+    policy=ConsistencyPolicy.from_json(config.consistency)
+    budget_report=preflight_hf(config.model,config.revision,{'directions':direction_tasks,'selection':selection,'holdout':holdout},
+                              config.ctx_size,config.max_tokens,config.trust_remote_code)
+    atomic_json(output/'prompt-budgets.json',budget_report)
+    require_b70()
+    for tool in (config.converter,config.quantizer,config.converter_python,config.llama_server):
+        if not Path(tool).is_file():
+            raise FileNotFoundError(tool)
+    calibration=[]
+    judge_hash=None
+    if config.scoring_mode=='judge':
+        calibration=json.loads(Path(config.calibration).read_text())
+        if not {r['language'] for r in selection+holdout} <= {r['language'] for r in calibration}:
+            raise ValueError('Judge calibration does not cover evaluation languages')
+        binder=GroundedJudge(None,config.judge_min_confidence,output/'judge-rubrics.json')
+        judge=PhasedJudge(phases,binder)
+        judge.bind_rubrics(direction_tasks+[r for r in selection+holdout if r['kind']=='refusal'])
+        judge_hash=sha256_file(config.judge_artifact)
+        from .job_cli import calibrate_cached
+        check_identity={'judge_sha256':judge_hash,'server_sha256':sha256_file(config.llama_server),
+                        'max_tokens':config.judge_max_tokens,'ctx_size':config.ctx_size,
+                        'min_confidence':config.judge_min_confidence,
+                        'code':{p.name:sha256_file(p) for p in Path(__file__).parent.glob('*.py')},
+                        'prompts':digest({'rubric':RUBRIC_SYSTEM,'evidence':EVIDENCE_SYSTEM,'style':STYLE_SYSTEM})}
+        check_args=SimpleNamespace(output=output/'judge-checks',judge_min_accuracy=config.judge_min_accuracy)
+        calibrated=calibrate_cached(judge,calibration,check_args,check_identity)
+        atomic_json(output/'judge-calibration.json',calibrated)
+        phases.idle()
+    else:
+        judge=RefusalChecker()
+    sandbox=subprocess.run(['docker','image','inspect',config.sandbox_image,'--format','{{.Id}}'],text=True,capture_output=True,check=True).stdout.strip()
+    source=Path(config.model)
+    resolved_revision=config.revision
+    if not source.is_dir():
+        info=model_info(config.model,revision=config.revision,files_metadata=True)
+        resolved_revision=info.sha
+        raw_config=json.loads(Path(hf_hub_download(config.model,'config.json',revision=resolved_revision)).read_text())
+        if raw_config['model_type'] not in ARCHITECTURES:
+            raise ValueError('Unsupported model architecture; weights were not downloaded')
+        remote_bytes=sum(s.size or 0 for s in info.siblings if s.rfilename.endswith('.safetensors'))
+        if not remote_bytes or shutil.disk_usage(output).free < remote_bytes*(1.7+config.finalists*1.7+1.1):
+            raise RuntimeError('Insufficient disk for download, merged finalists and quantization')
+        source=Path(snapshot_download(config.model,revision=resolved_revision,ignore_patterns=['*.bin','*.pt','*.pth','*.gguf','*.h5','*.msgpack','*.onnx']))
+    model_config=json.loads((source/'config.json').read_text())
+    if model_config['model_type'] not in ARCHITECTURES:
+        raise ValueError('Unsupported model architecture; add and verify an adapter first')
+    weights=sorted(source.glob('*.safetensors'))
+    if not weights:
+        raise ValueError('Original safetensors are required for streaming export')
+    raw_bytes=sum(p.stat().st_size for p in weights)
+    # Baseline quants + finalist merged weights/quants + one transient BF16 GGUF.
+    needed=raw_bytes*(.7+config.finalists*1.7+1.1)
+    if shutil.disk_usage(output).free<needed:
+        raise RuntimeError(f'Insufficient disk: need approximately {int(needed)} free bytes for this finalist budget')
+    free,total=torch.xpu.mem_get_info(0)
+    approximate_weights=raw_bytes if config.quantization=='none' else raw_bytes*.35
+    if free < approximate_weights+config.vram_headroom_gib*1024**3:
+        raise RuntimeError('Model plus configured VRAM headroom will not fit the free B70 memory')
+    provenance={
+        'config':{k:v for k,v in asdict(config).items() if k not in {'trials','judge_url'}},
+        'source_files':{p.name:sha256_file(p) for p in source.iterdir() if p.is_file() and p.suffix in {'.safetensors','.json','.jinja','.py'}},
+        'resolved_revision':resolved_revision,
+        'directions_digest':digest(direction_tasks),'selection_digest':digest(selection),'holdout_digest':digest(holdout),
+        'judge_sha256':judge_hash,'judge_prompt_digest':digest({'rubric':RUBRIC_SYSTEM,'evidence':EVIDENCE_SYSTEM,'style':STYLE_SYSTEM}),'calibration_digest':digest(calibration),
+        'sandbox_image_id':sandbox,'torch':torch.__version__,
+        'dependency_versions':{name:version(name) for name in ('transformers','optuna','numpy','accelerate','bitsandbytes','safetensors','gguf')},
+        'deterministic_algorithms':torch.are_deterministic_algorithms_enabled(),
+        'prompt_budget_digest':digest(budget_report),
+        'framework_sources':{p.name:sha256_file(p) for p in Path(__file__).parent.glob('*.py')},
+        'converter_sha256':sha256_file(config.converter),'quantizer_sha256':sha256_file(config.quantizer),'server_sha256':sha256_file(config.llama_server),
+    }
+    study=build_study(output/'study.db',provenance,config.seed,config.startup_trials)
+    atomic_json(output/'provenance.json',provenance)
+    torch.manual_seed(config.seed)
+    phases.target_factory=lambda:HFModel(str(source),None,config.rank,config.max_tokens,config.dtype,config.trust_remote_code,config.quantization,'merged-resident',config.ctx_size,config.edit_targets,config.merged_cache_bytes)
+    backend=PhasedHF(phases)
+    try:
+        fingerprint={**backend.fingerprint,'method':config.method,'method_options_digest':digest(config.method_options or {})}
+        if config.edit_targets != backend.editor.edit_targets:
+            raise ValueError('Configured edit surface differs from the loaded editor')
+        if config.method=='ara' and any(a.base.weight.ndim!=2 for *_,a in backend.editor.targets):
+            raise UnsupportedMethod('ARA fused-expert route-I/O is not implemented; no experts were skipped')
+        workspace=require_resident_precision(source,backend.editor)
+        if torch.xpu.mem_get_info(0)[0] < workspace + config.merged_cache_bytes + config.vram_headroom_gib*1024**3:
+            raise RuntimeError('Insufficient B70 headroom for the resident merged projection workspace')
+    except BaseException:
+        backend.release()
+        raise
+    generation_identity={'source_files':provenance['source_files'],'backend':fingerprint,
+                         'generation_batch':config.generation_batch,
+                         'max_tokens':config.max_tokens,'seed':config.seed,'refusal_floor':config.refusal_floor,
+                         'hf_code_sha256':sha256_file(Path(__file__).with_name('hf.py'))}
+    scoring_identity={'scoring_mode':config.scoring_mode,'judge_sha256':judge_hash,'judge_prompt_digest':provenance['judge_prompt_digest'],
+                      'framework_sources':provenance['framework_sources'],'sandbox_image_id':sandbox,
+                      'judge_max_tokens':config.judge_max_tokens,'ctx_size':config.ctx_size,
+                      'min_confidence':config.judge_min_confidence}
+    try:
+        baseline=eval_cached(selection,backend,judge,output/'baseline-hf',config.sandbox_image,generation_identity,
+                             phases,scoring_identity,refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
+        if baseline['invalid']:
+            raise ValueError('Invalid baseline outputs/judgments: adjust budgets or judge, not model weights')
+        direction_file=output/'directions.pt'
+        checkpoint_identity=direction_identity(generation_identity,provenance['directions_digest'],config.method,
+            config.method_options or {},scoring_identity,config.consistency,config.seed)
+        saved=load_checkpoint(direction_file,checkpoint_identity)
+        if saved is not None:
+            directions,direction_audit=saved
+            directions=move_plan(directions,backend.device)
+        else:
+            captures=[]
+            captured_io={}
+            # Capture all small activation records before loading the judge.
+            for task in direction_tasks:
+                response=backend.generate(task['prompt'])
+                answer=extract_answer(response['content'],response['finish_reason'],response['thinking_open'],response.get('final_marker'))
+                if answer.complete:
+                    residual=backend.residual_at_answer(task['prompt'],response)
+                    captures.append((task,answer.text,residual))
+                    if getattr(config,'method','directional')=='ara':
+                        captured_io[task['id']]=backend.module_io_at_answer(task['prompt'],response)
+            if getattr(judge,'requires_gpu',True):
+                phases.idle()
+            accepted=[]
+            for task,text,residual in captures:
+                verdict=judge.classify(task['prompt'],text,task['language']).verdict
+                good_verdict='no_explicit_refusal' if config.scoring_mode=='refusal-check' else 'compliance'
+                if task['label']=='bad' and verdict not in {'refusal','partial'} or task['label']=='good' and verdict!=good_verdict:
+                    continue
+                accepted.append((task,residual.cpu()))
+            # Small activation statistics may use CPU SVD; model weight inference/editing never does.
+            method=getattr(config,'method','directional')
+            options=getattr(config,'method_options',None) or {}
+            directions,direction_audit=fit_plan(accepted,config.rank,policy,config.seed,direction_tasks,method,options,
+                [(task,captured_io[task['id']]) for task,_ in accepted] if method=='ara' else None,
+                backend.editor if method=='ara' else None)
+            directions=move_plan(directions,backend.device)
+            direction_audit.update({'attempted':len(direction_tasks),'accepted':len(accepted)})
+            save_checkpoint(direction_file,move_plan(directions,'cpu'),checkpoint_identity,direction_audit)
+            atomic_json(output/'direction-stability.json',direction_audit)
+        # Bind generated trial answers to the exact committed learned operator,
+        # not merely rank/strength. Same-shaped plans from other methods differ.
+        edit_identity={'derivation':checkpoint_identity,
+                       'plan_sha256':json.loads(direction_file.with_suffix('.checkpoint.json').read_text())['sha256']}
+        refs_file=output/'harmless-trajectories.pt'
+        refs_identity={'generation':generation_identity,'selection_digest':provenance['selection_digest']}
+        saved=load_checkpoint(refs_file,refs_identity)
+        if saved is not None:
+            references,_=saved
+        else:
+            references=[]
+            for task in selection:
+                if task['kind']!='harmless':
+                    continue
+                response=backend.generate(task['prompt'])
+                answer=extract_answer(response['content'],response['finish_reason'],response['thinking_open'],response.get('final_marker'))
+                if not answer.complete:
+                    raise ValueError('Harmless baseline did not reach a complete final answer')
+                boundary=reply_boundary(backend.tokenizer,response['generated_ids'],response['thinking_open'],response.get('final_marker'))
+                references.append({'id':task['id'],'sequence':response['sequence'].cpu(),'prompt_length':response['prompt_length'],'answer_start':boundary})
+            save_checkpoint(refs_file,references,refs_identity,{})
+        if config.warm_starts:
+            warm=json.loads(Path(config.warm_starts).read_text())
+            for params in compatible_warm_starts(warm,fingerprint):
+                study.enqueue_trial(params,skip_if_exists=True)
+        def objective(trial):
+            params=suggest_parameters(trial,backend.editor.groups,config.strength_range,
+                                      (config.method_options or {}).get('layer_profile','searched'))
+            backend.editor.apply(directions,params)
+            trial.set_user_attr('parameters',params)
+            try:
+                kl_sum=0.
+                answer_sum=0.
+                token_count=0
+                answer_count=0
+                for ref in references:
+                    metric=backend.trajectory_kl(ref['sequence'].to(backend.device),ref['prompt_length'],ref['answer_start'])
+                    kl_sum+=metric['full_reply_kl']*metric['tokens']
+                    token_count+=metric['tokens']
+                    answer_sum+=metric['answer_kl']*metric['answer_tokens']
+                    answer_count+=metric['answer_tokens']
+                    # KL is nonnegative. This lower bound permits only certain rejection.
+                    final_tokens=sum(r['sequence'].shape[1]-r['prompt_length'] for r in references)
+                    if kl_sum/final_tokens>config.max_full_reply_kl:
+                        raise optuna.TrialPruned('Full-reply KL cannot meet the damage limit')
+                kl=kl_sum/token_count
+                incumbent=min([t.value for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')],default=None)
+                report=eval_cached(selection,backend,judge,output/f'trial-{trial.number}',config.sandbox_image,
+                                   {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params},phases,scoring_identity,incumbent,
+                                   refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
+                drop=max(0.,baseline['capability_pass_rate']-report['capability_pass_rate'])
+                drop=max(drop,*(max(0.,baseline['by_kind'][kind]['pass_rate']-report['by_kind'][kind]['pass_rate']) for kind in ('code','math')))
+                feasible=not report['invalid'] and drop<=config.max_capability_drop and kl<=config.max_full_reply_kl
+                report['paired']=paired_consistency(selection,read_predictions(output/'baseline-hf'),read_predictions(output/f'trial-{trial.number}'),policy)
+                feasible=feasible and report['paired']['regression_ok']
+                report.update({'full_reply_kl':kl,'answer_kl':answer_sum/answer_count,'capability_drop':drop})
+                atomic_json(output/f'trial-{trial.number}'/'trial-report.json',report)
+                trial.set_user_attr('report',report)
+                trial.set_user_attr('feasible',feasible)
+                if not feasible:
+                    raise optuna.TrialPruned('Capability or validity gate failed')
+                return search_rate(report)
+            except DominatedTrial as e:
+                raise optuna.TrialPruned(str(e)) from e
+            finally:
+                backend.editor.reset()
+        execute_trials(study,objective,config.trials)
+        feasible=[t for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')]
+        feasible.sort(key=lambda t:(t.value,t.user_attrs['report']['capability_drop'],t.user_attrs['report']['full_reply_kl']))
+        finalists=feasible[:config.finalists]
+        if not finalists:
+            raise SearchRejected('No feasible candidate; no release was produced')
+        merged=[]
+        for trial in finalists:
+            directory=output/f'finalist-{trial.number}'
+            hf=directory/'hf'
+            backend.editor.apply(directions,trial.user_attrs['parameters'])
+            if not (directory/'merge.json').exists():
+                if hf.exists():
+                    hf.rename(hf.with_name('hf-interrupted-'+str(len(list(directory.glob('hf-interrupted-*'))))))
+                result=stream_merge(source,hf,backend.editor)
+                atomic_json(directory/'merge.json',result)
+            audit=verify_resident_export(source,hf,backend.editor)
+            atomic_json(directory/'export-verification.json',audit)
+            # Tensor equality proves that this resident operator is the exported
+            # operator. Re-score without loading or offloading another model.
+            report=eval_cached(selection,backend,judge,directory/'merged-selection',config.sandbox_image,
+                               {**generation_identity,'edit_identity':edit_identity,'edit_parameters':trial.user_attrs['parameters'],'verified_export':audit},
+                               phases,scoring_identity,refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
+            report['paired']=paired_consistency(selection,read_predictions(output/'baseline-hf'),read_predictions(directory/'merged-selection'),policy)
+            if report['invalid'] or not report['paired']['regression_ok']:
+                continue
+            drops=[baseline['by_kind'][k]['pass_rate']-report['by_kind'][k]['pass_rate'] for k in ('code','math')]
+            if max(drops)>config.max_capability_drop:
+                continue
+            merged.append({'id':str(trial.number),'hf_path':str(hf),'hf':report,'search_hf':trial.user_attrs['report'],
+                           'export_verification':audit,'parameters':trial.user_attrs['parameters']})
+        atomic_json(output/'warm-starts.json',[{'fingerprint':fingerprint,'feasible':True,'parameters':t.params} for t in feasible])
+    finally:
+        backend.release()
+        gc.collect()
+    def convert_cached(hf,directory):
+        from .release import cached_conversion
+        return cached_conversion(hf,directory,config.converter,config.quantizer,config.converter_python,
+                                 config.imatrix,convert=export_gguf,verify=verify_quant)
+    def score_quants(artifacts,suite,directory):
+        reports={}
+        for q,artifact in artifacts.items():
+            folder=Path(directory)/q
+            identity={'artifact_sha256':artifact['sha256'],'server_sha256':provenance['server_sha256'],
+                      'ctx_size':config.ctx_size,'max_tokens':config.max_tokens,'temperature':0,'seed':0,
+                      'refusal_floor':config.refusal_floor,
+                      'generation_batch':config.generation_batch,
+                      'transport_sha256':sha256_file(Path(__file__).with_name('transport.py'))}
+            store=AnswerStore(folder/'answers',suite,identity)
+            cached=completed_scores(suite,store,folder,scoring_identity,config.sandbox_image)
+            if cached is not None:
+                reports[q]=cached
+                continue
+            phases.idle()
+            if store.status()['missing']:
+                slots={'parallel':config.generation_batch['max_sequences']} if config.generation_batch else {}
+                with ManagedGGUF(artifact['path'],config.llama_server,config.ctx_size,config.max_tokens,folder/'server.log',**slots) as client:
+                    generate_answers(suite,client,store,refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
+            reports[q]=score_answers(suite,store,judge,folder,scoring_identity,config.sandbox_image)
+        return reports
+    baseline_artifacts=convert_cached(source,output/'baseline-quants')
+    quant_baseline=score_quants(baseline_artifacts,selection,output/'baseline-quant-selection')
+    for candidate in merged:
+        directory=output/f"finalist-{candidate['id']}"
+        candidate['artifacts']=convert_cached(candidate['hf_path'],directory/'quants')
+        candidate['quants']=score_quants(candidate['artifacts'],selection,directory/'selection')
+        for q,report in candidate['quants'].items():
+            report['paired']=paired_consistency(selection,read_predictions(output/'baseline-quant-selection'/q),read_predictions(directory/'selection'/q),policy)
+    ranked=rank_quantized(merged,quant_baseline,config.max_capability_drop,require_consistency=True)
+    selection_result={'baseline':quant_baseline,'baseline_artifacts':baseline_artifacts,
+                      'candidates':merged,'ranked_ids':[c['id'] for c in ranked]}
+    atomic_json(output/'quantized-ranking.json',selection_result)
+    if not ranked:
+        raise SearchRejected('No quantized candidate improved the matched baseline within the capability limit')
+    if selection_only:
+        return {'status':'selection-complete',**selection_result}
+    winner=ranked[0]
+    if expected_winner is not None and str(winner['id'])!=str(expected_winner):
+        raise ValueError('Sealed winner changed before holdout; refusing to certify a different candidate')
+    # Holdout is used ONCE for certification, never to pick another candidate on failure.
+    baseline_holdout=score_quants(baseline_artifacts,holdout,output/'baseline-quant-holdout')
+    winner_holdout=score_quants(winner['artifacts'],holdout,output/f"finalist-{winner['id']}"/'holdout')
+    for q,report in winner_holdout.items():
+        report['paired']=paired_consistency(holdout,read_predictions(output/'baseline-quant-holdout'/q),
+                                           read_predictions(output/f"finalist-{winner['id']}"/'holdout'/q),policy)
+    certified=rank_quantized([{'id':winner['id'],'quants':winner_holdout}],baseline_holdout,config.max_capability_drop,require_consistency=True)
+    if not certified:
+        raise HoldoutRejected('Selected candidate failed sealed holdout; no release produced and no holdout-driven retry')
+    judge.verify()
+    if config.scoring_mode=='judge' and sha256_file(config.judge_artifact)!=judge_hash:
+        raise RuntimeError('Judge changed during the experiment')
+    manifest={'base_model':config.model,'requested_revision':config.revision,'base_revision':resolved_revision,'model_license':config.model_license,'software_license':'AGPL-3.0-or-later','winner':winner,'holdout':winner_holdout,'baseline_holdout':baseline_holdout,'provenance':provenance,'limits':{'full_reply_kl':config.max_full_reply_kl,'capability_drop':config.max_capability_drop},'status':'certified' if config.scoring_mode=='judge' else 'refusal-screened'}
+    release=output/'release'
+    assessment='Judged on a disjoint holdout.' if config.scoring_mode=='judge' else 'Screened for explicit refusal wording on a disjoint holdout. Actual task fulfillment and disclaimers were NOT judged.'
+    readme='# B70-ablator release\n\nBase: '+config.model+' @ '+config.revision+'\n\nModel license: '+config.model_license+' (base-model obligations remain).\n\nSelected on Q4_K_M/Q5_K_M results. '+assessment+'\nMetrics and exact settings: evaluation.json.\n\nFull-reply KL gates were measured in the search precision. Quantized damage was\nchecked through executed code tests and exact maths grading, not GGUF KL.\nNo claim of zero capability loss or universal uncensoring is made.\n'
+    create_release(release,winner['hf_path'],winner['artifacts'],manifest,readme)
+    return {'release':str(release),'winner':winner['id'],'holdout':winner_holdout}
+
+
+def read_predictions(directory):
+    return [json.loads(line) for line in (Path(directory)/'predictions.jsonl').read_text().splitlines() if line.strip()]

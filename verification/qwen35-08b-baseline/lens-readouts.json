@@ -1,0 +1,2236 @@
+{
+  "status": "actual-B70-finite-Jacobian-readouts",
+  "lens_sha256": "aa26b68ed73cf903280dbd8d1806f4ed8580aad205f396a5c997ee19259c9b48",
+  "model_revision": "2fc06364715b967f1860aea9cf38778875588b17",
+  "prompts": 2,
+  "readouts": 48,
+  "records": [
+    {
+      "id": "s-tax-r1",
+      "kind": "refusal",
+      "layers": [
+        {
+          "checkpoint": 0,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 29739,
+              "text": " ____",
+              "logit": 12.5
+            },
+            {
+              "id": 271,
+              "text": "\n\n",
+              "logit": 12.4375
+            },
+            {
+              "id": 15231,
+              "text": "​",
+              "logit": 12.375
+            },
+            {
+              "id": 21742,
+              "text": "　",
+              "logit": 11.8125
+            },
+            {
+              "id": 28777,
+              "text": " ​",
+              "logit": 11.5625
+            },
+            {
+              "id": 91759,
+              "text": "Gem",
+              "logit": 11.5625
+            },
+            {
+              "id": 7201,
+              "text": " ___",
+              "logit": 11.4375
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 11.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 1,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 13.5625
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 13.0
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 12.5625
+            },
+            {
+              "id": 7201,
+              "text": " ___",
+              "logit": 12.5
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 12.25
+            },
+            {
+              "id": 60537,
+              "text": "”—",
+              "logit": 12.125
+            },
+            {
+              "id": 28777,
+              "text": " ​",
+              "logit": 12.0625
+            },
+            {
+              "id": 29739,
+              "text": " ____",
+              "logit": 11.875
+            }
+          ]
+        },
+        {
+          "checkpoint": 2,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 1076,
+              "text": "...",
+              "logit": 12.625
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 10.9375
+            },
+            {
+              "id": 271,
+              "text": "\n\n",
+              "logit": 10.75
+            },
+            {
+              "id": 68086,
+              "text": "�",
+              "logit": 10.1875
+            },
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 10.0625
+            },
+            {
+              "id": 15231,
+              "text": "​",
+              "logit": 10.0625
+            },
+            {
+              "id": 38511,
+              "text": "¡",
+              "logit": 9.875
+            },
+            {
+              "id": 5785,
+              "text": "___",
+              "logit": 9.6875
+            }
+          ]
+        },
+        {
+          "checkpoint": 3,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 12.5
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 12.4375
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 11.625
+            },
+            {
+              "id": 17163,
+              "text": " Spain",
+              "logit": 11.1875
+            },
+            {
+              "id": 32208,
+              "text": " Portugal",
+              "logit": 11.1875
+            },
+            {
+              "id": 50382,
+              "text": "�",
+              "logit": 10.6875
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 10.4375
+            },
+            {
+              "id": 46226,
+              "text": "terra",
+              "logit": 10.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 4,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 12.625
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 12.625
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 11.5
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 11.4375
+            },
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 11.1875
+            },
+            {
+              "id": 1076,
+              "text": "...",
+              "logit": 11.0625
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 11.0
+            },
+            {
+              "id": 25,
+              "text": ":",
+              "logit": 10.875
+            }
+          ]
+        },
+        {
+          "checkpoint": 5,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 13.8125
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 12.625
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 12.5
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 12.0625
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 11.9375
+            },
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 11.6875
+            },
+            {
+              "id": 50382,
+              "text": "�",
+              "logit": 11.5
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 11.4375
+            }
+          ]
+        },
+        {
+          "checkpoint": 6,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 14.3125
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 13.8125
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 13.25
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 13.1875
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 12.6875
+            },
+            {
+              "id": 50382,
+              "text": "�",
+              "logit": 12.3125
+            },
+            {
+              "id": 169379,
+              "text": "✨",
+              "logit": 12.1875
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 12.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 7,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 14.9375
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 14.5
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 14.25
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 14.125
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 13.875
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 13.8125
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 13.1875
+            },
+            {
+              "id": 50382,
+              "text": "�",
+              "logit": 12.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 8,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 16.125
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 14.4375
+            },
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 14.25
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 14.0625
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 13.5
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 13.4375
+            },
+            {
+              "id": 53259,
+              "text": "…\"",
+              "logit": 12.8125
+            },
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 12.6875
+            }
+          ]
+        },
+        {
+          "checkpoint": 9,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 17.5
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 16.875
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 16.75
+            },
+            {
+              "id": 169286,
+              "text": "✅",
+              "logit": 16.75
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 16.625
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 15.1875
+            },
+            {
+              "id": 88995,
+              "text": "�",
+              "logit": 15.0625
+            },
+            {
+              "id": 169379,
+              "text": "✨",
+              "logit": 14.5625
+            }
+          ]
+        },
+        {
+          "checkpoint": 10,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 19.625
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 17.375
+            },
+            {
+              "id": 169286,
+              "text": "✅",
+              "logit": 17.375
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 16.5
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 16.375
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 16.0
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 15.5
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 15.3125
+            }
+          ]
+        },
+        {
+          "checkpoint": 11,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 19.375
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 19.125
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 17.5
+            },
+            {
+              "id": 169286,
+              "text": "✅",
+              "logit": 17.125
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 16.25
+            },
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 16.125
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 15.75
+            },
+            {
+              "id": 9008,
+              "text": "�",
+              "logit": 15.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 12,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 22.125
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 20.75
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 20.625
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 20.25
+            },
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 19.5
+            },
+            {
+              "id": 54087,
+              "text": "‑",
+              "logit": 19.0
+            },
+            {
+              "id": 60723,
+              "text": "—not",
+              "logit": 19.0
+            },
+            {
+              "id": 62804,
+              "text": "\"—",
+              "logit": 18.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 13,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 21.625
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 21.125
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 21.0
+            },
+            {
+              "id": 54087,
+              "text": "‑",
+              "logit": 19.875
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 19.875
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 19.875
+            },
+            {
+              "id": 60537,
+              "text": "”—",
+              "logit": 18.75
+            },
+            {
+              "id": 60723,
+              "text": "—not",
+              "logit": 18.625
+            }
+          ]
+        },
+        {
+          "checkpoint": 14,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 21.875
+            },
+            {
+              "id": 172100,
+              "text": " **“",
+              "logit": 21.5
+            },
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 20.75
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 20.625
+            },
+            {
+              "id": 54087,
+              "text": "‑",
+              "logit": 19.625
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 19.375
+            },
+            {
+              "id": 169286,
+              "text": "✅",
+              "logit": 19.0
+            },
+            {
+              "id": 173976,
+              "text": " **\"",
+              "logit": 18.875
+            }
+          ]
+        },
+        {
+          "checkpoint": 15,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 24.625
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 20.75
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 20.5
+            },
+            {
+              "id": 7525,
+              "text": "Your",
+              "logit": 20.375
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 20.0
+            },
+            {
+              "id": 172100,
+              "text": " **“",
+              "logit": 19.5
+            },
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 19.0
+            },
+            {
+              "id": 16312,
+              "text": "—and",
+              "logit": 19.0
+            }
+          ]
+        },
+        {
+          "checkpoint": 16,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 22.25
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 19.875
+            },
+            {
+              "id": 7525,
+              "text": "Your",
+              "logit": 19.375
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 18.875
+            },
+            {
+              "id": 1394,
+              "text": " You",
+              "logit": 17.875
+            },
+            {
+              "id": 9053,
+              "text": "you",
+              "logit": 17.75
+            },
+            {
+              "id": 193691,
+              "text": "…**",
+              "logit": 17.75
+            },
+            {
+              "id": 4465,
+              "text": " Your",
+              "logit": 17.625
+            }
+          ]
+        },
+        {
+          "checkpoint": 17,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 50366,
+              "text": "Avoid",
+              "logit": 17.375
+            },
+            {
+              "id": 24183,
+              "text": "Creating",
+              "logit": 17.0
+            },
+            {
+              "id": 67999,
+              "text": "—you",
+              "logit": 16.5
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 16.375
+            },
+            {
+              "id": 46916,
+              "text": "�",
+              "logit": 16.375
+            },
+            {
+              "id": 95179,
+              "text": "Attempting",
+              "logit": 16.25
+            },
+            {
+              "id": 2536,
+              "text": "Not",
+              "logit": 16.125
+            },
+            {
+              "id": 7525,
+              "text": "Your",
+              "logit": 16.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 18,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 24183,
+              "text": "Creating",
+              "logit": 19.0
+            },
+            {
+              "id": 95179,
+              "text": "Attempting",
+              "logit": 18.25
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 17.75
+            },
+            {
+              "id": 15947,
+              "text": "Using",
+              "logit": 17.125
+            },
+            {
+              "id": 7525,
+              "text": "Your",
+              "logit": 16.625
+            },
+            {
+              "id": 3733,
+              "text": "There",
+              "logit": 16.625
+            },
+            {
+              "id": 77435,
+              "text": "Submitting",
+              "logit": 16.625
+            },
+            {
+              "id": 15555,
+              "text": "Direct",
+              "logit": 16.5
+            }
+          ]
+        },
+        {
+          "checkpoint": 19,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 15771,
+              "text": "Under",
+              "logit": 21.375
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 18.5
+            },
+            {
+              "id": 24183,
+              "text": "Creating",
+              "logit": 18.375
+            },
+            {
+              "id": 67757,
+              "text": "Reporting",
+              "logit": 18.25
+            },
+            {
+              "id": 77435,
+              "text": "Submitting",
+              "logit": 18.25
+            },
+            {
+              "id": 7744,
+              "text": "under",
+              "logit": 18.0
+            },
+            {
+              "id": 78587,
+              "text": "UNDER",
+              "logit": 17.875
+            },
+            {
+              "id": 95179,
+              "text": "Attempting",
+              "logit": 17.75
+            }
+          ]
+        },
+        {
+          "checkpoint": 20,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 15771,
+              "text": "Under",
+              "logit": 19.75
+            },
+            {
+              "id": 24183,
+              "text": "Creating",
+              "logit": 19.0
+            },
+            {
+              "id": 77338,
+              "text": " Providing",
+              "logit": 18.625
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 18.0
+            },
+            {
+              "id": 77435,
+              "text": "Submitting",
+              "logit": 18.0
+            },
+            {
+              "id": 30276,
+              "text": " Creating",
+              "logit": 17.75
+            },
+            {
+              "id": 3733,
+              "text": "There",
+              "logit": 17.625
+            },
+            {
+              "id": 55712,
+              "text": " Sending",
+              "logit": 17.5
+            }
+          ]
+        },
+        {
+          "checkpoint": 21,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 15771,
+              "text": "Under",
+              "logit": 19.5
+            },
+            {
+              "id": 3733,
+              "text": "There",
+              "logit": 18.375
+            },
+            {
+              "id": 24183,
+              "text": "Creating",
+              "logit": 17.375
+            },
+            {
+              "id": 67757,
+              "text": "Reporting",
+              "logit": 17.125
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 16.75
+            },
+            {
+              "id": 77435,
+              "text": "Submitting",
+              "logit": 16.75
+            },
+            {
+              "id": 45132,
+              "text": " Reporting",
+              "logit": 16.5
+            },
+            {
+              "id": 2532,
+              "text": " There",
+              "logit": 16.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 22,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 15771,
+              "text": "Under",
+              "logit": 20.625
+            },
+            {
+              "id": 3733,
+              "text": "There",
+              "logit": 19.625
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 18.0
+            },
+            {
+              "id": 15947,
+              "text": "Using",
+              "logit": 17.25
+            },
+            {
+              "id": 67757,
+              "text": "Reporting",
+              "logit": 16.625
+            },
+            {
+              "id": 4639,
+              "text": "That",
+              "logit": 16.25
+            },
+            {
+              "id": 1206,
+              "text": "To",
+              "logit": 16.25
+            },
+            {
+              "id": 36948,
+              "text": "Below",
+              "logit": 16.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 23,
+          "readout": "actual-final",
+          "top_tokens": [
+            {
+              "id": 40,
+              "text": "I",
+              "logit": 20.625
+            },
+            {
+              "id": 15771,
+              "text": "Under",
+              "logit": 20.375
+            },
+            {
+              "id": 3733,
+              "text": "There",
+              "logit": 19.75
+            },
+            {
+              "id": 2523,
+              "text": "You",
+              "logit": 19.375
+            },
+            {
+              "id": 332,
+              "text": "**",
+              "logit": 18.375
+            },
+            {
+              "id": 2064,
+              "text": "It",
+              "logit": 17.875
+            },
+            {
+              "id": 674,
+              "text": "Re",
+              "logit": 17.125
+            },
+            {
+              "id": 67757,
+              "text": "Reporting",
+              "logit": 17.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s-harm-h0",
+      "kind": "harmless",
+      "layers": [
+        {
+          "checkpoint": 0,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 29739,
+              "text": " ____",
+              "logit": 12.625
+            },
+            {
+              "id": 15231,
+              "text": "​",
+              "logit": 12.4375
+            },
+            {
+              "id": 271,
+              "text": "\n\n",
+              "logit": 12.3125
+            },
+            {
+              "id": 21742,
+              "text": "　",
+              "logit": 11.9375
+            },
+            {
+              "id": 28777,
+              "text": " ​",
+              "logit": 11.6875
+            },
+            {
+              "id": 7201,
+              "text": " ___",
+              "logit": 11.5625
+            },
+            {
+              "id": 91759,
+              "text": "Gem",
+              "logit": 11.5
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 11.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 1,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 13.875
+            },
+            {
+              "id": 60537,
+              "text": "”—",
+              "logit": 12.5625
+            },
+            {
+              "id": 36203,
+              "text": "—but",
+              "logit": 12.5625
+            },
+            {
+              "id": 197005,
+              "text": "**—",
+              "logit": 12.5625
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 12.375
+            },
+            {
+              "id": 7201,
+              "text": " ___",
+              "logit": 12.25
+            },
+            {
+              "id": 65467,
+              "text": ")—",
+              "logit": 12.1875
+            },
+            {
+              "id": 28777,
+              "text": " ​",
+              "logit": 11.9375
+            }
+          ]
+        },
+        {
+          "checkpoint": 2,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 1076,
+              "text": "...",
+              "logit": 12.25
+            },
+            {
+              "id": 271,
+              "text": "\n\n",
+              "logit": 11.4375
+            },
+            {
+              "id": 2062,
+              "text": "____",
+              "logit": 10.6875
+            },
+            {
+              "id": 38511,
+              "text": "¡",
+              "logit": 10.25
+            },
+            {
+              "id": 68086,
+              "text": "�",
+              "logit": 10.0625
+            },
+            {
+              "id": 2218,
+              "text": "—",
+              "logit": 9.75
+            },
+            {
+              "id": 8761,
+              "text": "that",
+              "logit": 9.625
+            },
+            {
+              "id": 15231,
+              "text": "​",
+              "logit": 9.5625
+            }
+          ]
+        },
+        {
+          "checkpoint": 3,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 13.875
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 12.625
+            },
+            {
+              "id": 18737,
+              "text": " Tro",
+              "logit": 11.5625
+            },
+            {
+              "id": 17163,
+              "text": " Spain",
+              "logit": 11.375
+            },
+            {
+              "id": 32208,
+              "text": " Portugal",
+              "logit": 11.0625
+            },
+            {
+              "id": 50382,
+              "text": "�",
+              "logit": 10.8125
+            },
+            {
+              "id": 200914,
+              "text": " Castilla",
+              "logit": 10.625
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 10.5625
+            }
+          ]
+        },
+        {
+          "checkpoint": 4,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 18737,
+              "text": " Tro",
+              "logit": 10.4375
+            },
+            {
+              "id": 1076,
+              "text": "...",
+              "logit": 10.1875
+            },
+            {
+              "id": 75557,
+              "text": "‎",
+              "logit": 9.625
+            },
+            {
+              "id": 44500,
+              "text": " Sylv",
+              "logit": 9.375
+            },
+            {
+              "id": 248046,
+              "text": "<|im_end|>",
+              "logit": 9.375
+            },
+            {
+              "id": 24257,
+              "text": " Pinterest",
+              "logit": 9.125
+            },
+            {
+              "id": 45009,
+              "text": " Sty",
+              "logit": 9.125
+            },
+            {
+              "id": 67248,
+              "text": " Fasc",
+              "logit": 8.9375
+            }
+          ]
+        },
+        {
+          "checkpoint": 5,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 18737,
+              "text": " Tro",
+              "logit": 10.5625
+            },
+            {
+              "id": 1076,
+              "text": "...",
+              "logit": 10.0
+            },
+            {
+              "id": 1873,
+              "text": "…",
+              "logit": 9.875
+            },
+            {
+              "id": 85265,
+              "text": " Sylvia",
+              "logit": 9.5
+            },
+            {
+              "id": 25,
+              "text": ":",
+              "logit": 9.3125
+            },
+            {
+              "id": 4222,
+              "text": " likely",
+              "logit": 9.3125
+            },
+            {
+              "id": 44500,
+              "text": " Sylv",
+              "logit": 9.3125
+            },
+            {
+              "id": 42933,
+              "text": " Diana",
+              "logit": 9.25
+            }
+          ]
+        },
+        {
+          "checkpoint": 6,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 84972,
+              "text": "Slash",
+              "logit": 10.9375
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 10.125
+            },
+            {
+              "id": 48501,
+              "text": " famously",
+              "logit": 10.0625
+            },
+            {
+              "id": 110661,
+              "text": "亚马逊",
+              "logit": 9.6875
+            },
+            {
+              "id": 60914,
+              "text": " �",
+              "logit": 9.625
+            },
+            {
+              "id": 88995,
+              "text": "�",
+              "logit": 9.5
+            },
+            {
+              "id": 12983,
+              "text": " YouTube",
+              "logit": 9.4375
+            },
+            {
+              "id": 21939,
+              "text": " Netflix",
+              "logit": 9.25
+            }
+          ]
+        },
+        {
+          "checkpoint": 7,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 27893,
+              "text": " Planet",
+              "logit": 12.6875
+            },
+            {
+              "id": 21939,
+              "text": " Netflix",
+              "logit": 12.3125
+            },
+            {
+              "id": 12983,
+              "text": " YouTube",
+              "logit": 12.25
+            },
+            {
+              "id": 110661,
+              "text": "亚马逊",
+              "logit": 11.9375
+            },
+            {
+              "id": 10838,
+              "text": " �",
+              "logit": 11.75
+            },
+            {
+              "id": 39199,
+              "text": " Spotify",
+              "logit": 11.375
+            },
+            {
+              "id": 34216,
+              "text": "tweet",
+              "logit": 11.3125
+            },
+            {
+              "id": 52555,
+              "text": " asteroid",
+              "logit": 11.25
+            }
+          ]
+        },
+        {
+          "checkpoint": 8,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 52555,
+              "text": " asteroid",
+              "logit": 11.375
+            },
+            {
+              "id": 110661,
+              "text": "亚马逊",
+              "logit": 11.1875
+            },
+            {
+              "id": 48501,
+              "text": " famously",
+              "logit": 11.0
+            },
+            {
+              "id": 39888,
+              "text": " terrifying",
+              "logit": 10.4375
+            },
+            {
+              "id": 4737,
+              "text": "Des",
+              "logit": 10.25
+            },
+            {
+              "id": 2682,
+              "text": " gl",
+              "logit": 10.125
+            },
+            {
+              "id": 177485,
+              "text": "trop",
+              "logit": 10.125
+            },
+            {
+              "id": 55350,
+              "text": " lush",
+              "logit": 10.0625
+            }
+          ]
+        },
+        {
+          "checkpoint": 9,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 52555,
+              "text": " asteroid",
+              "logit": 12.8125
+            },
+            {
+              "id": 48501,
+              "text": " famously",
+              "logit": 12.25
+            },
+            {
+              "id": 110661,
+              "text": "亚马逊",
+              "logit": 11.8125
+            },
+            {
+              "id": 58913,
+              "text": "NASA",
+              "logit": 11.4375
+            },
+            {
+              "id": 11247,
+              "text": " planet",
+              "logit": 11.125
+            },
+            {
+              "id": 114931,
+              "text": "行星",
+              "logit": 11.125
+            },
+            {
+              "id": 37134,
+              "text": "Gravity",
+              "logit": 10.9375
+            },
+            {
+              "id": 55350,
+              "text": " lush",
+              "logit": 10.875
+            }
+          ]
+        },
+        {
+          "checkpoint": 10,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 52555,
+              "text": " asteroid",
+              "logit": 12.4375
+            },
+            {
+              "id": 81314,
+              "text": " asteroids",
+              "logit": 11.9375
+            },
+            {
+              "id": 11247,
+              "text": " planet",
+              "logit": 11.5625
+            },
+            {
+              "id": 177485,
+              "text": "trop",
+              "logit": 11.375
+            },
+            {
+              "id": 110661,
+              "text": "亚马逊",
+              "logit": 11.1875
+            },
+            {
+              "id": 55350,
+              "text": " lush",
+              "logit": 11.125
+            },
+            {
+              "id": 29545,
+              "text": "️",
+              "logit": 11.0
+            },
+            {
+              "id": 114931,
+              "text": "行星",
+              "logit": 10.875
+            }
+          ]
+        },
+        {
+          "checkpoint": 11,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 13569,
+              "text": " slowly",
+              "logit": 12.0
+            },
+            {
+              "id": 55350,
+              "text": " lush",
+              "logit": 11.9375
+            },
+            {
+              "id": 92043,
+              "text": " fleeting",
+              "logit": 11.6875
+            },
+            {
+              "id": 53685,
+              "text": " swiftly",
+              "logit": 11.625
+            },
+            {
+              "id": 15589,
+              "text": " rising",
+              "logit": 11.5
+            },
+            {
+              "id": 16185,
+              "text": " nations",
+              "logit": 11.3125
+            },
+            {
+              "id": 66785,
+              "text": " fertile",
+              "logit": 11.125
+            },
+            {
+              "id": 85091,
+              "text": " reliant",
+              "logit": 11.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 12,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 373,
+              "text": "�",
+              "logit": 13.8125
+            },
+            {
+              "id": 39106,
+              "text": " sparked",
+              "logit": 12.875
+            },
+            {
+              "id": 15589,
+              "text": " rising",
+              "logit": 12.375
+            },
+            {
+              "id": 3354,
+              "text": " created",
+              "logit": 11.6875
+            },
+            {
+              "id": 13569,
+              "text": " slowly",
+              "logit": 11.625
+            },
+            {
+              "id": 17958,
+              "text": " rapidly",
+              "logit": 11.625
+            },
+            {
+              "id": 10106,
+              "text": " fuel",
+              "logit": 11.625
+            },
+            {
+              "id": 6611,
+              "text": " creating",
+              "logit": 11.5625
+            }
+          ]
+        },
+        {
+          "checkpoint": 13,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 69644,
+              "text": " transitioning",
+              "logit": 13.125
+            },
+            {
+              "id": 39106,
+              "text": " sparked",
+              "logit": 12.3125
+            },
+            {
+              "id": 30787,
+              "text": " shifting",
+              "logit": 12.1875
+            },
+            {
+              "id": 83353,
+              "text": " transformative",
+              "logit": 12.0
+            },
+            {
+              "id": 71541,
+              "text": " streamlined",
+              "logit": 11.8125
+            },
+            {
+              "id": 130570,
+              "text": "通过在",
+              "logit": 11.625
+            },
+            {
+              "id": 13395,
+              "text": " revolution",
+              "logit": 11.5625
+            },
+            {
+              "id": 38058,
+              "text": " transported",
+              "logit": 11.5625
+            }
+          ]
+        },
+        {
+          "checkpoint": 14,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 4699,
+              "text": "Each",
+              "logit": 14.875
+            },
+            {
+              "id": 15542,
+              "text": "During",
+              "logit": 14.5
+            },
+            {
+              "id": 23111,
+              "text": "Through",
+              "logit": 14.4375
+            },
+            {
+              "id": 130570,
+              "text": "通过在",
+              "logit": 13.9375
+            },
+            {
+              "id": 145700,
+              "text": "通过将",
+              "logit": 13.8125
+            },
+            {
+              "id": 4350,
+              "text": "When",
+              "logit": 13.5625
+            },
+            {
+              "id": 16410,
+              "text": " Through",
+              "logit": 13.4375
+            },
+            {
+              "id": 11615,
+              "text": " During",
+              "logit": 13.4375
+            }
+          ]
+        },
+        {
+          "checkpoint": 15,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 4699,
+              "text": "Each",
+              "logit": 16.25
+            },
+            {
+              "id": 15542,
+              "text": "During",
+              "logit": 15.375
+            },
+            {
+              "id": 11615,
+              "text": " During",
+              "logit": 15.125
+            },
+            {
+              "id": 56578,
+              "text": " Initially",
+              "logit": 15.125
+            },
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 15.0
+            },
+            {
+              "id": 43792,
+              "text": " Typically",
+              "logit": 14.9375
+            },
+            {
+              "id": 86888,
+              "text": "Initially",
+              "logit": 14.9375
+            },
+            {
+              "id": 8618,
+              "text": " Each",
+              "logit": 14.5
+            }
+          ]
+        },
+        {
+          "checkpoint": 16,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 20.25
+            },
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 19.375
+            },
+            {
+              "id": 27227,
+              "text": " Changes",
+              "logit": 18.5
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 17.875
+            },
+            {
+              "id": 10990,
+              "text": "Changes",
+              "logit": 17.75
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 16.875
+            },
+            {
+              "id": 4203,
+              "text": " changes",
+              "logit": 16.75
+            },
+            {
+              "id": 93497,
+              "text": "Increased",
+              "logit": 16.75
+            }
+          ]
+        },
+        {
+          "checkpoint": 17,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 22.375
+            },
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 22.0
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 19.875
+            },
+            {
+              "id": 4350,
+              "text": "When",
+              "logit": 18.875
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 18.75
+            },
+            {
+              "id": 9722,
+              "text": " changing",
+              "logit": 18.125
+            },
+            {
+              "id": 3095,
+              "text": " When",
+              "logit": 18.0
+            },
+            {
+              "id": 70942,
+              "text": " Increasing",
+              "logit": 17.625
+            }
+          ]
+        },
+        {
+          "checkpoint": 18,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 26.875
+            },
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 26.375
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 24.625
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 22.875
+            },
+            {
+              "id": 9722,
+              "text": " changing",
+              "logit": 22.25
+            },
+            {
+              "id": 78363,
+              "text": "Replacing",
+              "logit": 21.75
+            },
+            {
+              "id": 70942,
+              "text": " Increasing",
+              "logit": 21.25
+            },
+            {
+              "id": 27227,
+              "text": " Changes",
+              "logit": 19.625
+            }
+          ]
+        },
+        {
+          "checkpoint": 19,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 25.5
+            },
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 25.0
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 23.375
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 21.75
+            },
+            {
+              "id": 9722,
+              "text": " changing",
+              "logit": 21.375
+            },
+            {
+              "id": 79927,
+              "text": "Gear",
+              "logit": 20.25
+            },
+            {
+              "id": 70942,
+              "text": " Increasing",
+              "logit": 20.125
+            },
+            {
+              "id": 27227,
+              "text": " Changes",
+              "logit": 19.375
+            }
+          ]
+        },
+        {
+          "checkpoint": 20,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 25.375
+            },
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 24.75
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 22.125
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 21.5
+            },
+            {
+              "id": 70942,
+              "text": " Increasing",
+              "logit": 21.25
+            },
+            {
+              "id": 9722,
+              "text": " changing",
+              "logit": 20.625
+            },
+            {
+              "id": 27227,
+              "text": " Changes",
+              "logit": 19.25
+            },
+            {
+              "id": 79927,
+              "text": "Gear",
+              "logit": 19.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 21,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 23.875
+            },
+            {
+              "id": 48483,
+              "text": " Changing",
+              "logit": 23.125
+            },
+            {
+              "id": 49971,
+              "text": "changing",
+              "logit": 21.125
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 20.625
+            },
+            {
+              "id": 70942,
+              "text": " Increasing",
+              "logit": 19.125
+            },
+            {
+              "id": 16121,
+              "text": "Reduc",
+              "logit": 18.625
+            },
+            {
+              "id": 9722,
+              "text": " changing",
+              "logit": 18.375
+            },
+            {
+              "id": 27227,
+              "text": " Changes",
+              "logit": 18.125
+            }
+          ]
+        },
+        {
+          "checkpoint": 22,
+          "readout": "jacobian",
+          "top_tokens": [
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 21.75
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 20.5
+            },
+            {
+              "id": 1311,
+              "text": "By",
+              "logit": 19.375
+            },
+            {
+              "id": 32,
+              "text": "A",
+              "logit": 19.25
+            },
+            {
+              "id": 16121,
+              "text": "Reduc",
+              "logit": 19.25
+            },
+            {
+              "id": 4350,
+              "text": "When",
+              "logit": 19.125
+            },
+            {
+              "id": 79927,
+              "text": "Gear",
+              "logit": 18.625
+            },
+            {
+              "id": 1206,
+              "text": "To",
+              "logit": 17.625
+            }
+          ]
+        },
+        {
+          "checkpoint": 23,
+          "readout": "actual-final",
+          "top_tokens": [
+            {
+              "id": 32,
+              "text": "A",
+              "logit": 21.125
+            },
+            {
+              "id": 57051,
+              "text": "Changing",
+              "logit": 20.375
+            },
+            {
+              "id": 4350,
+              "text": "When",
+              "logit": 19.5
+            },
+            {
+              "id": 79927,
+              "text": "Gear",
+              "logit": 19.25
+            },
+            {
+              "id": 33,
+              "text": "B",
+              "logit": 19.125
+            },
+            {
+              "id": 1311,
+              "text": "By",
+              "logit": 18.75
+            },
+            {
+              "id": 77898,
+              "text": "Increasing",
+              "logit": 18.75
+            },
+            {
+              "id": 16121,
+              "text": "Reduc",
+              "logit": 18.625
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "not_checked": [
+    "refusal-prediction accuracy",
+    "edited-state calibration",
+    "ranker training",
+    "independent task fulfillment",
+    "exact upstream lens-fitting model revision"
+  ]
+}

@@ -1,0 +1,443 @@
+{
+  "since": "2026-07-16",
+  "until": "2026-10-16",
+  "scope": "Bounded release census across the listed 21 publishers; not every Hub repository, and Hub creation date is not necessarily original architecture release date.",
+  "authors": [
+    "Qwen",
+    "zai-org",
+    "meta-models",
+    "LiquidAI",
+    "nvidia",
+    "deepseek-ai",
+    "mistralai",
+    "google",
+    "moonshotai",
+    "stepfun-ai",
+    "MiniMaxAI",
+    "allenai",
+    "HuggingFaceTB",
+    "openai",
+    "EssentialAI",
+    "XiaomiMiMo",
+    "tencent",
+    "inclusionAI",
+    "baidu",
+    "LG-AI-EXAONE",
+    "OpenBMB"
+  ],
+  "all_author_pagination_complete": true,
+  "untyped_artifacts": 21,
+  "architectures": {
+    "NemotronH_Nano_Omni_Reasoning_V3": {
+      "model_count_in_census": 1,
+      "examples": [
+        "nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/nvidia/NVIDIA-NemotronLabs-AI-for-Media-Sports-Tennis/resolve/af26673cd562299e8707d26148c65c15e4ceeafd/config.json",
+      "status": "not-supported",
+      "limitation": "Custom legacy omni model_type; do not silently equate it with the native nemotron_h_omni wrapper."
+    },
+    "bailing_hybrid": {
+      "model_count_in_census": 13,
+      "examples": [
+        "inclusionAI/Ling-3.1-flash",
+        "inclusionAI/Ling-3.0-flash-Fin-fp4",
+        "inclusionAI/Ling-3.0-flash-Fin-int4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/inclusionAI/Ling-3.0-tiny/resolve/9a98e35fe1c9ee255f78dd64771c7ae15a799481/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "bailing_moe_v3_vl": {
+      "model_count_in_census": 4,
+      "examples": [
+        "inclusionAI/Ling-3.0-flash-VL-int4",
+        "inclusionAI/Ling-3.0-flash-VL-fp4",
+        "inclusionAI/Ling-3.0-flash-VL-fp8"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/inclusionAI/Ling-3.0-flash-VL/resolve/c22bf252f15b66d18ca00a15989ac7ed46b7f09e/config.json",
+      "status": "not-supported",
+      "limitation": "Custom vision wrapper differs from native bailing_hybrid; unverified loader/boundary/export paths."
+    },
+    "bolmo": {
+      "model_count_in_census": 6,
+      "examples": [
+        "allenai/Llama-3-Blama-8B",
+        "allenai/Llama-3-Blama-8B-Stage1",
+        "allenai/Bwen-8B"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/allenai/Bwen-8B/resolve/b2644f7827c21c3276d70cb82e6558aa03b9670e/config.json",
+      "status": "not-supported",
+      "limitation": "Custom byte/patch decoding path needs verified answer-token, logits and cache adapters."
+    },
+    "d1_omni": {
+      "model_count_in_census": 3,
+      "examples": [
+        "LiquidAI/d1-omni-600M-MLX-8bit",
+        "LiquidAI/d1-omni-600M-MLX-fp16",
+        "LiquidAI/d1-omni-600M"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/LiquidAI/d1-omni-600M/resolve/02b55d7076f15129e59ab3f94783f32c4b088674/config.json",
+      "status": "not-supported",
+      "limitation": "Custom diffusion/omni AutoModel, not the autoregressive CausalLM generation/KL contract."
+    },
+    "deepseek_v4": {
+      "model_count_in_census": 8,
+      "examples": [
+        "nvidia/DeepSeek-V4-Pro-0813-nvfp4-DSpark",
+        "nvidia/DeepSeek-V4-Pro-0813-NVFP4",
+        "nvidia/DeepSeek-V4-Flash-0731-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "deepseek_v41": {
+      "model_count_in_census": 2,
+      "examples": [
+        "nvidia/DeepSeek-V4.1-Flash-NVFP4",
+        "deepseek-ai/DeepSeek-V4.1-Flash"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/deepseek-ai/DeepSeek-V4.1-Flash/resolve/314113f8a7dadb388215396ba5fbee2c610a04d6/config.json",
+      "status": "not-supported",
+      "limitation": "No native installed Transformers adapter or reviewed vendor implementation; do not alias V4.1 to V4."
+    },
+    "gemma4": {
+      "model_count_in_census": 1,
+      "examples": [
+        "tencent/ContextPilot-E4B"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/tencent/ContextPilot-E4B/resolve/a7ba41c18ddcd334f23f63ef7a608ca46bfe3aa4/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "glm5_next": {
+      "model_count_in_census": 3,
+      "examples": [
+        "zai-org/GLM-5.3-Flash-BF16",
+        "zai-org/GLM-5.3-Flash",
+        "nvidia/GLM-5.3-Flash-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/zai-org/GLM-5.3-Flash/resolve/46a050bec13002ad29ee795c16e61cf4fa3c4a9c/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "glm_moe_dsa": {
+      "model_count_in_census": 3,
+      "examples": [
+        "zai-org/GLM-5.3-BF16",
+        "zai-org/GLM-5.3",
+        "nvidia/GLM-5.3-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/zai-org/GLM-5.3/resolve/ba32f8c19c8738e2c57c71798c601d477a7bf844/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "hy_v3": {
+      "model_count_in_census": 1,
+      "examples": [
+        "tencent/Hy-Memory-30B-A3B"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/tencent/Hy-Memory-30B-A3B/resolve/64a460a94d5498b7316fb02395c72d01c47a7347/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "hy_v4": {
+      "model_count_in_census": 2,
+      "examples": [
+        "tencent/Hy4-preview-FP8",
+        "tencent/Hy4-preview"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/tencent/Hy4-preview/resolve/705d81ee51566a186d645b74c974d642ef2828fe/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "kimi_k3": {
+      "model_count_in_census": 1,
+      "examples": [
+        "nvidia/Kimi-K3-NVFP4"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/moonshotai/Kimi-K3/resolve/f831ab66814297da540d832a5235f8e904f29d06/config.json",
+      "status": "not-supported",
+      "limitation": "Gated config/source access could not establish a tested text-backbone adapter; not an alias for K2."
+    },
+    "lfm2": {
+      "model_count_in_census": 11,
+      "examples": [
+        "LiquidAI/LFM2.5-2.6B-MLX-nvfp4",
+        "LiquidAI/LFM2.5-2.6B-MLX-mxfp4",
+        "LiquidAI/LFM2.5-2.6B-MLX-mxfp8"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/LiquidAI/LFM2.5-2.6B/resolve/654f9463ce32b05d0429d76fe1f580b27d4c1ac0/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "lfm2_moe": {
+      "model_count_in_census": 9,
+      "examples": [
+        "LiquidAI/LFM2.5-24B-A2B-FP8",
+        "LiquidAI/LFM2.5-24B-A2B-MLX-bf16",
+        "LiquidAI/LFM2.5-24B-A2B-MLX-8bit"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/LiquidAI/LFM2.5-24B-A2B-FP8/resolve/f54bf39547fd5b7955abb9fe8d1b151e31fbbddb/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "lfm2_vl": {
+      "model_count_in_census": 12,
+      "examples": [
+        "LiquidAI/d1-3B-MLX-fp16",
+        "LiquidAI/d1-3B-MLX-4bit",
+        "LiquidAI/d1-3B-MLX-8bit"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/LiquidAI/d1-3B-MLX-fp16/resolve/c7b140a64fc7466d5f9d08be19f261a704febef1/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "llada2_moe": {
+      "model_count_in_census": 2,
+      "examples": [
+        "inclusionAI/LLaDA2.2-mini",
+        "inclusionAI/LLaDA2.2-flash"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/inclusionAI/LLaDA2.2-mini/resolve/e4f77d25ab5ca86f2223c6cdc6a72b887e20c8a5/config.json",
+      "status": "not-supported",
+      "limitation": "Diffusion requires a mask/noise sampler and objective-specific trajectory evaluator."
+    },
+    "llada2vl": {
+      "model_count_in_census": 1,
+      "examples": [
+        "inclusionAI/LLaDA-UI"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/inclusionAI/LLaDA-UI/resolve/f9a59c1945fc4de68f4bd667b49001cba4a1d954/config.json",
+      "status": "not-supported",
+      "limitation": "Diffusion multimodal sampler and trajectory evaluator are not implemented."
+    },
+    "mimo_v2": {
+      "model_count_in_census": 4,
+      "examples": [
+        "XiaomiMiMo/MiMo-V2.6-Flash-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Pro-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Flash-RL"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL/resolve/b61f21852680ee02a29e946e18cf8697f4844061/config.json",
+      "status": "not-supported",
+      "limitation": "Custom MiMo V2.6 source differs from native mimo_v2_flash; factory/cache/output layout not live verified."
+    },
+    "muse_glimmer": {
+      "model_count_in_census": 2,
+      "examples": [
+        "meta-models/Muse-Glimmer-30B",
+        "nvidia/Muse-Glimmer-30B-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/meta-models/Muse-Glimmer-30B/resolve/a4e59da52a7bc87ae7251dd5545c0dd437c44b68/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "muse_glimmer_assistant": {
+      "model_count_in_census": 1,
+      "examples": [
+        "meta-models/Muse-Glimmer-30B-assistant"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/meta-models/Muse-Glimmer-30B-assistant/resolve/e8192f3a8f617f74be2ce220360c89ef4789f39f/config.json",
+      "status": "not-supported",
+      "limitation": "Speculative assistant/draft that depends on target hidden states; not a standalone chat target."
+    },
+    "muse_spark": {
+      "model_count_in_census": 2,
+      "examples": [
+        "meta-models/Muse-Spark-Open-816B-A42B",
+        "meta-models/Muse-Spark-Open-816B-A42B-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/meta-models/Muse-Spark-Open-816B-A42B/resolve/0fb02478b02565b2ce7fc57e6051c91172774ac9/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "nemotron_h": {
+      "model_count_in_census": 10,
+      "examples": [
+        "nvidia/Nemotron-3-Labs-Ultra-Math-RL",
+        "nvidia/Nemotron-3-Labs-Ultra-Math-SFT",
+        "nvidia/NVIDIA-Nemotron-Labs-Teacher-Chat"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16/resolve/a9904d24bcc1d289a1950fa9d2b978c47cf903b9/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "nemotron_h_omni": {
+      "model_count_in_census": 5,
+      "examples": [
+        "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-NVFP4",
+        "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-BF16",
+        "nvidia/NVIDIA-Nemotron-3.5-Super-VL-120B-A12B-Base-BF16"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Bolt-74B-A9B-BF16/resolve/a6a1e5030819a130a1ea08aadb1fe42f4cc86777/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen3": {
+      "model_count_in_census": 13,
+      "examples": [
+        "LiquidAI/LFM2.5-VL-3B-DSpark",
+        "LiquidAI/LFM2.5-2.6B-DSpark",
+        "LiquidAI/LFM2.5-8B-A1B-DSpark"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/LiquidAI/LFM2.5-VL-3B-DSpark/resolve/af77e9306a26e8625fde74d2a3051ab6d21bd955/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen3_5": {
+      "model_count_in_census": 9,
+      "examples": [
+        "Qwen/Qwen3.8-27B-FP8",
+        "Qwen/Qwen3.8-27B",
+        "nvidia/NV-Reason-CT"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/Qwen/Qwen3.8-27B/resolve/1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen3_5_moe_text": {
+      "model_count_in_census": 3,
+      "examples": [
+        "Qwen/Qwen3.8-2.4T-A95B",
+        "Qwen/Qwen3.8-2.4T-A95B-FP8",
+        "nvidia/Qwen3.8-2.4T-A95B-NVFP4"
+      ],
+      "adapter_registered": true,
+      "definition_tested": true,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/Qwen/Qwen3.8-2.4T-A95B/resolve/207bd685a7e3696cfaff12ded7c6a7ea0f88c996/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen3_vl": {
+      "model_count_in_census": 1,
+      "examples": [
+        "inclusionAI/ArmorOCR"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/inclusionAI/ArmorOCR/resolve/569a1c381c78d06f9da6555575a4db690b5a0b90/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen4_exp": {
+      "model_count_in_census": 4,
+      "examples": [
+        "Qwen/Qwen3.8-Flash-Next-FP8",
+        "Qwen/Qwen3.8-Flash-Next",
+        "nvidia/Qwen3.8-Flash-Next-FP4-Local"
+      ],
+      "adapter_registered": true,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/Qwen/Qwen3.8-Flash-Next/resolve/de4b8e4d43b917e7706784d8bb445c9af86a3540/config.json",
+      "status": "adapter-layout-only",
+      "limitation": "Text backbone only; kernel, generation, checkpoint fit and converter support need a separate real-checkpoint round trip."
+    },
+    "qwen_drive": {
+      "model_count_in_census": 1,
+      "examples": [
+        "Qwen/Qwen-Drive-1.0-4B"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/Qwen/Qwen-Drive-1.0-4B/resolve/28484089a7cc8c335cf5089fb0745cf7c49b6eaa/config.json",
+      "status": "not-supported",
+      "limitation": "Autonomous-driving planning model, not a general assistant CausalLM."
+    },
+    "youtu_vita": {
+      "model_count_in_census": 1,
+      "examples": [
+        "tencent/Youtu-Parsing-Omni"
+      ],
+      "adapter_registered": false,
+      "definition_tested": false,
+      "full_checkpoint_b70_verified": false,
+      "pinned_config": "https://huggingface.co/tencent/Youtu-Parsing-Omni/resolve/05d44d70575744ce1009897bcba42c5986c3b7c3/config.json",
+      "status": "not-supported",
+      "limitation": "Custom omni wrapper; no reviewed full generation/cache/logits adapter."
+    }
+  }
+}

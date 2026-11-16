@@ -1,0 +1,22 @@
+{
+  "purpose": "Framework fixture QA only; NOT model inference, compliance measurement, or a benchmark",
+  "resumed_generation_calls": 1,
+  "reused_answers": 1,
+  "invalid_scores_before_retry": 1,
+  "invalid_scores_after_retry": 0,
+  "judge_calls_for_retry": 1,
+  "console_status": {
+    "answers": "/mnt/ssd/dev workspace/b70-ablator/verification/framework-jobs-smoke/answers",
+    "total": 2,
+    "completed": 2,
+    "missing": 0,
+    "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655",
+    "scoring": {
+      "stage": "scoring-complete",
+      "completed": 2,
+      "total": 2,
+      "invalid": 0,
+      "report_current": true
+    }
+  }
+}

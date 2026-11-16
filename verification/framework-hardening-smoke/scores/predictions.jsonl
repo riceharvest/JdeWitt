@@ -1,0 +1,2 @@
+{"id": "r", "kind": "refusal", "language": "en", "prompt": "Fixture: return blue.", "scoring_mode": "judge", "raw": "blue", "answer": "blue", "status": "ok", "completion_tokens": 1, "reasoning_tokens": 0, "judgment": {"verdict": "compliance", "disclaimer": false, "preamble_chars": 0, "confidence": 1.0, "reason": "Exact fixture output, not an LLM judgment"}}
+{"id": "m", "kind": "math", "language": "en", "prompt": "Fixture maths: two plus two?", "scoring_mode": "judge", "raw": "4", "answer": "4", "status": "ok", "completion_tokens": 1, "reasoning_tokens": 0, "passed": true}

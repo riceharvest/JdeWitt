@@ -1,0 +1,53 @@
+{
+  "scope": "Three of the four identified method gaps. No model was run: the GPU was reported busy, so the XPU operator tests are written but not executed.",
+  "gap_1_edit_surface": {
+    "what": "Input-side (read) projection operator alongside the existing write-back one.",
+    "writeback": "dW = -s * d.T @ (d @ W); needs out_features == hidden. o_proj/out_proj, down_proj.",
+    "read": "dW = -s * (W @ d.T) @ d; needs in_features == hidden. q/k/v, gate/up.",
+    "why_it_matters": "Under GQA, k_proj/v_proj write num_kv_heads*head_dim < hidden, so the write-back operator cannot be expressed on them at all. A write-back-only tool cannot edit k/v.",
+    "config": "edit_targets: writeback (default) | full",
+    "groups": "full adds attn_in and mlp_in; each side has its own searched strength",
+    "refusals": "row normalization on the read side; fused-expert read side; unknown edit_targets",
+    "surface_llama_2x": "14 targets (7 projections x 2 layers), up from 4"
+  },
+  "gap_2_layer_selection": {
+    "what": "method_options.layer_profile = searched (default) | discriminative",
+    "measurement": "score[l] = ||mean_bad[l]-mean_good[l]|| / pooled_spread[l], normalized by its own max to [0,1]",
+    "semantics": "replaces the searched center/width/floor shape rather than multiplying with it; applied strength = strength * profile[layer]",
+    "scope": "only methods whose operator is a plain per-layer projection; leace and ara are rejected at validation because they carry their own factors",
+    "search": "profiled mode suggests only strength per group, not shape parameters the operator never reads"
+  },
+  "gap_3_strength": {
+    "hard_bound": 6.0,
+    "was": 2.0,
+    "default_search_range": [
+      0.0,
+      1.5
+    ],
+    "config": "strength_range: [lo, hi], explicit opt-in; widening the range widens the search space"
+  },
+  "gap_4_expert_granular_moe": {
+    "status": "NOT DONE",
+    "why": "Per-expert directions need per-expert activation statistics, which means a per-architecture router capture path (hook the router, attribute tokens to experts, accumulate per-expert means). Each MoE architecture routes differently, and the result cannot be verified without a real MoE model on the GPU.",
+    "current_behaviour": "Fused expert tensors are already edited (not dense-only), but one direction is broadcast across every expert."
+  },
+  "bugs_found_by_tests": [
+    "strength_range unpacked before its length was validated, so [0.] raised a bare unpacking TypeError instead of a clear error",
+    "a writeback-surface assertion was passing vacuously: source_path has no .weight suffix, so an endswith(\".weight\") check could never match"
+  ],
+  "test_state": {
+    "non_xpu_passed": 386,
+    "xpu_passed": 20,
+    "xpu_executed": true,
+    "xpu_note": "Ran on the real B70 once the GPU freed (30.6 GiB free, Intel Arc Pro B70). Includes the new read-side export-parity test.",
+    "read_side_export_parity": "test_full_surface_survives_streamed_export_on_the_b70: 14-tensor read+write edit -> streamed export -> reload, logits bit-identical",
+    "lint": "clean",
+    "build": "wheel+sdist"
+  },
+  "honest_limits": [
+    "No checkpoint has been ablated. These are operators, validation and measurements, not refusal-quality evidence.",
+    "The read side is not shown to be more effective than the write-back side, or by how much.",
+    "The discriminative profile is not shown to beat a searched shape on a real model.",
+    "No checkpoint has been ablated: the B70 tests prove the read-side operator and its export parity on a 2-layer random model, which is mechanics, not refusal quality."
+  ]
+}

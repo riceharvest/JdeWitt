@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "b70-ablator"
+version = "0.1.0"
+description = "B70 ablation with answer-level judging and quantized release gates"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+license = "AGPL-3.0-or-later"
+dependencies = ["numpy>=2", "optuna>=4,<6", "transformers>=5.19,<6", "accelerate>=1", "torch>=2.14.1,<2.15", "triton-xpu>=3.8,<3.9; sys_platform == 'linux' and platform_machine == 'x86_64'", "bitsandbytes>=0.50", "gguf>=0.19", "sentencepiece>=0.2", "protobuf>=5"]
+
+[project.optional-dependencies]
+test = ["pytest>=8", "pytest-xdist>=3", "ruff>=0.14"]
+# Reading parquet prompt corpora (mlabonne/*, most Hub datasets) needs pyarrow.
+# CSV/JSON/JSONL/TXT corpora import without it.
+datasets = ["pyarrow>=20"]
+
+[project.scripts]
+b70-ablator = "b70_ablator.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["b70_ablator*"]
+
+[tool.setuptools.package-data]
+b70_ablator = ["assets/*.txt", "assets/*.json"]
+
+[tool.pytest.ini_options]
+addopts = "-n auto --dist loadgroup"
+markers = ["xpu: requires the actual B70; never falls back to CPU"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-xpu" }
+triton-xpu = { index = "pytorch-xpu" }
+pytorch-triton-xpu = { index = "pytorch-xpu" }
+
+[[tool.uv.index]]
+name = "pytorch-xpu"
+url = "https://download.pytorch.org/whl/xpu"
+explicit = true
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

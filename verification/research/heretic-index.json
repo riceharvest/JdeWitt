@@ -1,0 +1,3753 @@
+{
+  "upstream": "https://github.com/p-e-w/heretic",
+  "revision": "66a952b49b00bfd1854bdad769fee5fb225b53be",
+  "retrieved_on": "2026-10-16",
+  "issue_count": 221,
+  "pull_request_count": 247,
+  "entries": [
+    {
+      "number": 457,
+      "title": "fix: render concurrent Rich progress bars correctly",
+      "html_url": "https://github.com/p-e-w/heretic/pull/457",
+      "state": "open",
+      "updated_at": "2026-10-16T03:12:24Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 419,
+      "title": "feat: llm as a judge for binary classification",
+      "html_url": "https://github.com/p-e-w/heretic/pull/419",
+      "state": "open",
+      "updated_at": "2026-10-16T01:25:27Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 497,
+      "title": "fix: handle weight files without LFS info when reading hashes",
+      "html_url": "https://github.com/p-e-w/heretic/pull/497",
+      "state": "open",
+      "updated_at": "2026-10-16T01:01:22Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 484,
+      "title": "fix: restore stored plugin settings as they are on reproduce and resume",
+      "html_url": "https://github.com/p-e-w/heretic/pull/484",
+      "state": "closed",
+      "updated_at": "2026-10-15T18:36:14Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 483,
+      "title": "fix: fold the system prompt into the user message for templates without a system role",
+      "html_url": "https://github.com/p-e-w/heretic/pull/483",
+      "state": "closed",
+      "updated_at": "2026-10-15T18:36:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 496,
+      "title": "Site",
+      "html_url": "https://github.com/p-e-w/heretic/issues/496",
+      "state": "open",
+      "updated_at": "2026-10-14T20:39:38Z",
+      "kind": "issue"
+    },
+    {
+      "number": 491,
+      "title": "Heretic 2.0 release checklist",
+      "html_url": "https://github.com/p-e-w/heretic/issues/491",
+      "state": "open",
+      "updated_at": "2026-10-14T13:41:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 495,
+      "title": "fix: score top trials on merged models to close live-LoRA/export gap",
+      "html_url": "https://github.com/p-e-w/heretic/pull/495",
+      "state": "open",
+      "updated_at": "2026-10-14T13:40:16Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 209,
+      "title": "feat: multi-token KL divergence for more robust quality measurement",
+      "html_url": "https://github.com/p-e-w/heretic/pull/209",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:35:53Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 210,
+      "title": "feat: detect false refusals on benign prompts during optimization",
+      "html_url": "https://github.com/p-e-w/heretic/pull/210",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:35:31Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 244,
+      "title": "feat: add LLM-based judge for refusal classification",
+      "html_url": "https://github.com/p-e-w/heretic/pull/244",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:35:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 307,
+      "title": "feat: Support local weight paths and improve memory management for new architectures",
+      "html_url": "https://github.com/p-e-w/heretic/pull/307",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:34:41Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 313,
+      "title": "perf(ara): cache original weights to skip disk reload between trials",
+      "html_url": "https://github.com/p-e-w/heretic/pull/313",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:33:48Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 347,
+      "title": "docs: add contributing guide",
+      "html_url": "https://github.com/p-e-w/heretic/pull/347",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:32:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 362,
+      "title": "binary search for batch size",
+      "html_url": "https://github.com/p-e-w/heretic/pull/362",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:31:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 406,
+      "title": "fix: handle positional model before CLI options",
+      "html_url": "https://github.com/p-e-w/heretic/pull/406",
+      "state": "closed",
+      "updated_at": "2026-10-14T13:27:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 489,
+      "title": "fix: say which check found the Chain-of-Thought prefix",
+      "html_url": "https://github.com/p-e-w/heretic/pull/489",
+      "state": "open",
+      "updated_at": "2026-10-14T13:23:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 490,
+      "title": "[Help wanted] Trial scores differ from scores for the exported model",
+      "html_url": "https://github.com/p-e-w/heretic/issues/490",
+      "state": "open",
+      "updated_at": "2026-10-14T02:09:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 408,
+      "title": "fix: reject empty scorer prompt sets",
+      "html_url": "https://github.com/p-e-w/heretic/pull/408",
+      "state": "open",
+      "updated_at": "2026-10-13T17:44:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 492,
+      "title": "fix: remember the Hugging Face token between uploads",
+      "html_url": "https://github.com/p-e-w/heretic/pull/492",
+      "state": "open",
+      "updated_at": "2026-10-13T16:52:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 449,
+      "title": "[Observation] Punctuation loss after extended generation in uncensored QWEN / DeepSeek models \u2014 absent in Gemma 4 variants",
+      "html_url": "https://github.com/p-e-w/heretic/issues/449",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:17:04Z",
+      "kind": "issue"
+    },
+    {
+      "number": 365,
+      "title": "Trying to use Heretic to abliterate Gemma 4 31B QAT",
+      "html_url": "https://github.com/p-e-w/heretic/issues/365",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:15:49Z",
+      "kind": "issue"
+    },
+    {
+      "number": 345,
+      "title": "I tried many times but couldn't get this tool to work.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/345",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:13:41Z",
+      "kind": "issue"
+    },
+    {
+      "number": 318,
+      "title": "Error in dlopen: libcaffe2_nvrtc.so: cannot open shared object file: No such file or directory",
+      "html_url": "https://github.com/p-e-w/heretic/issues/318",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:11:47Z",
+      "kind": "issue"
+    },
+    {
+      "number": 315,
+      "title": "Is there any support for Intel Arc?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/315",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:11:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 310,
+      "title": "DeepSeek V4 Flash FP4 Weights",
+      "html_url": "https://github.com/p-e-w/heretic/issues/310",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:10:39Z",
+      "kind": "issue"
+    },
+    {
+      "number": 304,
+      "title": "Support for Bonsai",
+      "html_url": "https://github.com/p-e-w/heretic/issues/304",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:08:15Z",
+      "kind": "issue"
+    },
+    {
+      "number": 298,
+      "title": "Hangs on ubuntu Qwen3-4B",
+      "html_url": "https://github.com/p-e-w/heretic/issues/298",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:07:34Z",
+      "kind": "issue"
+    },
+    {
+      "number": 290,
+      "title": "The current computation of refusal logic seems insufficient.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/290",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:06:35Z",
+      "kind": "issue"
+    },
+    {
+      "number": 289,
+      "title": "Error: cannot access local variable 'active_adapters' where it is not associated with a value",
+      "html_url": "https://github.com/p-e-w/heretic/issues/289",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:04:04Z",
+      "kind": "issue"
+    },
+    {
+      "number": 118,
+      "title": "ibm-granite/granite-4.0-micro support",
+      "html_url": "https://github.com/p-e-w/heretic/issues/118",
+      "state": "closed",
+      "updated_at": "2026-10-12T13:01:14Z",
+      "kind": "issue"
+    },
+    {
+      "number": 264,
+      "title": "heretic crashes when trying to download model on python 3.14",
+      "html_url": "https://github.com/p-e-w/heretic/issues/264",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:59:52Z",
+      "kind": "issue"
+    },
+    {
+      "number": 112,
+      "title": "Support for translategemma",
+      "html_url": "https://github.com/p-e-w/heretic/issues/112",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:57:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 111,
+      "title": "Support for Baichuan M3",
+      "html_url": "https://github.com/p-e-w/heretic/issues/111",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:56:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 102,
+      "title": "Support Qwen3-32B-AWQ?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/102",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:55:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 100,
+      "title": "Add compatibility with Olmo 3 (3.1) and Bolmo",
+      "html_url": "https://github.com/p-e-w/heretic/issues/100",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:55:10Z",
+      "kind": "issue"
+    },
+    {
+      "number": 97,
+      "title": "Solar 100B?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/97",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:54:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 92,
+      "title": "Support for MiMo V2?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/92",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:52:44Z",
+      "kind": "issue"
+    },
+    {
+      "number": 91,
+      "title": "Project Vision/Roadmap",
+      "html_url": "https://github.com/p-e-w/heretic/issues/91",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:52:17Z",
+      "kind": "issue"
+    },
+    {
+      "number": 84,
+      "title": "Unable to abliterate Qwen3-VL-235B-A22B-Instruct due to intermediate size",
+      "html_url": "https://github.com/p-e-w/heretic/issues/84",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:50:00Z",
+      "kind": "issue"
+    },
+    {
+      "number": 82,
+      "title": "Bug: Unable to load ServiceNow-AI/Apriel-1.6-15b-Thinker",
+      "html_url": "https://github.com/p-e-w/heretic/issues/82",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:48:33Z",
+      "kind": "issue"
+    },
+    {
+      "number": 64,
+      "title": "Support for Mistral3",
+      "html_url": "https://github.com/p-e-w/heretic/issues/64",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:47:50Z",
+      "kind": "issue"
+    },
+    {
+      "number": 62,
+      "title": "Magistral support",
+      "html_url": "https://github.com/p-e-w/heretic/issues/62",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:47:01Z",
+      "kind": "issue"
+    },
+    {
+      "number": 34,
+      "title": "Support for other granite-4 models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/34",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:38:46Z",
+      "kind": "issue"
+    },
+    {
+      "number": 61,
+      "title": "Support aya-expanse-32b-Q4-mlx",
+      "html_url": "https://github.com/p-e-w/heretic/issues/61",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:38:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 27,
+      "title": "Mixed-precision GEMM Error with Qwen3-30B-A3B-Instruct-2507-FP8",
+      "html_url": "https://github.com/p-e-w/heretic/issues/27",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:35:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 25,
+      "title": "[Question] Finegrained refusal detection",
+      "html_url": "https://github.com/p-e-w/heretic/issues/25",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:34:05Z",
+      "kind": "issue"
+    },
+    {
+      "number": 487,
+      "title": "Auto-detected response prefix keeps thinking models in CoT mode - ablation direction degenerates, model destroyed (Qwen3)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/487",
+      "state": "open",
+      "updated_at": "2026-10-12T12:31:12Z",
+      "kind": "issue"
+    },
+    {
+      "number": 488,
+      "title": "fix: report a save or upload before re-ablating the model",
+      "html_url": "https://github.com/p-e-w/heretic/pull/488",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:23:31Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 464,
+      "title": "Upload/save success should be reported before re-ablating model",
+      "html_url": "https://github.com/p-e-w/heretic/issues/464",
+      "state": "closed",
+      "updated_at": "2026-10-12T12:23:22Z",
+      "kind": "issue"
+    },
+    {
+      "number": 477,
+      "title": "feat: Refusal classifier scorer plugin",
+      "html_url": "https://github.com/p-e-w/heretic/pull/477",
+      "state": "open",
+      "updated_at": "2026-10-12T09:01:15Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 493,
+      "title": "fix: only extend closed CoT block with whitespace, never reasoning content (#487)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/493",
+      "state": "closed",
+      "updated_at": "2026-10-10T12:41:01Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 472,
+      "title": "Examining different datasets for Abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/issues/472",
+      "state": "open",
+      "updated_at": "2026-10-08T12:30:44Z",
+      "kind": "issue"
+    },
+    {
+      "number": 468,
+      "title": "Superflous entries in benchmark output table",
+      "html_url": "https://github.com/p-e-w/heretic/issues/468",
+      "state": "closed",
+      "updated_at": "2026-10-07T12:46:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 486,
+      "title": "fix: skip non-metrics in benchmark output",
+      "html_url": "https://github.com/p-e-w/heretic/pull/486",
+      "state": "closed",
+      "updated_at": "2026-10-07T12:46:53Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 467,
+      "title": "Log spam from benchmark determining batch size",
+      "html_url": "https://github.com/p-e-w/heretic/issues/467",
+      "state": "closed",
+      "updated_at": "2026-10-07T11:44:18Z",
+      "kind": "issue"
+    },
+    {
+      "number": 485,
+      "title": "fix: silence warning spam from PyTorch's C++ logging",
+      "html_url": "https://github.com/p-e-w/heretic/pull/485",
+      "state": "closed",
+      "updated_at": "2026-10-07T11:44:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 462,
+      "title": "ARA reproduction fails locally, but succeeds when uploading",
+      "html_url": "https://github.com/p-e-w/heretic/issues/462",
+      "state": "closed",
+      "updated_at": "2026-10-07T10:30:35Z",
+      "kind": "issue"
+    },
+    {
+      "number": 431,
+      "title": "feat: TPU support via PyTorch/XLA (auto-detection, FSDP, XLA-safe merge/export)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/431",
+      "state": "closed",
+      "updated_at": "2026-10-07T08:14:53Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 482,
+      "title": "fix: escape prompts and responses printed with `print_responses`",
+      "html_url": "https://github.com/p-e-w/heretic/pull/482",
+      "state": "closed",
+      "updated_at": "2026-10-06T09:03:23Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 224,
+      "title": "Use BERT-based model for refusal classification",
+      "html_url": "https://github.com/p-e-w/heretic/pull/224",
+      "state": "closed",
+      "updated_at": "2026-10-06T08:10:50Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 481,
+      "title": "feat: Add holdout refusal scoring",
+      "html_url": "https://github.com/p-e-w/heretic/pull/481",
+      "state": "closed",
+      "updated_at": "2026-10-06T07:23:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 463,
+      "title": "SHA256SUMS not linked correctly from reproduction README",
+      "html_url": "https://github.com/p-e-w/heretic/issues/463",
+      "state": "open",
+      "updated_at": "2026-10-06T07:18:16Z",
+      "kind": "issue"
+    },
+    {
+      "number": 478,
+      "title": "fix: prevent empty layer range and too many neighbors in ARA",
+      "html_url": "https://github.com/p-e-w/heretic/pull/478",
+      "state": "closed",
+      "updated_at": "2026-10-06T07:15:13Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 476,
+      "title": "fix: stop `lora_A` from carrying over between trials",
+      "html_url": "https://github.com/p-e-w/heretic/pull/476",
+      "state": "closed",
+      "updated_at": "2026-10-04T18:03:46Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 479,
+      "title": "fix: point the reproduction README SHA256SUMS link at the Hugging Face blob",
+      "html_url": "https://github.com/p-e-w/heretic/pull/479",
+      "state": "open",
+      "updated_at": "2026-10-04T11:45:53Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 473,
+      "title": "Update the \"How Heretic works\" section in the README",
+      "html_url": "https://github.com/p-e-w/heretic/issues/473",
+      "state": "open",
+      "updated_at": "2026-10-03T14:16:01Z",
+      "kind": "issue"
+    },
+    {
+      "number": 332,
+      "title": "feat: ARA, but it's LoRA",
+      "html_url": "https://github.com/p-e-w/heretic/pull/332",
+      "state": "closed",
+      "updated_at": "2026-10-03T03:14:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 471,
+      "title": "RequestsDependencyWarning: urllib3 (2.5.0) or chardet (6.0.0.post1)/charset_normalizer (3.4.3) doesn't match a supported version!   warnings.warn(",
+      "html_url": "https://github.com/p-e-w/heretic/issues/471",
+      "state": "closed",
+      "updated_at": "2026-10-02T10:06:43Z",
+      "kind": "issue"
+    },
+    {
+      "number": 447,
+      "title": "feat: model tensor integrity check",
+      "html_url": "https://github.com/p-e-w/heretic/pull/447",
+      "state": "open",
+      "updated_at": "2026-10-02T09:57:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 470,
+      "title": "chore: add new Windows test hashes",
+      "html_url": "https://github.com/p-e-w/heretic/pull/470",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:39:56Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 429,
+      "title": "\"OSError: libnvJitLink.so.13: cannot open shared object file: No such file or directory\" from bitsandbytes",
+      "html_url": "https://github.com/p-e-w/heretic/issues/429",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:23:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 441,
+      "title": "fix: defer bitsandbytes import until use",
+      "html_url": "https://github.com/p-e-w/heretic/pull/441",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:23:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 461,
+      "title": "build(deps): bump urllib3 from 2.7.0 to 2.8.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/461",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:21:50Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 452,
+      "title": "build(deps): bump anyio from 4.12.0 to 4.14.2",
+      "html_url": "https://github.com/p-e-w/heretic/pull/452",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:21:42Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 443,
+      "title": "build(deps): bump transformers from 5.6.2 to 5.10.1",
+      "html_url": "https://github.com/p-e-w/heretic/pull/443",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:21:25Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 469,
+      "title": "chore: update dependencies",
+      "html_url": "https://github.com/p-e-w/heretic/pull/469",
+      "state": "closed",
+      "updated_at": "2026-10-02T09:19:48Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 465,
+      "title": "\"Checking for common response prefix\" is misleading wording when the CoT completion is inferred from the prompt",
+      "html_url": "https://github.com/p-e-w/heretic/issues/465",
+      "state": "open",
+      "updated_at": "2026-10-01T14:55:12Z",
+      "kind": "issue"
+    },
+    {
+      "number": 446,
+      "title": "feat: modifier plugins + ARA",
+      "html_url": "https://github.com/p-e-w/heretic/pull/446",
+      "state": "closed",
+      "updated_at": "2026-10-01T09:58:28Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 196,
+      "title": "[PoC]: Multi-directional refusal supression with Self-Organizing Maps",
+      "html_url": "https://github.com/p-e-w/heretic/pull/196",
+      "state": "closed",
+      "updated_at": "2026-10-01T09:11:54Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 459,
+      "title": "feat: Add base model information in the README.md model card",
+      "html_url": "https://github.com/p-e-w/heretic/pull/459",
+      "state": "closed",
+      "updated_at": "2026-09-30T14:07:49Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 393,
+      "title": "fix: SVD convergence crash via CPU LAPACK fallback",
+      "html_url": "https://github.com/p-e-w/heretic/pull/393",
+      "state": "closed",
+      "updated_at": "2026-09-30T14:07:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 391,
+      "title": "feat: add support for Qwen3Next shared experts",
+      "html_url": "https://github.com/p-e-w/heretic/pull/391",
+      "state": "open",
+      "updated_at": "2026-09-30T13:58:41Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 460,
+      "title": "Add SLSA generic generator workflow",
+      "html_url": "https://github.com/p-e-w/heretic/pull/460",
+      "state": "closed",
+      "updated_at": "2026-09-30T11:45:33Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 458,
+      "title": "Jules 7746186145700112477 3c5556ff",
+      "html_url": "https://github.com/p-e-w/heretic/pull/458",
+      "state": "closed",
+      "updated_at": "2026-09-28T00:01:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 451,
+      "title": "feat: add response logger plugins",
+      "html_url": "https://github.com/p-e-w/heretic/pull/451",
+      "state": "open",
+      "updated_at": "2026-09-26T21:06:54Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 454,
+      "title": "hat",
+      "html_url": "https://github.com/p-e-w/heretic/issues/454",
+      "state": "closed",
+      "updated_at": "2026-09-23T21:10:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 453,
+      "title": "Native GGUFs in transformers!",
+      "html_url": "https://github.com/p-e-w/heretic/issues/453",
+      "state": "open",
+      "updated_at": "2026-09-23T14:19:19Z",
+      "kind": "issue"
+    },
+    {
+      "number": 438,
+      "title": "[RFC] Crazy idea from the future: Heretic controlled by an LLM",
+      "html_url": "https://github.com/p-e-w/heretic/issues/438",
+      "state": "open",
+      "updated_at": "2026-09-18T21:12:25Z",
+      "kind": "issue"
+    },
+    {
+      "number": 448,
+      "title": "Add GitHub Actions workflow for Python application",
+      "html_url": "https://github.com/p-e-w/heretic/pull/448",
+      "state": "closed",
+      "updated_at": "2026-09-18T11:35:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 450,
+      "title": "Counting publicly available Heretic models and their downloads",
+      "html_url": "https://github.com/p-e-w/heretic/issues/450",
+      "state": "open",
+      "updated_at": "2026-09-14T13:02:03Z",
+      "kind": "issue"
+    },
+    {
+      "number": 433,
+      "title": "feat: reproduce local datasets from a Hub source",
+      "html_url": "https://github.com/p-e-w/heretic/pull/433",
+      "state": "open",
+      "updated_at": "2026-09-12T05:21:48Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 420,
+      "title": "feat/fix(ara): Save-time model tensor integrity check",
+      "html_url": "https://github.com/p-e-w/heretic/pull/420",
+      "state": "closed",
+      "updated_at": "2026-09-06T19:05:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 423,
+      "title": "feat: A better logic for detecting the thinking prefix in the response.",
+      "html_url": "https://github.com/p-e-w/heretic/pull/423",
+      "state": "closed",
+      "updated_at": "2026-09-05T16:24:07Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 445,
+      "title": "feat: support specifying a dataset's specific config/subset",
+      "html_url": "https://github.com/p-e-w/heretic/pull/445",
+      "state": "closed",
+      "updated_at": "2026-09-05T13:44:26Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 211,
+      "title": "feat: Arbitrary-Rank Ablation (ARA)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/211",
+      "state": "closed",
+      "updated_at": "2026-10-03T02:13:05Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 236,
+      "title": "[RFC] PIQA: A potential complement to KL divergence that could improve the quality of Heretic models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/236",
+      "state": "closed",
+      "updated_at": "2026-09-03T12:19:48Z",
+      "kind": "issue"
+    },
+    {
+      "number": 444,
+      "title": "feat: add benchmark scorer",
+      "html_url": "https://github.com/p-e-w/heretic/pull/444",
+      "state": "closed",
+      "updated_at": "2026-09-03T12:19:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 442,
+      "title": "build(deps): bump nltk from 3.10.0 to 3.10.3",
+      "html_url": "https://github.com/p-e-w/heretic/pull/442",
+      "state": "closed",
+      "updated_at": "2026-09-03T05:18:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 322,
+      "title": "Ablation Technique - pre-bias",
+      "html_url": "https://github.com/p-e-w/heretic/issues/322",
+      "state": "open",
+      "updated_at": "2026-08-31T11:16:13Z",
+      "kind": "issue"
+    },
+    {
+      "number": 401,
+      "title": "Important announcement concerning the future of the Heretic project",
+      "html_url": "https://github.com/p-e-w/heretic/issues/401",
+      "state": "open",
+      "updated_at": "2026-08-31T10:29:09Z",
+      "kind": "issue"
+    },
+    {
+      "number": 440,
+      "title": "Feature",
+      "html_url": "https://github.com/p-e-w/heretic/pull/440",
+      "state": "closed",
+      "updated_at": "2026-08-31T09:25:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 439,
+      "title": "Modified readme",
+      "html_url": "https://github.com/p-e-w/heretic/pull/439",
+      "state": "closed",
+      "updated_at": "2026-08-31T09:22:28Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 435,
+      "title": "fix: stop retrying non-recoverable dtype errors",
+      "html_url": "https://github.com/p-e-w/heretic/pull/435",
+      "state": "open",
+      "updated_at": "2026-08-30T05:02:52Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 436,
+      "title": "Fails on tencent/Hy3-FP8",
+      "html_url": "https://github.com/p-e-w/heretic/issues/436",
+      "state": "open",
+      "updated_at": "2026-08-29T00:28:28Z",
+      "kind": "issue"
+    },
+    {
+      "number": 434,
+      "title": "fix: improve dtype fallback error reporting",
+      "html_url": "https://github.com/p-e-w/heretic/pull/434",
+      "state": "open",
+      "updated_at": "2026-08-27T16:26:42Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 425,
+      "title": "feat: Show a summary at end of tests",
+      "html_url": "https://github.com/p-e-w/heretic/pull/425",
+      "state": "closed",
+      "updated_at": "2026-08-17T16:57:44Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 426,
+      "title": "fix(ara): free gradient buffers after optimization",
+      "html_url": "https://github.com/p-e-w/heretic/pull/426",
+      "state": "closed",
+      "updated_at": "2026-08-17T12:03:49Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 428,
+      "title": "chore: bump version to 2.0.0.dev0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/428",
+      "state": "closed",
+      "updated_at": "2026-08-17T10:55:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 427,
+      "title": "chore: remove Gemini style guide",
+      "html_url": "https://github.com/p-e-w/heretic/pull/427",
+      "state": "closed",
+      "updated_at": "2026-08-17T10:49:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 413,
+      "title": "feat: try Suggestion of Blacksmith",
+      "html_url": "https://github.com/p-e-w/heretic/pull/413",
+      "state": "closed",
+      "updated_at": "2026-08-17T09:37:11Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 424,
+      "title": "docs: update model count in README",
+      "html_url": "https://github.com/p-e-w/heretic/pull/424",
+      "state": "closed",
+      "updated_at": "2026-08-14T11:09:07Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 422,
+      "title": "build(deps): bump aiohttp from 3.14.1 to 3.14.3",
+      "html_url": "https://github.com/p-e-w/heretic/pull/422",
+      "state": "closed",
+      "updated_at": "2026-08-05T19:49:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 421,
+      "title": "feat(ara): add DiffusionGemma block-diffusion model support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/421",
+      "state": "open",
+      "updated_at": "2026-08-03T12:10:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 418,
+      "title": "build(deps): bump setuptools from 80.9.0 to 83.0.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/418",
+      "state": "closed",
+      "updated_at": "2026-07-28T10:36:45Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 416,
+      "title": "build(deps): bump pillow from 12.2.0 to 12.3.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/416",
+      "state": "closed",
+      "updated_at": "2026-07-28T09:37:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 411,
+      "title": "build(deps): bump torch from 2.9.1 to 2.13.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/411",
+      "state": "closed",
+      "updated_at": "2026-07-24T18:08:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 415,
+      "title": "build(deps): bump nltk from 3.9.4 to 3.10.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/415",
+      "state": "closed",
+      "updated_at": "2026-07-22T11:05:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 414,
+      "title": "feat: add `reproducible` property to plugins",
+      "html_url": "https://github.com/p-e-w/heretic/pull/414",
+      "state": "closed",
+      "updated_at": "2026-07-22T10:53:31Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 405,
+      "title": "feat: strip plugin fields marked as secret before `model_dump()`",
+      "html_url": "https://github.com/p-e-w/heretic/pull/405",
+      "state": "closed",
+      "updated_at": "2026-07-21T01:51:35Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 53,
+      "title": "feat: generic plugin system",
+      "html_url": "https://github.com/p-e-w/heretic/pull/53",
+      "state": "closed",
+      "updated_at": "2026-07-20T23:11:56Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 403,
+      "title": "It does not work with google/gemma-4-E4B-it",
+      "html_url": "https://github.com/p-e-w/heretic/issues/403",
+      "state": "closed",
+      "updated_at": "2026-07-19T09:07:39Z",
+      "kind": "issue"
+    },
+    {
+      "number": 395,
+      "title": "docs: quote pip extras install examples",
+      "html_url": "https://github.com/p-e-w/heretic/pull/395",
+      "state": "closed",
+      "updated_at": "2026-07-17T07:54:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 370,
+      "title": "Diffusion Models abliteration :)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/370",
+      "state": "open",
+      "updated_at": "2026-07-16T22:59:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 412,
+      "title": "feat: Add alternate CI hash in the valid list (for qwen2.5)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/412",
+      "state": "closed",
+      "updated_at": "2026-07-16T13:28:48Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 407,
+      "title": "fix: validate scorer instance names in config",
+      "html_url": "https://github.com/p-e-w/heretic/pull/407",
+      "state": "closed",
+      "updated_at": "2026-07-15T15:00:06Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 400,
+      "title": "feat(ara): Clamped KNN objective & adaptive steering (resolves DiffusionGemma / MoE failures)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/400",
+      "state": "closed",
+      "updated_at": "2026-07-14T12:22:14Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 409,
+      "title": "The reproducibility feature makes it impossible to use checkpoints made on older versions of heretic, can you disable it?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/409",
+      "state": "closed",
+      "updated_at": "2026-07-12T15:34:38Z",
+      "kind": "issue"
+    },
+    {
+      "number": 140,
+      "title": "SOM Directions are Better than One: Multi-Directional Refusal Suppression in Language Models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/140",
+      "state": "open",
+      "updated_at": "2026-07-09T11:46:03Z",
+      "kind": "issue"
+    },
+    {
+      "number": 404,
+      "title": "Qwen3.5-9B --- 70/100 Refusals after 200 trials",
+      "html_url": "https://github.com/p-e-w/heretic/issues/404",
+      "state": "closed",
+      "updated_at": "2026-07-09T11:43:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 333,
+      "title": "Suggestion: start-end layer probes before start",
+      "html_url": "https://github.com/p-e-w/heretic/issues/333",
+      "state": "closed",
+      "updated_at": "2026-07-07T12:39:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 217,
+      "title": "Efficient Refusal Ablation in LLM through Optimal Transport",
+      "html_url": "https://github.com/p-e-w/heretic/issues/217",
+      "state": "closed",
+      "updated_at": "2026-07-07T12:39:00Z",
+      "kind": "issue"
+    },
+    {
+      "number": 402,
+      "title": "Support fused-expert MoE architectures (Qwen3.5-MoE)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/402",
+      "state": "closed",
+      "updated_at": "2026-07-06T11:52:39Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 399,
+      "title": "feat: add REST API layer for remote execution",
+      "html_url": "https://github.com/p-e-w/heretic/pull/399",
+      "state": "closed",
+      "updated_at": "2026-07-05T08:25:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 344,
+      "title": "feat: add support for LiquidAI/LFM2.5 models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/344",
+      "state": "closed",
+      "updated_at": "2026-07-04T19:07:12Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 295,
+      "title": "Multi-GPU has some problem",
+      "html_url": "https://github.com/p-e-w/heretic/issues/295",
+      "state": "closed",
+      "updated_at": "2026-07-02T16:09:52Z",
+      "kind": "issue"
+    },
+    {
+      "number": 205,
+      "title": "Is there any way to integrate this in Ollama?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/205",
+      "state": "closed",
+      "updated_at": "2026-07-02T15:52:40Z",
+      "kind": "issue"
+    },
+    {
+      "number": 57,
+      "title": "A way to reduce the need for video memory.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/57",
+      "state": "closed",
+      "updated_at": "2026-07-02T15:35:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 36,
+      "title": "Removing censorship from image recognition models.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/36",
+      "state": "closed",
+      "updated_at": "2026-07-02T15:34:00Z",
+      "kind": "issue"
+    },
+    {
+      "number": 398,
+      "title": "fix: use `W_org` matrix only where needed",
+      "html_url": "https://github.com/p-e-w/heretic/pull/398",
+      "state": "closed",
+      "updated_at": "2026-07-01T10:45:18Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 138,
+      "title": "feat: make parameter ranges configurable",
+      "html_url": "https://github.com/p-e-w/heretic/pull/138",
+      "state": "open",
+      "updated_at": "2026-06-28T20:33:34Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 154,
+      "title": "feat: detect and ignore massive activations",
+      "html_url": "https://github.com/p-e-w/heretic/pull/154",
+      "state": "open",
+      "updated_at": "2026-06-28T19:52:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 397,
+      "title": "build(deps): bump pydantic-settings from 2.13.1 to 2.14.2",
+      "html_url": "https://github.com/p-e-w/heretic/pull/397",
+      "state": "closed",
+      "updated_at": "2026-06-27T19:19:38Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 364,
+      "title": "fix: gracefully handle processor load failures for multimodal models (#82)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/364",
+      "state": "closed",
+      "updated_at": "2026-06-27T08:15:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 392,
+      "title": "feat: headless operation + end-to-end tests",
+      "html_url": "https://github.com/p-e-w/heretic/pull/392",
+      "state": "closed",
+      "updated_at": "2026-06-27T08:12:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 280,
+      "title": "Solve the Kaggle problem",
+      "html_url": "https://github.com/p-e-w/heretic/issues/280",
+      "state": "closed",
+      "updated_at": "2026-06-27T08:11:50Z",
+      "kind": "issue"
+    },
+    {
+      "number": 394,
+      "title": "fix: Hash on windows",
+      "html_url": "https://github.com/p-e-w/heretic/pull/394",
+      "state": "closed",
+      "updated_at": "2026-06-27T07:27:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 56,
+      "title": "feat: implement personality steering plugin system",
+      "html_url": "https://github.com/p-e-w/heretic/pull/56",
+      "state": "closed",
+      "updated_at": "2026-06-27T05:57:34Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 22,
+      "title": "Added: Notebook compatibility, Multimodal support (InternVL/QwenVL/Gemma), and trust_remote_code",
+      "html_url": "https://github.com/p-e-w/heretic/pull/22",
+      "state": "closed",
+      "updated_at": "2026-06-27T05:48:29Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 42,
+      "title": "Featuring Notebook (Colab/Jupyter) Compatibility",
+      "html_url": "https://github.com/p-e-w/heretic/pull/42",
+      "state": "closed",
+      "updated_at": "2026-06-27T05:45:01Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 257,
+      "title": "docs: add gitcgr code graph badge",
+      "html_url": "https://github.com/p-e-w/heretic/pull/257",
+      "state": "closed",
+      "updated_at": "2026-06-25T11:37:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 374,
+      "title": "fix: save_pretrained unbound local active_adapters crash(#289)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/374",
+      "state": "closed",
+      "updated_at": "2026-06-23T02:55:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 366,
+      "title": "fix: preserve Hugging Face token in session to avoid repeated prompt (#142)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/366",
+      "state": "open",
+      "updated_at": "2026-06-22T13:55:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 389,
+      "title": "fix: resolve UnicodeEncodeError on Windows during model evaluation",
+      "html_url": "https://github.com/p-e-w/heretic/pull/389",
+      "state": "closed",
+      "updated_at": "2026-06-18T12:46:54Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 338,
+      "title": "build(deps): remove unused hf-transfer dependency",
+      "html_url": "https://github.com/p-e-w/heretic/pull/338",
+      "state": "closed",
+      "updated_at": "2026-06-18T11:17:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 337,
+      "title": "feat: support plain text files as prompt datasets",
+      "html_url": "https://github.com/p-e-w/heretic/pull/337",
+      "state": "closed",
+      "updated_at": "2026-06-18T11:17:18Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 387,
+      "title": "feat: let the optimizer disable MLP ablation via a 0 max_weight floor",
+      "html_url": "https://github.com/p-e-w/heretic/pull/387",
+      "state": "closed",
+      "updated_at": "2026-06-18T08:52:44Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 201,
+      "title": "Can distinguish between Vendor Embedded Refusal (VER) behaviors and User Requested Refusal (URR) behaviors?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/201",
+      "state": "open",
+      "updated_at": "2026-06-18T08:39:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 202,
+      "title": "[RFC] Should we stop ablating the MLP?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/202",
+      "state": "closed",
+      "updated_at": "2026-06-18T08:16:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 390,
+      "title": "Use adaptive per-method batch sizing, drop startup benchmark",
+      "html_url": "https://github.com/p-e-w/heretic/pull/390",
+      "state": "open",
+      "updated_at": "2026-06-18T07:15:16Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 181,
+      "title": "Support for Qwen3NextForCausalLM (Qwen3-Next-80B-A3B)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/181",
+      "state": "open",
+      "updated_at": "2026-06-18T03:25:32Z",
+      "kind": "issue"
+    },
+    {
+      "number": 191,
+      "title": "feat: reproducibility when saving & uploading a heretic model",
+      "html_url": "https://github.com/p-e-w/heretic/pull/191",
+      "state": "closed",
+      "updated_at": "2026-06-17T14:28:11Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 384,
+      "title": "fix: capture residual hidden states via forward hooks instead of output_hidden_states",
+      "html_url": "https://github.com/p-e-w/heretic/pull/384",
+      "state": "open",
+      "updated_at": "2026-06-17T14:20:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 388,
+      "title": "feat: generate model card on local save (#258)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/388",
+      "state": "open",
+      "updated_at": "2026-06-17T13:59:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 381,
+      "title": "fix: correct target trial math when running additional trials (#379)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/381",
+      "state": "closed",
+      "updated_at": "2026-06-17T09:34:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 385,
+      "title": "fix: correct total trial count when adding additional trials",
+      "html_url": "https://github.com/p-e-w/heretic/pull/385",
+      "state": "closed",
+      "updated_at": "2026-06-17T09:32:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 379,
+      "title": "Wrong behavior when running additional trials after cancelling run",
+      "html_url": "https://github.com/p-e-w/heretic/issues/379",
+      "state": "closed",
+      "updated_at": "2026-06-17T09:28:41Z",
+      "kind": "issue"
+    },
+    {
+      "number": 386,
+      "title": "build(deps): bump aiohttp from 3.13.4 to 3.14.1",
+      "html_url": "https://github.com/p-e-w/heretic/pull/386",
+      "state": "closed",
+      "updated_at": "2026-06-17T09:14:29Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 383,
+      "title": "fix: skip non-PEFT-wrapped modules in abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/383",
+      "state": "closed",
+      "updated_at": "2026-06-17T09:09:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 382,
+      "title": "Merge upstream changes",
+      "html_url": "https://github.com/p-e-w/heretic/pull/382",
+      "state": "closed",
+      "updated_at": "2026-06-16T10:43:02Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 376,
+      "title": "fix: resolve requests/urllib3 dependency warning on startup(#373)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/376",
+      "state": "closed",
+      "updated_at": "2026-06-16T08:06:51Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 373,
+      "title": "RequestsDependencyWarning: urllib3 (2.5.0) or chardet (6.0.0.post1)/charset_normalizer (3.4.3) doesn't match a supported version!",
+      "html_url": "https://github.com/p-e-w/heretic/issues/373",
+      "state": "closed",
+      "updated_at": "2026-06-16T08:03:56Z",
+      "kind": "issue"
+    },
+    {
+      "number": 81,
+      "title": "Possibility of personality control",
+      "html_url": "https://github.com/p-e-w/heretic/issues/81",
+      "state": "closed",
+      "updated_at": "2026-06-16T08:03:02Z",
+      "kind": "issue"
+    },
+    {
+      "number": 96,
+      "title": "CUDA out of memory issue",
+      "html_url": "https://github.com/p-e-w/heretic/issues/96",
+      "state": "closed",
+      "updated_at": "2026-06-16T08:00:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 234,
+      "title": "Generated a structured documentation site for Heretic",
+      "html_url": "https://github.com/p-e-w/heretic/issues/234",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:58:54Z",
+      "kind": "issue"
+    },
+    {
+      "number": 283,
+      "title": "CoT skipping fails with models like Qwen3 0.6B",
+      "html_url": "https://github.com/p-e-w/heretic/issues/283",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:55:02Z",
+      "kind": "issue"
+    },
+    {
+      "number": 282,
+      "title": "Error when trying to save the abliteration result.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/282",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:53:59Z",
+      "kind": "issue"
+    },
+    {
+      "number": 281,
+      "title": "Error loading gemma-3-270m with Transformers 5",
+      "html_url": "https://github.com/p-e-w/heretic/issues/281",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:52:50Z",
+      "kind": "issue"
+    },
+    {
+      "number": 245,
+      "title": "PIQA integration is 6x slower than standalone lm_eval",
+      "html_url": "https://github.com/p-e-w/heretic/issues/245",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:51:23Z",
+      "kind": "issue"
+    },
+    {
+      "number": 342,
+      "title": "Fused-expert abliteration via a runtime activation hook (no per-trial weight edits)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/342",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:47:36Z",
+      "kind": "issue"
+    },
+    {
+      "number": 380,
+      "title": "Heretic quits before loading Gemma 4 12B QAT model",
+      "html_url": "https://github.com/p-e-w/heretic/issues/380",
+      "state": "closed",
+      "updated_at": "2026-06-16T07:42:28Z",
+      "kind": "issue"
+    },
+    {
+      "number": 378,
+      "title": "feat: diffusion LLM abliteration support (DiffusionGemma)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/378",
+      "state": "open",
+      "updated_at": "2026-10-14T13:30:29Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 377,
+      "title": "Merge branch 'p-e-w:master' into master",
+      "html_url": "https://github.com/p-e-w/heretic/pull/377",
+      "state": "closed",
+      "updated_at": "2026-06-12T10:48:42Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 375,
+      "title": "Backend tokenizer failure",
+      "html_url": "https://github.com/p-e-w/heretic/issues/375",
+      "state": "closed",
+      "updated_at": "2026-06-12T09:09:45Z",
+      "kind": "issue"
+    },
+    {
+      "number": 326,
+      "title": "feat: automatically reproduce model from reproduce.json",
+      "html_url": "https://github.com/p-e-w/heretic/pull/326",
+      "state": "closed",
+      "updated_at": "2026-06-11T09:20:14Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 372,
+      "title": "fix: prevent UnboundLocalError when saving merged models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/372",
+      "state": "closed",
+      "updated_at": "2026-06-11T06:50:25Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 77,
+      "title": "Early abort of trials fails if study is cancelled while reloading the model",
+      "html_url": "https://github.com/p-e-w/heretic/issues/77",
+      "state": "closed",
+      "updated_at": "2026-06-11T05:42:03Z",
+      "kind": "issue"
+    },
+    {
+      "number": 367,
+      "title": "fix: make reset_model null-safe to handle study cancellations (#77)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/367",
+      "state": "closed",
+      "updated_at": "2026-06-11T05:36:07Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 360,
+      "title": "Doesn't refuse but doesn't answer the question",
+      "html_url": "https://github.com/p-e-w/heretic/issues/360",
+      "state": "closed",
+      "updated_at": "2026-06-10T19:01:23Z",
+      "kind": "issue"
+    },
+    {
+      "number": 371,
+      "title": "Using PyTorch 2.8.0 Template on Runpod, couldn't get heretic to work.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/371",
+      "state": "closed",
+      "updated_at": "2026-06-10T18:44:20Z",
+      "kind": "issue"
+    },
+    {
+      "number": 369,
+      "title": "fix: force Qwen2TokenizerFast for qwen2 model types",
+      "html_url": "https://github.com/p-e-w/heretic/pull/369",
+      "state": "closed",
+      "updated_at": "2026-06-10T15:52:00Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 239,
+      "title": "feat: add configurable residual processing to reduce peak VRAM usage",
+      "html_url": "https://github.com/p-e-w/heretic/pull/239",
+      "state": "closed",
+      "updated_at": "2026-06-10T11:49:18Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 368,
+      "title": "fix: reject bnb_4bit quantization when ARA is enabled",
+      "html_url": "https://github.com/p-e-w/heretic/pull/368",
+      "state": "closed",
+      "updated_at": "2026-06-10T09:17:06Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 363,
+      "title": "fix: improve exception formatting (#146)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/363",
+      "state": "closed",
+      "updated_at": "2026-06-09T02:57:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 146,
+      "title": "Printing exceptions outputs empty message if the exception has no message attached, complicating debugging",
+      "html_url": "https://github.com/p-e-w/heretic/issues/146",
+      "state": "closed",
+      "updated_at": "2026-06-09T02:57:26Z",
+      "kind": "issue"
+    },
+    {
+      "number": 243,
+      "title": "Triton dependency issues on older GPUs (PyTorch 2.4)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/243",
+      "state": "closed",
+      "updated_at": "2026-06-08T12:32:40Z",
+      "kind": "issue"
+    },
+    {
+      "number": 163,
+      "title": "[Feature request] Nuke the Assistant Axis",
+      "html_url": "https://github.com/p-e-w/heretic/issues/163",
+      "state": "closed",
+      "updated_at": "2026-06-07T16:30:10Z",
+      "kind": "issue"
+    },
+    {
+      "number": 351,
+      "title": "Ideogram is the first image model with refusals.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/351",
+      "state": "open",
+      "updated_at": "2026-06-07T15:33:41Z",
+      "kind": "issue"
+    },
+    {
+      "number": 355,
+      "title": "fix: handle HFValidationError in is_hf_path",
+      "html_url": "https://github.com/p-e-w/heretic/pull/355",
+      "state": "closed",
+      "updated_at": "2026-06-07T08:42:35Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 352,
+      "title": "fix: fix issues in automatic reproduction system",
+      "html_url": "https://github.com/p-e-w/heretic/pull/352",
+      "state": "closed",
+      "updated_at": "2026-06-07T08:47:18Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 359,
+      "title": "style: remove annoying gray bg from logo",
+      "html_url": "https://github.com/p-e-w/heretic/pull/359",
+      "state": "closed",
+      "updated_at": "2026-06-07T07:07:27Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 361,
+      "title": "fix: add Triton and PyTorch compatibility checks for MXFP4 models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/361",
+      "state": "closed",
+      "updated_at": "2026-06-07T04:46:39Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 324,
+      "title": "fix: count completed trials in progress output",
+      "html_url": "https://github.com/p-e-w/heretic/pull/324",
+      "state": "closed",
+      "updated_at": "2026-06-07T03:48:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 311,
+      "title": "\"Running trial N of M...\" where N > M",
+      "html_url": "https://github.com/p-e-w/heretic/issues/311",
+      "state": "closed",
+      "updated_at": "2026-06-07T03:46:56Z",
+      "kind": "issue"
+    },
+    {
+      "number": 357,
+      "title": "fix: count all trials, not just completed trials",
+      "html_url": "https://github.com/p-e-w/heretic/pull/357",
+      "state": "closed",
+      "updated_at": "2026-06-07T03:45:35Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 358,
+      "title": "build(deps): bump pyarrow from 22.0.0 to 23.0.1",
+      "html_url": "https://github.com/p-e-w/heretic/pull/358",
+      "state": "closed",
+      "updated_at": "2026-06-06T12:48:12Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 356,
+      "title": "fix: resolve variable shadowing of error in ValidationError handler",
+      "html_url": "https://github.com/p-e-w/heretic/pull/356",
+      "state": "closed",
+      "updated_at": "2026-06-05T14:53:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 353,
+      "title": "feat: save processor for multimodal models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/353",
+      "state": "closed",
+      "updated_at": "2026-06-05T14:12:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 354,
+      "title": "feat: add native Windows AMD RDNA2 (gfx1030) support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/354",
+      "state": "closed",
+      "updated_at": "2026-06-05T09:46:54Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 349,
+      "title": "feat: add config.nosyco.toml",
+      "html_url": "https://github.com/p-e-w/heretic/pull/349",
+      "state": "open",
+      "updated_at": "2026-06-05T09:38:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 346,
+      "title": "NaN KL divergence on Gemma-4 12b-it",
+      "html_url": "https://github.com/p-e-w/heretic/issues/346",
+      "state": "closed",
+      "updated_at": "2026-06-04T13:35:23Z",
+      "kind": "issue"
+    },
+    {
+      "number": 350,
+      "title": "feat: add support for gemma-4-12B-it",
+      "html_url": "https://github.com/p-e-w/heretic/pull/350",
+      "state": "closed",
+      "updated_at": "2026-06-04T12:52:12Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 348,
+      "title": "fix: prevent NaN KL divergence on models with suppressed tokens",
+      "html_url": "https://github.com/p-e-w/heretic/pull/348",
+      "state": "closed",
+      "updated_at": "2026-06-04T12:20:07Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 343,
+      "title": "Version mismatch issues with `kernels` package",
+      "html_url": "https://github.com/p-e-w/heretic/issues/343",
+      "state": "closed",
+      "updated_at": "2026-06-04T06:53:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 339,
+      "title": "Qwen3.5 MoE: MLP experts silently skipped during abliteration (attention-only, no warning)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/339",
+      "state": "closed",
+      "updated_at": "2026-05-31T13:04:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 340,
+      "title": "feat: add config.nohumor.toml",
+      "html_url": "https://github.com/p-e-w/heretic/pull/340",
+      "state": "closed",
+      "updated_at": "2026-05-31T11:04:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 98,
+      "title": "add option to custom datasets via txt file",
+      "html_url": "https://github.com/p-e-w/heretic/issues/98",
+      "state": "closed",
+      "updated_at": "2026-05-31T09:36:48Z",
+      "kind": "issue"
+    },
+    {
+      "number": 336,
+      "title": "Error using --bad-evaluation-prompts.dataset",
+      "html_url": "https://github.com/p-e-w/heretic/issues/336",
+      "state": "closed",
+      "updated_at": "2026-05-29T05:03:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 222,
+      "title": "Stuck on Checking for common response prefix...",
+      "html_url": "https://github.com/p-e-w/heretic/issues/222",
+      "state": "closed",
+      "updated_at": "2026-05-28T13:16:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 334,
+      "title": "feat: add \"disclaimer\" to the prohibited strings list",
+      "html_url": "https://github.com/p-e-w/heretic/pull/334",
+      "state": "closed",
+      "updated_at": "2026-05-28T12:07:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 221,
+      "title": "[Needs testing]: Kimi-K2.5 Abliteration Research (TL;DR: Standard abliteration does NOT work on Kimi K2.5.)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/221",
+      "state": "open",
+      "updated_at": "2026-05-26T08:39:17Z",
+      "kind": "issue"
+    },
+    {
+      "number": 331,
+      "title": "Is There Any Way to Skip \"Common Response Prefix\"?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/331",
+      "state": "closed",
+      "updated_at": "2026-05-26T06:16:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 328,
+      "title": "build(deps): bump urllib3 from 2.6.3 to 2.7.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/328",
+      "state": "closed",
+      "updated_at": "2026-05-22T09:30:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 327,
+      "title": "build(deps): bump idna from 3.11 to 3.15",
+      "html_url": "https://github.com/p-e-w/heretic/pull/327",
+      "state": "closed",
+      "updated_at": "2026-05-22T09:26:30Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 325,
+      "title": "fix: recognize root Hugging Face repo IDs",
+      "html_url": "https://github.com/p-e-w/heretic/pull/325",
+      "state": "closed",
+      "updated_at": "2026-05-16T03:49:34Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 317,
+      "title": "fix: preserve auxiliary safetensors shards (MTP / draft heads) on save",
+      "html_url": "https://github.com/p-e-w/heretic/pull/317",
+      "state": "closed",
+      "updated_at": "2026-05-09T13:39:22Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 230,
+      "title": "feat(utils): add format_file_size() and refactor print_memory_usage()",
+      "html_url": "https://github.com/p-e-w/heretic/pull/230",
+      "state": "closed",
+      "updated_at": "2026-05-09T10:09:33Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 286,
+      "title": "Add vLLM optional deps and scripts for Gemma Heretic serving",
+      "html_url": "https://github.com/p-e-w/heretic/pull/286",
+      "state": "closed",
+      "updated_at": "2026-05-09T10:08:45Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 254,
+      "title": "fix: \"Save as LoRA adapter\" option added to prompt selection",
+      "html_url": "https://github.com/p-e-w/heretic/pull/254",
+      "state": "closed",
+      "updated_at": "2026-05-09T10:03:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 162,
+      "title": "Sharded LoRA merge",
+      "html_url": "https://github.com/p-e-w/heretic/pull/162",
+      "state": "closed",
+      "updated_at": "2026-05-09T09:59:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 156,
+      "title": "[Feature request] Sharded LoRA merge",
+      "html_url": "https://github.com/p-e-w/heretic/issues/156",
+      "state": "closed",
+      "updated_at": "2026-05-09T09:58:20Z",
+      "kind": "issue"
+    },
+    {
+      "number": 152,
+      "title": "Uploading LoRA adapter doesn't work",
+      "html_url": "https://github.com/p-e-w/heretic/issues/152",
+      "state": "closed",
+      "updated_at": "2026-05-09T09:54:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 323,
+      "title": "build(deps): bump mako from 1.3.11 to 1.3.12",
+      "html_url": "https://github.com/p-e-w/heretic/pull/323",
+      "state": "closed",
+      "updated_at": "2026-05-09T09:49:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 321,
+      "title": "fix: Reset model after saving merged model",
+      "html_url": "https://github.com/p-e-w/heretic/pull/321",
+      "state": "closed",
+      "updated_at": "2026-05-09T09:47:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 308,
+      "title": "fix: Enable LoRAs",
+      "html_url": "https://github.com/p-e-w/heretic/pull/308",
+      "state": "closed",
+      "updated_at": "2026-05-05T11:10:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 320,
+      "title": "Google TPU Accelerators not detected",
+      "html_url": "https://github.com/p-e-w/heretic/issues/320",
+      "state": "closed",
+      "updated_at": "2026-05-04T14:26:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 319,
+      "title": "fix: disable LoRA export again",
+      "html_url": "https://github.com/p-e-w/heretic/pull/319",
+      "state": "closed",
+      "updated_at": "2026-05-03T01:56:25Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 316,
+      "title": "Reproducibility needs fix/improvement",
+      "html_url": "https://github.com/p-e-w/heretic/issues/316",
+      "state": "closed",
+      "updated_at": "2026-04-29T10:29:28Z",
+      "kind": "issue"
+    },
+    {
+      "number": 314,
+      "title": "feat: Write README.md for LoRA adapter as well",
+      "html_url": "https://github.com/p-e-w/heretic/pull/314",
+      "state": "open",
+      "updated_at": "2026-04-28T17:31:52Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 312,
+      "title": "feat: skip refusal counting for trials with high KL divergence",
+      "html_url": "https://github.com/p-e-w/heretic/pull/312",
+      "state": "closed",
+      "updated_at": "2026-04-26T11:23:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 309,
+      "title": "build(deps): bump mako from 1.3.10 to 1.3.11",
+      "html_url": "https://github.com/p-e-w/heretic/pull/309",
+      "state": "closed",
+      "updated_at": "2026-04-25T02:44:45Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 303,
+      "title": "fix: improve the reproducibility system",
+      "html_url": "https://github.com/p-e-w/heretic/pull/303",
+      "state": "closed",
+      "updated_at": "2026-04-25T02:49:15Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 306,
+      "title": "build(deps): bump lxml from 6.0.2 to 6.1.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/306",
+      "state": "closed",
+      "updated_at": "2026-04-23T07:17:29Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 305,
+      "title": "build(deps): bump python-dotenv from 1.2.1 to 1.2.2",
+      "html_url": "https://github.com/p-e-w/heretic/pull/305",
+      "state": "closed",
+      "updated_at": "2026-04-23T07:10:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 299,
+      "title": "UnboundLocalError: local variable analyzer referenced before assignment with google/gemma-4-E4B-it on Apple Silicon MPS",
+      "html_url": "https://github.com/p-e-w/heretic/issues/299",
+      "state": "closed",
+      "updated_at": "2026-04-21T03:11:54Z",
+      "kind": "issue"
+    },
+    {
+      "number": 301,
+      "title": "fix: prevent UnboundLocalError when analyzer is not initialized",
+      "html_url": "https://github.com/p-e-w/heretic/pull/301",
+      "state": "closed",
+      "updated_at": "2026-04-21T03:10:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 300,
+      "title": "UnboundLocalError in heretic/main.py:466 - analyzer variable not properly initialized",
+      "html_url": "https://github.com/p-e-w/heretic/issues/300",
+      "state": "closed",
+      "updated_at": "2026-04-20T14:36:03Z",
+      "kind": "issue"
+    },
+    {
+      "number": 297,
+      "title": "Is Reasoning capability preserved using this tool ?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/297",
+      "state": "closed",
+      "updated_at": "2026-04-14T15:09:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 242,
+      "title": "What kind of algorithm or method we can achieve the same as this one does\uff1f",
+      "html_url": "https://github.com/p-e-w/heretic/issues/242",
+      "state": "closed",
+      "updated_at": "2026-04-14T14:12:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 278,
+      "title": "Add support for Gemma4 (Gemma4ClippableLinear)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/278",
+      "state": "closed",
+      "updated_at": "2026-04-14T14:01:45Z",
+      "kind": "issue"
+    },
+    {
+      "number": 296,
+      "title": "build(deps): bump pillow from 12.1.1 to 12.2.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/296",
+      "state": "closed",
+      "updated_at": "2026-04-14T13:37:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 284,
+      "title": "fix: correct default value for max_memory.",
+      "html_url": "https://github.com/p-e-w/heretic/pull/284",
+      "state": "closed",
+      "updated_at": "2026-04-13T15:37:04Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 293,
+      "title": "fix: make --help return before heavy runtime imports",
+      "html_url": "https://github.com/p-e-w/heretic/pull/293",
+      "state": "closed",
+      "updated_at": "2026-04-12T11:03:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 287,
+      "title": "fix: add support for gemma 4",
+      "html_url": "https://github.com/p-e-w/heretic/pull/287",
+      "state": "closed",
+      "updated_at": "2026-04-12T08:25:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 226,
+      "title": "feat: add MLX backend for native Apple Silicon abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/226",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:38:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 212,
+      "title": "perf: Update config.default.toml (Adding more refusal markers)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/212",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:35:52Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 103,
+      "title": "feat: add support for plain text files as prompt datasets",
+      "html_url": "https://github.com/p-e-w/heretic/pull/103",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:33:25Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 101,
+      "title": "fix: make bitsandbytes optional for CPU-only systems",
+      "html_url": "https://github.com/p-e-w/heretic/pull/101",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:32:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 12,
+      "title": "Ability to run on CPU only (no GPU)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/12",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:31:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 43,
+      "title": "add support for hybrid layer models: conv, mamba",
+      "html_url": "https://github.com/p-e-w/heretic/pull/43",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:29:13Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 285,
+      "title": "fix: support Gemma 4 wrapped linear modules",
+      "html_url": "https://github.com/p-e-w/heretic/pull/285",
+      "state": "closed",
+      "updated_at": "2026-04-12T07:23:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 294,
+      "title": "feat: add configurable CPU offloading for quantized models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/294",
+      "state": "closed",
+      "updated_at": "2026-04-11T22:50:12Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 161,
+      "title": "[RFC] Towards reproducible results",
+      "html_url": "https://github.com/p-e-w/heretic/issues/161",
+      "state": "closed",
+      "updated_at": "2026-04-11T14:02:25Z",
+      "kind": "issue"
+    },
+    {
+      "number": 291,
+      "title": "Observation on Optimization Behavior: Refusals Parameter Not Converging",
+      "html_url": "https://github.com/p-e-w/heretic/issues/291",
+      "state": "closed",
+      "updated_at": "2026-04-09T14:49:05Z",
+      "kind": "issue"
+    },
+    {
+      "number": 288,
+      "title": "ARA's marker-based objective is gameable: model learns to redirect refusals into clarifying questions",
+      "html_url": "https://github.com/p-e-w/heretic/issues/288",
+      "state": "closed",
+      "updated_at": "2026-04-08T13:50:48Z",
+      "kind": "issue"
+    },
+    {
+      "number": 105,
+      "title": "Add GGUF Support",
+      "html_url": "https://github.com/p-e-w/heretic/issues/105",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:12:09Z",
+      "kind": "issue"
+    },
+    {
+      "number": 114,
+      "title": "multi gpu support",
+      "html_url": "https://github.com/p-e-w/heretic/issues/114",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:11:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 121,
+      "title": "Discussion: Slop Reduction",
+      "html_url": "https://github.com/p-e-w/heretic/issues/121",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:10:19Z",
+      "kind": "issue"
+    },
+    {
+      "number": 123,
+      "title": "Bug: Double VRAM usage during refusal direction calculation when using quantization",
+      "html_url": "https://github.com/p-e-w/heretic/issues/123",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:08:38Z",
+      "kind": "issue"
+    },
+    {
+      "number": 139,
+      "title": "Enhancement: GGUF support.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/139",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:07:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 153,
+      "title": "Very low GPU utilization / tps when using GLM architecture",
+      "html_url": "https://github.com/p-e-w/heretic/issues/153",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:04:10Z",
+      "kind": "issue"
+    },
+    {
+      "number": 185,
+      "title": "vram overload",
+      "html_url": "https://github.com/p-e-w/heretic/issues/185",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:02:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 184,
+      "title": "[Feature Request] Implement GRP-Obliteration",
+      "html_url": "https://github.com/p-e-w/heretic/issues/184",
+      "state": "closed",
+      "updated_at": "2026-04-07T13:01:25Z",
+      "kind": "issue"
+    },
+    {
+      "number": 158,
+      "title": "feature: check while process and sumary",
+      "html_url": "https://github.com/p-e-w/heretic/issues/158",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:59:42Z",
+      "kind": "issue"
+    },
+    {
+      "number": 164,
+      "title": "stop while batch size check",
+      "html_url": "https://github.com/p-e-w/heretic/issues/164",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:57:16Z",
+      "kind": "issue"
+    },
+    {
+      "number": 179,
+      "title": "feat: blockwise loading",
+      "html_url": "https://github.com/p-e-w/heretic/issues/179",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:56:02Z",
+      "kind": "issue"
+    },
+    {
+      "number": 258,
+      "title": "Generate model card when exporting model to local folder",
+      "html_url": "https://github.com/p-e-w/heretic/issues/258",
+      "state": "open",
+      "updated_at": "2026-04-07T12:53:45Z",
+      "kind": "issue"
+    },
+    {
+      "number": 253,
+      "title": "Reasoning degradation and incoherent thinking loops when Heretic is applied to multi-stage merged/expanded models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/253",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:51:51Z",
+      "kind": "issue"
+    },
+    {
+      "number": 240,
+      "title": "Getting the Correct Dependencies",
+      "html_url": "https://github.com/p-e-w/heretic/issues/240",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:46:54Z",
+      "kind": "issue"
+    },
+    {
+      "number": 235,
+      "title": "[REQUEST]  Plugin or integration for Unsloth Studio?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/235",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:45:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 228,
+      "title": "Not giving me a proper answers",
+      "html_url": "https://github.com/p-e-w/heretic/issues/228",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:44:46Z",
+      "kind": "issue"
+    },
+    {
+      "number": 203,
+      "title": "Heretic models still largely refuse to try and solve P-vs-NP",
+      "html_url": "https://github.com/p-e-w/heretic/issues/203",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:41:31Z",
+      "kind": "issue"
+    },
+    {
+      "number": 208,
+      "title": "Hallucination-proofing access",
+      "html_url": "https://github.com/p-e-w/heretic/issues/208",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:40:56Z",
+      "kind": "issue"
+    },
+    {
+      "number": 218,
+      "title": "Qwen3-30B-a3b KL divergence 0, and 99/100 refusal rate every trial",
+      "html_url": "https://github.com/p-e-w/heretic/issues/218",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:39:53Z",
+      "kind": "issue"
+    },
+    {
+      "number": 220,
+      "title": "OOM Error - H100 80GB - Qwen3.5-27B",
+      "html_url": "https://github.com/p-e-w/heretic/issues/220",
+      "state": "closed",
+      "updated_at": "2026-04-07T12:34:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 276,
+      "title": "fix: Add TPU support and tokenizer fix for Google Colab",
+      "html_url": "https://github.com/p-e-w/heretic/pull/276",
+      "state": "closed",
+      "updated_at": "2026-04-07T03:25:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 263,
+      "title": "Commit 887d43a Uses More RAM than it should/Wrong Batch size and Closing the Program Just Causes BSOD",
+      "html_url": "https://github.com/p-e-w/heretic/issues/263",
+      "state": "closed",
+      "updated_at": "2026-04-06T11:57:48Z",
+      "kind": "issue"
+    },
+    {
+      "number": 279,
+      "title": "heretic does not see 3 GPUs",
+      "html_url": "https://github.com/p-e-w/heretic/issues/279",
+      "state": "closed",
+      "updated_at": "2026-04-06T10:05:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 277,
+      "title": "Question/ Request: Can I cache the datasets?  They don't seem to be included",
+      "html_url": "https://github.com/p-e-w/heretic/issues/277",
+      "state": "closed",
+      "updated_at": "2026-04-06T07:51:45Z",
+      "kind": "issue"
+    },
+    {
+      "number": 275,
+      "title": "feat: hot-reloadable LLM judge endpoint config",
+      "html_url": "https://github.com/p-e-w/heretic/issues/275",
+      "state": "closed",
+      "updated_at": "2026-04-04T19:01:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 274,
+      "title": "Not work gpt-oss-20b in AMD GPS",
+      "html_url": "https://github.com/p-e-w/heretic/issues/274",
+      "state": "closed",
+      "updated_at": "2026-04-04T07:01:54Z",
+      "kind": "issue"
+    },
+    {
+      "number": 265,
+      "title": "Error when loading gemma-4-31b-it model",
+      "html_url": "https://github.com/p-e-w/heretic/issues/265",
+      "state": "closed",
+      "updated_at": "2026-04-04T05:27:19Z",
+      "kind": "issue"
+    },
+    {
+      "number": 266,
+      "title": "Issue with rich progress bars",
+      "html_url": "https://github.com/p-e-w/heretic/issues/266",
+      "state": "open",
+      "updated_at": "2026-04-04T03:44:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 273,
+      "title": "build(deps): bump urllib3 from 2.6.1 to 2.6.3",
+      "html_url": "https://github.com/p-e-w/heretic/pull/273",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:56:02Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 272,
+      "title": "build(deps): bump requests from 2.32.5 to 2.33.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/272",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:55:34Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 271,
+      "title": "build(deps): bump pygments from 2.19.2 to 2.20.0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/271",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:55:04Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 270,
+      "title": "build(deps): bump nltk from 3.9.3 to 3.9.4",
+      "html_url": "https://github.com/p-e-w/heretic/pull/270",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:54:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 269,
+      "title": "build(deps): bump filelock from 3.20.0 to 3.20.3",
+      "html_url": "https://github.com/p-e-w/heretic/pull/269",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:54:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 268,
+      "title": "build(deps): bump pillow from 12.0.0 to 12.1.1",
+      "html_url": "https://github.com/p-e-w/heretic/pull/268",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:53:39Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 267,
+      "title": "build(deps): bump aiohttp from 3.13.2 to 3.13.4",
+      "html_url": "https://github.com/p-e-w/heretic/pull/267",
+      "state": "closed",
+      "updated_at": "2026-04-04T02:40:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 256,
+      "title": "ARA Branch transformers error",
+      "html_url": "https://github.com/p-e-w/heretic/issues/256",
+      "state": "closed",
+      "updated_at": "2026-03-27T15:49:24Z",
+      "kind": "issue"
+    },
+    {
+      "number": 255,
+      "title": "https://github.com/p-e-w/heretic/compare/master...RyderFreeman4Logos:heretic:feat/llm-judge-pipeline?expand=1",
+      "html_url": "https://github.com/p-e-w/heretic/pull/255",
+      "state": "closed",
+      "updated_at": "2026-03-27T11:04:33Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 252,
+      "title": "Phase 2: Deploy Tool Intelligence Hierarchy",
+      "html_url": "https://github.com/p-e-w/heretic/issues/252",
+      "state": "closed",
+      "updated_at": "2026-03-26T10:55:31Z",
+      "kind": "issue"
+    },
+    {
+      "number": 251,
+      "title": "Phase 2: Implement Context/Memory Optimization",
+      "html_url": "https://github.com/p-e-w/heretic/issues/251",
+      "state": "closed",
+      "updated_at": "2026-03-26T10:55:24Z",
+      "kind": "issue"
+    },
+    {
+      "number": 250,
+      "title": "Phase 2: Implement agent tiering system, instinct optimization, context/memory improvements, and tool intelligence hierarchy deployment",
+      "html_url": "https://github.com/p-e-w/heretic/issues/250",
+      "state": "closed",
+      "updated_at": "2026-03-26T10:55:15Z",
+      "kind": "issue"
+    },
+    {
+      "number": 190,
+      "title": "1.20 cannot load Qwen/Qwen3.5-27B",
+      "html_url": "https://github.com/p-e-w/heretic/issues/190",
+      "state": "closed",
+      "updated_at": "2026-03-25T04:46:03Z",
+      "kind": "issue"
+    },
+    {
+      "number": 249,
+      "title": "Feature request: Display baseline PIQA acc_norm for user interpretation",
+      "html_url": "https://github.com/p-e-w/heretic/issues/249",
+      "state": "closed",
+      "updated_at": "2026-03-24T10:31:50Z",
+      "kind": "issue"
+    },
+    {
+      "number": 246,
+      "title": "PIQA integration missing baseline acc_norm calculation at start of process",
+      "html_url": "https://github.com/p-e-w/heretic/issues/246",
+      "state": "closed",
+      "updated_at": "2026-03-23T05:11:18Z",
+      "kind": "issue"
+    },
+    {
+      "number": 247,
+      "title": "Fix display issues and prevent division by zero in abliterable component",
+      "html_url": "https://github.com/p-e-w/heretic/pull/247",
+      "state": "closed",
+      "updated_at": "2026-03-23T03:24:50Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 248,
+      "title": "[RFC] A better automatic batch size mechanism",
+      "html_url": "https://github.com/p-e-w/heretic/issues/248",
+      "state": "open",
+      "updated_at": "2026-03-23T03:12:01Z",
+      "kind": "issue"
+    },
+    {
+      "number": 241,
+      "title": "fix: use separate component key for Qwen3.5 hybrid DeltaNet layers",
+      "html_url": "https://github.com/p-e-w/heretic/pull/241",
+      "state": "closed",
+      "updated_at": "2026-03-20T13:10:43Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 219,
+      "title": "Qwen3.5 compatability",
+      "html_url": "https://github.com/p-e-w/heretic/issues/219",
+      "state": "closed",
+      "updated_at": "2026-03-20T07:03:16Z",
+      "kind": "issue"
+    },
+    {
+      "number": 233,
+      "title": "Initial refusals: 0/100",
+      "html_url": "https://github.com/p-e-w/heretic/issues/233",
+      "state": "closed",
+      "updated_at": "2026-03-20T06:10:51Z",
+      "kind": "issue"
+    },
+    {
+      "number": 238,
+      "title": "Different Results with Qwen/Qwen3-8B over different versions+transformers",
+      "html_url": "https://github.com/p-e-w/heretic/issues/238",
+      "state": "closed",
+      "updated_at": "2026-03-20T05:04:02Z",
+      "kind": "issue"
+    },
+    {
+      "number": 237,
+      "title": "Dataset download failed",
+      "html_url": "https://github.com/p-e-w/heretic/issues/237",
+      "state": "closed",
+      "updated_at": "2026-03-19T10:59:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 232,
+      "title": "RE: Qwen3.5 FP8 Error",
+      "html_url": "https://github.com/p-e-w/heretic/issues/232",
+      "state": "closed",
+      "updated_at": "2026-03-18T06:38:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 141,
+      "title": "Don't display negative KL divergences",
+      "html_url": "https://github.com/p-e-w/heretic/issues/141",
+      "state": "closed",
+      "updated_at": "2026-03-16T12:32:40Z",
+      "kind": "issue"
+    },
+    {
+      "number": 231,
+      "title": "fix: clamp KL divergence to non-negative values",
+      "html_url": "https://github.com/p-e-w/heretic/pull/231",
+      "state": "closed",
+      "updated_at": "2026-03-16T12:32:05Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 229,
+      "title": "Add support for hybrid SSM/Transformer models like Falcon H1R 7B and improve chat parameters used in Ablation and search function",
+      "html_url": "https://github.com/p-e-w/heretic/pull/229",
+      "state": "closed",
+      "updated_at": "2026-03-16T09:02:06Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 213,
+      "title": "CUDA ERROR",
+      "html_url": "https://github.com/p-e-w/heretic/issues/213",
+      "state": "closed",
+      "updated_at": "2026-03-16T08:12:31Z",
+      "kind": "issue"
+    },
+    {
+      "number": 189,
+      "title": "interactive terminal not responding",
+      "html_url": "https://github.com/p-e-w/heretic/issues/189",
+      "state": "closed",
+      "updated_at": "2026-03-16T08:09:56Z",
+      "kind": "issue"
+    },
+    {
+      "number": 159,
+      "title": "Negative/Zero KL Divergence for Qwen3 LLMs",
+      "html_url": "https://github.com/p-e-w/heretic/issues/159",
+      "state": "closed",
+      "updated_at": "2026-03-16T08:07:07Z",
+      "kind": "issue"
+    },
+    {
+      "number": 216,
+      "title": "No common response prefix found for Qwen3.5 models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/216",
+      "state": "closed",
+      "updated_at": "2026-03-16T08:05:57Z",
+      "kind": "issue"
+    },
+    {
+      "number": 90,
+      "title": "Issue: Lack of GLM Model Support in Heretic",
+      "html_url": "https://github.com/p-e-w/heretic/issues/90",
+      "state": "closed",
+      "updated_at": "2026-03-16T07:59:00Z",
+      "kind": "issue"
+    },
+    {
+      "number": 88,
+      "title": "Longer optimization runs can produce worse Pareto fronts than shorter runs",
+      "html_url": "https://github.com/p-e-w/heretic/issues/88",
+      "state": "closed",
+      "updated_at": "2026-03-16T07:57:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 3,
+      "title": "[Feature] Norm-Preserving Biprojected Abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/issues/3",
+      "state": "closed",
+      "updated_at": "2026-03-16T07:55:47Z",
+      "kind": "issue"
+    },
+    {
+      "number": 227,
+      "title": "RTX 3060",
+      "html_url": "https://github.com/p-e-w/heretic/issues/227",
+      "state": "closed",
+      "updated_at": "2026-03-15T02:23:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 69,
+      "title": "feat: Featuring Continuous Optimization Option",
+      "html_url": "https://github.com/p-e-w/heretic/pull/69",
+      "state": "closed",
+      "updated_at": "2026-03-13T12:02:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 225,
+      "title": "fix: prevent div-by-zero in evaluator when base_refusals is 0",
+      "html_url": "https://github.com/p-e-w/heretic/pull/225",
+      "state": "closed",
+      "updated_at": "2026-03-13T05:51:32Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 215,
+      "title": "fix: display all abliterable components across layers",
+      "html_url": "https://github.com/p-e-w/heretic/pull/215",
+      "state": "closed",
+      "updated_at": "2026-03-11T08:40:49Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 151,
+      "title": "fix: extend LoRA merge path to pre-quantized models and fix evaluator div-by-zero",
+      "html_url": "https://github.com/p-e-w/heretic/pull/151",
+      "state": "open",
+      "updated_at": "2026-03-10T07:56:11Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 214,
+      "title": "fix(ara): store captured I/O on CPU for multi-GPU robustness",
+      "html_url": "https://github.com/p-e-w/heretic/pull/214",
+      "state": "closed",
+      "updated_at": "2026-03-07T17:46:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 180,
+      "title": "fix: Don't display negative KL divergences",
+      "html_url": "https://github.com/p-e-w/heretic/pull/180",
+      "state": "closed",
+      "updated_at": "2026-03-06T08:02:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 120,
+      "title": "Session restore",
+      "html_url": "https://github.com/p-e-w/heretic/pull/120",
+      "state": "closed",
+      "updated_at": "2026-03-06T07:57:42Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 207,
+      "title": "feat: add Qwen3.5 MoE support with fused expert abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/207",
+      "state": "closed",
+      "updated_at": "2026-03-06T07:54:39Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 193,
+      "title": "feat: Add Qwen3.5 MoE Hybrid Layer Support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/193",
+      "state": "closed",
+      "updated_at": "2026-03-06T07:52:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 187,
+      "title": "feat: add Qwen3.5 MoE hybrid layer support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/187",
+      "state": "closed",
+      "updated_at": "2026-03-06T07:50:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 147,
+      "title": "Nemotron3: Failed to load model with all configured dtypes.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/147",
+      "state": "open",
+      "updated_at": "2026-03-06T06:16:04Z",
+      "kind": "issue"
+    },
+    {
+      "number": 206,
+      "title": "feat: add Qwen3.5 MoE support with fused expert abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/206",
+      "state": "closed",
+      "updated_at": "2026-03-03T19:29:07Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 204,
+      "title": "feat: Add GPT-OSS fused expert detection",
+      "html_url": "https://github.com/p-e-w/heretic/pull/204",
+      "state": "closed",
+      "updated_at": "2026-03-02T15:37:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 194,
+      "title": "fix: recheck prefix after inserting predefined",
+      "html_url": "https://github.com/p-e-w/heretic/pull/194",
+      "state": "closed",
+      "updated_at": "2026-03-01T17:45:24Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 197,
+      "title": "Qwen3.5 models require thinking suppression by modifying api parameters only.  System message does not work",
+      "html_url": "https://github.com/p-e-w/heretic/issues/197",
+      "state": "closed",
+      "updated_at": "2026-02-28T10:22:41Z",
+      "kind": "issue"
+    },
+    {
+      "number": 160,
+      "title": "fix: zero/negative KL divergence output",
+      "html_url": "https://github.com/p-e-w/heretic/pull/160",
+      "state": "closed",
+      "updated_at": "2026-02-28T01:54:32Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 165,
+      "title": "Fix: Detect ROCm and disable incompatible bitsandbytes quantization",
+      "html_url": "https://github.com/p-e-w/heretic/pull/165",
+      "state": "closed",
+      "updated_at": "2026-02-27T09:42:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 199,
+      "title": "Qwen3.5- Support inhomogeneous layers with identical Python classes",
+      "html_url": "https://github.com/p-e-w/heretic/issues/199",
+      "state": "closed",
+      "updated_at": "2026-02-27T04:32:48Z",
+      "kind": "issue"
+    },
+    {
+      "number": 198,
+      "title": "Qwen3.5 - Direct weight modification for fused MoE experts",
+      "html_url": "https://github.com/p-e-w/heretic/issues/198",
+      "state": "closed",
+      "updated_at": "2026-02-27T04:32:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 200,
+      "title": "Qwen3.5 model structure showed A core bug in _apply_lora() was discovered .  Add a test to projects test suite.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/200",
+      "state": "closed",
+      "updated_at": "2026-02-27T04:32:13Z",
+      "kind": "issue"
+    },
+    {
+      "number": 195,
+      "title": "Add configuration parameters in default model card",
+      "html_url": "https://github.com/p-e-w/heretic/issues/195",
+      "state": "closed",
+      "updated_at": "2026-02-27T02:21:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 192,
+      "title": "[Refactor] vLLM as the backend",
+      "html_url": "https://github.com/p-e-w/heretic/issues/192",
+      "state": "closed",
+      "updated_at": "2026-02-26T13:55:14Z",
+      "kind": "issue"
+    },
+    {
+      "number": 167,
+      "title": "\u26a0\ufe0f The Heretic project is *not* associated with any financial scheme, and is *not* seeking or accepting donations \u26a0\ufe0f",
+      "html_url": "https://github.com/p-e-w/heretic/issues/167",
+      "state": "closed",
+      "updated_at": "2026-02-25T12:28:39Z",
+      "kind": "issue"
+    },
+    {
+      "number": 166,
+      "title": "feat: NemotronH architecture support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/166",
+      "state": "open",
+      "updated_at": "2026-02-25T06:39:31Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 188,
+      "title": "Bitnet compat",
+      "html_url": "https://github.com/p-e-w/heretic/pull/188",
+      "state": "closed",
+      "updated_at": "2026-02-22T21:26:00Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 155,
+      "title": "feature model ministral",
+      "html_url": "https://github.com/p-e-w/heretic/issues/155",
+      "state": "closed",
+      "updated_at": "2026-02-20T15:45:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 148,
+      "title": "fix: persist hf token between uploads",
+      "html_url": "https://github.com/p-e-w/heretic/pull/148",
+      "state": "open",
+      "updated_at": "2026-02-20T07:06:04Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 183,
+      "title": "fix: use repr() for exception messages to always include exception type (#146)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/183",
+      "state": "closed",
+      "updated_at": "2026-02-19T18:58:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 182,
+      "title": "fix: handle FP8 model weights in LoRA adapters and merge",
+      "html_url": "https://github.com/p-e-w/heretic/pull/182",
+      "state": "open",
+      "updated_at": "2026-02-19T17:09:16Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 172,
+      "title": "quant gguf after processing",
+      "html_url": "https://github.com/p-e-w/heretic/issues/172",
+      "state": "closed",
+      "updated_at": "2026-02-18T14:04:23Z",
+      "kind": "issue"
+    },
+    {
+      "number": 177,
+      "title": "print_residual_geometry(): silhouette_score scaling bottleneck and optional efficient mode proposal",
+      "html_url": "https://github.com/p-e-w/heretic/issues/177",
+      "state": "closed",
+      "updated_at": "2026-02-18T13:41:11Z",
+      "kind": "issue"
+    },
+    {
+      "number": 178,
+      "title": "Stop feeding corpos",
+      "html_url": "https://github.com/p-e-w/heretic/issues/178",
+      "state": "closed",
+      "updated_at": "2026-02-18T10:00:11Z",
+      "kind": "issue"
+    },
+    {
+      "number": 175,
+      "title": "docs: fix typo in README",
+      "html_url": "https://github.com/p-e-w/heretic/pull/175",
+      "state": "closed",
+      "updated_at": "2026-02-18T06:56:22Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 176,
+      "title": "fix: update dependencies to address security vulnerabilities (CVEs)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/176",
+      "state": "closed",
+      "updated_at": "2026-02-18T06:32:28Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 171,
+      "title": "feat: Add reproducibility package (config, requirements, environment) on model save/upload",
+      "html_url": "https://github.com/p-e-w/heretic/pull/171",
+      "state": "closed",
+      "updated_at": "2026-02-18T06:29:29Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 174,
+      "title": "fix: validate batch_size in batchify",
+      "html_url": "https://github.com/p-e-w/heretic/pull/174",
+      "state": "closed",
+      "updated_at": "2026-02-18T06:16:03Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 173,
+      "title": "docs: tighten wording in README overview",
+      "html_url": "https://github.com/p-e-w/heretic/pull/173",
+      "state": "closed",
+      "updated_at": "2026-02-18T06:15:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 170,
+      "title": "feat: Constrain-able Abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/170",
+      "state": "closed",
+      "updated_at": "2026-02-17T15:25:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 169,
+      "title": "fix: report VRAM usage across all GPUs in multi-GPU setups",
+      "html_url": "https://github.com/p-e-w/heretic/pull/169",
+      "state": "closed",
+      "updated_at": "2026-02-17T07:25:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 168,
+      "title": "VRAM usage reports only 1 GPU in multi-GPU setups",
+      "html_url": "https://github.com/p-e-w/heretic/issues/168",
+      "state": "closed",
+      "updated_at": "2026-02-17T07:23:43Z",
+      "kind": "issue"
+    },
+    {
+      "number": 150,
+      "title": "feat: NemotronH architecture support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/150",
+      "state": "closed",
+      "updated_at": "2026-02-16T02:45:53Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 126,
+      "title": "Add support for LFM2 hybrid attention-convolution architecture",
+      "html_url": "https://github.com/p-e-w/heretic/pull/126",
+      "state": "closed",
+      "updated_at": "2026-02-15T20:03:55Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 52,
+      "title": "Implement Magnitude-Preserving Orthogonal Ablation",
+      "html_url": "https://github.com/p-e-w/heretic/pull/52",
+      "state": "closed",
+      "updated_at": "2026-02-15T19:29:11Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 157,
+      "title": "fix: produce card for local models with existing readme",
+      "html_url": "https://github.com/p-e-w/heretic/pull/157",
+      "state": "closed",
+      "updated_at": "2026-02-15T19:29:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 1,
+      "title": "README images",
+      "html_url": "https://github.com/p-e-w/heretic/issues/1",
+      "state": "closed",
+      "updated_at": "2026-02-14T04:54:47Z",
+      "kind": "issue"
+    },
+    {
+      "number": 144,
+      "title": "Checkpoint should not be loaded when `evaluate_model` is set",
+      "html_url": "https://github.com/p-e-w/heretic/issues/144",
+      "state": "closed",
+      "updated_at": "2026-02-14T04:32:31Z",
+      "kind": "issue"
+    },
+    {
+      "number": 143,
+      "title": "LoRA export should not include the tokenizer",
+      "html_url": "https://github.com/p-e-w/heretic/issues/143",
+      "state": "closed",
+      "updated_at": "2026-02-14T03:48:34Z",
+      "kind": "issue"
+    },
+    {
+      "number": 149,
+      "title": "Unable to load datasets saved with save_to_disk",
+      "html_url": "https://github.com/p-e-w/heretic/issues/149",
+      "state": "closed",
+      "updated_at": "2026-02-14T00:57:11Z",
+      "kind": "issue"
+    },
+    {
+      "number": 135,
+      "title": "Memory requirements make abliteration impossible for large MoE models (80B+)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/135",
+      "state": "closed",
+      "updated_at": "2026-02-13T07:18:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 145,
+      "title": "[Release blocker] Merging LoRA adapter on export fails for gpt-oss-20b",
+      "html_url": "https://github.com/p-e-w/heretic/issues/145",
+      "state": "closed",
+      "updated_at": "2026-02-13T06:58:11Z",
+      "kind": "issue"
+    },
+    {
+      "number": 142,
+      "title": "Hugging Face token not preserved between uploads when entered on prompt",
+      "html_url": "https://github.com/p-e-w/heretic/issues/142",
+      "state": "open",
+      "updated_at": "2026-02-11T13:01:25Z",
+      "kind": "issue"
+    },
+    {
+      "number": 124,
+      "title": "Detect and handle massive activations",
+      "html_url": "https://github.com/p-e-w/heretic/issues/124",
+      "state": "open",
+      "updated_at": "2026-02-09T19:02:15Z",
+      "kind": "issue"
+    },
+    {
+      "number": 137,
+      "title": "Upgrade GitHub Actions to latest versions",
+      "html_url": "https://github.com/p-e-w/heretic/pull/137",
+      "state": "closed",
+      "updated_at": "2026-02-08T11:19:59Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 136,
+      "title": "Upgrade GitHub Actions for Node 24 compatibility",
+      "html_url": "https://github.com/p-e-w/heretic/pull/136",
+      "state": "closed",
+      "updated_at": "2026-02-08T11:18:13Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 127,
+      "title": "Add multi-model ensemble inference with dynamic routing",
+      "html_url": "https://github.com/p-e-w/heretic/issues/127",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:27:14Z",
+      "kind": "issue"
+    },
+    {
+      "number": 128,
+      "title": "Implement prompt cache with semantic deduplication",
+      "html_url": "https://github.com/p-e-w/heretic/issues/128",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:24:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 129,
+      "title": "Add adversarial prompt detection system",
+      "html_url": "https://github.com/p-e-w/heretic/issues/129",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:23:58Z",
+      "kind": "issue"
+    },
+    {
+      "number": 130,
+      "title": "Add real-time jailbreak detection with feedback loop",
+      "html_url": "https://github.com/p-e-w/heretic/issues/130",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:23:17Z",
+      "kind": "issue"
+    },
+    {
+      "number": 131,
+      "title": "Implement context-aware response filtering",
+      "html_url": "https://github.com/p-e-w/heretic/issues/131",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:22:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 132,
+      "title": "Add prompt injection attack simulator",
+      "html_url": "https://github.com/p-e-w/heretic/issues/132",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:21:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 133,
+      "title": "Implement token-level safety scoring",
+      "html_url": "https://github.com/p-e-w/heretic/issues/133",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:21:08Z",
+      "kind": "issue"
+    },
+    {
+      "number": 134,
+      "title": "Add distributed inference coordination system",
+      "html_url": "https://github.com/p-e-w/heretic/issues/134",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:20:38Z",
+      "kind": "issue"
+    },
+    {
+      "number": 125,
+      "title": "load in 4bit support",
+      "html_url": "https://github.com/p-e-w/heretic/issues/125",
+      "state": "closed",
+      "updated_at": "2026-02-08T03:19:13Z",
+      "kind": "issue"
+    },
+    {
+      "number": 122,
+      "title": "Enhancement: Store Responses to File",
+      "html_url": "https://github.com/p-e-w/heretic/issues/122",
+      "state": "open",
+      "updated_at": "2026-01-30T10:49:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 115,
+      "title": "Optuna JournalStorage error on Windows",
+      "html_url": "https://github.com/p-e-w/heretic/issues/115",
+      "state": "closed",
+      "updated_at": "2026-01-26T12:19:49Z",
+      "kind": "issue"
+    },
+    {
+      "number": 116,
+      "title": "fix: Use file instead of symlink lock (for windows)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/116",
+      "state": "closed",
+      "updated_at": "2026-01-25T14:05:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 119,
+      "title": "fix: specify study name",
+      "html_url": "https://github.com/p-e-w/heretic/pull/119",
+      "state": "closed",
+      "updated_at": "2026-01-25T13:18:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 117,
+      "title": "fix: JournalStorage Windows permission error",
+      "html_url": "https://github.com/p-e-w/heretic/pull/117",
+      "state": "closed",
+      "updated_at": "2026-01-23T20:10:27Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 106,
+      "title": "feat: Allow study progress to be saved & resumed",
+      "html_url": "https://github.com/p-e-w/heretic/pull/106",
+      "state": "closed",
+      "updated_at": "2026-01-23T14:19:57Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 95,
+      "title": "State save possible?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/95",
+      "state": "closed",
+      "updated_at": "2026-01-23T14:19:39Z",
+      "kind": "issue"
+    },
+    {
+      "number": 99,
+      "title": "[Feature/Success Report with workaround] Support for Vision Models (Qwen2.5-VL) by switching to AutoModelForVision2Seq",
+      "html_url": "https://github.com/p-e-w/heretic/issues/99",
+      "state": "closed",
+      "updated_at": "2026-01-23T14:07:40Z",
+      "kind": "issue"
+    },
+    {
+      "number": 18,
+      "title": "Qwen3 32b VL support?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/18",
+      "state": "closed",
+      "updated_at": "2026-01-23T14:06:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 108,
+      "title": "fix: Allow abliterating VL models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/108",
+      "state": "closed",
+      "updated_at": "2026-01-23T14:05:01Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 113,
+      "title": "Request: Support for GLM-4.7-Flash",
+      "html_url": "https://github.com/p-e-w/heretic/issues/113",
+      "state": "closed",
+      "updated_at": "2026-01-22T13:34:04Z",
+      "kind": "issue"
+    },
+    {
+      "number": 110,
+      "title": "feat: refactor save machinery",
+      "html_url": "https://github.com/p-e-w/heretic/pull/110",
+      "state": "closed",
+      "updated_at": "2026-01-20T13:24:00Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 107,
+      "title": "fix: Include kernels (allows MXFP4 to be loaded in MXFP4 instead of upcasting)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/107",
+      "state": "closed",
+      "updated_at": "2026-01-16T12:00:25Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 109,
+      "title": "Support for Trinity-Nano",
+      "html_url": "https://github.com/p-e-w/heretic/issues/109",
+      "state": "open",
+      "updated_at": "2026-01-16T01:48:31Z",
+      "kind": "issue"
+    },
+    {
+      "number": 104,
+      "title": "double load",
+      "html_url": "https://github.com/p-e-w/heretic/issues/104",
+      "state": "closed",
+      "updated_at": "2026-01-09T11:38:56Z",
+      "kind": "issue"
+    },
+    {
+      "number": 73,
+      "title": "feat: avoid excessive low divergence iteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/73",
+      "state": "closed",
+      "updated_at": "2026-01-03T02:07:58Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 94,
+      "title": "Support for modelscope",
+      "html_url": "https://github.com/p-e-w/heretic/issues/94",
+      "state": "open",
+      "updated_at": "2026-01-02T17:23:06Z",
+      "kind": "issue"
+    },
+    {
+      "number": 93,
+      "title": "Empty responses are no longer flagged as refusals due to special tokens",
+      "html_url": "https://github.com/p-e-w/heretic/issues/93",
+      "state": "closed",
+      "updated_at": "2026-01-02T11:20:14Z",
+      "kind": "issue"
+    },
+    {
+      "number": 89,
+      "title": "Missing documentation - heretic hardware requirements",
+      "html_url": "https://github.com/p-e-w/heretic/issues/89",
+      "state": "closed",
+      "updated_at": "2025-12-29T13:49:55Z",
+      "kind": "issue"
+    },
+    {
+      "number": 9,
+      "title": "feat: Add ability to increase inhibitions",
+      "html_url": "https://github.com/p-e-w/heretic/pull/9",
+      "state": "closed",
+      "updated_at": "2025-12-29T11:39:02Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 80,
+      "title": "A small suggestion about memory allocation",
+      "html_url": "https://github.com/p-e-w/heretic/issues/80",
+      "state": "closed",
+      "updated_at": "2025-12-29T11:36:23Z",
+      "kind": "issue"
+    },
+    {
+      "number": 59,
+      "title": "Possible to use multiple datasets?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/59",
+      "state": "closed",
+      "updated_at": "2025-12-24T16:49:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 65,
+      "title": "Abliteration in a multilingual model.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/65",
+      "state": "closed",
+      "updated_at": "2025-12-23T14:21:33Z",
+      "kind": "issue"
+    },
+    {
+      "number": 68,
+      "title": "Allow running further trials",
+      "html_url": "https://github.com/p-e-w/heretic/issues/68",
+      "state": "closed",
+      "updated_at": "2025-12-22T06:27:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 2,
+      "title": "[Feature] Transformers Quantization",
+      "html_url": "https://github.com/p-e-w/heretic/issues/2",
+      "state": "closed",
+      "updated_at": "2025-12-22T06:24:28Z",
+      "kind": "issue"
+    },
+    {
+      "number": 29,
+      "title": "Add support for local dataset paths in load_prompts",
+      "html_url": "https://github.com/p-e-w/heretic/pull/29",
+      "state": "closed",
+      "updated_at": "2025-12-20T13:29:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 76,
+      "title": "feat: add continuous optimization option(latest changes updated)",
+      "html_url": "https://github.com/p-e-w/heretic/pull/76",
+      "state": "closed",
+      "updated_at": "2025-12-20T13:28:20Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 86,
+      "title": "feat: enumerate all available GPUs on startup",
+      "html_url": "https://github.com/p-e-w/heretic/pull/86",
+      "state": "closed",
+      "updated_at": "2025-12-16T12:12:28Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 71,
+      "title": "Fix for multigpu - tensors on the same GPU",
+      "html_url": "https://github.com/p-e-w/heretic/pull/71",
+      "state": "closed",
+      "updated_at": "2025-12-16T10:16:47Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 72,
+      "title": "perf: Multigpu fixes",
+      "html_url": "https://github.com/p-e-w/heretic/pull/72",
+      "state": "closed",
+      "updated_at": "2025-12-16T10:16:24Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 87,
+      "title": "Qwen-Image",
+      "html_url": "https://github.com/p-e-w/heretic/issues/87",
+      "state": "closed",
+      "updated_at": "2025-12-16T09:48:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 78,
+      "title": "fix: multi-gpu and non-2d matrix abliteration",
+      "html_url": "https://github.com/p-e-w/heretic/pull/78",
+      "state": "closed",
+      "updated_at": "2025-12-15T16:12:19Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 60,
+      "title": "feat: Add 4-bit loading + LoRA support for low VRAM optimization",
+      "html_url": "https://github.com/p-e-w/heretic/pull/60",
+      "state": "closed",
+      "updated_at": "2025-12-14T15:04:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 75,
+      "title": "Release blocker: Regression when computing KL divergence for GPT-OSS-20b",
+      "html_url": "https://github.com/p-e-w/heretic/issues/75",
+      "state": "closed",
+      "updated_at": "2025-12-12T19:19:33Z",
+      "kind": "issue"
+    },
+    {
+      "number": 83,
+      "title": "feat: add max_memory parameter to limit memory usage",
+      "html_url": "https://github.com/p-e-w/heretic/pull/83",
+      "state": "closed",
+      "updated_at": "2025-12-11T15:29:21Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 79,
+      "title": "feat: implement GPT-OSS compatibility and fixes",
+      "html_url": "https://github.com/p-e-w/heretic/pull/79",
+      "state": "closed",
+      "updated_at": "2025-12-10T16:33:24Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 41,
+      "title": "sycophantic abliteration possible?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/41",
+      "state": "closed",
+      "updated_at": "2025-12-09T04:23:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 13,
+      "title": "Support GB10 / DGX Spark Hardware.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/13",
+      "state": "closed",
+      "updated_at": "2025-12-09T04:18:21Z",
+      "kind": "issue"
+    },
+    {
+      "number": 37,
+      "title": "Thank you for this amazing project",
+      "html_url": "https://github.com/p-e-w/heretic/issues/37",
+      "state": "closed",
+      "updated_at": "2025-12-09T04:14:35Z",
+      "kind": "issue"
+    },
+    {
+      "number": 55,
+      "title": "feature: randomize train and test prompts",
+      "html_url": "https://github.com/p-e-w/heretic/pull/55",
+      "state": "closed",
+      "updated_at": "2025-12-08T06:19:09Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 46,
+      "title": "perf: optimize abliteration matrix op",
+      "html_url": "https://github.com/p-e-w/heretic/pull/46",
+      "state": "closed",
+      "updated_at": "2025-12-07T01:04:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 74,
+      "title": "Revert \"perf: optimize abliteration matrix op\"",
+      "html_url": "https://github.com/p-e-w/heretic/pull/74",
+      "state": "closed",
+      "updated_at": "2025-12-07T01:00:37Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 70,
+      "title": "Bug +fix: padding_side not set for tokenizers with existing pad_token, causing empty responses",
+      "html_url": "https://github.com/p-e-w/heretic/issues/70",
+      "state": "closed",
+      "updated_at": "2025-12-06T01:09:47Z",
+      "kind": "issue"
+    },
+    {
+      "number": 63,
+      "title": "A little fix",
+      "html_url": "https://github.com/p-e-w/heretic/issues/63",
+      "state": "closed",
+      "updated_at": "2025-12-03T19:15:43Z",
+      "kind": "issue"
+    },
+    {
+      "number": 51,
+      "title": "Add semantic similarity-based refusal detection",
+      "html_url": "https://github.com/p-e-w/heretic/pull/51",
+      "state": "closed",
+      "updated_at": "2025-12-03T06:37:14Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 50,
+      "title": "Add enable_thinking config option for Qwen3 and similar models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/50",
+      "state": "closed",
+      "updated_at": "2025-12-03T06:36:36Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 66,
+      "title": "ci: add PR title lint",
+      "html_url": "https://github.com/p-e-w/heretic/pull/66",
+      "state": "closed",
+      "updated_at": "2025-12-03T03:55:48Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 67,
+      "title": "feat: testing ci",
+      "html_url": "https://github.com/p-e-w/heretic/pull/67",
+      "state": "closed",
+      "updated_at": "2025-12-03T02:40:50Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 23,
+      "title": "* Trying dtype auto... Memory access fault by GPU node-2",
+      "html_url": "https://github.com/p-e-w/heretic/issues/23",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:38:04Z",
+      "kind": "issue"
+    },
+    {
+      "number": 39,
+      "title": "Harmful vs Harmless JSON",
+      "html_url": "https://github.com/p-e-w/heretic/issues/39",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:35:28Z",
+      "kind": "issue"
+    },
+    {
+      "number": 54,
+      "title": "A question about the settings in config.toml.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/54",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:34:38Z",
+      "kind": "issue"
+    },
+    {
+      "number": 47,
+      "title": "Using multiple GPUs.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/47",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:33:19Z",
+      "kind": "issue"
+    },
+    {
+      "number": 48,
+      "title": "Query",
+      "html_url": "https://github.com/p-e-w/heretic/issues/48",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:32:13Z",
+      "kind": "issue"
+    },
+    {
+      "number": 58,
+      "title": "Removing censorship from Embedding Models",
+      "html_url": "https://github.com/p-e-w/heretic/issues/58",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:29:34Z",
+      "kind": "issue"
+    },
+    {
+      "number": 30,
+      "title": "No GPU or other accelerator detected. Operations will be slow.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/30",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:27:42Z",
+      "kind": "issue"
+    },
+    {
+      "number": 40,
+      "title": "The config.toml file is not readable.",
+      "html_url": "https://github.com/p-e-w/heretic/issues/40",
+      "state": "closed",
+      "updated_at": "2025-12-01T05:26:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 45,
+      "title": "Guard against refusals in broken English",
+      "html_url": "https://github.com/p-e-w/heretic/pull/45",
+      "state": "closed",
+      "updated_at": "2025-11-27T00:41:17Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 33,
+      "title": "Improve support for loading local datasets",
+      "html_url": "https://github.com/p-e-w/heretic/pull/33",
+      "state": "closed",
+      "updated_at": "2025-11-27T00:41:12Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 49,
+      "title": "How to run a program with a local model on multiple GPUs?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/49",
+      "state": "closed",
+      "updated_at": "2025-11-26T06:03:29Z",
+      "kind": "issue"
+    },
+    {
+      "number": 44,
+      "title": "feat: Add bfloat16 to default dtypes list",
+      "html_url": "https://github.com/p-e-w/heretic/pull/44",
+      "state": "closed",
+      "updated_at": "2025-11-25T06:53:06Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 11,
+      "title": "No dtype arg for Qwen3 models",
+      "html_url": "https://github.com/p-e-w/heretic/pull/11",
+      "state": "closed",
+      "updated_at": "2025-11-24T14:20:14Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 31,
+      "title": "Add `trust_remote_code` configuration option",
+      "html_url": "https://github.com/p-e-w/heretic/pull/31",
+      "state": "closed",
+      "updated_at": "2025-11-24T06:50:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 35,
+      "title": "Added: Notebook Compatiblity While Preserving Terminal UI Experience",
+      "html_url": "https://github.com/p-e-w/heretic/pull/35",
+      "state": "closed",
+      "updated_at": "2025-11-23T02:12:42Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 38,
+      "title": "Abliteration error",
+      "html_url": "https://github.com/p-e-w/heretic/issues/38",
+      "state": "closed",
+      "updated_at": "2025-11-22T23:44:30Z",
+      "kind": "issue"
+    },
+    {
+      "number": 21,
+      "title": "Error loading openai/gpt-oss-20b on NVIDIA RTX 3090",
+      "html_url": "https://github.com/p-e-w/heretic/issues/21",
+      "state": "closed",
+      "updated_at": "2025-11-21T13:50:27Z",
+      "kind": "issue"
+    },
+    {
+      "number": 32,
+      "title": "Use `PYTORCH_ALLOC_CONF` instead of deprecated `PYTORCH_CUDA_ALLOC_CONF`",
+      "html_url": "https://github.com/p-e-w/heretic/pull/32",
+      "state": "closed",
+      "updated_at": "2025-11-21T01:57:40Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 28,
+      "title": "Fix support for MXFP4 quantized models with Triton tensors",
+      "html_url": "https://github.com/p-e-w/heretic/pull/28",
+      "state": "closed",
+      "updated_at": "2025-11-20T08:15:01Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 26,
+      "title": "Jp localization",
+      "html_url": "https://github.com/p-e-w/heretic/pull/26",
+      "state": "closed",
+      "updated_at": "2025-11-19T23:41:02Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 24,
+      "title": "Add possibility to load model from local path",
+      "html_url": "https://github.com/p-e-w/heretic/issues/24",
+      "state": "closed",
+      "updated_at": "2025-11-19T17:50:37Z",
+      "kind": "issue"
+    },
+    {
+      "number": 8,
+      "title": "gpt-oss-120b \"killed\" before it loads",
+      "html_url": "https://github.com/p-e-w/heretic/issues/8",
+      "state": "closed",
+      "updated_at": "2025-11-19T00:47:01Z",
+      "kind": "issue"
+    },
+    {
+      "number": 20,
+      "title": "Fix KeyError when HuggingFace user profile fields are missing",
+      "html_url": "https://github.com/p-e-w/heretic/pull/20",
+      "state": "closed",
+      "updated_at": "2025-11-19T00:04:34Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 4,
+      "title": "multi gpu? Failed (Expected all tensors to be on the same device, but found at least two  devices, cuda:0 and cuda:1!)",
+      "html_url": "https://github.com/p-e-w/heretic/issues/4",
+      "state": "closed",
+      "updated_at": "2025-11-18T23:45:35Z",
+      "kind": "issue"
+    },
+    {
+      "number": 17,
+      "title": "Fix multi-GPU support and memory management",
+      "html_url": "https://github.com/p-e-w/heretic/pull/17",
+      "state": "closed",
+      "updated_at": "2025-11-18T23:43:10Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 14,
+      "title": "IBM Granite support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/14",
+      "state": "closed",
+      "updated_at": "2025-11-18T21:35:39Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 16,
+      "title": "docs: Add instructions for setting up PyTorch with NVIDIA hardware",
+      "html_url": "https://github.com/p-e-w/heretic/pull/16",
+      "state": "closed",
+      "updated_at": "2025-11-17T16:51:06Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 15,
+      "title": "perf: empty cache after using residuals and between trials",
+      "html_url": "https://github.com/p-e-w/heretic/pull/15",
+      "state": "closed",
+      "updated_at": "2025-11-17T16:48:41Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 5,
+      "title": "MPS support",
+      "html_url": "https://github.com/p-e-w/heretic/pull/5",
+      "state": "closed",
+      "updated_at": "2025-11-17T14:54:08Z",
+      "kind": "pull-request"
+    },
+    {
+      "number": 10,
+      "title": "mlabonne's harmful instructions dataset deleted?",
+      "html_url": "https://github.com/p-e-w/heretic/issues/10",
+      "state": "closed",
+      "updated_at": "2025-11-17T06:14:31Z",
+      "kind": "issue"
+    }
+  ]
+}

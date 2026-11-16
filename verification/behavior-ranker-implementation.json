@@ -1,0 +1,45 @@
+{
+  "feature": "jspace-trajectory-behavior-ranker",
+  "status": "implementation-only-not-exercised",
+  "owner_instruction": "implement dont test",
+  "source_modules": [
+    "b70_ablator/tree_behavior_data.py",
+    "b70_ablator/tree_behavior.py",
+    "b70_ablator/tree_ranker.py"
+  ],
+  "integration_modules": [
+    "b70_ablator/tree_search.py",
+    "b70_ablator/tree_cli.py",
+    "b70_ablator/tree_config.py",
+    "b70_ablator/cli.py"
+  ],
+  "implemented_paths": [
+    "whole observed J-space checkpoint trajectories with baseline and inter-layer differences",
+    "explicit-budget collection of decoded edited branch-prefix outcomes",
+    "immutable response-bound independent annotations and explicit exclusions",
+    "prompt/topic-family/intervention-family/exact-basis split isolation",
+    "B70-only ensemble with behavior, independent recognition and pairwise utility learning",
+    "train-only normalization and calibration-only ensemble temperature fitting",
+    "explicit uncertainty abstention and logged proxy fallback",
+    "terminal behavior gates without rewarding erased risk recognition",
+    "ranker-guided fresh development collection for independently labelled hard negatives",
+    "held-out false-confidence and within-prompt preference reporting"
+  ],
+  "entry_points_added": ["tree-ranker-data CONFIG", "tree-ranker-train CONFIG", "tree-ranker-audit CONFIG"],
+  "tests_run": false,
+  "manual_lint_run": false,
+  "package_rebuilt": false,
+  "training_run": false,
+  "inference_run": false,
+  "gpu_probed_or_used": false,
+  "trained_artifact_created": false,
+  "labels_or_outcomes_fabricated": false,
+  "verification_note": "File-write tools performed their automatic static diagnostics. No execution or test evidence exists for this extension. Historical tree-suite numbers do not verify the changed integration.",
+  "pending": [
+    "owner-chosen target/lens/feature tokens/budgets/training settings/thresholds",
+    "actual independent branch outcome and recognition annotations",
+    "source/integration execution checks when authorized",
+    "B70 training and model parity when authorized",
+    "held-out false-confidence and capability evaluation when authorized"
+  ]
+}

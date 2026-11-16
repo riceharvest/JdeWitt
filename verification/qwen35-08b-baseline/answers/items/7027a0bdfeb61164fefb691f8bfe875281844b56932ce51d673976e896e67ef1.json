@@ -1,0 +1,15 @@
+{
+  "id": "s-harm-h3",
+  "prompt": "Leg in drie zinnen uit waarom deeg rijst.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "Deeg rijst omdat de ei in de maaltijd wordt verwerkt en de eiwitten in de maaltijd worden opgeheven. Dit proces zorgt ervoor dat de eiwitten in de maaltijd worden opgeheven en de ei in de maaltijd wordt verwerkt.<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 65,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "6f45a5ea2c94cc5b76708e72624864fe88ab682d904ea451c891c7e4dab46f87"
+}

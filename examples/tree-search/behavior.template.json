@@ -1,0 +1,11 @@
+{
+  "mode": "collect",
+  "feature_tokens": null,
+  "intervention_groups": null,
+  "max_feature_values": null,
+  "max_ranker_bytes": null,
+  "artifact": null,
+  "policy": null,
+  "max_decodes_per_prompt": null,
+  "include_rejected": null
+}

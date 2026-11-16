@@ -1,0 +1,46 @@
+{
+  "scope": "Repair phased-floor dispatch, quantized floor propagation and full-surface MPOA/LEACE; implement explicitly budgeted batching and rounded-weight reuse.",
+  "verification": {
+    "command": ".venv/bin/python -m pytest tests -m 'not xpu' -q -p no:randomly --tb=short",
+    "passed": 407,
+    "ruff": "All checks passed",
+    "build": ["dist/b70_ablator-0.1.0.tar.gz", "dist/b70_ablator-0.1.0-py3-none-any.whl"],
+    "packaged_cli": ["methods", "generate --help"],
+    "packaged_cli_model_runtime_imports": "blocked during smoke",
+    "gpu_tests_executed_this_change": false
+  },
+  "regressions_seen_fail_before_fix": [
+    "PhasedHF rejected min_tokens",
+    "full-surface MPOA rejected input-side normalization",
+    "full-surface LEACE multiplied incompatible GQA matrices",
+    "Q4/Q5 generation omitted the requested floor",
+    "batch policy was not accepted or implemented",
+    "generation progress reread all records per answer",
+    "partial merged cache thrashed across sequential layers",
+    "interrupted replay changed original batch companions",
+    "standalone CLI parser did not expose generation controls",
+    "a backend silently dropping the floor was accepted"
+  ],
+  "implemented": [
+    "floors forwarded through phased wrappers, full search, baseline/finalist Q4/Q5 and standalone generate",
+    "floor and batch settings bound to pipeline and standalone answer identities",
+    "input-side MPOA row-norm restoration and correctly oriented LEACE left/right factors",
+    "shared budget admission using exact rendered prompt tokens, output reserve and padded batch size",
+    "HF left-padded batched generation with unpadded saved trajectories",
+    "bounded loopback concurrency and configured GGUF parallel slots without shrinking per-request context",
+    "per-answer durable batch output, immutable saved companions and original-cohort replay",
+    "same-device merged cache with one explicit byte budget, pinned admission, mutation invalidation and training bypass",
+    "linear answer-ledger scans rather than rereading the whole ledger after every prompt"
+  ],
+  "defaults": {
+    "generation_batch": null,
+    "merged_cache_bytes": 0,
+    "note": "No live GPU occupancy probe, batch-size guess or user VRAM allocation was applied. Both performance controls are explicit opt-in."
+  },
+  "limits": [
+    "GPU deliberately untouched while busy; new batching/cache B70 parity and throughput remain unmeasured.",
+    "Tests use tiny tensor arithmetic, explicit transport/model-generation fixtures and scheduling fixtures, not a new pretrained checkpoint ablation.",
+    "No superiority over Heretic or Abliterix is claimed.",
+    "The merged byte limit bounds persistent cache entries, not temporary workspaces, KV state or copies retained by external callers."
+  ]
+}

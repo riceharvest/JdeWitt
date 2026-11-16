@@ -1,0 +1,20 @@
+{
+  "status": "baseline-and-native-lens-preflight-complete",
+  "verified_answers": 30,
+  "harmful_total": 20,
+  "explicit_refusal_wording": 9,
+  "harmful_natural_stop": 12,
+  "harmful_cap_hits": 8,
+  "harmful_degenerate": 1,
+  "explicit_refusals_with_natural_stop": 9,
+  "native_segment_max_abs_difference": 0.0,
+  "finite_native_lens_readouts": 48,
+  "learned_ranker_trained": false,
+  "tree_search_run": false,
+  "timing_note": "Final report seconds cover the successful resumed attempt only; the first foreground call was killed by the tool at 420 seconds after saving 19/30 answers.",
+  "limits": [
+    "Explicit wording is not independently judged fulfillment.",
+    "A cap hit is not completion even when a positional floor was enforced.",
+    "Lens fitting target revision was not recorded upstream."
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "feature": "experimental-jspace-prefill-tree",
+  "status": "historical-cpu-fixture-verification-before-behavior-ranker",
+  "current_tree_reverified": false,
+  "current_change_note": "Behavior trajectory/ranker integration was subsequently written under an explicit do-not-test instruction; prior test/build results below apply only to the earlier implementation.",
+  "entry_points": ["tree-search CONFIG", "validate-tree CONFIG", "bind-tree-lens LENS --model-identity IDENTITY.json --output MANIFEST.json"],
+  "implemented": [
+    "multi-step beam search over real partial-forward segments",
+    "one shared prefix and isolated same-device sibling residual states",
+    "actual fitted Jacobian transport and native final normalization",
+    "independent no-edit baseline and protected-token/norm proxy gates",
+    "named token-pullback or independently fitted orthonormal direction-bank actions",
+    "explicit expansion, saved-state and resident-lens budgets",
+    "prefill-only exact path replay with normal cached continuation",
+    "atomic trace-before-decode persistence, answer resume and integrity checks",
+    "normal AnswerStore baseline/finalist outputs for separate judging"
+  ],
+  "verification": {
+    "suite_command": ".venv/bin/python -m pytest tests -m 'not xpu' -q -p no:randomly --tb=short",
+    "suite_result": "435 passed in 108.92s",
+    "lint_command": ".venv/bin/python -m ruff check b70_ablator tests",
+    "lint_result": "All checks passed!",
+    "build_command": "uv build",
+    "build_result": "wheel and sdist built successfully",
+    "isolated_wheel_checks": {
+      "tree-search --help": "passed with model-runtime imports blocked",
+      "bind-tree-lens --help": "passed with model-runtime imports blocked",
+      "validate-tree fixture-config": "passed with model-runtime imports blocked"
+    },
+    "learned_bank_end_to_end": "CPU scheduling fixture generated baseline plus one finalist, released fixture target; not actual model inference",
+    "non_greedy_search": "algebra fixture proves a retained temporarily-worse branch beats beam-width-one after later partial forwards",
+    "gpu_used": false,
+    "gpu_availability_probed": false,
+    "cpu_pretrained_model_inference_used": false
+  },
+  "pending": [
+    "B70 native Llama/Qwen3/hybrid-Qwen3.5 segment and replay parity tests",
+    "user-chosen target, fitted lens, token groups, explicit budgets and guards",
+    "edited-state proxy calibration",
+    "independently judged complete-answer and code/math retention outcomes",
+    "matched total-compute comparison"
+  ],
+  "limits": [
+    "prefill adaptive only, not per-generated-token tree search",
+    "runtime intervention trajectories, no normal static GGUF export",
+    "upstream lens model origin is operator-attested, not embedded in its tensor format",
+    "proxy guards are not capability guarantees",
+    "saved-state/lens budgets exclude other model and inference workspaces",
+    "no measured pretrained-model quality or speed advantage"
+  ]
+}

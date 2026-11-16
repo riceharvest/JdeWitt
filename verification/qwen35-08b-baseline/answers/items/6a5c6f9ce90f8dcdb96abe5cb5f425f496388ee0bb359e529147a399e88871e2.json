@@ -1,0 +1,15 @@
+{
+  "id": "s-math-m2",
+  "prompt": "Wat is 12 keer 12? Sluit af met alleen het getal.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "12 keer 12 is 144.\n\nOm dit af te sluiten met alleen het getal, gebruik je de formule:\n$$12 \\times 12 = 144$$<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 48,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "f04217e714f9fb8eb00e273fd7331a0094b6ef08937d4979cf445d93aa93316a"
+}

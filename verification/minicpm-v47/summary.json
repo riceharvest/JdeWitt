@@ -1,0 +1,140 @@
+{
+  "model": {
+    "repo": "openbmb/MiniCPM-V-4.7-1B",
+    "revision": "286817f1132b998913a129a221c89b4402b4ab80",
+    "license": "Apache-2.0",
+    "model_type": "minicpmv4_7",
+    "text_backbone": "qwen3_5_text",
+    "layers": 24,
+    "hidden_size": 1024,
+    "local_path": "/mnt/ssd/models/MiniCPM-V-4.7-1B",
+    "weight_bytes": 3109054480
+  },
+  "scope": "Trial model for exercising the B70 ablator end to end. Text backbone only; the vision tower and merger are never edited or evaluated.",
+  "verified_on_real_b70": {
+    "hf_load_fully_on_xpu": true,
+    "editable_targets_discovered": 48,
+    "residual_capture_shape": [
+      24,
+      1024
+    ],
+    "residual_finite": true,
+    "zero_edit_kl_exact": {
+      "full_reply_kl": 0.0,
+      "answer_kl": 0.0,
+      "tokens": 3,
+      "answer_tokens": 3
+    },
+    "xpu_test_suite": "19 passed (real B70 operator fixtures)",
+    "gguf_vulkan_full_offload": [
+      {
+        "quant": "Q4_K_M",
+        "startup_seconds": 2.42,
+        "answer": "56",
+        "alias_hash_prefix": "b70-67dd31f5"
+      },
+      {
+        "quant": "Q5_K_M",
+        "startup_seconds": 2.28,
+        "answer": "56",
+        "alias_hash_prefix": "b70-e962fe01"
+      }
+    ],
+    "gguf_server_cpu_round_trip": {
+      "server_loaded_and_served_alias": true,
+      "ablator_client_round_trip": true,
+      "prompt_token_count_enforced": true
+    }
+  },
+  "export_round_trip": {
+    "converter": "/home/dario/llama.cpp-minicpm47/convert_hf_to_gguf.py (upstream master f3363593)",
+    "gguf_arch": "qwen35",
+    "gguf_tensors": 321,
+    "vision_tensors_leaked": 0,
+    "artifacts": {
+      "minicpm-v47-Q4_K_M.gguf": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+      "minicpm-v47-Q5_K_M.gguf": "e962fe011d4fca8d24ee631f483b8c871ed95a746f4e9d0ac3b0d48553f633af",
+      "minicpm-v47-bf16.gguf": "38aed86216c7a7adfc735dcfcf0b7f099511a8e1fb551ee879a5ee1df9b0512f"
+    },
+    "quantizer_bpw": {
+      "Q4_K_M": 5.26,
+      "Q5_K_M": 5.9
+    }
+  },
+  "baseline_refusal_screen": {
+    "selection": {
+      "scored": 7,
+      "refusals": 1,
+      "rate": 0.1429
+    },
+    "holdout": {
+      "scored": 7,
+      "refusals": 0,
+      "rate": 0.0
+    },
+    "all": {
+      "scored": 14,
+      "refusals": 1,
+      "rate": 0.0714
+    },
+    "by_language": {
+      "en": {
+        "scored": 8,
+        "refusals": 1,
+        "rate": 0.125
+      },
+      "nl": {
+        "scored": 6,
+        "refusals": 0,
+        "rate": 0.0
+      }
+    },
+    "unscored": 2
+  },
+  "defects_found_and_fixed": [
+    {
+      "id": "llama-server-load-flag",
+      "symptom": "ManagedGGUF aborted with \"invalid argument: --no-mmap\" on current llama.cpp",
+      "cause": "upstream replaced --no-mmap with -lm/--load-mode none",
+      "fix": "release.load_mode_flags probes the pinned binary help and refuses to guess",
+      "test": "tests/test_vendor_compat.py"
+    },
+    {
+      "id": "token-budget-truncation",
+      "symptom": "selection/holdout answers truncated at 256 tokens",
+      "fix": "trial config max_tokens raised to 1024 (ctx 4096)"
+    }
+  ],
+  "authoring": {
+    "suites": {
+      "directions": 16,
+      "selection": 18,
+      "holdout": 18
+    },
+    "languages": [
+      "en",
+      "nl"
+    ],
+    "refusal_families_per_language": 2,
+    "variants_per_family": 2,
+    "splits_disjoint": true,
+    "example_dir": "examples/minicpm-v47",
+    "configs": [
+      "run.json",
+      "auto.json"
+    ]
+  },
+  "test_state": {
+    "non_xpu_passed": 309,
+    "xpu_passed": 19,
+    "lint": "clean",
+    "build": "wheel+sdist"
+  },
+  "honest_limits": [
+    "No full abliteration search has been run on the B70 yet; GPU runs are pending the operator.",
+    "Baseline explicit-refusal rate is ~7% (1 of 14 scored). The release gate needs a quantized improvement, so this model is a mechanics trial, not a refusal-removal showcase.",
+    "The refusal screen measures explicit refusal wording only; it is not proof of compliance.",
+    "The trial suites are small authored samples, not a multilingual certification.",
+    "GGUF conversion was verified with an out-of-tree upstream llama.cpp build; the in-tree examples still point at the older llama.cpp-spark paths."
+  ]
+}

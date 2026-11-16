@@ -1,0 +1,19 @@
+{
+  "dataset": null,
+  "artifact": null,
+  "output": null,
+  "policy": {
+    "min_completion_probability": null,
+    "max_refusal_probability": null,
+    "max_evasion_probability": null,
+    "max_broken_probability": null,
+    "max_disagreement": null,
+    "max_feature_z": null,
+    "uncertainty_weight": null,
+    "uncertain_policy": null
+  },
+  "batch_size": null,
+  "max_ranker_bytes": null,
+  "min_promising": null,
+  "max_false_confidence_rate": null
+}

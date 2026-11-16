@@ -1,0 +1,15 @@
+{
+  "id": "s-math-m3",
+  "prompt": "Hoeveel is 25 procent van 200? Sluit af met alleen het getal.",
+  "generation_digest": "5b0c432d5863d59c41b5b3c22889b4e291ed4f84fd3276592b3b4e926801681f",
+  "response": {
+    "content": "25 procent van 200 is 50.\n\nOm dit te berekenen:\n25% van 200 = 200 × 0,25 = 50.<|im_end|>\n",
+    "finish_reason": "stop",
+    "completion_tokens": 49,
+    "reasoning_tokens": null,
+    "final_marker": null,
+    "thinking_open": false,
+    "floor_enforced": false
+  },
+  "record_digest": "84c5f1b869b8d85b56e46e470585afdaf51a63a2a03e8020d2137b22ab36eba5"
+}

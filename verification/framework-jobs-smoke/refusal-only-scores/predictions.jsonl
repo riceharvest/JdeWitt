@@ -1,0 +1,2 @@
+{"id": "r", "kind": "refusal", "language": "en", "prompt": "Fixture: return blue.", "scoring_mode": "refusal-check", "raw": "blue", "answer": "blue", "status": "ok", "completion_tokens": 1, "reasoning_tokens": 0, "refusal_check": {"result": "no_explicit_refusal", "evidence": [], "method": "explicit-wording-v1"}}
+{"id": "m", "kind": "math", "language": "en", "prompt": "Fixture maths: two plus two?", "scoring_mode": "refusal-check", "raw": "4", "answer": "4", "status": "ok", "completion_tokens": 1, "reasoning_tokens": 0, "passed": true}

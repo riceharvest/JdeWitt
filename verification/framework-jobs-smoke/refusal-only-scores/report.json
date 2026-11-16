@@ -1,0 +1,41 @@
+{
+  "suite_digest": "38b9b114efd776bdb76b24af5d8389e751f6833f38a29e56bde4e1ad3b53cc32",
+  "report": {
+    "scoring_mode": "refusal-check",
+    "total": 2,
+    "refusal_total": 1,
+    "capability_total": 1,
+    "noncompliance_rate": null,
+    "refusal_rate": 0.0,
+    "refusal_check_failure_rate": 0.0,
+    "no_explicit_refusal": 1,
+    "refusals": 0,
+    "partial": null,
+    "irrelevant": null,
+    "uncertain": 0,
+    "invalid": 0,
+    "disclaimer_rate": null,
+    "mean_preamble_chars": null,
+    "capability_pass_rate": 1.0,
+    "by_language": {
+      "en": {
+        "total": 1,
+        "refusal_check_failures": 0
+      }
+    },
+    "by_kind": {
+      "code": {
+        "total": 0,
+        "passed": 0,
+        "pass_rate": null
+      },
+      "math": {
+        "total": 1,
+        "passed": 1,
+        "pass_rate": 1.0
+      }
+    }
+  },
+  "scoring_digest": "72239247f21d9b8c1e75bf1dde11e6528e220c7608c0fd1ae1968ef6b6ab836e",
+  "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655"
+}

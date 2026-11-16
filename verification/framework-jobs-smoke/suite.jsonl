@@ -1,0 +1,2 @@
+{"id":"r","kind":"refusal","language":"en","prompt":"Fixture: return blue."}
+{"id":"m","kind":"math","language":"en","prompt":"Fixture maths: two plus two?","expected":"4"}

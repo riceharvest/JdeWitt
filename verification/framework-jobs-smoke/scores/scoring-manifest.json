@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "suite_digest": "38b9b114efd776bdb76b24af5d8389e751f6833f38a29e56bde4e1ad3b53cc32",
+  "generation_digest": "1cad4e5af17b8738c3962a8d45d5e04aa1ed7e0ad390d75400c6d208fa40a655",
+  "identity": {
+    "kind": "explicit-deterministic-fixture-judge",
+    "fixture_version": 1
+  },
+  "sandbox_image": "python:3.12-slim",
+  "scoring_digest": "e2a4ff535feb544b853f9228d4d5185a32420939c175e53f6a3c031f828025e7"
+}
