@@ -126,6 +126,29 @@ def _u64(buf):
     return int.from_bytes(buf.read(8), 'little')
 
 
+class _LimitedBuffer:
+    """Read wrapper that refuses any declared length beyond what the file
+    actually holds, so a hostile length field fails fast instead of asking
+    for gigabytes or looping on short reads."""
+
+    def __init__(self, buf, file_size):
+        self.buf = buf
+        self.file_size = file_size
+
+    def read(self, n):
+        remaining = self.file_size - self.buf.tell()
+        if n < 0 or n > remaining:
+            raise ValueError(f'declared GGUF read of {n} bytes exceeds the '
+                             f'{remaining} bytes remaining in the file')
+        data = self.buf.read(n)
+        if len(data) < n:
+            raise ValueError('GGUF file ended early')
+        return data
+
+    def tell(self):
+        return self.buf.tell()
+
+
 def _read_key(buf):
     return buf.read(_u64(buf))
 
@@ -155,9 +178,15 @@ def _pack_u64(buf):
 
 
 def parse_gguf_header(path):
-    """Parse everything up to the tensor-data base; data is never read."""
+    """Parse everything up to the tensor-data base; data is never read.
+
+    Every declared count and length is bounded against the real file size: a
+    hostile header fails fast with a precise message instead of allocating or
+    looping. Legitimate large entries (multi-MB vocab arrays) pass.
+    """
     import io
     path = Path(path)
+    file_size = path.stat().st_size
     with open(path, 'rb') as f:
         magic = f.read(4)
         if magic != b'GGUF':
@@ -165,9 +194,13 @@ def parse_gguf_header(path):
         version = struct.unpack('<I', f.read(4))[0]
         if version < 3:
             raise ValueError(f'GGUF v{version} metadata editing supports v3+')
-        n_tensors = _u64(f)
-        n_kv = _u64(f)
-        buf = io.BufferedReader(f)
+        n_tensors = _u64(io.BytesIO(f.read(8)))
+        n_kv = _u64(io.BytesIO(f.read(8)))
+        if n_kv > file_size:
+            raise ValueError(f'declared {n_kv} metadata entries exceed the {file_size}-byte file')
+        if n_tensors > file_size // 24:
+            raise ValueError(f'declared {n_tensors} tensors exceed the {file_size}-byte file')
+        buf = _LimitedBuffer(io.BufferedReader(f), file_size)
         entries = []
         for _ in range(n_kv):
             key = _read_key(buf)
@@ -180,6 +213,8 @@ def parse_gguf_header(path):
             name = _read_key(buf)
             body = buf.tell()
             n_dims = struct.unpack('<I', buf.read(4))[0]
+            if n_dims > 64:
+                raise ValueError(f'tensor {name!r} declares {n_dims} dimensions (>64)')
             dims = buf.read(8 * n_dims)
             dtype = struct.unpack('<I', buf.read(4))[0]
             offset = struct.unpack('<Q', buf.read(8))[0]

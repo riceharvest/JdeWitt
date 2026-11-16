@@ -151,11 +151,16 @@ written into the item and stays GATED.
 
 ## Tier 3 — hardening and the deep end
 
-11. Parsing hardening sweep: bounded reads in ggufio header parsing (a
-    5 MB vocab array is legitimate; a 4 GB length field is not), stream
-    the tensor blob instead of materialising tile + output where it helps,
-    symlink and size-limit audit across importer/release/registry paths.
-    Falsify with synthetic hostile headers (they are probes, not tests).
+11. Parsing hardening — FIRST SWEEP LANDED (bounded header reads).
+    ggufio.parse_gguf_header now checks every declared count and length
+    against the real file size (_LimitedBuffer; n_kv/n_tensors caps;
+    n_dims<=64). Five synthetic hostile headers refused in milliseconds
+    with precise messages: n_kv=1e18; string declaring 1e15 bytes;
+    float array declaring 1e18 elements; n_dims=0xFFFFFFFF; and a lying
+    length (declares 100, ships 10). The 672 MB real file parses, grows
+    its header and round-trips byte-verbatim in 2.5s after the change.
+    Still open in this item: streaming the tensor blob where materialising
+    helps, and a symlink/size audit across importer paths.
 
 12. IQ quants (IQ1_S … IQ6_K): the small-model quants people actually use.
     Port is code-only but carries pinned llama.cpp importance tables that
