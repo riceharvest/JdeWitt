@@ -72,6 +72,43 @@ one suite with Wilson intervals and an exact family-level sign test;
 `judge-ensemble SUITE DIR...` majority-aggregates independently saved judge
 verdict files; `score-sensitivity DIR` recounts saved verdicts under
 alternative confidence floors. All of these read persisted artifacts only.
+`score-compare` now also reports a deterministic family-level bootstrap of
+both pass rates and a paired sign-flip permutation test on per-prompt flips.
+
+Quant-native editing: `gguf-edit INPUT OUTPUT --tensor NAME=DELTA.NPY`
+(repeatable) rewrites only the edited tensors in a new file, staying in the
+quantized block layout: tile-wise dequant, FP32 delta, requant to the
+identical block count; every other byte of the file, header included, is
+copied verbatim and tensor offsets never move.
+The GGML block codecs (Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16) are vendored as
+numpy ports of llama.cpp's reference routines. `release-keygen KEY`,
+`release-sign DIR --secret KEY` and `release-verify-signature DIR [--public KEY]`
+sign and verify an Ed25519 signature over a machine-readable reproduction
+index; `release-claims DIR` and `claim-add DIR --claim/--evidence/--verified-by`
+maintain a hash-chained evidence ledger where tampering is detected at read
+time. `schemas` lists published JSON Schemas for on-disk artifacts and
+`verify-artifact FILE` checks one offline against its schema.
+
+Agent driving: `b70-ablator abliterate MODEL --suites DIR --output DIR --policy
+{standard,strict} [--dry-run]` builds a validated auto-search configuration
+across every implemented method with the global-winner discipline, requiring
+nothing it cannot prove. `--preset NAME` applies evidence-gated profile files
+(refused without an evidence reference); `presets` lists them. `run-events
+OUTPUT` tails the append-only `events.jsonl` lifecycle log; `study-metrics RUN`
+rolls up parameters/values from a study sqlite read-only. `suite-stats SUITE`
+describes one suite and `corpus-cache` reports (or, with `--prune-older-than
+N --execute`, deletes unpinned old revisions of) the dataset import cache.
+`robustness-report --eval LABEL SUITE SCORES_DIR` reports worst-case pass rate
+of saved scores across multiple suites. Generation and scoring jobs take
+`--max-generated-tokens` / `--max-judge-requests` budgets, and every GPU job
+serializes on a cross-process B70 lock (`B70_ABLATOR_GPU_WAIT`,
+`B70_ABLATOR_GPU_LOCK`); artifact timestamps come from one injectable clock
+(`B70_ABLATOR_CLOCK`). New method surface: `method: "nullspace"` (greedy
+deflated contrast basis), `method_options.capture: "answer-mean"` (RepEng-style
+mean-pooled answer activations instead of the last token) and
+`method_options.family_weighting: "balanced"` (variant-count weighted
+whitened-SVD). None of these options carries a measured result claim; the
+searcher decides on real checkpoints.
 
 `b70-ablator architectures` includes a pinned July–October release inventory
 with explicit unsupported entries. Adapter registration is not a live B70

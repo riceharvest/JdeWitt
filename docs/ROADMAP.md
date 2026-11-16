@@ -8,12 +8,20 @@ Work is tagged:
 - CODE — CPU-verifiable, no model, no B70. Ship by running the command.
 - GATED — needs real B70 / real checkpoints before any claim changes.
 
-Status: all Phase 0 items are landed, plus the offline evaluation tooling
-from Phases 3 and 4 (Wilson/sign-test stats, score-compare, judge-ensemble,
-score-sensitivity, suite-near-dup, gguf-inspect). Everything still open is
-GATED (quantized-native editing numerics, method winners, judge calibration,
-throughput) or was deliberately deferred (hot-path event logging, clock
-injection, signing tooling).
+Status: all CODE items on this roadmap are landed and pushed. Highlights:
+quant-native GGUF editing (GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16 codecs,
+tile-wise gguf-edit, gguf-inspect), method breadth (nullspace, answer-mean
+rEF capture, family-weighted whitened-SVD), evidence chain (claims ledger,
+ed25519 release signing with repro index, published artifact JSON Schemas),
+agent ops (stable error codes, about/studies/study-metrics/run-cancel/
+run-events, describe-run, --set/--preset, abliterate one-command flow,
+events.jsonl, injectable clock), and offline evaluation (Wilson + bootstrap
++ paired permutation stats, score-compare, judge-ensemble, score-sensitivity,
+robustness-report, suite-stats/suite-diff/suite-near-dup, corpus-cache
+report/prune). Still GATED (needs real B70 / real checkpoints, by design):
+method-winner claims, quant-edited model behaviour, judge calibration gains,
+throughput claims, per-family preset profiles (the preset mechanism ships;
+presets without evidence references are refused at load time).
 
 No CI and no new test suites on this roadmap. Verification is: run it,
 read the artifact, keep the honest claims table current. The existing CPU
@@ -147,8 +155,10 @@ Not a phase, a rhythm: the July-October census model.
   measured ranges only; presets without evidence are refused.
 - One-command flow on top of `auto`: abliterate MODEL targeting
   CONSISTENCY POLICY, with the global-winner discipline already there.
-- Release signing: minisign over the release bundle + manifest; rerun
-  manifests so a third party can reproduce the edit from plan + config.
+- Release signing: Ed25519 (openssl) over a machine-readable reproduction
+  index (file hashes, evaluation/readme digests, ledger digest);
+  `release-keygen`/`release-sign`/`release-verify-signature`, with
+  `--public` to pin authenticity to a known key.
 - Job queue hardening: generation and judging already own separate GPU
   lifetimes; add priority and budget caps per job.
 
