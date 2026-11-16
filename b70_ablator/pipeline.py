@@ -22,7 +22,7 @@ from .plans import fit_plan, move_plan,direction_identity
 from .release import export_gguf, rank_quantized, ManagedGGUF, sha256_file, verify_quant, create_release
 from .scoring import summarize, extract_answer, search_rate, ConsistencyPolicy, paired_consistency
 from .validation import validate_experiment as validate_experiment,validate_run_inputs
-from .search import build_study, compatible_warm_starts, suggest_parameters, execute_trials
+from .search import build_study, compatible_warm_starts, suggest_parameters, execute_trials, pareto_front
 from .transport import ChatClient
 from .grounded_judge import GroundedJudge, RUBRIC_SYSTEM, EVIDENCE_SYSTEM
 from .style_judge import STYLE_SYSTEM
@@ -204,7 +204,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         'framework_sources':{p.name:sha256_file(p) for p in Path(__file__).parent.glob('*.py')},
         'converter_sha256':sha256_file(config.converter),'quantizer_sha256':sha256_file(config.quantizer),'server_sha256':sha256_file(config.llama_server),
     }
-    study=build_study(output/'study.db',provenance,config.seed,config.startup_trials)
+    study=build_study(output/'study.db',provenance,config.seed,config.startup_trials,getattr(config,'objectives',None))
     atomic_json(output/'provenance.json',provenance)
     torch.manual_seed(config.seed)
     phases.target_factory=lambda:HFModel(str(source),None,config.rank,config.max_tokens,config.dtype,config.trust_remote_code,config.quantization,'merged-resident',config.ctx_size,config.edit_targets,config.merged_cache_bytes)
@@ -349,7 +349,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                                                      'statistic':statistic,'threshold':screening['min_margin_drop']})
                     if not passed:
                         raise optuna.TrialPruned('Screened out: refusal-margin change below threshold; no answers were generated')
-                incumbent=min([t.value for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')],default=None)
+                incumbent=min([v for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible') and (v:=t.values[0] if config.objectives else t.value) is not None],default=None)
                 report=eval_cached(selection,backend,judge,output/f'trial-{trial.number}',config.sandbox_image,
                                    {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params},phases,scoring_identity,incumbent,
                                    refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
@@ -359,20 +359,34 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 report['paired']=paired_consistency(selection,read_predictions(output/'baseline-hf'),read_predictions(output/f'trial-{trial.number}'),policy)
                 feasible=feasible and report['paired']['regression_ok']
                 report.update({'full_reply_kl':kl,'answer_kl':answer_sum/answer_count,'capability_drop':drop})
+                metrics={'search_rate':search_rate(report),'full_reply_kl':kl,
+                         'answer_kl':answer_sum/answer_count,'capability_drop':drop}
+                trial.set_user_attr('metrics',metrics)
                 atomic_json(output/f'trial-{trial.number}'/'trial-report.json',report)
                 trial.set_user_attr('report',report)
                 trial.set_user_attr('feasible',feasible)
                 if not feasible:
                     raise optuna.TrialPruned('Capability or validity gate failed')
-                return search_rate(report)
+                if config.objectives:
+                    return [metrics[name] for name in config.objectives]
+                return metrics['search_rate']
             except DominatedTrial as e:
                 raise optuna.TrialPruned(str(e)) from e
             finally:
                 backend.editor.reset()
         execute_trials(study,objective,config.trials,output/'CANCEL',events_path=output/'events.jsonl')
         feasible=[t for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')]
-        feasible.sort(key=lambda t:(t.value,t.user_attrs['report']['capability_drop'],t.user_attrs['report']['full_reply_kl']))
-        finalists=feasible[:config.finalists]
+        if config.objectives:
+            front=[feasible[i] for i in pareto_front([list(t.values) for t in feasible])]
+            primary=config.objectives.index('search_rate')
+            tiebreak=[config.objectives.index(m) for m in ('capability_drop','full_reply_kl') if m in config.objectives]
+            front.sort(key=lambda t:(t.values[primary],)+tuple(t.values[j] for j in tiebreak))
+            study.set_user_attr('pareto_front',{'metrics':config.objectives,'primary':'search_rate',
+                'front':[{'number':t.number,'values':list(t.values)} for t in front]})
+            finalists=front[:config.finalists]
+        else:
+            feasible.sort(key=lambda t:(t.value,t.user_attrs['report']['capability_drop'],t.user_attrs['report']['full_reply_kl']))
+            finalists=feasible[:config.finalists]
         if not finalists:
             raise SearchRejected('No feasible candidate; no release was produced')
         merged=[]

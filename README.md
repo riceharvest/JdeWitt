@@ -110,7 +110,13 @@ fitted run never saw (flagging any that leaked). Generation and scoring jobs tak
 `--max-generated-tokens` / `--max-judge-requests` budgets, and every GPU job
 serializes on a cross-process B70 lock (`B70_ABLATOR_GPU_WAIT`,
 `B70_ABLATOR_GPU_LOCK`); artifact timestamps come from one injectable clock
-(`B70_ABLATOR_CLOCK`). The fitted-plan registry is the warm-start library:
+(`B70_ABLATOR_CLOCK`). Multi-objective search is opt-in: add
+`"objectives": ["search_rate", "full_reply_kl", ...]` to a run config
+(2-4 of search_rate/full_reply_kl/answer_kl/capability_drop; the first is
+primary); finalists come from the Pareto front and `run-status` reports
+it. Studies with and without objectives are separate contracts and never
+resume into each other. The default single-objective flow is unchanged.
+The fitted-plan registry is the warm-start library:
 `plan-register REGISTRY RUN_OUTPUT --gates EVIDENCE` binds a run's fitted
 tensors by sha256 with run provenance (or an explicit UNMEASURED label),
 and `plan-load` refuses tampered payloads and geometry mismatches, so a

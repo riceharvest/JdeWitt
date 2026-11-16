@@ -8,6 +8,20 @@ import optuna
 from .data import digest
 from .architectures import EDIT_TARGETS, MAX_STRENGTH
 
+# Metrics the trial objective can already report; every one is minimized.
+MO_METRICS = ('search_rate', 'full_reply_kl', 'answer_kl', 'capability_drop')
+
+
+def pareto_front(points):
+    """Indices of non-dominated points; every coordinate is a minimized metric."""
+    out = []
+    for i, p in enumerate(points):
+        dominated = any(all(b <= a for a, b in zip(q, p)) and any(b < a for a, b in zip(q, p))
+                        for j, q in enumerate(points) if j != i)
+        if not dominated:
+            out.append(i)
+    return out
+
 
 @dataclass(frozen=True)
 class RunConfig:
@@ -57,6 +71,7 @@ class RunConfig:
     merged_cache_bytes: int = 0
     screening: dict | None = None
     schema_version: int | None = None
+    objectives: list | None = None
 
     @classmethod
     def from_json(cls,obj):
@@ -75,7 +90,7 @@ class RunConfig:
             raise ValueError('scoring_mode must be judge or refusal-check')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch','screening','schema_version'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening','schema_version','objectives'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:
@@ -97,6 +112,11 @@ class RunConfig:
                     or any(type(v) not in (int,float) or not math.isfinite(v) for v in config.strength_range)
                     or not 0 <= config.strength_range[0] < config.strength_range[1] <= MAX_STRENGTH):
                 raise ValueError(f'strength_range must satisfy 0 <= low < high <= {MAX_STRENGTH}')
+        if config.objectives is not None:
+            if (not isinstance(config.objectives,list) or not 2 <= len(config.objectives) <= 4
+                    or len(set(config.objectives)) != len(config.objectives)
+                    or any(m not in MO_METRICS for m in config.objectives)):
+                raise ValueError(f'objectives must be 2-4 unique names from {sorted(MO_METRICS)}; the first is the primary objective used by warm starts and display')
         thresholds=('max_capability_drop',)+ (('judge_min_confidence','judge_min_accuracy') if config.scoring_mode=='judge' else ())
         for name in thresholds:
             v=getattr(config,name)
@@ -161,10 +181,14 @@ class RestartableTPE(optuna.samplers.BaseSampler):
         return sampler.sample_independent(study, trial, param_name, param_distribution)
 
 
-def build_study(path, provenance, seed, startup_trials):
+def build_study(path, provenance, seed, startup_trials, objectives=None):
     sampler = RestartableTPE(seed, startup_trials)
-    study = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, direction='minimize', sampler=sampler)
-    contract = {'algorithm':'keyed-tpe-v1', 'seed':seed, 'startup_trials':startup_trials, 'optuna':optuna.__version__}
+    if objectives is None:
+        study = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, direction='minimize', sampler=sampler)
+        contract = {'algorithm':'keyed-tpe-v1', 'seed':seed, 'startup_trials':startup_trials, 'optuna':optuna.__version__}
+    else:
+        study = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, directions=['minimize']*len(objectives), sampler=sampler)
+        contract = {'algorithm':'keyed-mo-tpe-v1', 'seed':seed, 'startup_trials':startup_trials, 'optuna':optuna.__version__, 'objectives':list(objectives)}
     prior = study.user_attrs.get('sampler_contract')
     if prior != contract and (prior is not None or study.trials):
         raise ValueError('Sampler contract/version changed or legacy study lacks reproducible state; use a new study')

@@ -114,6 +114,14 @@ explicit unresolved limit in the README.
   regressions, refusal margin, answer length/damage. Optuna MO-TPE,
   Pareto front surfaced in run-status; the existing single minimize
   becomes one configured point on it.
+  Landed: run-config field `objectives` (2-4 unique metrics from
+  search_rate/full_reply_kl/answer_kl/capability_drop, first is primary),
+  keyed-mo-tpe-v1 study contract that refuses cross-contract resumes,
+  vector objective returning the same already-computed trial metrics,
+  Pareto-front finalist selection ordered by the primary metric, and the
+  front surfaced in run-status. Plumbing is CPU-proved with a stub
+  objective; the real objective on a B70 study is GATED like every other
+  claim.
 - Judge economics, in order of payoff: cheap prefilter (screening and
   refusal-margin already exist — extend to candidate ranking),
   judge-size sweeps per model family to answer the open cost question,

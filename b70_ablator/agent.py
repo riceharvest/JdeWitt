@@ -55,6 +55,17 @@ def _trial_rows(db_path):
             for n,state,value,feasible in rows]
 
 
+def _study_user_attr(db_path, key):
+    if not db_path.exists():
+        return None
+    with sqlite3.connect(db_path.as_uri()+'?mode=ro',uri=True,timeout=1) as connection:
+        connection.execute('PRAGMA query_only=ON')
+        row=connection.execute('''SELECT sa.value_json FROM study_user_attributes sa
+            JOIN studies s ON s.study_id=sa.study_id
+            WHERE s.study_name='b70-ablator' AND sa.key=?''', (key,)).fetchone()
+    return json.loads(row[0]) if row else None
+
+
 def _run_lock_held(root):
     import fcntl
     lock=root/'.run.lock'
@@ -77,6 +88,7 @@ def run_status(directory):
     candidates=[t for t in trials if t['state']=='COMPLETE' and t['feasible'] and t['value'] is not None]
     return {'output':str(root),'trial_counts':dict(Counter(t['state'] for t in trials)),
             'trials':trials,'best_feasible':min(candidates,key=lambda t:t['value']) if candidates else None,
+            'pareto_front':_study_user_attr(root/'study.db','pareto_front'),
             'cancel_requested':(root/'CANCEL').is_file(),
             'run_lock_held':_run_lock_held(root),
             'release_present':(root/'release').is_dir(),'release_verified':False,
