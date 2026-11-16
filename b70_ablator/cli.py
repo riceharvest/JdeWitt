@@ -39,6 +39,11 @@ def main():
     near=sub.add_parser('suite-near-dup',help='Report reworded duplicate prompts across suite files; files are never modified')
     near.add_argument('suite',type=Path,nargs='+')
     near.add_argument('--threshold',type=float,default=0.8)
+    compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
+    compare.add_argument('suite',type=Path)
+    compare.add_argument('before',type=Path)
+    compare.add_argument('after',type=Path)
+    compare.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     progress=sub.add_parser('run-status',help='Read-only search state, no model loads or DB migrations')
     progress.add_argument('directory',type=Path)
     studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
@@ -137,6 +142,9 @@ def main():
         elif args.command=='describe-run':
             from .agent import describe_run
             result=describe_run(args.config,args.set)
+        elif args.command=='score-compare':
+            from .agent import score_compare
+            result=score_compare(args.suite,args.before,args.after,args.pass_on)
         elif args.command=='gguf-inspect':
             from .agent import gguf_inspect
             result=gguf_inspect(args.file,args.other)

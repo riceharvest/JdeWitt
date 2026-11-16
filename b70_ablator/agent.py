@@ -217,6 +217,79 @@ def suite_near_dup(paths,threshold):
             'note':'Near duplicates are reworded prompts, not family overlap; the importer would drop the later one at this threshold.'}
 
 
+def score_compare(suite,before,after,pass_on='compliance'):
+    """Paired offline comparison of two saved scoring directories over one suite. No models run."""
+    from .data import load_suite
+    from .stats import wilson_interval,family_sign_test
+    suite_rows={row['id']:row for row in load_suite(Path(suite))}
+
+    def scoring(directory):
+        path=Path(directory)/'predictions.jsonl'
+        if not path.is_file():
+            raise FileNotFoundError(path)
+        out={}
+        for line in path.read_text().splitlines():
+            if line.strip():
+                row=json.loads(line)
+                out[row['id']]=row
+        return out
+
+    def passes(row):
+        if row.get('scoring_mode')=='refusal-check':
+            return row.get('refusal_check',{}).get('result')=='no_explicit_refusal'
+        judgment=row.get('judgment')
+        if judgment is None:
+            return False
+        verdict=judgment.get('verdict')
+        return verdict=='compliance' if pass_on=='compliance' else verdict in {'compliance','partial'}
+
+    def label(row):
+        if row.get('scoring_mode')=='refusal-check':
+            return str(row.get('refusal_check',{}).get('result'))
+        return str((row.get('judgment') or {}).get('verdict'))
+
+    a,b=scoring(before),scoring(after)
+    shared=sorted(set(a)&set(b))
+    if not shared:
+        raise ValueError('The two scoring directories share no prompt ids')
+    modes={a[i].get('scoring_mode') or 'judge' for i in shared} | {b[i].get('scoring_mode') or 'judge' for i in shared}
+    flips=[]
+    by_kind={}
+    units={}
+    for pid in shared:
+        pa,pb=passes(a[pid]),passes(b[pid])
+        kind=a[pid].get('kind','?')
+        counter=by_kind.setdefault(kind,{'before':[0,0],'after':[0,0]})
+        counter['before'][0]+=pa; counter['before'][1]+=1
+        counter['after'][0]+=pb; counter['after'][1]+=1
+        if pa!=pb:
+            family=suite_rows.get(pid,{}).get('family_id') or pid
+            direction='improved' if pb else 'regressed'
+            units.setdefault(family,set()).add(direction)
+            flips.append({'id':pid,'kind':kind,'from':label(a[pid]),'to':label(b[pid]),
+                          'family':family if 'family_id' in suite_rows.get(pid,{}) else None})
+    improved=sum(1 for directions in units.values() if directions=={'improved'})
+    regressed=sum(1 for directions in units.values() if directions=={'regressed'})
+    mixed=len(units)-improved-regressed
+    def summarize(rows):
+        ids=set(shared)
+        passed=sum(1 for pid,row in rows.items() if pid in ids and passes(row))
+        total=sum(1 for pid in rows if pid in ids)
+        return {'passed':passed,'total':total,'pass_rate_wilson':wilson_interval(passed,total)} if total else \
+            {'passed':0,'total':0,'pass_rate_wilson':None}
+    return {'suite':str(suite),'before':str(before),'after':str(after),'pass_on':pass_on,
+            'shared_prompts':len(shared),
+            'before_summary':summarize(a),'after_summary':summarize(b),
+            'per_kind':{kind:{'before':f'{c["before"][0]}/{c["before"][1]}',
+                              'after':f'{c["after"][0]}/{c["after"][1]}'} for kind,c in sorted(by_kind.items())},
+            'unit_level':{'unit':'authored family_id, falling back to prompt id when absent',
+                          'improved':improved,'regressed':regressed,'mixed':mixed,
+                          'sign_test':family_sign_test(improved,regressed)},
+            'flips':flips[:200],'flip_count':len(flips),'list_cap':200,
+            'scoring_modes':sorted(modes),
+            'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance.'}
+
+
 def gguf_inspect(path,other=None):
     """GGUF metadata and tensor inventory read from the file header; tensor data is never loaded."""
     from gguf import GGUFReader
