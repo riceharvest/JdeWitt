@@ -56,9 +56,13 @@ class RunConfig:
     generation_batch: dict | None = None
     merged_cache_bytes: int = 0
     screening: dict | None = None
+    schema_version: int | None = None
 
     @classmethod
     def from_json(cls,obj):
+        declared=obj.get('schema_version')
+        if declared is not None and declared!=1:
+            raise ValueError(f'Configuration declares schema_version {declared!r}; this build supports only 1 and never migrates old experiments silently')
         try:
             config = cls(**obj)
         except TypeError as e:
@@ -71,7 +75,7 @@ class RunConfig:
             raise ValueError('scoring_mode must be judge or refusal-check')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch','screening'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening','schema_version'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:

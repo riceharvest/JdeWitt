@@ -33,6 +33,12 @@ def main():
     diff=sub.add_parser('suite-diff',help='Compare two suite files by id, content and family; no model loads')
     diff.add_argument('before',type=Path)
     diff.add_argument('after',type=Path)
+    gguf=sub.add_parser('gguf-inspect',help='GGUF metadata/tensor header inventory; optional second file for the diff, no model loads')
+    gguf.add_argument('file',type=Path)
+    gguf.add_argument('other',type=Path,nargs='?',default=None)
+    near=sub.add_parser('suite-near-dup',help='Report reworded duplicate prompts across suite files; files are never modified')
+    near.add_argument('suite',type=Path,nargs='+')
+    near.add_argument('--threshold',type=float,default=0.8)
     progress=sub.add_parser('run-status',help='Read-only search state, no model loads or DB migrations')
     progress.add_argument('directory',type=Path)
     studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
@@ -131,6 +137,12 @@ def main():
         elif args.command=='describe-run':
             from .agent import describe_run
             result=describe_run(args.config,args.set)
+        elif args.command=='gguf-inspect':
+            from .agent import gguf_inspect
+            result=gguf_inspect(args.file,args.other)
+        elif args.command=='suite-near-dup':
+            from .agent import suite_near_dup
+            result=suite_near_dup(args.suite,args.threshold)
         elif args.command=='suite-diff':
             from .agent import suite_diff
             result=suite_diff(args.before,args.after)

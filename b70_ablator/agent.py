@@ -192,6 +192,84 @@ def suite_diff(before,after):
             'note':'Counts are exact; id lists are capped. A retitled prompt keeps its id but changes content or vice versa.'}
 
 
+def suite_near_dup(paths,threshold):
+    """Reworded-duplicate prompt pairs across suite files, importer semantics. Files are never modified."""
+    from .sources import token_set, jaccard
+    from .data import load_suite
+    if not 0 < threshold <= 1:
+        raise ValueError('jaccard threshold must be in (0,1]')
+    seen=[]
+    pairs=[]
+    counts={}
+    for file in paths:
+        rows=load_suite(Path(file))
+        counts[str(file)]=len(rows)
+        for row in rows:
+            tokens=token_set(row['prompt'])
+            duplicate=next((entry for entry in seen if jaccard(tokens,entry['tokens'])>=threshold),None)
+            if duplicate is not None:
+                pairs.append({'file':str(file),'id':row['id'],'duplicate_of':duplicate['id'],
+                              'jaccard':round(jaccard(tokens,duplicate['tokens']),4)})
+                continue
+            seen.append({'id':row['id'],'file':str(file),'tokens':tokens})
+    return {'threshold':threshold,'first_occurrence_wins':True,'suite_counts':counts,
+            'near_duplicate_pairs':pairs[:200],'pair_count':len(pairs),'list_cap':200,
+            'note':'Near duplicates are reworded prompts, not family overlap; the importer would drop the later one at this threshold.'}
+
+
+def gguf_inspect(path,other=None):
+    """GGUF metadata and tensor inventory read from the file header; tensor data is never loaded."""
+    from gguf import GGUFReader
+    def report(file):
+        file=Path(file)
+        reader=GGUFReader(str(file))
+        def value(field):
+            try:
+                contents=field.contents()
+            except Exception:
+                contents=field.data
+            if isinstance(contents,(list,tuple)):
+                return [str(item)[:256] for item in contents[:64]]
+            return str(contents)[:512]
+        keep=('general.architecture','general.quantization_version','general.alignment','general.name','tokenizer.chat_template')
+        metadata={name:value(field) for name,field in reader.fields.items()
+                  if name.startswith('GGUF.') or name in keep or name.startswith(('tokenizer.','evaluator.','splitting.','add_'))}
+        by_dtype={}
+        total=0
+        for tensor in reader.tensors:
+            dtype=tensor.tensor_type.name if hasattr(tensor.tensor_type,'name') else str(tensor.tensor_type)
+            entry=by_dtype.setdefault(dtype,{'tensors':0,'bytes':0})
+            entry['tensors']+=1
+            entry['bytes']+=int(tensor.n_bytes)
+            total+=int(tensor.n_bytes)
+        largest=sorted(({'name':tensor.name,
+                         'dtype':tensor.tensor_type.name if hasattr(tensor.tensor_type,'name') else str(tensor.tensor_type),
+                         'shape':[int(x) for x in tensor.shape],'bytes':int(tensor.n_bytes)}
+                        for tensor in reader.tensors),key=lambda tensor:tensor['bytes'],reverse=True)[:10]
+        schema={tensor.name:((tensor.tensor_type.name if hasattr(tensor.tensor_type,'name') else str(tensor.tensor_type)),
+                             [int(x) for x in tensor.shape]) for tensor in reader.tensors}
+        return {'file':str(file),'size_bytes':int(file.stat().st_size),'tensor_count':len(reader.tensors),
+                'data_bytes':total,'metadata':metadata,'tensors_by_dtype':by_dtype,'largest_tensors':largest}, schema
+    single,schema=report(path)
+    if other is None:
+        return single
+    compared,second_schema=report(other)
+    shared=set(schema)&set(second_schema)
+    dtype_changed=[{'name':name,'before':schema[name][0],'after':second_schema[name][0]}
+                   for name in sorted(shared) if schema[name][0]!=second_schema[name][0]]
+    shape_changed=[{'name':name,'before':schema[name][1],'after':second_schema[name][1]}
+                   for name in shared if schema[name][1]!=second_schema[name][1]]
+    return {'before':single,'after':compared,
+            'diff':{'only_in_before':sorted(set(schema)-shared)[:200],
+                    'only_in_after':sorted(set(second_schema)-shared)[:200],
+                    'dtype_changed':dtype_changed[:200],'shape_changed':shape_changed[:200],
+                    'metadata_only_in_before':sorted(set(single['metadata'])-set(compared['metadata']))[:50],
+                    'metadata_only_in_after':sorted(set(compared['metadata'])-set(single['metadata']))[:50],
+                    'counts':{'shared_tensors':len(shared),'dtype_changed':len(dtype_changed),
+                              'shape_changed':len(shape_changed)}},
+            'note':'Header inventory only; tensor contents were not compared and no inference was run.'}
+
+
 def about():
     import hashlib
     import platform

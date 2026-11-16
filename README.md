@@ -61,7 +61,12 @@ scheduler stop before its next trial request without signalling any live
 process. `describe-run CONFIG` reports the suite, family and budget shape of
 an experiment that `validate-run` would accept, as cost-planning counts
 rather than measurements; `suite-diff BEFORE AFTER` compares two suite files
-by id, prompt content and family assignment.
+by id, prompt content and family assignment. `gguf-inspect FILE [OTHER]`
+reads GGUF metadata and the tensor inventory from the header and, with a
+second file, diffs quant tensor dtypes; `suite-near-dup SUITE ...` reports
+reworded duplicate prompts across suite files with the importer's
+first-occurrence semantics, without modifying anything. Configurations
+declaring an unsupported `schema_version` are refused before anything loads.
 
 `b70-ablator architectures` includes a pinned July–October release inventory
 with explicit unsupported entries. Adapter registration is not a live B70
