@@ -179,6 +179,16 @@ def main():
     pload.add_argument('key')
     pload.add_argument('--expect',nargs=3,type=int,default=None,metavar='LAYERS RANK HIDDEN')
     pload.add_argument('--device',default='cpu')
+    pbundle=sub.add_parser('plan-bundle',help='Archive one registered plan (signed meta + payload) into a single digest-pinned file')
+    pbundle.add_argument('registry',type=Path)
+    pbundle.add_argument('key')
+    pbundle.add_argument('-o','--output',type=Path,required=True)
+    punbundle=sub.add_parser('plan-unbundle',help='Verify a plan bundle by digest and install it; refuses tampered or geometry-disagreeing entries')
+    punbundle.add_argument('bundle',type=Path)
+    punbundle.add_argument('--into',type=Path,required=True)
+    pprune=sub.add_parser('plan-prune',help='Report registry rot (failed integrity, orphans); delete only with --execute')
+    pprune.add_argument('registry',type=Path)
+    pprune.add_argument('--execute',action='store_true')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -424,6 +434,15 @@ def main():
             loaded=load_plan(args.registry,args.key,dict(zip(('layers','rank','hidden'),args.expect)) if args.expect else None,args.device)
             result={'key':args.key,'geometry':loaded['geometry'],'measured':loaded['meta']['measured'],
                     'method':loaded['meta']['method'],'meta_digest':loaded['meta']['meta_digest']}
+        elif args.command=='plan-bundle':
+            from .registry import bundle_plan
+            result=bundle_plan(args.registry,args.key,args.output)
+        elif args.command=='plan-unbundle':
+            from .registry import unbundle_plan
+            result=unbundle_plan(args.bundle,args.into)
+        elif args.command=='plan-prune':
+            from .registry import prune_registry
+            result=prune_registry(args.registry,args.execute)
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

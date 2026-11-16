@@ -168,6 +168,13 @@ the target's shapes. Runs consume it via `"warm_start_registry": "path"`
 in run.json: an eligible fit (same method, options, suite digest, and all
 weight-geometry keys) transfers under the run's identity and records the
 source fit in `direction-stability.json`; skipped candidates say why.
+Registries travel: `plan-bundle REGISTRY KEY -o FILE` archives signed meta
+plus payload into one digest-pinned tar, and `plan-unbundle FILE --into REG`
+verifies every digest on arrival — tampered payloads, re-signed metas with a
+basis whose rank disagrees with the signed meta, and foreign bundles all
+refuse; re-importing an identical bundle is an explicit no-op.
+`plan-prune REGISTRY` reports failed-integrity and orphan entries, deleting
+only with `--execute`.
 That is the directions warm start, separate from the `warm_starts`
 hyperparameter file. New method surface: `method: "nullspace"` (greedy
 deflated contrast basis), `method_options.capture: "answer-mean"` (RepEng-style

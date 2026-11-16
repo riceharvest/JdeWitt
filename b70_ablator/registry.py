@@ -11,6 +11,7 @@ a matching entry for a different checkpoint in the same family transfers, a
 shape mismatch refuses loudly.
 """
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -199,3 +200,192 @@ def warm_start_candidates(registry, method, method_options=None, directions_dige
             'same_revision': same_revision is None or meta.get('revision') == same_revision})
     out.sort(key=lambda e: (not e['same_model'], not e['same_revision'], not e['measured'], -1 if e['measured'] else 0, e['registered_at']))
     return out
+
+# --- registry portability -----------------------------------------------------
+# A bundle is an uncompressed tar: manifest.json (bundle format, key, full
+# signed meta) + plan.pt. Every digest verified on write and on arrival; the
+# only trust anchor is sha256, so a tampered payload or a re-signed meta whose
+# digest no longer matches its content is refused before anything lands.
+
+BUNDLE_FORMAT = 'b70ablator-plan-bundle-v1'
+
+
+def _verify_meta(registry, key):
+    path = Path(registry) / 'plans' / key / 'meta.json'
+    if not path.is_file():
+        raise RegistryError(f'plan {key} is not registered')
+    meta = _read_json(path)
+    content = {k: v for k, v in meta.items() if k != 'meta_digest'}
+    if meta.get('meta_digest') != digest(content):
+        raise RegistryError(f'plan {key} metadata integrity mismatch')
+    return meta
+
+
+def bundle_plan(registry, key, out):
+    """Archive one registered plan (signed meta + payload) into a single file."""
+    import tarfile
+    import io
+    out = Path(out)
+    if out.exists():
+        raise RegistryError(f'{out} already exists')
+    meta = _verify_meta(registry, key)
+    payload = Path(registry) / 'plans' / key / 'plan.pt'
+    if payload.is_symlink() or not payload.is_file():
+        raise RegistryError(f'plan {key} payload is missing')
+    sha = file_digest(payload)
+    if sha != meta['payload_sha256']:
+        raise RegistryError(f'plan {key} payload integrity mismatch; refusing to bundle')
+    manifest = {'format': BUNDLE_FORMAT, 'key': key, 'meta': meta, 'payload_sha256': sha}
+    payload_bytes = payload.read_bytes()
+    with tarfile.open(out, 'w') as tar:  # uncompressed: the payload is already dense
+        data = json.dumps(manifest, sort_keys=True).encode()
+        info = tarfile.TarInfo(f'{BUNDLE_FORMAT}/manifest.json')
+        info.type = tarfile.REGTYPE
+        info.size = len(data)
+        info.mtime = 0
+        info.mode = 0o644
+        tar.addfile(info, io.BytesIO(data))
+        info = tarfile.TarInfo(f'{BUNDLE_FORMAT}/plan.pt')
+        info.type = tarfile.REGTYPE
+        info.size = len(payload_bytes)
+        info.mtime = 0
+        info.mode = 0o644
+        tar.addfile(info, io.BytesIO(payload_bytes))
+    return {'bundle': str(out), 'key': key, 'format': BUNDLE_FORMAT,
+            'payload_sha256': sha, 'meta_digest': meta['meta_digest'],
+            'bundle_sha256': file_digest(out)}
+
+
+def unbundle_plan(bundle, into):
+    """Verify a bundle by digest and install it into a registry.
+
+    Refuses: unknown format, meta whose meta_digest does not match its content,
+    payload sha256 disagreeing with the bundle manifest or the signed meta, a
+    basis tensor whose rank disagrees with the signed meta (geometry check).
+    A duplicate key is refused unless the existing entry's meta_digest is
+    byte-identical (idempotent re-import).
+    """
+    import tarfile
+    import io
+    import torch
+    bundle = Path(bundle)
+    into = Path(into)
+    if not bundle.is_file():
+        raise FileNotFoundError(bundle)
+    with tarfile.open(bundle, 'r') as tar:
+        names = tar.getnames()
+        if len(names) != 2 or not all(n.startswith(BUNDLE_FORMAT + '/') for n in names):
+            raise RegistryError(f'bundle members {names} do not match {BUNDLE_FORMAT}')
+        member_manifest = f'{BUNDLE_FORMAT}/manifest.json'
+        member_payload = f'{BUNDLE_FORMAT}/plan.pt'
+        manifest = json.loads(tar.extractfile(member_manifest).read())
+        payload_bytes = tar.extractfile(member_payload).read()
+    if manifest.get('format') != BUNDLE_FORMAT:
+        raise RegistryError(f'bundle format {manifest.get("format")!r} unsupported')
+    key = manifest['key']
+    meta = manifest['meta']
+    content = {k: v for k, v in meta.items() if k != 'meta_digest'}
+    if meta.get('meta_digest') != digest(content):
+        raise RegistryError(f'bundle plan {key} metadata integrity mismatch; refusing the import')
+    sha = file_digest_of_bytes(payload_bytes)
+    if sha != manifest.get('payload_sha256') or sha != meta.get('payload_sha256'):
+        raise RegistryError(f'bundle plan {key} payload integrity mismatch; refusing the import')
+    # Geometry consistency: the only structural fact the signed meta asserts
+    # about the tensor itself is rank; verify it against the payload.
+    try:
+        value = torch.load(io.BytesIO(payload_bytes), map_location='cpu', weights_only=True)
+        directions = value[0] if isinstance(value, (tuple, list)) else value
+        basis = directions.get('basis') if isinstance(directions, dict) else None
+        if isinstance(basis, torch.Tensor) and basis.ndim == 3:
+            if meta.get('rank') is not None and int(basis.shape[1]) != int(meta['rank']):
+                raise RegistryError(f'bundle plan {key} basis rank {int(basis.shape[1])} '
+                                    f'disagrees with signed meta rank {meta["rank"]}; refusing')
+            geometry = {'layers': int(basis.shape[0]), 'rank': int(basis.shape[1]),
+                        'hidden': int(basis.shape[2])}
+        else:
+            geometry = {}
+    except RegistryError:
+        raise
+    dest = into / 'plans' / key
+    if (dest / 'meta.json').is_file():
+        existing = _verify_meta(into, key)
+        if existing['meta_digest'] != meta['meta_digest']:
+            raise RegistryError(f'plan {key} already registered with different content; refusing')
+        return {'into': str(into), 'key': key, 'installed': False,
+                'note': 'identical plan already present; bundle verified, nothing written'}
+    dest.mkdir(parents=True, exist_ok=True)
+    (dest / 'plan.pt').write_bytes(payload_bytes)
+    atomic_json(dest / 'meta.json', meta)
+    path = _index_path(into)
+    existing_keys = {e['key'] for e in list_plans(into)}
+    if key not in existing_keys:
+        index_line = dict(meta, payload_file=str(dest / 'plan.pt'))
+        index_line.pop('source_files_sha256', None)
+        with path.open('a', encoding='utf-8') as stream:
+            stream.write(json.dumps(index_line) + '\n')
+            stream.flush()
+    return {'into': str(into), 'key': key, 'installed': True,
+            'payload_sha256': sha, 'meta_digest': meta['meta_digest'],
+            'geometry': geometry}
+
+
+def file_digest_of_bytes(raw):
+    import hashlib
+    return hashlib.sha256(raw).hexdigest()
+
+
+def prune_registry(registry, execute=False):
+    """Report registry rot; remove it only with execute=True.
+
+    Candidates: index entries whose signed meta or payload fails verification,
+    plan directories missing from disk, and directories not in the index.
+    """
+    registry = Path(registry)
+    index = list_plans(registry)
+    index_keys = [e['key'] for e in index]
+    candidates = []
+    on_disk = sorted(p.name for p in (registry / 'plans').glob('*') if p.is_dir()) if (registry / 'plans').is_dir() else []
+    for key in index_keys:
+        meta = None
+        try:
+            meta = _verify_meta(registry, key)
+        except RegistryError as e:
+            candidates.append({'key': key, 'problem': str(e)})
+            continue
+        payload = registry / 'plans' / key / 'plan.pt'
+        if payload.is_symlink() or not payload.is_file():
+            candidates.append({'key': key, 'problem': 'payload missing'})
+        elif file_digest(payload) != meta['payload_sha256']:
+            candidates.append({'key': key, 'problem': 'payload integrity mismatch'})
+    for key in sorted(set(on_disk) - set(index_keys)):
+        candidates.append({'key': key, 'problem': 'directory not in index'})
+    if not execute or not candidates:
+        return {'registry': str(registry), 'index_entries': len(index_keys),
+                'on_disk': len(on_disk), 'candidates': candidates,
+                'removed': [], 'executed': bool(execute),
+                'note': 'report-only unless --execute'}
+    removed = []
+    for cand in candidates:
+        key = cand['key']
+        directory = registry / 'plans' / key
+        if directory.is_dir():
+            shutil.rmtree(directory)
+        removed.append(key)
+    kept = []
+    for e in index:
+        if e['key'] in removed:
+            continue
+        try:
+            _verify_meta(registry, e['key'])
+            kept.append(e)
+        except RegistryError:
+            kept.append(e)  # index-only ghosts (dir already gone) are dropped below
+    kept = [e for e in kept if (registry / 'plans' / e['key'] / 'meta.json').is_file()]
+    path = _index_path(registry)
+    tmp = path.with_suffix('.jsonl.tmp')
+    tmp.write_text(''.join(json.dumps(e) + '\n' for e in kept))
+    os.replace(tmp, path)
+    return {'registry': str(registry), 'index_entries': len(index_keys),
+            'on_disk': len(on_disk), 'candidates': candidates,
+            'removed': removed, 'executed': True,
+            'note': 'removed candidates deleted and index rewritten atomically'}

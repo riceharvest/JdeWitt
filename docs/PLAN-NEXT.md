@@ -97,11 +97,18 @@ written into the item and stays GATED.
    exported files read clean by gguf-inspect (digests), gguf-meta and
    gguf-tensor-diff. Emit schemas for both commands, falsified.
 
-6. Registry portability: `plan-bundle KEY -o FILE` (single-file archive of
-   plan + payload + meta + gate state, digest-pinned) and `plan-unbundle
-   FILE --into REG` which re-verifies every digest on arrival and refuses
-   tampered or geometry-mismatched entries. `plan-prune` stays
-   report-only unless `--execute`, same discipline as corpus-cache.
+6. Registry portability. — LANDED.
+   `plan-bundle REGISTRY KEY -o FILE` archives signed meta + payload into
+   one uncompressed tar (`b70ablator-plan-bundle-v1`, fixed metadata for
+   determinism); `plan-unbundle FILE --into REG` verifies meta_digest,
+   payload sha vs manifest AND signed meta, and basis-rank vs signed meta
+   on arrival. Proven: clean import into an empty registry loads via
+   plan-load; identical re-import is a verified no-op; a one-byte payload
+   flip refuses (payload integrity mismatch); a crafted bundle with
+   honestly re-signed digests but rank 3 vs signed rank 2 refuses
+   (geometry); foreign members refuse (format). `plan-prune REGISTRY`
+   found a corrupted payload + orphan dir in report mode, removed both
+   with --execute and rewrote the index; candidates went to zero.
 
 7. `studies compare DB1 DB2 ...`: read-only SQLite over several
    study.db files — per-parameter and per-method win rates, budget spent
