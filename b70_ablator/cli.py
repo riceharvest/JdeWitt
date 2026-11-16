@@ -24,6 +24,11 @@ def main():
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
     validate=sub.add_parser('validate-run',help='Read-only configuration/suite/file checks, no model loads')
     validate.add_argument('config',type=Path)
+    describe=sub.add_parser('describe-run',help='Static suite/family/budget report; refuses what validate-run refuses, no model loads')
+    describe.add_argument('config',type=Path)
+    diff=sub.add_parser('suite-diff',help='Compare two suite files by id, content and family; no model loads')
+    diff.add_argument('before',type=Path)
+    diff.add_argument('after',type=Path)
     progress=sub.add_parser('run-status',help='Read-only search state, no model loads or DB migrations')
     progress.add_argument('directory',type=Path)
     studies_p=sub.add_parser('studies',help='Summarize every study.db under a runs root; read-only sqlite, no DB creation')
@@ -108,6 +113,12 @@ def main():
         elif args.command in {'validate-run','run-status'}:
             from .agent import validate_run,run_status
             result=validate_run(args.config) if args.command=='validate-run' else run_status(args.directory)
+        elif args.command=='describe-run':
+            from .agent import describe_run
+            result=describe_run(args.config)
+        elif args.command=='suite-diff':
+            from .agent import suite_diff
+            result=suite_diff(args.before,args.after)
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

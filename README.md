@@ -58,7 +58,10 @@ agent drivers branch without string matching. `b70-ablator about` reports
 installation and provenance metadata; `studies RUNS_ROOT` summarizes every
 `study.db` under a root read-only; `run-cancel OUTPUT` requests that the
 scheduler stop before its next trial request without signalling any live
-process.
+process. `describe-run CONFIG` reports the suite, family and budget shape of
+an experiment that `validate-run` would accept, as cost-planning counts
+rather than measurements; `suite-diff BEFORE AFTER` compares two suite files
+by id, prompt content and family assignment.
 
 `b70-ablator architectures` includes a pinned July–October release inventory
 with explicit unsupported entries. Adapter registration is not a live B70

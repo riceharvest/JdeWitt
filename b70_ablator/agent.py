@@ -94,6 +94,81 @@ def studies(root):
             'note':'Counts read from persisted state only; RUNNING does not prove a live process.'}
 
 
+def describe_run(path):
+    """Static budget/suite/family shape of a validated experiment. No model or GPU access."""
+    from .search import RunConfig
+    from .validation import validate_run_inputs
+    config=RunConfig.from_json(json.loads(Path(path).read_text()))
+    suites,report=validate_run_inputs(config)
+
+    def split_stats(rows):
+        families=Counter(r['family_id'] for r in rows if isinstance(r.get('family_id'),str) and r['family_id'].strip())
+        return {'tasks':len(rows),'kinds':dict(Counter(r['kind'] for r in rows)),
+                'languages':dict(Counter(r['language'] for r in rows)),
+                'family_count':len(families),
+                'largest_families':sorted(families.items(),key=lambda kv:(-kv[1],kv[0]))[:5],
+                'singletons':sum(1 for count in families.values() if count==1)}
+    family_sets={name:{r['family_id'] for r in rows if isinstance(r.get('family_id'),str) and r['family_id'].strip()}
+                 for name,rows in suites.items()}
+    collisions=[]
+    names=sorted(family_sets)
+    for i,first in enumerate(names):
+        for second in names[i+1:]:
+            shared=family_sets[first]&family_sets[second]
+            if shared:
+                collisions.append({'splits':[first,second],'families':sorted(shared)})
+
+    n_sel,n_hold=len(suites['selection']),len(suites['holdout'])
+    estimates={'trial_attempts_max':config.trials,
+               'selection_rows_per_attempt':n_sel,
+               'baseline_selection_generations':n_sel,
+               'selection_generations_upper_bound':(config.trials+1)*n_sel,
+               'holdout_generations_only_if_winner':n_hold,
+               'finalist_rescoring_attempts_max':config.finalists,
+               'judge_calls_upper_bound':(config.trials+1)*n_sel+n_hold if config.scoring_mode=='judge' else 0}
+    return {'config':str(path),'status':'described-only, not validated on hardware',
+            'source_validated':'validate_run_inputs passed before this report was built',
+            'suites':{name:split_stats(rows) for name,rows in suites.items()},
+            'split_family_collisions':collisions,
+            'budget_estimates_upper_bounds':estimates,
+            'policy':{'method':config.method,'method_options':config.method_options,'rank':config.rank,
+                      'trials':config.trials,'startup_trials':config.startup_trials,'finalists':config.finalists,
+                      'strength_range':config.strength_range,'edit_targets':config.edit_targets,
+                      'consistency':config.consistency,'screening':config.screening},
+            'generation_settings':{'max_tokens':config.max_tokens,'ctx_size':config.ctx_size,'dtype':config.dtype,
+                                   'generation_batch':config.generation_batch},
+            'metadata_valid':report['status'],
+            'note':'Estimates are counts for cost planning, not measurements or throughput claims. No model, judge or GPU access.'}
+
+
+def suite_diff(before,after):
+    """Id/content/family comparison of two suite files. No model or GPU access."""
+    from .data import load_suite, canonical_prompt, digest
+    list_cap=200
+    a,b=load_suite(Path(before)),load_suite(Path(after))
+    a_by,b_by={r['id']:r for r in a},{r['id']:r for r in b}
+    if len(a_by)!=len(a) or len(b_by)!=len(b):
+        raise ValueError('Suite ids must be unique for comparison')
+    canonical_a={canonical_prompt(r['prompt']):r['id'] for r in a}
+    canonical_b={canonical_prompt(r['prompt']):r['id'] for r in b}
+    tracked=('prompt','kind','language','family_id','expected','tests')
+    changed=[{'id':i,'fields':[field for field in tracked if a_by[i].get(field)!=b_by[i].get(field)]}
+             for i in sorted(a_by.keys()&b_by.keys())
+             if any(a_by[i].get(field)!=b_by[i].get(field) for field in tracked)]
+    reprompted=[{'id':canonical_a[key],'becomes':canonical_b[key]} for key in canonical_a.keys()&canonical_b.keys()
+                if canonical_a[key]!=canonical_b[key]]
+    return {'before':str(before),'after':str(after),
+            'digest_before':digest(a),'digest_after':digest(b),
+            'counts':{'before':len(a),'after':len(b),
+                      'removed':len(a_by.keys()-b_by.keys()),'added':len(b_by.keys()-a_by.keys()),'changed':len(changed)},
+            'removed':sorted(a_by.keys()-b_by.keys())[:list_cap],
+            'added':sorted(b_by.keys()-a_by.keys())[:list_cap],
+            'changed':changed[:list_cap],
+            'retitled_prompts':reprompted[:list_cap],
+            'list_cap':list_cap,
+            'note':'Counts are exact; id lists are capped. A retitled prompt keeps its id but changes content or vice versa.'}
+
+
 def about():
     import hashlib
     import platform
