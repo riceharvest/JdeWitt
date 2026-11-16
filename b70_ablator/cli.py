@@ -80,6 +80,21 @@ def main():
     fdecay.add_argument('--fitted',nargs=2,required=True,metavar='SUITE SCORES_DIR')
     fdecay.add_argument('--held',nargs=2,required=True,metavar='SUITE SCORES_DIR')
     fdecay.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
+    preg=sub.add_parser('plan-register',help='Bind a finished run\'s fitted plan into a local warm-start registry')
+    preg.add_argument('registry',type=Path)
+    preg.add_argument('run_output',type=Path)
+    preg.add_argument('--gates',type=Path,help='Evidence JSON (verify-release / robustness-report output)')
+    preg.add_argument('--allow-unmeasured',action='store_true',help='Register with an explicit UNMEASURED label instead of gates')
+    plist=sub.add_parser('plan-list',help='Registered plans with provenance and gate state')
+    plist.add_argument('registry',type=Path)
+    pshow=sub.add_parser('plan-show',help='Metadata of one registered plan')
+    pshow.add_argument('registry',type=Path)
+    pshow.add_argument('key')
+    pload=sub.add_parser('plan-load',help='Integrity-checked load of a registered plan; refuses geometry mismatches')
+    pload.add_argument('registry',type=Path)
+    pload.add_argument('key')
+    pload.add_argument('--expect',nargs=3,type=int,default=None,metavar='LAYERS RANK HIDDEN')
+    pload.add_argument('--device',default='cpu')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -267,6 +282,20 @@ def main():
         elif args.command=='family-decay':
             from .agent import family_decay
             result=family_decay(tuple(args.fitted),tuple(args.held),args.pass_on)
+        elif args.command=='plan-register':
+            from .registry import register_plan
+            result=register_plan(args.registry,args.run_output,args.gates,args.allow_unmeasured)
+        elif args.command=='plan-list':
+            from .registry import list_plans
+            result=list_plans(args.registry)
+        elif args.command=='plan-show':
+            from .registry import _read_json
+            result=_read_json(Path(args.registry)/'plans'/args.key/'meta.json')
+        elif args.command=='plan-load':
+            from .registry import load_plan
+            loaded=load_plan(args.registry,args.key,dict(zip(('layers','rank','hidden'),args.expect)) if args.expect else None,args.device)
+            result={'key':args.key,'geometry':loaded['geometry'],'measured':loaded['meta']['measured'],
+                    'method':loaded['meta']['method'],'meta_digest':loaded['meta']['meta_digest']}
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)

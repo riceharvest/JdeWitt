@@ -105,7 +105,12 @@ fitted run never saw (flagging any that leaked). Generation and scoring jobs tak
 `--max-generated-tokens` / `--max-judge-requests` budgets, and every GPU job
 serializes on a cross-process B70 lock (`B70_ABLATOR_GPU_WAIT`,
 `B70_ABLATOR_GPU_LOCK`); artifact timestamps come from one injectable clock
-(`B70_ABLATOR_CLOCK`). New method surface: `method: "nullspace"` (greedy
+(`B70_ABLATOR_CLOCK`). The fitted-plan registry is the warm-start library:
+`plan-register REGISTRY RUN_OUTPUT --gates EVIDENCE` binds a run's fitted
+tensors by sha256 with run provenance (or an explicit UNMEASURED label),
+and `plan-load` refuses tampered payloads and geometry mismatches, so a
+plan can transfer across checkpoints in a family only when it can carry
+the target's shapes. New method surface: `method: "nullspace"` (greedy
 deflated contrast basis), `method_options.capture: "answer-mean"` (RepEng-style
 mean-pooled answer activations instead of the last token) and
 `method_options.family_weighting: "balanced"` (variant-count weighted

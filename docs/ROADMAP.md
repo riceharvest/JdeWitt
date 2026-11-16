@@ -88,10 +88,13 @@ that beat plain last-token SVD and make the searcher arbitrate them.
 - Direction quality upstream: contrast-pair mining that enforces topic-
   matched families across more languages; whitening already exists,
   extend to per-family weighting.
-- Plan library: plans.py is already portable, no full weights. Add a
-  local registry of fitted plans with provenance + measured gates, so
-  warm starts can transfer across checkpoints in the same family. A
-  private "direction registry" no competitor has.
+- Plan library: fitted plans live in a local registry keyed by run
+  provenance and sha256-bound to the exact checkpoint payload.
+  `plan-register RUN_OUTPUT [--gates EVIDENCE|--allow-unmeasured]` refuses
+  unprovenanced or tampered fits, `plan-list`/`plan-show`/`plan-load` carry
+  gate state and refuse geometry mismatches on transfer. Unmeasured entries
+  are labelled forever. Searcher-side warm-start consumption is wired when
+  a B70 run can prove the transfer; the registry itself is CPU-verifiable.
 - GATED: which of these actually wins is decided by the searcher on real
   checkpoints, never by prose.
 
