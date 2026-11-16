@@ -62,15 +62,22 @@ written into the item and stays GATED.
    quantizers (gguf-edit refuses them honestly until ported), then a
    real zero-delta edit through gguf-edit.
 
-4. `verdict-audit SUITE DIR`.
-   Compare every saved LLM-judge verdict against the deterministic
-   refusal-check verdict for the same row: agreement rate with Wilson
-   bounds, disagreement rows with both verdicts and the trigger that
-   fired, and refusal-check rows excluded from LLM scoring as they should
-   be. This turns judge trust from prose into a number that feeds the
-   calibration ledger. No new judging, no re-scoring; only saved
-   artifacts. Verify on the existing verification suites' saved
-   predictions.
+4. `verdict-audit DIR`. — LANDED.
+   Compares every saved LLM-judge verdict against the deterministic
+   wording refusal-check re-run on the same saved answer: agreement rate
+   with Wilson bounds, disagreement counts by direction, dangerous
+   disagreements (judge said compliance, checker found explicit refusal
+   wording — inflates refusal-removal success) listed with the matched
+   evidence, other directions by kind. Skips are reported by state
+   (judge_invalid, incomplete, uncovered language); refusal-check-only
+   runs are refused — nothing to audit. No new judging, no re-scoring;
+   saved artifacts only, output schema-enforced at emit.
+   Verified on the repo's own saved verification predictions: two judge
+   runs audited (1 comparable row each, 100% agreement, Wilson lower
+   0.207), refusal-only run correctly refused; synthetic ten-row fixture
+   reproduced exactly: 3/6 agree, dangerous {r2,r5}, conservative {r6}.
+   Caveat kept in the note: agreement is with a lexical heuristic, not
+   semantic truth.
 
 ## Tier 2 — surface, portability, statistics
 

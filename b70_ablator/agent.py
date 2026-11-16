@@ -1067,3 +1067,82 @@ def gguf_tensor_diff(a, b, limit=100):
             'note': 'Header and dequant measurement only, no inference: bit_identical tensors match '
                     'byte-for-byte; value_differs reports RMS difference after full dequant, '
                     'relative to the first file, using the pinned GGML block codecs.'}
+
+
+def verdict_audit(directory, limit=25):
+    """Compare saved LLM-judge verdicts against the deterministic wording
+    refusal-check re-run on the same saved answers. CPU-only: no model, no
+    server, no new generation. This measures judge agreement with a
+    lexical heuristic — not ground truth.
+    """
+    from collections import Counter
+    from .refusal_check import RefusalChecker, PATTERNS
+    from .stats import wilson_interval
+    path = Path(directory) / 'predictions.jsonl'
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    refusal_rows = [r for r in rows if r.get('kind') == 'refusal']
+    if not refusal_rows or not any('judgment' in r or r.get('status') == 'judge_invalid' for r in refusal_rows):
+        raise ValueError('predictions contain no judge-scored refusal rows to audit')
+    checker = RefusalChecker()
+    checked_lang = set(PATTERNS)
+    states = Counter()
+    kinds = Counter()
+    dangerous = []
+    other = []
+    agree = comp = 0
+    for r in refusal_rows:
+        if r.get('status') != 'ok':
+            states[r.get('status', 'no_status')] += 1
+            continue
+        lang = str(r.get('language', '')).lower().split('-')[0]
+        if lang not in checked_lang:
+            states['language_not_covered'] += 1
+            continue
+        if not isinstance(r.get('answer'), str):
+            states['no_answer_text'] += 1
+            continue
+        res = checker.check(r['answer'], r.get('language', 'en'))
+        verdict = (r.get('judgment') or {}).get('verdict', 'invalid')
+        key = f'judge_{verdict}__check_{res["result"]}'
+        if res['result'] == 'refusal_detected' and verdict in ('refusal', 'partial'):
+            agree += 1
+        elif res['result'] == 'no_explicit_refusal' and verdict == 'compliance':
+            agree += 1
+        else:
+            kinds[key] += 1
+        comp += 1
+    for r in refusal_rows:
+        if r.get('status') != 'ok' or not isinstance(r.get('answer'), str):
+            continue
+        lang = str(r.get('language', '')).lower().split('-')[0]
+        if lang not in checked_lang:
+            continue
+        res = checker.check(r['answer'], r.get('language', 'en'))
+        verdict = (r.get('judgment') or {}).get('verdict', 'invalid')
+        if verdict == 'compliance' and res['result'] == 'refusal_detected':
+            dangerous.append({'id': r.get('id'), 'category': r.get('category'), 'language': r.get('language'),
+                              'judge_verdict': verdict, 'check_result': res['result'],
+                              'evidence': res['evidence'][:5]})
+        elif not (
+            (res['result'] == 'refusal_detected' and verdict in ('refusal', 'partial')) or
+            (res['result'] == 'no_explicit_refusal' and verdict == 'compliance')
+        ):
+            if len(other) < limit:
+                other.append({'id': r.get('id'), 'category': r.get('category'),
+                              'judge_verdict': verdict, 'check_result': res['result'],
+                              'evidence': res['evidence'][:5]})
+    interval = wilson_interval(agree, comp) if comp else None
+    return {'directory': str(directory), 'rows_total': len(rows),
+            'compared': comp, 'agreed': agree,
+            'agreement_rate': agree / comp if comp else None,
+            'agreement_wilson95': interval,
+            'skipped_states': dict(states),
+            'dangerous_disagreements': dangerous[:limit],
+            'dangerous_count': len(dangerous),
+            'other_disagreement_kinds': dict(kinds),
+            'other_disagreement_examples': other,
+            'check_method': 'explicit-wording-v1',
+            'note': 'Judge agreement with a deterministic lexical wording check on saved answers; '
+                    'the check is not a semantic oracle and agreement says nothing about correctness.'}

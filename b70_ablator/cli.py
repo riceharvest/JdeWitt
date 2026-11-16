@@ -182,6 +182,9 @@ def main():
     calibration.add_argument('directory',type=Path,nargs='+')
     calibration.add_argument('--min-agreement',type=float,default=0.5)
     calibration.add_argument('--ledger',type=Path,default=None,help='Authored calibration ledger to report alongside')
+    vaudit=sub.add_parser('verdict-audit',help='Saved judge verdicts vs deterministic wording check on the same saved answers; no models')
+    vaudit.add_argument('directory',type=Path,help='Scores directory containing predictions.jsonl')
+    vaudit.add_argument('--limit',type=int,default=25)
     sensitivity=sub.add_parser('score-sensitivity',help='Offline recount of saved verdicts under alternative confidence floors; no models')
     sensitivity.add_argument('directory',type=Path)
     sensitivity.add_argument('--floor',action='append',type=float,dest='min_confidences',
@@ -321,6 +324,9 @@ def main():
         elif args.command=='calibration-report':
             from .agent import calibration_report
             result=calibration_report(args.suite,args.directory,args.min_agreement,args.ledger)
+        elif args.command=='verdict-audit':
+            from .agent import verdict_audit
+            result=verdict_audit(args.directory,args.limit)
         elif args.command=='score-sensitivity':
             from .agent import score_sensitivity
             result=score_sensitivity(args.directory,args.min_confidences or (0.5,0.7,0.9))

@@ -87,7 +87,11 @@ verdict files; `score-sensitivity DIR` recounts saved verdicts under
 alternative confidence floors. `calibration-report SUITE DIR...` reports
 per-judge agreement with majority consensus (Wilson intervals, pairwise
 matrices) beside an authored ledger file; consensus is not accuracy and the
-report never writes the ledger back. All of these read persisted artifacts only.
+report never writes the ledger back. `verdict-audit DIR` re-runs the
+deterministic wording refusal check on saved answers and compares it to the
+saved judge verdicts: agreement with Wilson bounds, dangerous disagreements
+(judge compliance vs explicit refusal wording) with evidence. All of these
+read persisted artifacts only.
 `score-compare` now also reports a deterministic family-level bootstrap of
 both pass rates and a paired sign-flip permutation test on per-prompt flips.
 
