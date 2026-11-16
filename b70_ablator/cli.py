@@ -100,6 +100,14 @@ def main():
     verify=sub.add_parser('verify-release',help='Verify a finished release using only file reads, no models')
     verify.add_argument('directory',type=Path)
     verify.add_argument('--expected-identity')
+    claims=sub.add_parser('release-claims',help='Read a release evidence ledger (claims, evidence, chain digest)')
+    claims.add_argument('directory',type=Path)
+    claimadd=sub.add_parser('claim-add',help='Append an evidence-backed claim to a release evidence ledger')
+    claimadd.add_argument('directory',type=Path)
+    claimadd.add_argument('--claim',required=True,help='What is asserted')
+    claimadd.add_argument('--evidence',required=True,help='Which artifact or run backs the assertion')
+    claimadd.add_argument('--verified-by',required=True,help='Which gate or human produced it')
+    claimadd.add_argument('--expected-identity')
     evaluate=sub.add_parser('evaluate',help='Score a local GGUF with the same answer-level harness')
     evaluate.add_argument('--mode',dest='scoring_mode',choices=['judge','refusal-check'],default='judge')
     evaluate.add_argument('--model',type=Path,required=True)
@@ -195,6 +203,12 @@ def main():
         elif args.command=='verify-release':
             from .release import verify_release
             result=verify_release(args.directory,args.expected_identity)
+        elif args.command=='release-claims':
+            from .release import evidence_summary
+            result=evidence_summary(args.directory)
+        elif args.command=='claim-add':
+            from .release import add_claim
+            result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity)
         elif args.command=='doctor':
             from .pipeline import configure_compiler_paths
             configure_compiler_paths()

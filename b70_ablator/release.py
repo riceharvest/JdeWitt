@@ -317,6 +317,73 @@ def release_inventory(directory):
     return files
 
 
+def compute_evidence_digest(entries):
+    """Fold the claim chain into one digest; each entry pins the previous state."""
+    previous = ''
+    for entry in entries:
+        if entry.get('previous_digest') != previous:
+            raise ValueError('Evidence ledger chain is broken at entry {}'.format(entry.get('seq')))
+        previous = digest({k: v for k, v in entry.items() if k != 'digest'})
+    return previous
+
+
+def read_evidence(directory):
+    """Load and integrity-check a release evidence ledger. Absent ledger returns None."""
+    path = Path(directory) / 'evidence.json'
+    if not path.is_file():
+        return None
+    if path.is_symlink():
+        raise ValueError('Evidence ledger cannot be a symlink')
+    chain = json.loads(path.read_text())
+    if set(chain) != {'version', 'release_identity', 'entries', 'ledger_digest'} or chain['version'] != 1:
+        raise ValueError('Evidence ledger shape mismatch')
+    if chain['ledger_digest'] != compute_evidence_digest(chain['entries']):
+        raise ValueError('Evidence ledger integrity mismatch')
+    return chain
+
+
+def add_claim(directory, claim, evidence, verified_by, release_identity=None):
+    """Append an immutable claim to a release evidence ledger.
+
+    Every entry records what is asserted, which artifact backs it, and which gate
+    produced it. A tampered or swapped ledger is detected because the chain digest
+    covers the release identity and the previous entries.
+    """
+    directory = Path(directory)
+    if not (directory / 'files.json').is_file():
+        raise FileNotFoundError(str(directory / 'files.json'))
+    record = json.loads((directory / 'files.json').read_text())
+    payload = {k: v for k, v in record.items() if k != 'record_digest'}
+    if record.get('record_digest') != digest(payload):
+        raise ValueError('Release index integrity mismatch')
+    identity = record['release_identity']
+    if release_identity is not None and release_identity != identity:
+        raise ValueError('Release identity mismatch')
+    chain = read_evidence(directory)
+    if chain is None:
+        chain = {'version': 1, 'release_identity': identity, 'entries': []}
+    elif chain['release_identity'] != identity:
+        raise ValueError('Evidence ledger belongs to a different release identity')
+    entry = {'seq': len(chain['entries']) + 1, 'claim': str(claim), 'evidence': str(evidence),
+             'verified_by': str(verified_by), 'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+             'previous_digest': chain['entries'][-1].get('digest', '') if chain['entries'] else ''}
+    entry['digest'] = digest(entry)
+    chain['entries'].append(entry)
+    chain['ledger_digest'] = compute_evidence_digest(chain['entries'])
+    atomic_json(path := directory / 'evidence.json', chain)
+    return {'directory': str(directory.resolve()), 'entries': len(chain['entries']),
+            'ledger_digest': chain['ledger_digest'], 'entry_digest': entry['digest']}
+
+
+def evidence_summary(directory):
+    chain = read_evidence(directory)
+    if chain is None:
+        return {'directory': str(Path(directory).resolve()), 'ledger_present': False}
+    return {'directory': str(Path(directory).resolve()), 'ledger_present': True,
+            'release_identity': chain['release_identity'], 'entries': chain['entries'],
+            'ledger_digest': chain['ledger_digest']}
+
+
 def verify_release(directory,expected_identity=None):
     """Check exact file bytes; this does not certify a model's semantic quality."""
     directory=Path(directory)
@@ -328,22 +395,30 @@ def verify_release(directory,expected_identity=None):
         raise ValueError('Release index integrity mismatch')
     for name,metadata in record['files'].items():
         p=Path(name)
-        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name:
+        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name or name=='evidence.json':
             raise ValueError('Invalid release index path')
         if set(metadata)!={'sha256','bytes'} or type(metadata['bytes']) is not int or metadata['bytes']<0:
             raise ValueError('Invalid release file metadata')
     if expected_identity is not None and record['release_identity']!=expected_identity:
         raise ValueError('Release identity mismatch')
     actual=release_inventory(directory)
-    if actual!=record['files']:
+    if {k:v for k,v in actual.items() if k!='evidence.json'}!=record['files']:
         raise ValueError('Release file set/hash mismatch')
     evaluation=json.loads((directory/'evaluation.json').read_text())
     readme=(directory/'README.md').read_text()
     if record['release_identity']!=digest({'evaluation':evaluation,'readme':readme}):
         raise ValueError('Release metadata identity mismatch')
-    return {'valid':True,'directory':str(directory.resolve()),'files':len(actual),
+    ledger=read_evidence(directory)
+    if ledger is not None and ledger['release_identity']!=record['release_identity']:
+        raise ValueError('Evidence ledger belongs to a different release identity')
+    result={'valid':True,'directory':str(directory.resolve()),'files':len(actual),
             'bytes':sum(v['bytes'] for v in actual.values()),'release_identity':record['release_identity'],
+            'ledger_present':ledger is not None,
             'scope':'File integrity only, not independent proof of model quality or authenticity'}
+    if ledger is not None:
+        result['evidence_entries']=len(ledger['entries'])
+        result['ledger_digest']=ledger['ledger_digest']
+    return result
 
 
 def create_release(directory,hf,artifacts,metadata,readme):
@@ -385,4 +460,6 @@ def create_release(directory,hf,artifacts,metadata,readme):
         sync_directory(stage)
         stage.rename(directory)
         sync_directory(directory.parent)
+        add_claim(directory,'Release created: file set matches the verified finalist and evaluation record',
+                  'files.json release index','b70-ablator create_release')
         return verify_release(directory,identity)
