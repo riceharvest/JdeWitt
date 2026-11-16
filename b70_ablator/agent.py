@@ -220,7 +220,7 @@ def suite_near_dup(paths,threshold):
 def score_compare(suite,before,after,pass_on='compliance'):
     """Paired offline comparison of two saved scoring directories over one suite. No models run."""
     from .data import load_suite
-    from .stats import wilson_interval,family_sign_test
+    from .stats import wilson_interval,family_sign_test,family_bootstrap,paired_permutation_test
     suite_rows={row['id']:row for row in load_suite(Path(suite))}
 
     def scoring(directory):
@@ -273,6 +273,16 @@ def score_compare(suite,before,after,pass_on='compliance'):
     improved=sum(1 for directions in units.values() if directions=={'improved'})
     regressed=sum(1 for directions in units.values() if directions=={'regressed'})
     mixed=len(units)-improved-regressed
+    family_rates={}
+    for pid in shared:
+        fam=suite_rows.get(pid,{}).get('family_id') or pid
+        entry=family_rates.setdefault(fam,{'before':0,'after':0,'total':0})
+        entry['before']+=int(passes(a[pid]))
+        entry['after']+=int(passes(b[pid]))
+        entry['total']+=1
+    bootstrap={'before':family_bootstrap([e['before']/e['total'] for e in family_rates.values()]),
+               'after':family_bootstrap([e['after']/e['total'] for e in family_rates.values()])}
+    permutation=paired_permutation_test([int(passes(b[pid]))-int(passes(a[pid])) for pid in shared])
     def summarize(rows):
         ids=set(shared)
         passed=sum(1 for pid,row in rows.items() if pid in ids and passes(row))
@@ -287,6 +297,7 @@ def score_compare(suite,before,after,pass_on='compliance'):
             'unit_level':{'unit':'authored family_id, falling back to prompt id when absent',
                           'improved':improved,'regressed':regressed,'mixed':mixed,
                           'sign_test':family_sign_test(improved,regressed)},
+            'family_bootstrap':bootstrap,'paired_permutation':permutation,
             'flips':flips[:200],'flip_count':len(flips),'list_cap':200,
             'scoring_modes':sorted(modes),
             'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance.'}
