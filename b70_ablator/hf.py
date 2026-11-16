@@ -260,6 +260,27 @@ class HFModel:
         return captured
 
     @torch.inference_mode()
+    def answer_start_margins(self, prompts, refusal_tokens, reference_tokens):
+        """Prefill-only refusal-margin readout at the answer boundary.
+
+        One forward pass per prompt, no decoding: how strongly the explicit
+        refusal token IDs are favoured over the reference IDs at the point the
+        answer would begin. Screening heuristic only, never a release gate.
+        """
+        refusal, reference = torch.tensor(refusal_tokens, device=self.device), torch.tensor(reference_tokens, device=self.device)
+        highest = int(max(int(refusal.max().item()), int(reference.max().item())))
+        margins = []
+        for prompt in prompts:
+            inputs, _ = self.encode(prompt)
+            output = self.model(inputs['input_ids'], use_cache=False, logits_to_keep=1)
+            logits = output.logits[0, -1].float()
+            if highest >= logits.shape[0]:
+                raise ValueError('Screening token ID lies outside the target vocabulary')
+            margins.append(float(logits[refusal].mean() - logits[reference].mean()))
+            del output, logits
+        return margins
+
+    @torch.inference_mode()
     def trajectory_kl(self, sequence, prompt_length, answer_start, chunk_size=32):
         total = sequence.shape[1] - prompt_length
         if total <= 0 or not 0 <= answer_start < total or chunk_size <= 0:

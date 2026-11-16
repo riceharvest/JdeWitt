@@ -55,6 +55,7 @@ class RunConfig:
     strength_range: list | None = None
     generation_batch: dict | None = None
     merged_cache_bytes: int = 0
+    screening: dict | None = None
 
     @classmethod
     def from_json(cls,obj):
@@ -70,7 +71,7 @@ class RunConfig:
             raise ValueError('scoring_mode must be judge or refusal-check')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:
@@ -116,6 +117,8 @@ class RunConfig:
         validate_batch_policy(config.generation_batch)
         if type(config.merged_cache_bytes) is not int or config.merged_cache_bytes<0:
             raise ValueError('merged_cache_bytes must be a nonnegative integer')
+        from .screening import validate_screening
+        validate_screening(config.screening)
         if config.method=='leace' and config.rank!=1:
             raise ValueError('Binary LEACE requires rank=1')
         if type(config.seed) is not int or not 0<=config.seed<2**32:

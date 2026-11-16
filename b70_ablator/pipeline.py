@@ -30,6 +30,7 @@ from .answers import AnswerStore, generate_answers, score_answers, completed_sco
 from .storage import save_checkpoint, load_checkpoint
 from .phases import ModelPhases, PhasedHF, PhasedJudge
 from .refusal_check import RefusalChecker
+from .screening import validate_screening,margin_differential
 from .errors import SearchRejected,UnsupportedMethod,HoldoutRejected
 
 
@@ -277,6 +278,22 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 boundary=reply_boundary(backend.tokenizer,response['generated_ids'],response['thinking_open'],response.get('final_marker'))
                 references.append({'id':task['id'],'sequence':response['sequence'].cpu(),'prompt_length':response['prompt_length'],'answer_start':boundary})
             save_checkpoint(refs_file,references,refs_identity,{})
+        screening = validate_screening(getattr(config,'screening',None))
+        bad_prompts = [t['prompt'] for t in direction_tasks if t['label']=='bad']
+        harmless_prompts = [t['prompt'] for t in selection if t['kind']=='harmless']
+        if screening is not None:
+            if not bad_prompts or not harmless_prompts:
+                raise ValueError('Screening needs bad-direction tasks and a harmless selection slice')
+            screen_identity = {'generation':generation_identity,'screening':screening,
+                               'directions_digest':provenance['directions_digest'],
+                               'selection_digest':provenance['selection_digest']}
+            saved = load_checkpoint(output/'screen-baselines.pt',screen_identity)
+            if saved is not None:
+                screen_baseline = saved[0]
+            else:
+                screen_baseline = {'bad':backend.answer_start_margins(bad_prompts,screening['refusal_tokens'],screening['reference_tokens']),
+                                   'harmless':backend.answer_start_margins(harmless_prompts,screening['refusal_tokens'],screening['reference_tokens'])}
+                save_checkpoint(output/'screen-baselines.pt',screen_baseline,screen_identity,{})
         if config.warm_starts:
             warm=json.loads(Path(config.warm_starts).read_text())
             for params in compatible_warm_starts(warm,fingerprint):
@@ -302,6 +319,19 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                     if kl_sum/final_tokens>config.max_full_reply_kl:
                         raise optuna.TrialPruned('Full-reply KL cannot meet the damage limit')
                 kl=kl_sum/token_count
+                if screening is not None:
+                    # Forward-only refusal-margin screen; survivors still pay for
+                    # full generation and judging. Screening never certifies removal.
+                    statistic = margin_differential(
+                        screen_baseline['bad'],
+                        backend.answer_start_margins(bad_prompts,screening['refusal_tokens'],screening['reference_tokens']),
+                        screen_baseline['harmless'],
+                        backend.answer_start_margins(harmless_prompts,screening['refusal_tokens'],screening['reference_tokens']))
+                    passed = statistic >= screening['min_margin_drop']
+                    trial.set_user_attr('screening',{'status':'passed' if passed else 'rejected',
+                                                     'statistic':statistic,'threshold':screening['min_margin_drop']})
+                    if not passed:
+                        raise optuna.TrialPruned('Screened out: refusal-margin change below threshold; no answers were generated')
                 incumbent=min([t.value for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible')],default=None)
                 report=eval_cached(selection,backend,judge,output/f'trial-{trial.number}',config.sandbox_image,
                                    {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params},phases,scoring_identity,incumbent,

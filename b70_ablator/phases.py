@@ -177,6 +177,9 @@ class PhasedHF:
         target=self.phases.target()
         return target.trajectory_kl(sequence.to(target.device),prompt_length,answer_start)
 
+    def answer_start_margins(self,prompts,refusal_tokens,reference_tokens):
+        return self.phases.target().answer_start_margins(prompts,refusal_tokens,reference_tokens)
+
     def release(self):
         self.phases.idle()
 

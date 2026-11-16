@@ -223,6 +223,27 @@ searches. Final fast-mode files are marked `refusal-screened`, not
 was not judged. The target can stay loaded during CPU refusal checks instead
 of swapping to a second GPU model.
 
+## Optional refusal-margin screening
+
+Set `screening` to add an explicit, forward-only prefilter to the trial loop:
+`refusal_tokens`, `reference_tokens` (operator-chosen token IDs of the target
+vocabulary) and `min_margin_drop`. Per trial the answer-start logit margin
+between the two token groups is measured on every bad-direction prompt and on
+the harmless selection slice — one prefill per prompt, no decoding — and the
+harmless-prompt drift is subtracted. Candidates below the threshold are pruned
+before any generation or judging is paid for; rejected trials record their
+statistic. Baseline margins are checkpointed and identity-bound, so an
+interrupted study reuses them.
+
+```json
+"screening": {"refusal_tokens": [42, 199], "reference_tokens": [3, 8], "min_margin_drop": 0.5}
+```
+
+Screening exists to spend search budget better; it measures no behavior and
+certifies nothing. Screened-in candidates still face the full generation and
+judging gates, releases are gated only there, and screening has not yet been
+validated against real refusal rates on a checkpoint.
+
 ## What it does
 
 - Generates through the thinking block and judges only the final answer.
