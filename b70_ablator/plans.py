@@ -33,7 +33,7 @@ def fit_plan(records, rank, policy, seed, expected_tasks, method='directional', 
         # Fit metadata: how much of each fitted direction is actually used by
         # the contrast, per layer. A direction with ~zero mean projection in
         # some layer carries no signal there and is a candidate for strength 0.
-        _, good, bad = matched_rows(records,options)
+        _, good, bad, _ = matched_rows(records,options)
         contrast = (bad-good).transpose(0,1)
         projected = torch.einsum('lch,lrh->lcr',contrast,plan['basis'])
         audit['nullspace'] = {'deflations':options['nullspace_deflations'],
@@ -44,7 +44,7 @@ def fit_plan(records, rank, policy, seed, expected_tasks, method='directional', 
         # replaced, not multiplied, so the two are never double-counted.
         plan['layer_profile'] = layer_discriminability(records, options).cpu()
     if method=='leace':
-        _,good,bad = matched_rows(records,options)
+        _,good,bad,_ = matched_rows(records,options)
         plan['left'],plan['right'] = leace_factors(good,bad,options['ridge'])
     if method=='ara':
         if editor is None or not module_records:

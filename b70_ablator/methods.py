@@ -68,7 +68,7 @@ def finite_option(options, name, low=0., high=float('inf'), integer=False):
 
 
 def validate_method_options(method, options):
-    common={'winsorization_quantile','massive_threshold','massive_ratio','row_normalization','layer_profile','capture'}
+    common={'winsorization_quantile','massive_threshold','massive_ratio','row_normalization','layer_profile','capture','family_weighting'}
     specific={'whitened-svd':{'ridge'},'leace':{'ridge'},'som':{'som_steps','som_learning_rate'},
               'nullspace':{'nullspace_deflations'},
               'ara':{'steps','learning_rate','neighbors','preserve','steer','overcorrect','repulsion_cap'}}
@@ -76,6 +76,8 @@ def validate_method_options(method, options):
         raise ValueError('Unknown method_options or options for a different method')
     if options.get('capture','last') not in {'last','answer-mean'}:
         raise ValueError("capture must be 'last' or 'answer-mean'")
+    if options.get('family_weighting','none') not in {'none','balanced'}:
+        raise ValueError("family_weighting must be 'none' or 'balanced'")
     for key in specific.get(method,set())-{'overcorrect'}:
         finite_option(options,key,high=1. if key=='som_learning_rate' else float('inf'),integer=key in {'steps','neighbors','som_steps','nullspace_deflations'})
     if method=='ara':
@@ -109,7 +111,7 @@ def layer_discriminability(records, options):
     uniformly across the depth, which is what a blind center/width search does.
     """
     import torch
-    _, good, bad = matched_rows(records, options)
+    _, good, bad, _ = matched_rows(records, options)
     signal = (bad - good).norm(dim=-1).mean(0)
     spread = torch.cat([(good - good.mean(0, keepdim=True)).norm(dim=-1),
                         (bad - bad.mean(0, keepdim=True)).norm(dim=-1)], dim=0).mean(0)
@@ -145,14 +147,15 @@ def matched_rows(records, options):
     labels = sorted(groups)
     good = torch.stack([torch.stack(groups[k]['good']).mean(0) for k in labels])
     bad = torch.stack([torch.stack(groups[k]['bad']).mean(0) for k in labels])
-    return labels,good,bad
+    counts = torch.tensor([len(groups[k]['good']) for k in labels],dtype=torch.int64)
+    return labels,good,bad,counts
 
 
 def fit_directions(records, rank, method='directional', options=None, seed=0):
     import torch
     from .numerics import directions_from_languages
     options = options or {}
-    labels, good, bad = matched_rows(records,options)
+    labels, good, bad, counts = matched_rows(records,options)
     if method == 'directional':
         languages = sorted({k[0] for k in labels})
         return directions_from_languages({lang:good[[i for i,k in enumerate(labels) if k[0]==lang]].mean(0) for lang in languages},
@@ -169,12 +172,25 @@ def fit_directions(records, rank, method='directional', options=None, seed=0):
         matrix = matrix - (matrix*harmless[:,None,:]).sum(-1,keepdim=True)*harmless[:,None,:]
     elif method == 'whitened-svd':
         ridge = finite_option(options,'ridge')
-        centered = (good-good.mean(0)).transpose(0,1)
+        weighting = options.get('family_weighting','none')
+        if weighting not in {'none','balanced'}:
+            raise ValueError("family_weighting must be 'none' or 'balanced'")
+        if weighting == 'balanced':
+            weights = counts.float().clamp_min(1)/counts.float().clamp_min(1).sum()
+        else:
+            weights = torch.full((len(good),),1./len(good),device=good.device)
+        mean_good = (weights.view(-1,1,1)*good).sum(0)
+        centered = (good-mean_good).transpose(0,1)
+        if weighting == 'balanced':
+            centered = centered*weights.sqrt().view(1,-1,1)
         _,s,vh = torch.linalg.svd(centered,full_matrices=False)
-        variances = s.square()/max(len(good)-1,1)
+        n_eff = float(counts.float().clamp_min(1).sum()) if weighting=='balanced' else float(len(good))
+        variances = s.square()/max(n_eff-1,1.)
         # Thin-SVD inverse covariance square root; no residual-width-squared allocation.
         coefficients = (variances+ridge).rsqrt()-ridge**-.5
         matrix = matrix*ridge**-.5 + ((matrix@vh.transpose(-1,-2))*coefficients[:,None,:])@vh
+        if weighting == 'balanced':
+            matrix = matrix*weights.view(1,-1,1)
     elif method == 'som':
         steps = finite_option(options,'som_steps',integer=True)
         lr = finite_option(options,'som_learning_rate',high=1.)
