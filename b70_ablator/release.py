@@ -17,6 +17,7 @@ import gguf
 from .transport import ChatClient
 from .scoring import search_rate
 from .answers import atomic_json, atomic_text, exclusive
+from .clock import now_iso as _now_iso
 from .data import digest
 from .storage import atomic_destination, sync_directory
 
@@ -365,7 +366,7 @@ def add_claim(directory, claim, evidence, verified_by, release_identity=None):
     elif chain['release_identity'] != identity:
         raise ValueError('Evidence ledger belongs to a different release identity')
     entry = {'seq': len(chain['entries']) + 1, 'claim': str(claim), 'evidence': str(evidence),
-             'verified_by': str(verified_by), 'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+             'verified_by': str(verified_by), 'at': _now_iso(),
              'previous_digest': chain['entries'][-1].get('digest', '') if chain['entries'] else ''}
     entry['digest'] = digest(entry)
     chain['entries'].append(entry)

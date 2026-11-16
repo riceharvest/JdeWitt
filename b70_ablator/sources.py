@@ -7,6 +7,7 @@ synthetic row grouping is a genuine topic family. Everything it does to a
 corpus is recorded in the provenance file next to the suites.
 """
 import csv
+import datetime
 import hashlib
 import io
 import json
@@ -138,6 +139,70 @@ def read_hub(source):
     records = read_local(path, source.get('column'))
     return records, {'dataset': dataset, 'revision': revision, 'file': filename,
                      'file_sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+
+
+def _normalize_revision_time(value):
+    """HF returns float epoch or datetime depending on cache version; normalise both."""
+    if isinstance(value, (int, float)):
+        dt = datetime.datetime.fromtimestamp(float(value), datetime.timezone.utc)
+        return dt.isoformat(), dt.timestamp()
+    if isinstance(value, datetime.datetime):
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=datetime.timezone.utc)
+        return value.isoformat(), value.timestamp()
+    return None, None
+
+
+def corpus_cache_report():
+    """Inventory the on-disk dataset import cache. Read-only; nothing is deleted."""
+    from huggingface_hub import scan_cache_dir
+    info = scan_cache_dir()
+    revisions = []
+    for repo in info.repos:
+        if repo.repo_type != 'dataset':
+            continue
+        for rev in repo.revisions:
+            iso, _ = _normalize_revision_time(rev.last_modified)
+            revisions.append({'repo': repo.repo_id, 'revision': rev.commit_hash,
+                              'refs': sorted(rev.refs), 'files': len(rev.files),
+                              'bytes': rev.size_on_disk, 'last_modified': iso})
+    revisions.sort(key=lambda r: (r['repo'], r['last_modified'] or ''))
+    return {'cache_dir': str(info.cache_dir), 'datasets': revisions,
+            'dataset_bytes': sum(r['bytes'] for r in revisions),
+            'incomplete_files': len(info.incomplete_files),
+            'warnings': [str(w) for w in info.warnings]}
+
+
+def corpus_cache_prune(older_than_days, execute=False):
+    """Preview or delete unreferenced dataset cache revisions older than N days.
+
+    Revisions reachable by a branch or tag ref are never candidates; the importer
+    only ever reads pinned revisions anyway. Without ``execute`` this only reports.
+    """
+    import time
+    from huggingface_hub import scan_cache_dir
+    if type(older_than_days) is not int or older_than_days < 1:
+        raise ValueError('older_than_days must be an integer >= 1')
+    info = scan_cache_dir()
+    cutoff = time.time() - older_than_days * 86400
+    doomed = []
+    for repo in info.repos:
+        if repo.repo_type != 'dataset':
+            continue
+        for rev in repo.revisions:
+            if rev.refs:
+                continue
+            _, epoch = _normalize_revision_time(rev.last_modified)
+            if epoch is None or epoch >= cutoff:
+                continue
+            doomed.append({'repo': repo.repo_id, 'revision': rev.commit_hash, 'bytes': rev.size_on_disk})
+    result = {'cutoff_days': older_than_days, 'candidates': doomed,
+              'candidate_bytes': sum(d['bytes'] for d in doomed), 'executed': False,
+              'note': 'Pinned revisions (branch/tag refs) are never deleted.'}
+    if doomed and execute:
+        info.delete_revisions(*(d['revision'] for d in doomed)).execute()
+        result['executed'] = True
+    return result
 
 
 def prune_small_families(splits, minimum):

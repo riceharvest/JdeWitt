@@ -485,3 +485,25 @@ def about():
             'upstream':{'repository':'https://github.com/p-e-w/heretic','inspected_revision':revision},
             'dependencies':dependencies,
             'note':'Installation and provenance metadata only; certifies no runtime behaviour or model result.'}
+
+
+def suite_stats(path):
+    """Descriptive statistics for one suite file. Loads and validates, no models run."""
+    from collections import Counter
+    from .data import load_suite
+    rows = load_suite(Path(path))
+    kinds = Counter(row['kind'] for row in rows)
+    languages = Counter(row['language'] for row in rows)
+    families = Counter(row.get('family_id') or row['id'] for row in rows)
+    sizes = sorted(families.values())
+    lengths = sorted(len(row['prompt']) for row in rows)
+    n = len(rows)
+    direction_labels = Counter(row.get('label') for row in rows if row['kind'] == 'direction')
+    return {'suite': str(path), 'prompts': n,
+            'kinds': dict(kinds), 'languages': dict(languages),
+            'families': {'total': len(families), 'singletons': sum(1 for s in sizes if s == 1),
+                         'largest': sizes[-1], 'median_size': sizes[len(sizes) // 2]},
+            'prompt_chars': {'min': lengths[0], 'median': lengths[n // 2],
+                             'p90': lengths[min(n - 1, int(0.9 * n))], 'max': lengths[-1]},
+            'direction_labels': dict(direction_labels),
+            'note': 'Structure statistics only; says nothing about difficulty or judgeability.'}

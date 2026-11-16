@@ -44,6 +44,11 @@ def main():
     near=sub.add_parser('suite-near-dup',help='Report reworded duplicate prompts across suite files; files are never modified')
     near.add_argument('suite',type=Path,nargs='+')
     near.add_argument('--threshold',type=float,default=0.8)
+    stats=sub.add_parser('suite-stats',help='Descriptive statistics for one suite file; no model loads')
+    stats.add_argument('suite',type=Path)
+    cache=sub.add_parser('corpus-cache',help='Inventory the dataset import cache; --prune-older-than N previews/deletes old unpinned revisions')
+    cache.add_argument('--prune-older-than',type=int,metavar='DAYS')
+    cache.add_argument('--execute',action='store_true',help='Actually delete prune candidates instead of previewing')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
@@ -184,6 +189,12 @@ def main():
         elif args.command=='suite-diff':
             from .agent import suite_diff
             result=suite_diff(args.before,args.after)
+        elif args.command=='suite-stats':
+            from .agent import suite_stats
+            result=suite_stats(args.suite)
+        elif args.command=='corpus-cache':
+            from .sources import corpus_cache_prune, corpus_cache_report
+            result=corpus_cache_prune(args.prune_older_than,args.execute) if args.prune_older_than else corpus_cache_report()
         elif args.command in {'studies','run-cancel'}:
             from .agent import studies, request_cancel
             result=studies(args.directory) if args.command=='studies' else request_cancel(args.directory)
