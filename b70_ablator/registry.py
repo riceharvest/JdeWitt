@@ -95,6 +95,8 @@ def register_plan(registry, run_output, gates_path=None, allow_unmeasured=False)
     registry = Path(registry)
     key = _entry_key(pointer['identity_digest'], config['model'], provenance.get('resolved_revision'))
     directory = registry / 'plans' / key
+    if directory.is_symlink():
+        raise RegistryError(f'plan directory {directory} is a symlink; refusing to write through it')
     if (directory / 'meta.json').exists():
         raise RegistryError(f'plan {key} is already registered')
     directory.mkdir(parents=True, exist_ok=True)
@@ -307,6 +309,8 @@ def unbundle_plan(bundle, into):
     except RegistryError:
         raise
     dest = into / 'plans' / key
+    if dest.is_symlink():
+        raise RegistryError(f'plan directory {dest} is a symlink; refusing to write through it')
     if (dest / 'meta.json').is_file():
         existing = _verify_meta(into, key)
         if existing['meta_digest'] != meta['meta_digest']:
