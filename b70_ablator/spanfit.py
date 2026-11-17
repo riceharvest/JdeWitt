@@ -127,6 +127,14 @@ def protect_axes(axes: torch.Tensor, subspace: torch.Tensor,
     return a, kept
 
 
+def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> torch.Tensor:
+    """Interpolate each layer's axis toward the shared axis and renormalize:
+    a_l = norm(alpha * s + (1-alpha) * a_l). alpha=0 -> perlayer, 1 -> shared.
+    `shared` may be [D] or [L,D]."""
+    m = (1.0 - alpha) * perlayer + alpha * shared
+    return m / m.norm(dim=1, keepdim=True).clamp_min(1e-12)
+
+
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).

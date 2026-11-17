@@ -96,6 +96,24 @@ def test_shared_axis_recovers_layer_invariant_direction():
     assert torch.allclose(axes[0], axes[-1], atol=1e-6)
 
 
+def test_mixed_axes_endpoints_and_unit_norm():
+    g = torch.Generator().manual_seed(7)
+    Lc, D = 5, 16
+    pl = torch.randn(Lc, D, generator=g)
+    pl = pl / pl.norm(dim=1, keepdim=True)
+    s = torch.ones(1, D) / (D ** 0.5)
+    axes0 = spanfit.mixed_axes(pl, s, 0.0)
+    axes1 = spanfit.mixed_axes(pl, s, 1.0)
+    assert torch.allclose(axes0, pl, atol=1e-6)
+    for l in range(Lc):
+        assert torch.allclose(axes1[l], s[0], atol=1e-6)
+    mid = spanfit.mixed_axes(pl, s, 0.5)
+    assert torch.allclose(mid.norm(dim=1), torch.ones(Lc), atol=1e-5)
+    cos1 = float((mid[0] @ s[0]).abs())
+    cos0 = float((mid[0] @ pl[0]).abs())
+    assert cos1 > cos0 - 0.2  # pulled toward shared but not fully
+
+
 def test_protection_subspace_and_protect_axes():
     g = torch.Generator().manual_seed(31)
     Lc, D, k, Nc = 3, 32, 4, 12
