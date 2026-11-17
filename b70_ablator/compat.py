@@ -1,12 +1,21 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """Known vendor ABI fixes in private metadata copies, never the user's originals."""
 import json
+import re
 import shutil
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
 from .answers import atomic_text
+
+
+# transformers 5.x only understands a dict-shaped _tied_weights_keys (it calls .keys(),
+# .values() and .items() on it), but Spark-X2.6's remote code still ships the 4.x list form
+# and dies in post_init with AttributeError: 'list' object has no attribute 'keys'.
+# The 4.x list form meant 'tie this target to the input embedding', which here is
+# model.embedding.weight -- the same target the self-referential dict fix below produces.
+_TIED_LIST=re.compile(r'(?m)^(\s*)_tied_weights_keys\s*=\s*\[\s*"lm_head\.weight"\s*,?\s*\]\s*(.*)$')
 
 
 def repair_export_metadata(directory):
@@ -20,6 +29,15 @@ def repair_export_metadata(directory):
     fixed='{"lm_head.weight": "model.embedding.weight"}'
     if fixed in source:
         return []
+    matches=_TIED_LIST.findall(source)
+    if len(matches)==1 and broken not in source:
+        source=_TIED_LIST.sub(
+            lambda m:m.group(1)+'_tied_weights_keys = {"lm_head.weight": "model.embedding.weight"}'+m.group(2),
+            source,count=1)
+        source='# B70-ablator compatibility fix: declare the tied output head in the dict form ' \
+               'transformers 5.x requires, pointing at the real input embedding.\n'+source
+        atomic_text(path,source)
+        return ['spark_tied_weights_dict_form']
     if source.count(broken)!=1:
         raise ValueError('Unrecognized Spark tied-weight declaration; compatibility adapter must be reviewed')
     source=source.replace(broken,fixed)

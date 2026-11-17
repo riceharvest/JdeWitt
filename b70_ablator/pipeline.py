@@ -235,7 +235,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         'directions_digest':digest(direction_tasks),'selection_digest':digest(selection),'holdout_digest':digest(holdout),
         'judge_sha256':judge_hash,'judge_prompt_digest':digest({'rubric':RUBRIC_SYSTEM,'evidence':EVIDENCE_SYSTEM,'style':STYLE_SYSTEM}),'calibration_digest':digest(calibration),
         'sandbox_image_id':sandbox,'torch':torch.__version__,
-        'dependency_versions':{name:version(name) for name in ('transformers','optuna','numpy','accelerate','bitsandbytes','safetensors','gguf')},
+        'dependency_versions':{name:_dependency_version(name) for name in ('transformers','optuna','numpy','accelerate','bitsandbytes','safetensors','gguf')},
         'deterministic_algorithms':torch.are_deterministic_algorithms_enabled(),
         'prompt_budget_digest':digest(budget_report),
         'framework_sources':{p.name:sha256_file(p) for p in Path(__file__).parent.glob('*.py')},
@@ -529,6 +529,17 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         readme += '\nThis release was produced on a second-rank test backend ('+provenance['compute_backend']['name']+'): B70 kernels, the B70 VRAM envelope and B70 Vulkan serving gates were NOT exercised on it. Read every number here as unverified against the certified device.\n'
     create_release(release,winner['hf_path'],winner['artifacts'],manifest,readme)
     return {'release':str(release),'winner':winner['id'],'holdout':winner_holdout}
+
+
+def _dependency_version(name):
+    """Installed version of a dependency, or None when it is simply not present.
+    bitsandbytes is only needed for the nf4 search path, so a run without it must still
+    record honest provenance instead of crashing on a missing package metadata entry."""
+    from importlib.metadata import PackageNotFoundError
+    try:
+        return version(name)
+    except PackageNotFoundError:
+        return None
 
 
 def read_predictions(directory):
