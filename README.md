@@ -124,7 +124,7 @@ numpy ports of llama.cpp's reference routines, now **byte-reproducible**: `quant
 dtype it dequantizes an evenly spaced block sample from the real file and
 requantizes it, reporting byte-identity rate and worst value drift (on the
 672 MB Q4_K_M: F32 and Q4_K 100% byte-identical, Q6_K 85.6% byte-identical
-with zero value change — scale-bit rounding ties; the Q4_K/Q5_K/Q6_K quantizers reproduce the upstream scalar reference (quantize_row_q*_K_ref) byte-for-byte, verified against compiled-C harnesses in scripts/ggml_ref on 11 distributions including real checkpoint tensors; q4_0/q8_0 quantizers and all five K/flat dequantizers are bit-exact vs the same harnesses too (q4_0 needed C's truncation semantics, q8_0 roundf's half-away-from-zero — both ported wrong before the harness caught them); decode-only dtypes are
+with zero value change — scale-bit rounding ties; the Q4_K/Q5_K/Q6_K quantizers reproduce the upstream scalar reference (quantize_row_q*_K_ref) byte-for-byte, verified against compiled-C harnesses in scripts/ggml_ref on 11 distributions including real checkpoint tensors; q4_0/q8_0 quantizers and all five K/flat dequantizers are bit-exact vs the same harnesses too (q4_0 needed C's truncation semantics, q8_0 roundf's half-away-from-zero — both ported wrong before the harness caught them), and Q4_1/Q5_0/Q5_1 are now self-owned and byte/bit-exact vs the same harnesses, which caught a missing -16 offset-code bias in our first q5_0 dequant; decode-only dtypes are
 reported as not requant-auditable rather than skipped silently; dtypes the
 pinned gguf.quants port dequantizes get a labelled port_decode_only bucket —
 on the real Qwen2.5-0.5B IQ4_XS checkpoint nothing is left unsupported).

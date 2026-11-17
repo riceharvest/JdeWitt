@@ -239,3 +239,10 @@ written into the item and stays GATED.
   Result: 100% byte-exact vs compiled C on 11 distributions x 3 codecs, including
   six real checkpoint tensors. quants-audit Q4_K identity unchanged (0.998 at
   512 blocks, tie-edge scale bits). Edit-path regression: 320/321 bit-identical.
+- Extended the harness to every remaining flat codec: q4_0/q8_0 (two more semantic
+  bugs: ggml truncates (x0+8.5) toward zero in q4_0, uses roundf half-away-from-zero
+  in q8_0) and new self-owned q4_1/q5_0/q5_1 (quantize byte-exact on 14 distributions,
+  dequant bit-exact on random packed bytes; harness caught a missing -16 offset-code
+  bias in q5_0 dequant). Wired into CODECS: gguf-edit now requants those dtypes; on
+  the real IQ4_XS checkpoint Q5_1 moved from port_decode_only to audited, and the
+  IQ4_XS<->IQ3_M diff dropped port-labelled rows 69->21 with byte-identical rel_rms.
