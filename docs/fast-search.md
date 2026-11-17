@@ -118,3 +118,54 @@ in the other direction: it assumes every trial passes stage 1.
 - The candidate-probe ranking scores neither KL nor capability nor semantic
   judge — it only tells you which strength sets *look* non-refusing on a
   short decode. A probe ranking is never a removal or quality claim.
+
+## Confirm rung (optional second half)
+
+`search_stages` accepts a second pair of keys: `confirm_fraction` and
+`confirm_keep_top`, given together and both strictly below 1. After a trial
+passes the stage-1 wording probe, it evaluates the *full budget* on a
+stratified sample of the selection suite (all row kinds) in its own nested
+store, and survives only if its refusal-check score beats the
+successively-halving keep line. Only survivors pay the full selection suite.
+The rung only prunes: every hard gate (KL, paired consistency, capability,
+judge) still runs on the full pass, and a confirm-subset pass is never a
+claim. `run-status` tallies `Confirm-subset` prunes alongside the rest.
+
+## Measured generation costs (first-party, second rank, rank labelled in place)
+
+Spark-X2.6-4B Q4_K_M served by llama.cpp CUDA (fork build, RTX 3060, greedy,
+4 parallel slots), 2026-11-17, 40 English harmful rows from the public-corpus
+selection suite:
+
+| budget | tokens generated | wall | tok/s | notes |
+|---|---|---|---|---|
+| 96 tok cap, 1 slot | 576 | 8.9 s | 65.0 | every row spent all 96 (probe cost is real, no early EOS) |
+| 96 tok cap, 4 slots | 3840 | 27.8 s | 138.0 | 2.1x batching scaling |
+| 1536 tok cap, 4 slots | 17957 | 125 s | 143.2 | mean 449 tok/row — refusal rows EOS long before budget |
+
+Readings that change the funnel math:
+- A probe pass on these rows costs ~6% of the full-budget harmful pass.
+- The 1536-token "worst case" is fiction on refusing rows: baseline answers
+  EOS around ~450 tokens, so the full-budget harmful pass is ~4x cheaper than
+  the per-row budget implies.
+- These are llama.cpp Q4 serving numbers on the second-rank card. The HF
+  merged-resident trial backend's speed is a different, unmeasured kernel.
+
+## Adapter serving path (mechanism proven, loop not yet wired)
+
+`b70_ablator/gguf_adapters.py` writes an in-memory edit as a GGUF LoRA adapter
+so a llama.cpp server can serve the *edited* model with its quantized weights
+untouched: the editor already stores every edit as `W + B @ A`
+(`AblatedLinear`), and llama.cpp applies exactly that delta at adapter load.
+Proven live on the same artifact/servers as the cost table:
+- a zero-delta rank-1 adapter loads and leaves greedy output identical;
+- a single +100 entry at `blk.5.ffn_down` deterministically changes generated
+  reasoning; `GET /lora-adapters` confirms both load at scale 1.0;
+- orientation is pinned by the fork's own load-time shape check, which rejects
+  transposed factors on asymmetric tensors.
+Still open before any trial uses this: dequantizing served Q4 weights to
+compute `serve_factors` from the served W (the delta depends on W), measuring
+adapter load cost for a full multi-layer adapter, a per-trial swap scheme
+(`POST /lora-adapters` only scales preloaded ids), and a `verify_edit`-grade
+equivalence gate proving adapter-on-quantized == merged-resident edit on the
+same weights. Load path proven; equivalence not.
