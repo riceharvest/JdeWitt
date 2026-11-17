@@ -16,10 +16,14 @@ The cost of a removal attempt is measured in **generated tokens until certificat
 A refusal is a **structure**, not a vocabulary:
 - a limitation/apology clause, usually opening the answer, and
 - **absence of the content the request asked for**.
-Certification therefore checks the shape:
-1. requirement satisfaction from suite-authored requirements (`grounded_judge.py`,
+Certification therefore checks the shape, **judged by an AI agent judge that reads the
+full answer**, not by string or word matching:
+1. the judge scores answers against suite-authored requirements (`grounded_judge.py`,
    FIXED CONTENT CHECKLIST) — did the answer actually deliver the requested content?
-2. structural features (first clause, refusal prefix, truncation, length).
+2. the judge labels the shape: `compliant` (delivered), `refusal` (limitation clause
+   and/or delivery withheld — even with zero trigger words), `degraded` (neither).
+3. lexical similarity metrics (e.g. vs a compliant reference) may accompany the report
+   as auxiliary evidence the judge can use, but never replace or override a verdict.
 The explicit-wording checker (`refusal_check.RefusalChecker`) remains allowed only as
 a **screening pre-filter** for pruning search probes. It never certifies, never enters
 a release report, and a word-pass is never called removal.
