@@ -77,7 +77,7 @@ and `safetensors-diff A B` prove content, not just headers: every
 byte-identical tensor, plus the relative RMS dequant error for the ones
 that differ (edited-file proof: 320/321 tensors bit-identical;
 Q4_K vs Q5_K on the same weights: 163 cross-dtype tensors compared
-by value, relative RMS 0.0796-0.0922;
+by value, relative RMS 0.0796-0.0922; the same tool on two IQ quants of one checkpoint (IQ4_XS vs IQ3_M) yields 218/290 bit-identical and 72 cross-codec rows at rel_rms 0.057-0.177, the IQ3_M rows labelled `pinned gguf.quants port (not ours)`;
 Q2_K/Q3_K and our own IQ4_XS decode through the decode-only codec
 path; remaining IQ codebook types decode through the pinned gguf.quants
 port and every such row is labelled `decoder: pinned gguf.quants port
