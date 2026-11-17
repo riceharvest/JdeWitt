@@ -96,6 +96,32 @@ def test_shared_axis_recovers_layer_invariant_direction():
     assert torch.allclose(axes[0], axes[-1], atol=1e-6)
 
 
+def test_protection_subspace_and_protect_axes():
+    g = torch.Generator().manual_seed(31)
+    Lc, D, k, Nc = 3, 32, 4, 12
+    # prev rows live mostly in a random 4-dim subspace
+    B = torch.linalg.qr(torch.randn(D, k, generator=g))[0]      # [D,k] orthonormal
+    coords = torch.randn(Nc, Lc, k, generator=g)
+    prev = coords @ B.T + 0.2 * torch.randn(Nc, Lc, D, generator=g)
+    recs = [({'label': 'prev'}, prev[i]) for i in range(Nc)]
+    U = spanfit.protection_subspace(recs, 'prev', k=k)
+    assert U.shape == (Lc, k, D)
+    # axis with 60% of its energy inside the subspace: component inside removed
+    v = torch.randn(Lc, D, generator=g)
+    inside = v @ (B @ B.T)      # [Lc,D] projected onto the k-dim subspace
+    axis = v / v.norm(dim=1, keepdim=True) + 0.6 * inside / inside.norm(dim=1, keepdim=True)
+    axis = axis / axis.norm(dim=1, keepdim=True)
+    pa, kept = spanfit.protect_axes(axis, U)
+    for l in range(Lc):
+        proj = U[l] @ pa[l]
+        assert float(proj.norm()) < 1e-4
+        assert 0.0 < kept[l] <= 1.0
+    # axis fully inside subspace -> layer skipped (zeroed)
+    full = inside / inside.norm(dim=1, keepdim=True)
+    pa2, kept2 = spanfit.protect_axes(full, U)
+    assert (kept2 < 0.2).all() or (pa2.norm(dim=1) < 1e-6).all()
+
+
 def test_build_merged_rewrites_targets_only(tmp_path):
     from gguf import GGUFWriter
     g = np.random.default_rng(3)

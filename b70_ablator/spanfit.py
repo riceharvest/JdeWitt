@@ -94,6 +94,39 @@ def shared_axis(records: list[tuple], label_bad: str = "bad",
     return (a.unsqueeze(0).expand(M.shape[0], D).float().contiguous(), a.float())
 
 
+def protection_subspace(records: list[tuple], label: str, k: int = 8) -> torch.Tensor:
+    """Top-k principal directions [L, k, D] of mean-centered answer-span
+    activations for rows with the given label - the directions "good behavior"
+    uses in the residual write-space that removal edits must not destroy."""
+    X = group_means(records, label)                    # [N, L, D] double
+    U = torch.zeros(X.shape[1], k, X.shape[2], dtype=torch.float64)
+    for l in range(X.shape[1]):
+        Xl = X[:, l, :] - X[:, l, :].mean(0, keepdim=True)
+        _, _, Vh = torch.linalg.svd(Xl, full_matrices=False)
+        U[l] = Vh[:k]
+    return U.float()
+
+
+def protect_axes(axes: torch.Tensor, subspace: torch.Tensor,
+                 min_norm: float = 0.15) -> tuple[torch.Tensor, torch.Tensor]:
+    """Remove from each layer axis the components inside the protection
+    subspace, renormalize; return (protected axes [L,D], kept fraction [L]).
+    If the axis is nearly all protected (norm < min_norm) the layer is skipped
+    (axis zeroed) rather than removing an un-protected fraction of it."""
+    a = axes.clone()
+    kept = torch.ones(a.shape[0])
+    for l in range(a.shape[0]):
+        U = subspace[l].to(a.dtype)
+        a[l] = a[l] - (U.T @ (U @ a[l]))
+        n = float(a[l].norm())
+        n0 = float(axes[l].norm())
+        kept[l] = n / max(n0, 1e-12)
+        if n < min_norm * n0:
+            a[l] = 0.0
+    a = a / a.norm(dim=1, keepdim=True).clamp_min(1e-12)
+    return a, kept
+
+
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
