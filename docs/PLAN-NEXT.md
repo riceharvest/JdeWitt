@@ -282,3 +282,39 @@ written into the item and stays GATED.
   venv (`torch 2.14.1+cu130`, which matches the `torch>=2.14.1,<2.15` floor) with
   `B70ABLATOR_ALLOW_CUDA=1` it reports `secondary` with the RTX 3060 and a finite kernel sum, and
   refuses without the flag. No model load was run on CUDA.
+
+## Second-rank serving proven, first model runs on the 3060 (this run)
+- `ManagedGGUF(..., secondary=True)` was verified against a real `llama-server` with the B70 hidden
+  (`VK_ICD_FILENAMES` pointed at the NVIDIA ICD only): `secondary=False` refuses the same box with
+  "No verified B70 Vulkan device in llama-server", `secondary=True` reports
+  `serving_backend.rank=secondary` for `Vulkan0` = the RTX 3060, passes the full-offload / artifact
+  path / context proofs and returns a real chat completion. Alias is `test-<digest>` and the
+  teardown lock is `GPU_LOCK_PATH.secondary`. Probes: `/mnt/ssd/hermes/cache/scratch/serve_rank_probe.py`.
+- `llama.cpp-spark` builds clean (CPU and Vulkan) and its converter handles Spark-X2.6-1.7B:
+  f16 GGUF 3,420,932,640 B, then `llama-quantize Q4_K_M` -> 1,107,458,592 B (5.16 BPW), which then
+  served on the 3060. This fork rejects `--use-safetensors`; use `--outtype f16`.
+- Spark-X2.6-1.7B (`model_type spark2_5`) loads under transformers 5.23 only after three repairs to
+  the vendor remote code **in the private compatibility copy** (`compat.repair_export_metadata`,
+  never the user's download): `_tied_weights_keys` list form -> `{"lm_head.weight": "model.embedding.weight"}`
+  (5.x calls `.keys()` on it), mask kwargs `input_embeds` -> `inputs_embeds`, and the
+  `"cache_position": cache_position,` entry dropped (5.x mask factories no longer take it). Each
+  repair matches its pattern exactly once or raises. Verified: `lm_head.weight is` the input
+  embedding tensor, and greedy generation returns text. `trust_remote_code` must be true, since
+  5.23 has no registered `spark2_5` config.
+- Baseline measurements on the selection suite (18 rows, greedy, `refusal-check`, second-rank CUDA):
+  - Spark-X2.6-1.7B @ max_tokens 1536 / ctx 8192: refusal_rate 0.625, capability pass 0.667,
+    degenerate 1, 2 rows truncated -> baseline gate refused the run. A single-request probe then
+    finished `s-reviews-r3` with eos at 924 tokens (the batched baseline had truncated it at 1536)
+    and ran `s-tax-r3` to 3072 tokens with no eos.
+  - MiniCPM-V-4.7-1B @ 1024 and again @ 2048 / ctx 4096: refusal_rate 0.125, capability pass 0.833,
+    degenerate 0, `s-reviews-r3` truncated at both budgets -> baseline gate refused the run.
+  - Both numbers come from `baseline-hf/report.json` in the archived run dirs; no trial completed, so
+    there is still no fitted-direction or before/after number for any model.
+- Open: selection item `s-reviews-r3` (nl) does not terminate under greedy on either model, which is
+  what keeps tripping `Invalid baseline outputs/judgments` (that gate means at least one row is not
+  `status=ok` with `refusal_check.result` in {no_explicit_refusal, refusal_detected} — for these runs
+  it was pure truncation: `completion_tokens == max_tokens`, no OOM). Raising the budget has not
+  fixed it; the next lever is suite quality (a run-local selection copy with that item re-worded or
+  dropped, repo suites untouched) rather than a bigger number. Related: MiniCPM decode on CUDA has
+  neither `flash-linear-attention` nor `causal_conv1d`, so its gated-delta/conv1d layers run on
+  reference kernels and the baseline sweep costs minutes, not seconds.
