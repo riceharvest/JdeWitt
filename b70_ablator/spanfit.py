@@ -231,12 +231,18 @@ def main(argv=None):
     m.add_argument("--out", required=True)
     m.add_argument("--cos-to", help="report max cosine distance vs another axes tensor")
     m.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
+    for p in (a, m):
+        p.add_argument("--time-log", help="JSONL ledger; logs fit/merge phases")
     args = ap.parse_args(argv)
 
     t0 = time.monotonic()
     recs = load_records(args.records)
     axes = (shared_axis(recs)[0] if args.shape == "shared"
             else per_layer_axes(recs))
+    if args.time_log:
+        from .timing import record
+        record(args.time_log, lineage=os.path.basename(args.records),
+               phase='fit', seconds=time.monotonic() - t0, kind='cpu')
     if args.cmd == "axes":
         torch.save({"axes": axes}, args.out)
         rep = {"axes": list(axes.shape), "elapsed_s": round(time.monotonic() - t0, 1)}
@@ -256,6 +262,10 @@ def main(argv=None):
             keys.append(k)
     rep = build_merged(args.gguf_in, args.out, axes, keys)
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
+    if args.time_log:
+        from .timing import record
+        record(args.time_log, lineage=os.path.basename(args.out),
+               phase='merge', seconds=rep['elapsed_s'], kind='cpu')
     print(json.dumps(rep))
 
 
