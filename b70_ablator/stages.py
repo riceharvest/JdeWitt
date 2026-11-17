@@ -9,11 +9,25 @@ import math
 
 
 def validate_search_stages(spec, max_tokens):
-    """Normalize and validate the optional ``search_stages`` run field."""
+    """Normalize and validate the optional ``search_stages`` run field.
+
+    The three core keys are the short-decode probe. ``confirm_fraction`` and
+    ``confirm_keep_top`` are an optional second rung: a full-budget
+    evaluation of a stratified selection subset, halved again before the
+    trial pays for the entire selection suite. Both must be strictly below 1:
+    a confirm rung that never prunes or never subsets just doubles cost.
+    """
     if spec is None:
         return None
-    if not isinstance(spec, dict) or set(spec) != {'probe_fraction', 'probe_tokens', 'keep_top'}:
-        raise ValueError('search_stages requires exactly probe_fraction, probe_tokens and keep_top')
+    if not isinstance(spec, dict):
+        raise ValueError('search_stages must be an object')
+    base = {'probe_fraction', 'probe_tokens', 'keep_top'}
+    optional = {'confirm_fraction', 'confirm_keep_top'}
+    keys = set(spec)
+    if not base <= keys or keys - base - optional:
+        raise ValueError('search_stages needs probe_fraction, probe_tokens and keep_top, optionally confirm_fraction and confirm_keep_top')
+    if ('confirm_fraction' in keys) != ('confirm_keep_top' in keys):
+        raise ValueError('search_stages.confirm_fraction and confirm_keep_top must be given together')
     pf, pt, kt = spec['probe_fraction'], spec['probe_tokens'], spec['keep_top']
     if type(pf) not in (int, float) or not math.isfinite(pf) or not 0 < pf <= 1:
         raise ValueError('search_stages.probe_fraction must be in (0, 1]')
@@ -21,7 +35,16 @@ def validate_search_stages(spec, max_tokens):
         raise ValueError(f'search_stages.probe_tokens must be a positive integer within max_tokens ({max_tokens})')
     if type(kt) not in (int, float) or not math.isfinite(kt) or not 0 < kt <= 1:
         raise ValueError('search_stages.keep_top must be in (0, 1]')
-    return {'probe_fraction': float(pf), 'probe_tokens': pt, 'keep_top': float(kt)}
+    out = {'probe_fraction': float(pf), 'probe_tokens': pt, 'keep_top': float(kt)}
+    if 'confirm_fraction' in keys:
+        cf, ck = spec['confirm_fraction'], spec['confirm_keep_top']
+        if type(cf) not in (int, float) or not math.isfinite(cf) or not 0 < cf < 1:
+            raise ValueError('search_stages.confirm_fraction must be in (0, 1) — a full-suite confirm evaluates the whole suite twice')
+        if type(ck) not in (int, float) or not math.isfinite(ck) or not 0 < ck < 1:
+            raise ValueError('search_stages.confirm_keep_top must be in (0, 1) — a confirm rung that never prunes only adds cost')
+        out['confirm_fraction'] = float(cf)
+        out['confirm_keep_top'] = float(ck)
+    return out
 
 
 def stratified_sample(rows, fraction):

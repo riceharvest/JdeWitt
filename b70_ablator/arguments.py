@@ -11,6 +11,7 @@ def add_arguments(sub):
         generate.add_argument('--'+key, type=int, required=True)
     for key in ('refusal-floor','batch-max-sequences','batch-token-budget'):
         generate.add_argument('--'+key,type=int)
+    generate.add_argument('--allow-secondary',action='store_true',help='serve on a non-B70 Vulkan device as an explicitly opt-in second-rank test backend; recorded as rank=secondary and never a certification')
     score = sub.add_parser('score', help='Score saved answers independently')
     score.add_argument('--mode', dest='scoring_mode', choices=['judge','refusal-check'], default='judge')
     for key in ('answers','suite','output'):

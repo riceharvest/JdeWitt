@@ -361,6 +361,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 save_checkpoint(output/'screen-baselines.pt',screen_baseline,screen_identity,{})
         stages = validate_search_stages(getattr(config,'search_stages',None), config.max_tokens)
         stage_rows = stage_checker = None
+        confirm_rows = None
         if stages is not None:
             stage_rows = stratified_sample([t for t in selection if t['kind']=='refusal'], stages['probe_fraction'])
             if not stage_rows:
@@ -383,9 +384,11 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                             raise ValueError('Probe backend did not confirm the refusal floor')
                         out[task['id']] = response
                 return [out[task['id']] for task in stage_rows]
+            confirm_rows = stratified_sample(selection, stages['confirm_fraction']) if 'confirm_fraction' in stages else None
             atomic_json(output/'search-stages.json',{'stages':stages,'probe_rows':[t['id'] for t in stage_rows],
+                'confirm_rows':[t['id'] for t in confirm_rows] if confirm_rows is not None else None,
                 'batch_policy':config.generation_batch,'refusal_floor':config.refusal_floor,
-                'note':'Stage-1 probe answers are heuristic wording verdicts on truncated short decodes; they never enter the answer store, the gates or any release report.'})
+                'note':'Stage-1 probe answers are heuristic wording verdicts on truncated short decodes; they never enter the answer store, the gates or any release report. The confirm rung evaluates a stratified selection subset at full budget and only prunes; all gates remain on the full-suite pass.'})
         if config.warm_starts:
             warm=json.loads(Path(config.warm_starts).read_text())
             for params in compatible_warm_starts(warm,fingerprint):
@@ -489,6 +492,23 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                     if stage1_pruned(stored['score'], prior, stages['keep_top']):
                         raise optuna.TrialPruned('Stage-1 probe refusal rate worse than the keep line; no full-budget answers were generated')
                 incumbent=min([v for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible') and (v:=t.values[0] if config.objectives else t.value) is not None],default=None)
+                if confirm_rows is not None:
+                    cdir=output/f'trial-{trial.number}'/'confirm'
+                    stored=trial.user_attrs.get('confirm')
+                    if stored is None:
+                        creport=eval_cached(confirm_rows,backend,judge,cdir,config.sandbox_image,
+                                            {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params,'stage':'confirm'},
+                                            phases,scoring_identity,incumbent,
+                                            refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
+                        stored={'score':search_rate(creport),'invalid':creport['invalid'],'rows':len(confirm_rows)}
+                        atomic_json(cdir/'confirm-report.json',stored)
+                        trial.set_user_attr('confirm',stored)
+                    # Keep line over trials that survived into the full selection pass.
+                    priorc=[t.user_attrs['confirm']['score'] for t in study.trials
+                            if t.user_attrs.get('confirm') is not None
+                            and (t.user_attrs.get('report') is not None or t.state==optuna.trial.TrialState.COMPLETE)]
+                    if stage1_pruned(stored['score'],priorc,stages['confirm_keep_top']):
+                        raise optuna.TrialPruned('Confirm-subset refusal rate worse than the keep line; full selection suite was not generated')
                 report=eval_cached(selection,backend,judge,output/f'trial-{trial.number}',config.sandbox_image,
                                    {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params},phases,scoring_identity,incumbent,
                                    refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)

@@ -89,6 +89,7 @@ def _funnel_summary(root):
     summary = {}
     tallies = {('trial-stage1', None): 'stage1_probed',
                ('trial-pruned', 'Stage-1'): 'stage1_pruned',
+               ('trial-pruned', 'Confirm-subset'): 'confirm_pruned',
                ('trial-pruned', 'Screened out'): 'screen_pruned',
                ('trial-pruned', 'cannot meet the damage limit'): 'kl_pruned',
                ('trial-pruned', 'Capability or validity gate failed'): 'capability_pruned'}
@@ -211,6 +212,11 @@ def describe_run(path,overrides=()):
                               'candidate_probe_enqueue_top':probe['enqueue_top'],
                               'candidate_probe_probe_generations':probe['samples']*len(probe_rows),
                               'note_candidate_probe':'pre-search probe costs samples*probe_rows short decodes in one model load; the top enqueue_top enter the study as ordinary trials and pay every gate in full'})
+        if 'confirm_fraction' in stages:
+            cf_rows = stratified_sample(suites['selection'], stages['confirm_fraction'])
+            estimates.update({'confirm_rows_per_attempt':len(cf_rows),
+                              'confirm_evals_upper_bound':config.trials*len(cf_rows),
+                              'note_confirm':'confirm rung evaluates this stratified subset at full budget before the full-suite pass; it only prunes, all gates stay on the full pass'})
     return {'config':str(path),'status':'described-only, not validated on hardware',
             'source_validated':'validate_run_inputs passed before this report was built',
             'suites':{name:split_stats(rows) for name,rows in suites.items()},
