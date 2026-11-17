@@ -91,7 +91,7 @@ def shared_axis(records: list[tuple], label_bad: str = "bad",
     a = evecs[:, -1]                           # top eigenvector = shared direction
     if float(a @ M.mean(0)) < 0:
         a = -a
-    return (a.unsqueeze(0).expand(bad.shape[0], D).float().contiguous(), a.float())
+    return (a.unsqueeze(0).expand(M.shape[0], D).float().contiguous(), a.float())
 
 
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
