@@ -39,3 +39,11 @@ distributions incl. exact-half ties, all-equal blocks and real tensors). The
 falsifier caught a dequantizer bias we had missed: ggml dequantize_row_q5_0
 stores an offset code and subtracts 16 (its quantizer adds 16.5 before
 truncating), which our first port omitted.
+
+ref_23k.c: q2_K/q3_K scalar quantizer reference (`./ref_23k q2_K < weights.f32 > blocks.bin`).
+quantize_row_q2_K_ref byte-exact (13 distributions incl. 4 real F32 checkpoint tensors)
+— the first falsifier run exposed that make_qkx2_quants uses the CALLER's weights:
+q2_K passes plain |x| while q4_K/q5_K pass av_x+|x| (the port had hardcoded the latter,
+which is why q2_K quantized 0.0% byte-exact initially).
+quantize_row_q3_K_ref: port attempted but NOT byte-exact (~16% blocks on gaussian;
+zero/near-zero/subnormal cases exact). Not wired; Q3_K stays decode-only.

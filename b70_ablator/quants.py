@@ -57,17 +57,21 @@ def _fold_last(a, init):
     return acc
 
 
-def _make_qkx2(x, nmax, rmin, rdelta, nstep):
+def _make_qkx2(x, nmax, rmin, rdelta, nstep, use_mad=False, weights='av'):
     """x: [nb,8,32] float32 -> scale [nb,8], the_min [nb,8], L [nb,8,32].
     Byte-reproducible mirror of make_qkx2_quants (ggml-quants.c master bcda336):
     left-fold float32 sums in C's order, int-as-float without float64 promotion,
     f32 step arithmetic in the iscale numerator, NaN/inf l -> 0 like nearest_int's
-    magic-add on degenerate spans, and the C early-return semantics for flat groups."""
+    magic-add on degenerate spans, and the C early-return semantics for flat groups.
+    weights='av' mirrors q4_K/q5_K callers (av_x + |x|); 'abs' mirrors the q2_K
+    caller (plain |x|) — C uses the caller-provided weights verbatim."""
     x = x.astype(np.float32)
     n = x.shape[-1]
     zero = np.zeros_like(x[..., :1])
-    av_x = np.sqrt(_fold_last(x * x, zero.copy()) / n)
-    w = av_x + np.abs(x)
+    w = np.abs(x)
+    if weights == 'av':
+        av_x = np.sqrt(_fold_last(x * x, zero.copy()) / n)
+        w = av_x + w
 
     mn = mx = x[..., :1].copy()
     sw = w[..., :1].copy()
@@ -92,7 +96,10 @@ def _make_qkx2(x, nmax, rmin, rdelta, nstep):
     L = _L(iscale)
     best_L = L
     best_scale = scale
-    best_err = _fold_last(w * (scale * L + mn - x) ** 2, zero.copy())
+    def _err(s_, l_, m_):
+        diff = s_ * l_ + m_ - x
+        return _fold_last(w * (np.abs(diff) if use_mad else diff * diff), zero.copy())
+    best_err = _err(scale, L, mn)
     for step in range(nstep + 1):
         span = mx - mn  # C uses the *running* min; it drifts after an accepted refinement
         num = np.float32(rmin) + np.float32(rdelta) * np.float32(step)  # C's f32 step math
@@ -109,7 +116,7 @@ def _make_qkx2(x, nmax, rmin, rdelta, nstep):
         pos = this_min > 0
         this_scale = np.where(pos, sxl / np.where(sl2 != 0, sl2, 1), this_scale)
         this_min = np.where(pos, np.zeros_like(this_min), this_min)
-        cur = _fold_last(w * (this_scale * Laf + this_min - x) ** 2, zero.copy())
+        cur = _err(this_scale, Laf, this_min)
         good = (D > 0) & (cur < best_err)
         best_L = np.where(good, Laf, best_L)
         best_scale = np.where(good, this_scale, best_scale)
@@ -575,11 +582,63 @@ def dequantize_q3_k(raw, n):
     return (dl[:, :, None] * factor).reshape(nb * QK_K)
 
 
-# Read-only codecs: block_bytes, elements, dequantizer. Proven exact against
-# the independent gguf-package port on 770048 random elements per dtype plus
-# uniform edge fills. The reference quantizers (make_qkx3/make_qx_quants
-# search loops) are NOT ported yet, so gguf-edit keeps refusing Q2_K/Q3_K
-# requant; measurement-only for now.
+def _pack_2bit_qk(L):
+    """L: [nb,256] uint64 -> ggml 2-bit packing: byte 32g+l holds quants
+    128g+l | 128g+32+l <<2 | 128g+64+l <<4 | 128g+96+l <<6 (both q2/q3_K)."""
+    q4 = L.reshape(-1, 2, 4, 32)
+    return (q4 << np.array([0, 2, 4, 6], dtype=np.uint64).reshape(1, 1, 4, 1)).sum(axis=2).reshape(-1, 64)
+
+
+def quantize_q2_k(x):
+    """Byte-reproducible mirror of ggml quantize_row_q2_K_ref: per 16-element
+    subblock make_qkx2 (n=16, nmax=3, rmin=-0.5, rdelta=0.1, nstep=15, use_mad),
+    f16-packed 4+4-bit scales/mins, then requant with the stored bytes."""
+    x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, QK_K)
+    xs = x.reshape(-1, 16, 16)
+    scale, mins, Lq = _make_qkx2(xs, 3, -0.5, 0.1, 15, use_mad=True, weights='abs')
+    L = Lq.astype(np.uint64).reshape(xs.shape)
+    max_scale = np.where(scale > 0, scale, 0.0).max(axis=-1)
+    max_min = np.where(mins > 0, mins, 0.0).max(axis=-1)
+    pos_s = max_scale > 0
+    pos_m = max_min > 0
+    sdiv = np.where(pos_s, np.float32(15.0) / np.where(pos_s, max_scale, 1.0), 0.0)
+    mdiv = np.where(pos_m, np.float32(15.0) / np.where(pos_m, max_min, 1.0), 0.0)
+    low = np.where(pos_s[:, None], _rint(sdiv[:, None] * scale), 0.0).astype(np.int64)
+    high = np.where(pos_m[:, None], _rint(mdiv[:, None] * mins), 0.0).astype(np.int64)
+    sc = ((low | (high << 4)) & 0xFF)
+    dg = np.where(pos_s, max_scale / np.float32(15.0), 0.0)
+    mg = np.where(pos_m, max_min / np.float32(15.0), 0.0)
+    d_f16 = dg.astype(np.float16).astype(np.float32)
+    m_f16 = mg.astype(np.float16).astype(np.float32)
+    dsub = d_f16[:, None] * (sc & 0xF)
+    dmsub = m_f16[:, None] * (sc >> 4)
+    mask = dsub != 0
+    with np.errstate(invalid='ignore', divide='ignore'):
+        lq = np.clip(_rint((xs + dmsub[:, :, None]) /
+                           np.where(mask[:, :, None], dsub[:, :, None], 1.0)), 0, 3)
+    L = np.where(mask[:, :, None], lq.astype(np.uint64), L)
+    out = np.empty((x.shape[0], 84), dtype=np.uint8)
+    out[:, 0:16] = sc.astype(np.uint8)
+    out[:, 16:80] = _pack_2bit_qk(L).astype(np.uint8)
+    out[:, 80:82] = _fp16_bytes(dg).view(np.uint8).reshape(-1, 2)
+    out[:, 82:84] = _fp16_bytes(mg).view(np.uint8).reshape(-1, 2)
+    return out.reshape(-1)
+
+
+# Q2_K joins CODECS here (not the literal above) because its quantizer is defined
+# after CODECS; Q3_K stays decode-only: a quantize_row_q3_K_ref port was written
+# and compiled-C falsified but is only ~16% byte-exact on gaussian data (zero and
+# near-zero cases pass) — kept out of CODECS until byte-exact. See docs/PLAN-NEXT.
+CODECS['Q2_K'] = (84, QK_K, quantize_q2_k, dequantize_q2_k)
+
+
+# Q2_K's quantizer above is a byte-exact mirror of ggml quantize_row_q2_K_ref
+# (compiled-C falsified, scripts/ggml_ref/ref_23k.c, 13 distributions incl. 4
+# real F32 checkpoint tensors). It exposed a latent caller-weights issue in
+# _make_qkx2: q2_K passes plain |x| weights while q4_K/q5_K pass av_x+|x|; the
+# dequantizers below remain the previously proven ports. Q3_K stays decode-only
+# — see the quantize_q2_k docstring region and docs/PLAN-NEXT.md for the
+# falsifier verdict.
 # IQ4_XS: 256 elements per 136 bytes. Layout (ggml-common.h block_iq4_xs):
 #   d (f16) | scales_h (u16) | scales_l[4] | qs[128]
 # per 32-element sub-block ib: ls = low nibble pair | 2 high bits from scales_h,
@@ -632,7 +691,6 @@ def dequantize_iq4_nl(raw: np.ndarray, n: int) -> np.ndarray:
 
 DECODE_ONLY = {
     'IQ4_XS': (136, QK_K, dequantize_iq4_xs),
-    'Q2_K': (84, QK_K, dequantize_q2_k),
     'Q3_K': (110, QK_K, dequantize_q3_k),
     'IQ4_NL': (18, 32, dequantize_iq4_nl),
 }

@@ -246,3 +246,22 @@ written into the item and stays GATED.
   bias in q5_0 dequant). Wired into CODECS: gguf-edit now requants those dtypes; on
   the real IQ4_XS checkpoint Q5_1 moved from port_decode_only to audited, and the
   IQ4_XS<->IQ3_M diff dropped port-labelled rows 69->21 with byte-identical rel_rms.
+
+## Q2_K quantizer landed / Q3_K quantizer open (this run)
+- quantize_q2_k: byte-exact vs compiled ggml quantize_row_q2_K_ref on 13
+  distributions (gaussian x2, zeros+impulse, uniform-tiny, subnormal-mix,
+  neg-dominant, near-eps, huge-range, all-equal-neg, bimodal, flat-subblocks,
+  4 real F32 tensors from the minicpm Q4_K_M checkpoint); decode cross-checked
+  bit-exact vs the pinned gguf.quants port on freshly quantized data.
+  Wired into CODECS: gguf-edit can now requant Q2_K tensors byte-reproducibly.
+  Real bug caught by the C harness: make_qkx2_quants consumes CALLER-provided
+  weights — q2_K uses plain |x|, q4_K/q5_K use av_x+|x|; the port had hardcoded
+  the av variant, so the first q2_K run was 0.0% byte-exact.
+- quantize_q3_k: attempt NOT released. Structural layout, hmask (8 phases of 32,
+  not 4), scale packing and the zero-path L (C returns L=0 with NO +nmax baked
+  in — first port added nmax and broke zero/eps blocks) are all now understood
+  and fixed, but the make_q3_quants refinement loop still diverges (~16% blocks
+  byte-exact on gaussian data; exact on zeros/subnormals/near-eps). Prime
+  suspect: running-sum tie behaviour in the per-acceptance test
+  (slx*slx*suml2 > sumlx*sumlx*sl2) under f32. Q3_K stays DECODE_ONLY.
+  Reproduce: scripts/ggml_ref/ref_23k.c vs quantize_q3_k (removed pending fix).
