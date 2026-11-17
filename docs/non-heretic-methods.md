@@ -203,6 +203,28 @@ missing is a measured wave: no before/after retention number exists until a
 certification run scores those rows on the pinned config, and the bake-off table
 must report the capability kind alongside the removal rate.
 
+The 3–4B dense instruct pick is no longer "none pinned": triaged 2026-11-17
+against `architectures.NAMES` with anonymous Hub probes, config.json read from
+the pinned revision each time. Registered, anonymous, same-size dense instruct:
+- `Qwen/Qwen3-4B-Instruct-2507` @ `cdbee75f17c0` (`model_type qwen3`, 36 layers,
+  2560 wide) — and `p-e-w/Qwen3-4B-Instruct-2507-heretic` @ `bc843daf6f71`
+  (safetensors, 1701 downloads) is a published Heretic build of exactly that base,
+  so the head-to-head oracle is a file to score, not a competitor to run.
+- `HuggingFaceTB/SmolLM3-3B` @ `a07cc9a04f16` (`model_type smollm3`) with
+  `MassivDash/SmolLM3-3B-heretic` @ `8f3026f56f10` as its oracle (34 downloads —
+  far less battle-tested, label it accordingly).
+- `Qwen/Qwen2.5-3B-Instruct` @ `aa8e72537993ba99e69dfaafa59ed015b17504d1`
+  (`model_type qwen2`) is the low-risk pick: same backbone lineage as the
+  certified q25 1.5B work, so adapter and converter paths are already proven, but
+  it has no published same-size Heretic artifact found, so its oracle is a
+  third-party abliterated build at best, not a config-matched Heretic.
+Not usable anonymously on this box: `google/gemma-3-4b-it` reads as `anonymous-ok`
+at the model card but its `config.json` returns `GatedRepoError` — a token plus
+license acceptance is required, and a candidate is ineligible until it resolves.
+Published Heretic/abliterated cards (including the q25 Josiefied and mc47 Abiray
+artifacts used above) carry no serve-config information: any use of them is only
+comparable when re-served under the R9-pinned argv.
+
 ## Maintenance rule
 
 Each bake-off result row lands here (or in a run report referenced from
