@@ -225,3 +225,17 @@ written into the item and stays GATED.
   preservation is the fallback wording, and neither is assumed.
 - Every new command joins `schemas`/EMIT_SCHEMAS at ship time; writer
   drift fails the command.
+
+
+## Quantizer byte-reproducibility against upstream (landed this run)
+- Vendored ggml scalar quantizers as compileable C harnesses (scripts/ggml_ref,
+  pinned sha256 bcda336...). Four real port bugs found and fixed:
+  1. make_qkx2: C updates the running min on accepted refinements; port kept it stale.
+  2. K-quant requant: C uses f16-rounded d/dmin; port divided by the pre-round floats
+     (explodes exactly where f16 d is subnormal — tiny weight groups).
+  3. int64 scale/min unpack promoted the requant divisor to float64 (C is all f32).
+  4. .sum() pairwise order vs C left-fold, Python double 0.1 vs f32 0.1f, numpy
+     max() returning -0.0 where C's strict-> fold seeds +0.
+  Result: 100% byte-exact vs compiled C on 11 distributions x 3 codecs, including
+  six real checkpoint tensors. quants-audit Q4_K identity unchanged (0.998 at
+  512 blocks, tie-edge scale bits). Edit-path regression: 320/321 bit-identical.

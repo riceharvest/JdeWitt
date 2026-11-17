@@ -21,23 +21,24 @@ def _make_qx_quants(x, nmax, rmse_type=1):
     amax = np.take_along_axis(ax, idx, axis=-1)
     maxv = np.take_along_axis(x, idx, axis=-1)
     zero = amax < GROUP_MAX_EPS
-    maxv = np.where(zero, 1.0, maxv)
+    maxv = np.where(zero, np.float32(1.0), maxv)
     iscale = -nmax / maxv
     q = np.clip(_rint(iscale * x), -nmax, nmax - 1).astype(np.float32)
     L = (q + nmax).astype(np.int64)
     w = (x * x if rmse_type == 1 else np.ones_like(x)).astype(np.float32)
-    lx = (w * x * q).sum(axis=-1, keepdims=True, dtype=np.float32)
-    l2 = (w * q * q).sum(axis=-1, keepdims=True, dtype=np.float32)
-    scale = np.where(l2, lx / np.where(l2, l2, 1), 0.0)
+    zero1 = np.zeros_like(ax[:, :1])
+    lx = _fold_last(w * x * q, zero1.copy())
+    l2 = _fold_last(w * q * q, zero1.copy())
+    scale = np.where(l2, lx / np.where(l2, l2, 1), np.float32(0.0))
     best = scale * lx
     for is_ in range(-9, 10):
         if is_ == 0:
             continue
-        iscale = -(nmax + 0.1 * is_) / maxv
+        iscale = -(np.float32(nmax) + np.float32(0.1) * np.float32(is_)) / maxv  # C's f32 arithmetic
         qa = np.clip(_rint(iscale * x), -nmax, nmax - 1).astype(np.float32)
         La = (qa + nmax).astype(np.int64)
-        lx2 = (w * x * qa).sum(axis=-1, keepdims=True, dtype=np.float32)
-        l22 = (w * qa * qa).sum(axis=-1, keepdims=True, dtype=np.float32)
+        lx2 = _fold_last(w * x * qa, zero1.copy())
+        l22 = _fold_last(w * qa * qa, zero1.copy())
         good = (l22 > 0) & (lx2 * lx2 > best * l22)
         L = np.where(good, La, L)
         scale = np.where(good, lx2 / np.where(l22, l22, 1), scale)
@@ -47,44 +48,76 @@ def _make_qx_quants(x, nmax, rmse_type=1):
     return scale.squeeze(-1), L.astype(np.int8)
 
 
+def _fold_last(a, init):
+    """Left-fold accumulation over the last axis, matching C's `for i: sum += a[i]`
+    scalar order — pairwise/tree summation flips float32 optimizer ties."""
+    acc = init
+    for i in range(a.shape[-1]):
+        acc = acc + a[..., i:i + 1]
+    return acc
+
+
 def _make_qkx2(x, nmax, rmin, rdelta, nstep):
-    """x: [nb,8,32] float32 -> scale [nb,8], the_min [nb,8], L [nb,8,32]."""
-    mn = x.min(axis=-1, keepdims=True)
-    mx = x.max(axis=-1, keepdims=True)
+    """x: [nb,8,32] float32 -> scale [nb,8], the_min [nb,8], L [nb,8,32].
+    Byte-reproducible mirror of make_qkx2_quants (ggml-quants.c master bcda336):
+    left-fold float32 sums in C's order, int-as-float without float64 promotion,
+    f32 step arithmetic in the iscale numerator, NaN/inf l -> 0 like nearest_int's
+    magic-add on degenerate spans, and the C early-return semantics for flat groups."""
+    x = x.astype(np.float32)
+    n = x.shape[-1]
+    zero = np.zeros_like(x[..., :1])
+    av_x = np.sqrt(_fold_last(x * x, zero.copy()) / n)
+    w = av_x + np.abs(x)
+
+    mn = mx = x[..., :1].copy()
+    sw = w[..., :1].copy()
+    wx = w[..., 0:1] * x[..., 0:1]
+    for i in range(1, n):
+        xi, wi = x[..., i:i + 1], w[..., i:i + 1]
+        mn = np.minimum(mn, xi)
+        mx = np.maximum(mx, xi)
+        sw = sw + wi
+        wx = wx + wi * xi
     mn = np.where(mn > 0, np.zeros_like(mn), mn)
-    flat = (mx == mn)
+    flat = mx == mn
     span = np.where(flat, np.ones_like(mx), mx - mn)
     iscale = nmax / span
     scale = 1 / iscale
-    L = np.clip(_rint(iscale * (x - mn)), 0, nmax).astype(np.int64)
-    w = np.sqrt((x * x).mean(axis=-1, keepdims=True)) + np.abs(x)
-    err = (w * (scale * L + mn - x) ** 2).sum(axis=-1, keepdims=True)
-    best_L, best_scale, best_min, best_err = L.copy(), scale.copy(), mn.copy(), err.copy()
-    wx = (w * x).sum(axis=-1, keepdims=True)
-    sw = w.sum(axis=-1, keepdims=True)
+
+    def _L(iscale_):
+        q = _rint(iscale_ * (x - mn))
+        q = np.where(np.isfinite(q), q, 0.0)
+        return np.clip(q, 0, nmax)
+
+    L = _L(iscale)
+    best_L = L
+    best_scale = scale
+    best_err = _fold_last(w * (scale * L + mn - x) ** 2, zero.copy())
     for step in range(nstep + 1):
-        iscale = (rmin + rdelta * step + nmax) / span
-        La = np.clip(_rint(iscale * (x - mn)), 0, nmax).astype(np.int64)
-        sl = (w * La).sum(axis=-1, keepdims=True)
-        sl2 = (w * La * La).sum(axis=-1, keepdims=True)
-        sxl = (w * La * x).sum(axis=-1, keepdims=True)
+        span = mx - mn  # C uses the *running* min; it drifts after an accepted refinement
+        num = np.float32(rmin) + np.float32(rdelta) * np.float32(step)  # C's f32 step math
+        num = np.float32(num) + np.float32(nmax)
+        iscale = num / span
+        Laf = _L(iscale)
+        sl = _fold_last(w * Laf, zero.copy())
+        sl2 = _fold_last(w * Laf * Laf, zero.copy())
+        sxl = _fold_last(w * Laf * x, zero.copy())
         D = sw * sl2 - sl * sl
         safeD = np.where(D > 0, D, np.ones_like(D))
         this_scale = (sw * sxl - sl * wx) / safeD
         this_min = (sl2 * wx - sl * sxl) / safeD
         pos = this_min > 0
-        this_scale = np.where(pos, sxl / np.where(sl2, sl2, 1), this_scale)
+        this_scale = np.where(pos, sxl / np.where(sl2 != 0, sl2, 1), this_scale)
         this_min = np.where(pos, np.zeros_like(this_min), this_min)
-        cur = (w * (this_scale * La + this_min - x) ** 2).sum(axis=-1, keepdims=True)
+        cur = _fold_last(w * (this_scale * Laf + this_min - x) ** 2, zero.copy())
         good = (D > 0) & (cur < best_err)
-        best_L = np.where(good, La, best_L)
+        best_L = np.where(good, Laf, best_L)
         best_scale = np.where(good, this_scale, best_scale)
-        best_min = np.where(good, this_min, best_min)
+        mn = np.where(good, this_min, mn)
         best_err = np.where(good, cur, best_err)
     best_L = np.where(flat, np.zeros_like(best_L), best_L)
     best_scale = np.where(flat, np.zeros_like(best_scale), best_scale)
-    best_min = np.where(flat, np.zeros_like(best_min), best_min)
-    return best_scale.squeeze(-1), (-best_min).squeeze(-1), best_L.astype(np.uint8)
+    return best_scale.squeeze(-1), (-mn).squeeze(-1), best_L.astype(np.uint8)
 
 
 def _kpack_scales(ls, lm):
@@ -107,7 +140,7 @@ def _kunpack_scales(scales):
     m[:, 0:4] = s[:, 4:8] & 63
     sc[:, 4:8] = (s[:, 8:12] & 0xF) | ((s[:, 0:4] >> 6) << 4)
     m[:, 4:8] = (s[:, 8:12] >> 4) | ((s[:, 4:8] >> 6) << 4)
-    return sc.astype(np.int64), m.astype(np.int64)
+    return sc.astype(np.float32), m.astype(np.float32)  # C multiplies these as float; int64 would promote divisors to float64 and flip ties
 
 
 def _fp16_bytes(values):
@@ -120,8 +153,8 @@ def quantize_q4_k(x, n_rows=None):
     nb = n // QK_K
     blocks = x.reshape(nb, QK_K)
     scales, mins, L = _make_qkx2(blocks.reshape(nb, 8, 32), 15, -1.0, 0.1, 20)
-    max_scale = scales.max(axis=-1)
-    max_min = mins.max(axis=-1)
+    max_scale = np.where(scales > 0, scales, 0.0).max(axis=-1)  # C folds strict > onto +0
+    max_min = np.where(mins > 0, mins, 0.0).max(axis=-1)        # (numpy max() can return -0.0)
     inv_scale = np.where(max_scale > 0, 63.0 / np.where(max_scale, max_scale, 1), 0.0)
     inv_min = np.where(max_min > 0, 63.0 / np.where(max_min, max_min, 1), 0.0)
     ls = np.minimum(63, _rint(inv_scale[:, None] * scales)).astype(np.uint64)
@@ -129,6 +162,9 @@ def quantize_q4_k(x, n_rows=None):
     packed = _kpack_scales(ls, lm)
     d = (max_scale / 63.0).astype(np.float32)
     dmin = (max_min / 63.0).astype(np.float32)
+    # C requantizes from the stored f16-rounded scales, not the float ones
+    d = d.astype(np.float16).astype(np.float32)
+    dmin = dmin.astype(np.float16).astype(np.float32)
     sc, m = _kunpack_scales(packed)
     dsub = (d[:, None] * sc)[:, :, None]
     dminsub = (dmin[:, None] * m)[:, :, None]
@@ -168,8 +204,8 @@ def quantize_q5_k(x):
     nb = n // QK_K
     blocks = x.reshape(nb, QK_K)
     scales, mins, L = _make_qkx2(blocks.reshape(nb, 8, 32), 31, -0.5, 0.1, 15)
-    max_scale = scales.max(axis=-1)
-    max_min = mins.max(axis=-1)
+    max_scale = np.where(scales > 0, scales, 0.0).max(axis=-1)  # C folds strict > onto +0
+    max_min = np.where(mins > 0, mins, 0.0).max(axis=-1)        # (numpy max() can return -0.0)
     inv_scale = np.where(max_scale > 0, 63.0 / np.where(max_scale, max_scale, 1), 0.0)
     inv_min = np.where(max_min > 0, 63.0 / np.where(max_min, max_min, 1), 0.0)
     ls = np.minimum(63, _rint(inv_scale[:, None] * scales)).astype(np.uint64)
@@ -177,6 +213,9 @@ def quantize_q5_k(x):
     packed = _kpack_scales(ls, lm)
     d = (max_scale / 63.0).astype(np.float32)
     dmin = (max_min / 63.0).astype(np.float32)
+    # C requantizes from the stored f16-rounded scales, not the float ones
+    d = d.astype(np.float16).astype(np.float32)
+    dmin = dmin.astype(np.float16).astype(np.float32)
     sc, m = _kunpack_scales(packed)
     dsub = (d[:, None] * sc)[:, :, None]
     dminsub = (dmin[:, None] * m)[:, :, None]

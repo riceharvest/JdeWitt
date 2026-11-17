@@ -119,12 +119,12 @@ the plan tensors plus method/geometry/provenance metadata as a GGUF that
 `gguf-inspect`, `gguf-meta` and `gguf-tensor-diff` all read — bf16 exports
 are bit-exact against torch's own bf16 cast, f32 exact against the plan.
 The GGML block codecs (Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16) are vendored as
-numpy ports of llama.cpp's reference routines. `quants-audit GGUF
+numpy ports of llama.cpp's reference routines, now **byte-reproducible**: `quants-audit GGUF
 [--blocks N]` is the standing falsifier for those ports: for each supported
 dtype it dequantizes an evenly spaced block sample from the real file and
 requantizes it, reporting byte-identity rate and worst value drift (on the
 672 MB Q4_K_M: F32 and Q4_K 100% byte-identical, Q6_K 85.6% byte-identical
-with zero value change — scale-bit rounding ties; decode-only dtypes are
+with zero value change — scale-bit rounding ties; the Q4_K/Q5_K/Q6_K quantizers reproduce the upstream scalar reference (quantize_row_q*_K_ref) byte-for-byte, verified against compiled-C harnesses in scripts/ggml_ref on 11 distributions including real checkpoint tensors; decode-only dtypes are
 reported as not requant-auditable rather than skipped silently; dtypes the
 pinned gguf.quants port dequantizes get a labelled port_decode_only bucket —
 on the real Qwen2.5-0.5B IQ4_XS checkpoint nothing is left unsupported).
