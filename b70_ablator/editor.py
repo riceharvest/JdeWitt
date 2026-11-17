@@ -277,6 +277,10 @@ def discover_targets(model, edit_targets='writeback'):
                         targets.append((index, group, side, full, module))
         if len(targets) == before:
             raise ValueError(f'Architecture adapter has no targets at layer {index}; refusing silent layer skips')
+    for group, component, side, patterns in groups:
+        if patterns and not any(target[1] == group for target in targets):
+            raise ValueError(f'Edit surface {edit_targets!r} declares group {group!r} but no layer matched '
+                             f'{list(patterns)}; refusing a silently narrowed edit surface')
     return layers, targets
 
 

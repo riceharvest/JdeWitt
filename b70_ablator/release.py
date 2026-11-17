@@ -210,9 +210,11 @@ def rank_quantized(candidates, baseline, max_capability_drop, require_consistenc
 GPU_LOCK_PATH = Path(os.environ.get('B70_ABLATOR_GPU_LOCK', '/tmp/b70-ablator-gpu.lock'))
 
 
-def acquire_gpu_lock(timeout):
-    """Serialise B70 GPU jobs across processes; there is exactly one GPU."""
-    lock_path = Path(GPU_LOCK_PATH)
+def acquire_gpu_lock(timeout, secondary=False):
+    """Serialise GPU jobs across processes. The B70 holds the primary lock; a
+    second-rank test card uses its own lock so a test run cannot queue behind — or
+    displace — a certified B70 job."""
+    lock_path = Path(GPU_LOCK_PATH if not secondary else str(GPU_LOCK_PATH) + '.secondary')
     lock_path.parent.mkdir(parents=True, exist_ok=True)
     handle = lock_path.open('a+')
     deadline = time.monotonic() + timeout
@@ -224,21 +226,26 @@ def acquire_gpu_lock(timeout):
             if time.monotonic() >= deadline:
                 handle.close()
                 raise RuntimeError(
-                    f'B70 GPU is held by another b70-ablator job; waited {timeout}s '
+                    f'GPU ({lock_path.name}) is held by another b70-ablator job; waited {timeout}s '
                     '(override with B70_ABLATOR_GPU_WAIT or kill the holding job)')
             time.sleep(.5)
 
 
 class ManagedGGUF:
-    """Own one local Vulkan server. Refuse partial offload, changed artifacts or wrong models."""
-    def __init__(self, artifact, server, ctx_size, max_tokens, log, startup_timeout=120, parallel=1, gpu_wait=None):
+    """Own one local Vulkan server. Refuse partial offload, changed artifacts or wrong models.
+    The B70 is the preferred serving device and is used whenever llama-server can see it;
+    secondary=True permits a non-B70 Vulkan device as a second-rank test backend, recorded
+    on self.serving_backend so no caller can mistake it for a certified gate."""
+    def __init__(self, artifact, server, ctx_size, max_tokens, log, startup_timeout=120, parallel=1, gpu_wait=None, secondary=False):
         if type(parallel) is not int or parallel<1:
             raise ValueError('Server parallel slot count must be a positive integer')
         self.parallel=parallel
+        self.secondary=bool(secondary)
         self.artifact = Path(artifact).resolve()
         self.server, self.ctx_size, self.max_tokens = str(server), ctx_size, max_tokens
         self.log, self.startup_timeout = Path(log), startup_timeout
         self.process = None
+        self.serving_backend = None
         wait = gpu_wait if gpu_wait is not None else float(os.environ.get('B70_ABLATOR_GPU_WAIT', '300'))
         self.gpu_wait = 0.0 if wait is None else float(wait)
 
@@ -251,20 +258,36 @@ class ManagedGGUF:
             '--host','127.0.0.1','--port',str(port),'--jinja','--reasoning-format','deepseek',
             '--no-webui','--verbosity','4','--cors-origins','localhost','--no-cors-credentials']
 
-    def __enter__(self):
-        self._gpu_lock = acquire_gpu_lock(self.gpu_wait)
-        devices = subprocess.run([self.server,'--list-devices'], text=True,capture_output=True,check=True).stdout
-        match = re.search(r'^\s*(Vulkan\d+):.*(?:B70|BMG G31)',devices,re.MULTILINE)
-        if not match:
+    def select_device(self, devices):
+        """Rank-aware Vulkan device choice: a B70 is always preferred when present."""
+        candidates = []
+        for line in devices.splitlines():
+            found = re.match(r'\s*(Vulkan\d+):(.*)', line)
+            if found:
+                candidates.append((found.group(1), found.group(2).strip()))
+        for device, label in candidates:
+            if re.search(r'B70|BMG G31', label):
+                return device, label, 'primary'
+        if not candidates:
+            raise RuntimeError('No Vulkan device in llama-server')
+        if not self.secondary:
             raise RuntimeError('No verified B70 Vulkan device in llama-server')
+        return candidates[0] + ('secondary',)
+
+    def __enter__(self):
+        self._gpu_lock = acquire_gpu_lock(self.gpu_wait, secondary=self.secondary)
+        devices = subprocess.run([self.server,'--list-devices'], text=True,capture_output=True,check=True).stdout
+        device, label, rank = self.select_device(devices)
         with socket.socket() as sock:
             sock.bind(('127.0.0.1',0))
             port=sock.getsockname()[1]
-        alias = 'b70-' + sha256_file(self.artifact)
+        self.artifact_hash = sha256_file(self.artifact)
+        alias = ('b70-' if rank=='primary' else 'test-') + self.artifact_hash
+        self.serving_backend = {'device': device, 'name': label, 'rank': rank}
         env = {k:v for k,v in os.environ.items() if not k.startswith(('LLAMA_', 'HF_TOKEN'))}
         self.log.parent.mkdir(parents=True,exist_ok=True)
         self.log_file = self.log.open('w')
-        cmd = self.command(match.group(1),port,alias)
+        cmd = self.command(device,port,alias)
         self.process = subprocess.Popen(cmd, stdout=self.log_file,stderr=subprocess.STDOUT,env=env)
         self.client = ChatClient(f'http://127.0.0.1:{port}/v1',alias,self.max_tokens,ctx_size=self.ctx_size)
         deadline = time.monotonic() + self.startup_timeout
@@ -289,7 +312,6 @@ class ManagedGGUF:
             actual_context = props.get('default_generation_settings',{}).get('n_ctx')
             if type(actual_context) is not int or actual_context < self.ctx_size:
                 raise RuntimeError('Could not prove the requested server context budget')
-            self.artifact_hash = alias[4:]
             return self.client
         except BaseException:
             self.__exit__(None,None,None)

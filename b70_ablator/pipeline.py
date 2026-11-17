@@ -119,7 +119,8 @@ def _run_body(config,*,selection_only=False,expected_winner=None):
     @contextmanager
     def judge_factory():
         with ManagedGGUF(config.judge_artifact, config.llama_server, config.ctx_size,
-                         config.judge_max_tokens, Path(config.output)/'judge-server.log') as client:
+                         config.judge_max_tokens, Path(config.output)/'judge-server.log',
+                         secondary=config.allow_cuda_secondary) as client:
             yield verify_judge(replace(config,judge_url=client.url,judge_model=client.model))
     with exclusive(config.output,'.run.lock'), ModelPhases(judge_factory=judge_factory if mode=='judge' else None) as phases:
         if selection_only or expected_winner is not None:
@@ -485,7 +486,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
             phases.idle()
             if store.status()['missing']:
                 slots={'parallel':config.generation_batch['max_sequences']} if config.generation_batch else {}
-                with ManagedGGUF(artifact['path'],config.llama_server,config.ctx_size,config.max_tokens,folder/'server.log',**slots) as client:
+                with ManagedGGUF(artifact['path'],config.llama_server,config.ctx_size,config.max_tokens,folder/'server.log',secondary=config.allow_cuda_secondary,**slots) as client:
                     generate_answers(suite,client,store,refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
             reports[q]=score_answers(suite,store,judge,folder,scoring_identity,config.sandbox_image)
         return reports
@@ -524,6 +525,8 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
     release=output/'release'
     assessment='Judged on a disjoint holdout.' if config.scoring_mode=='judge' else 'Screened for explicit refusal wording on a disjoint holdout. Actual task fulfillment and disclaimers were NOT judged.'
     readme='# B70-ablator release\n\nBase: '+config.model+' @ '+config.revision+'\n\nModel license: '+config.model_license+' (base-model obligations remain).\n\nSelected on Q4_K_M/Q5_K_M results. '+assessment+'\nMetrics and exact settings: evaluation.json.\n\nFull-reply KL gates were measured in the search precision. Quantized damage was\nchecked through executed code tests and exact maths grading, not GGUF KL.\nNo claim of zero capability loss or universal uncensoring is made.\n'
+    if provenance.get('compute_backend'):
+        readme += '\nThis release was produced on a second-rank test backend ('+provenance['compute_backend']['name']+'): B70 kernels, the B70 VRAM envelope and B70 Vulkan serving gates were NOT exercised on it. Read every number here as unverified against the certified device.\n'
     create_release(release,winner['hf_path'],winner['artifacts'],manifest,readme)
     return {'release':str(release),'winner':winner['id'],'holdout':winner_holdout}
 

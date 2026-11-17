@@ -47,6 +47,12 @@ for name in ('nemotron_h','nemotron_h_omni'):
     ARCHITECTURES[name]={**ARCHITECTURES[name],
         'mlp_bottleneck_output':'mixer.fc2_latent_proj',
         'mlp_bottleneck_targets':('mixer.fc2_latent_proj','mixer.shared_experts.down_proj')}
+# Spark2.5 (and the X2.6 line) fuse Q, K and V into one read-side matrix and gate each
+# head separately: the generic self_attn.q_proj/k_proj/v_proj do not exist in its
+# checkpoints, so the read side has to name the fused tensor or it would be skipped.
+# The headwise g_proj (out_features == num_heads) is not a residual-width target and is
+# deliberately left unedited.
+ARCHITECTURES['spark2_5'] = {**ARCHITECTURES['spark2_5'], 'attn_in': ('self_attn.q_k_v_proj',)}
 
 
 def architecture_catalog():

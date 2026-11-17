@@ -376,6 +376,7 @@ def main():
     evaluate.add_argument('--judge-max-tokens',type=int)
     evaluate.add_argument('--max-tokens',type=int,required=True)
     evaluate.add_argument('--ctx-size',type=int,required=True)
+    evaluate.add_argument('--secondary-device',action='store_true',help='Serve on a non-B70 Vulkan device as a second-rank test backend; the B70 is still used whenever it is visible')
     evaluate.add_argument('--sandbox-image',required=True)
     evaluate.add_argument('--output',type=Path,required=True)
     from .arguments import add_arguments
@@ -654,7 +655,7 @@ def main():
                 if not {r['language'] for r in suite}<={r['language'] for r in calibration}:
                     raise ValueError('Calibration does not cover the evaluation languages')
                 before=sha256_file(args.judge_artifact)
-            with ManagedGGUF(args.model,args.server,args.ctx_size,args.max_tokens,args.output/'server.log') as client:
+            with ManagedGGUF(args.model,args.server,args.ctx_size,args.max_tokens,args.output/'server.log',secondary=args.secondary_device) as client:
                 identity={'artifact_sha256':sha256_file(args.model),'server_sha256':sha256_file(args.server),
                           'ctx_size':args.ctx_size,'max_tokens':args.max_tokens,'temperature':0,'seed':0}
                 from .job_cli import source_identity, sandbox_identity
