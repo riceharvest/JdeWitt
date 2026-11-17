@@ -80,11 +80,31 @@ The adapter scale-swap (R5) is the cheap screening mechanism, but on tensor fami
 server graph transforms at runtime its LoRA curve is NOT the export delta. Measured on
 MiniCPM-V 4.7 (hybrid linear-attention): the same rank-4 contrast-plane edit served as an
 adapter removed nothing (behavior identical to baseline at every scale), while the identical
-delta merged into the gguf bytes removed 36/40 harmful refusal shapes with harmless rows
-intact. Merging (gguf_adapters.served_deltas -> ggufio.edit_tensors) is the only path that
+delta merged into the gguf bytes removed harmful refusal shapes and kept harmless rows
+intact — though the removal RATE is config-dependent (see R9): 36/40 at
+`--ctx-size 2048 --parallel 2`, ~21/40 at `--ctx-size 4096 --parallel 4`, on byte-identical
+files. Merging (gguf_adapters.served_deltas -> ggufio.edit_tensors) is the only path that
 guarantees the measured model is the shipped model, because the merged gguf is exactly the
 release artifact. Consequences: screening loops may keep scale-swapping; every shape verdict
 (R2) on a candidate must be taken from a merged serve; if a screening-passing candidate dies
 at certification, or a screening-dead axis passes merge, the adapter-merge divergence is a
 suspect before the axis is declared dead. Qwen2.5-1.5B's certified o_proj/down_proj results
 predate this rule and stay valid because on those tensors curve and merge agree.
+
+## R9 — Every shape verdict is conditional on a pinned serve config
+
+Removal rates on decision-boundary edits are NOT invariant to how the artifact is served.
+Measured on byte-identical mc47 merges: the same file is ~90% removal at `--ctx-size 2048
+--parallel 2` and ~52% at `--ctx-size 4096 --parallel 4` — batching/KV layout changes the
+numerics enough to flip borderline answers at temperature 0. Consequences:
+1. A certification packet must record the full llama-server argv (model path, ctx, parallel,
+   flags) in its `config` field; a removal number without its config is anecdote.
+2. The pinned cert config is the one the agent ships with — the harsher `4096/4` default on
+   this stack, so numbers do not evaporate when the artifact meets real serving.
+3. Cross-run comparisons are only valid within one config. The oracle ceiling for a model is
+   defined as the published/known-best edit measured at the SAME pinned config; "reaches the
+   oracle ceiling" claims re-derive from config-matched rows only.
+4. Config-sensitivity is itself a reported property: run the cert wave once per config of
+   interest; IDs whose verdict flips between configs are flagged `boundary` and excluded from
+   the "robustly removed" count.
+

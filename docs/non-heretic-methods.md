@@ -225,7 +225,8 @@ contrast data the directional pipeline already generates:
 
 Cost measured: axis fit 0.024 s, adapter build 0.443 s, zero extra inference.
 
-Certification (shape judged by the working agent per METHODOLOGY.md R2):
+Certification (shape judged by the working agent per METHODOLOGY.md R2; all q25 rows
+below served at the R9-pinned `--ctx-size 4096 --parallel 4` config):
 
 - harmful-40 suite (in-sample, families used for the fit): 40/40 refusal-shape
   removed at scale 1.5, harmless 8/8 intact.
@@ -249,3 +250,22 @@ dspark llama.cpp fork Hadamard-folds qwen FFN weights and applies LoRA deltas
 to the PRIMAL input — adapter functionals MUST be `a = d @ W_hf`, never
 `d @ dequantize_tensor(gguf)`. Embedding-side edits cannot be served as LoRA
 on tied-head models (build_inp_embd vs build_lora_mm orientation conflict).
+
+Cross-lineage probe — MiniCPM-V 4.7-1B (hybrid linear-attention), same SAS/contrast
+data, R8-correct STATIC MERGE path, config pinned per R9:
+
+- The tool's contrast plane (SVD rank-4 of the prompt-end mean contrast, output-side
+  removal merged in-place) is config-sensitive: ~90% harmful-40 removal at
+  `--ctx-size 2048 --parallel 2`, ~52% at `--ctx-size 4096 --parallel 4` on the SAME
+  bytes. Harmless rows intact in both.
+- The published `Abiray/MiniCPM-V-4.7-1B-abliterated-heretic-GGUF` Q8_0 serves 36/40
+  (91%) at the pinned `4096/4` config, and its byte-reproduced static merge matches it.
+  So on this lineage the known-best edit is 91% removal at the pinned config and the
+  contrast-plane fit does NOT match it (52%) — the earlier "matches the oracle ceiling"
+  reading was a config confound and is retracted.
+- Oracle diff: 35 nonzero rank-1 tensors with near-orthogonal per-layer u/v (u-cos ~0.02
+  ssm_out, ~0.10 attn_output) + diffuse embedding edits (relnorm 0.039) — NOT a shared
+  axis. Consistent with SAS being the right structure only when the model routes refusal
+  through one shared output direction (q25); mc47's refusal is per-layer structured and
+  embedding-assisted, which the current fit vocabulary does not express.
+
