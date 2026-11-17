@@ -29,7 +29,11 @@ def _tensor_info(reader, name):
     if n_bytes % block_bytes:
         raise ValueError(f'tensor {name!r} byte size {n_bytes} is not a whole number of {dtype} blocks')
     n = n_bytes // block_bytes * block_els
-    shape = tuple(int(x) for x in np.asarray(tensor.shape).ravel())
+    # tensor.shape is ggml ne order (innermost first). Flat tensor bytes are
+    # C-order of the numpy logical array, whose shape is reversed(tensor.shape)
+    # — the convention GGUFWriter enforces and gguf_edit relies on. shape below
+    # is that LOGICAL shape (e.g. weight [out, in]).
+    shape = tuple(int(x) for x in np.asarray(tensor.shape).ravel())[::-1]
     return tensor, dtype, block_bytes, block_els, n, quantize, dequantize, offset, n_bytes, shape
 
 
