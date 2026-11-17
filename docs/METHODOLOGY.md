@@ -73,3 +73,18 @@ embedding/logit space is part of the edit at all. What one model's oracle teache
 tensors carry the refusal shape, what the edit must span) becomes a hypothesis to test on
 the next model, never a constant baked into the tool. A method that only works because it
 was tuned for one model fails R7.
+
+## R8 — The verdict runs on the merged artifact, not the served adapter
+
+The adapter scale-swap (R5) is the cheap screening mechanism, but on tensor families the
+server graph transforms at runtime its LoRA curve is NOT the export delta. Measured on
+MiniCPM-V 4.7 (hybrid linear-attention): the same rank-4 contrast-plane edit served as an
+adapter removed nothing (behavior identical to baseline at every scale), while the identical
+delta merged into the gguf bytes removed 36/40 harmful refusal shapes with harmless rows
+intact. Merging (gguf_adapters.served_deltas -> ggufio.edit_tensors) is the only path that
+guarantees the measured model is the shipped model, because the merged gguf is exactly the
+release artifact. Consequences: screening loops may keep scale-swapping; every shape verdict
+(R2) on a candidate must be taken from a merged serve; if a screening-passing candidate dies
+at certification, or a screening-dead axis passes merge, the adapter-merge divergence is a
+suspect before the axis is declared dead. Qwen2.5-1.5B's certified o_proj/down_proj results
+predate this rule and stay valid because on those tensors curve and merge agree.

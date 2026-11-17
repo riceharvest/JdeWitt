@@ -99,6 +99,10 @@ def per_direction_adapters(basis, serve_weights, names_by_index, arch, out_dir, 
     trial is then one POST /lora-adapters carrying per-direction scales, which
     is exactly the AblatedLinear strength/selection mix at row_normalization
     'none'. Returns per-direction file reports.
+
+    The served LoRA curve is a screening approximation only: on tensors the
+    server graph transforms, it is NOT the export delta (docs/METHODOLOGY.md
+    R8). Shape verdicts are taken on the merged artifact from served_deltas.
     """
     files = []
     for i in range(basis.shape[0] if rank_cap is None else min(rank_cap, basis.shape[0])):
@@ -148,3 +152,28 @@ def write_adapter(path, pairs, arch):
     if not path.exists():
         raise RuntimeError(f'adapter writer returned success but wrote no file: {path}')
     return {'path': str(path), 'bytes': path.stat().st_size, 'tensors': len(pairs), 'ranks': sorted(ranks)}
+
+def served_deltas(path, directions, tensor_names, strength=1.0):
+    """Ground-truth edit deltas for the gguf at ``path``: {name: float32 delta}.
+
+    Feed the result to ggufio.edit_tensors to produce the merged gguf; that is
+    the artifact shape certification must run on (METHODOLOGY R8). ``directions``
+    are [R, out_features] float rows (orthonormal; enforced by projection_delta).
+    Weights are read back in gguf dimension order and the output-side projection
+    algebra runs in that order; a tensor whose width matches the other dim is
+    transposed through the algebra so both ggml layout conventions work.
+    """
+    import numpy as np
+    from .ggufio import dequantize_tensor, projection_delta
+    d = directions.detach().float().cpu().numpy() if hasattr(directions, 'detach') else np.asarray(directions, dtype=np.float32)
+    d = np.atleast_2d(d).astype(np.float32)
+    deltas = {}
+    for name in tensor_names:
+        w = dequantize_tensor(path, name)
+        if d.shape[1] == w.shape[0]:
+            deltas[name] = projection_delta(w, d, strength, side='output')
+        elif d.shape[1] == w.shape[1]:
+            deltas[name] = projection_delta(w.T.copy(), d, strength, side='output').T.copy()
+        else:
+            raise ValueError(f'direction width {d.shape[1]} matches neither dim of {name} {w.shape}')
+    return deltas
