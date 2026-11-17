@@ -402,3 +402,44 @@ written into the item and stays GATED.
   flat/nested round trip, validator rejects (top > trials, >4000 samples,
   wrong keys, probe-without-stages), and describe-run emits
   `candidate_probe_probe_generations` = samples x probe rows.
+
+## Retention instrument was reading zero — found and fixed (2026-11-17, CPU)
+- P0: `score_compare`, `suites_compare`, `robustness_report` and
+  `family_decay` graded every saved row through the judge field, so a
+  capability row (no `judgment`) and a harmless row always counted as a
+  failure. Proven on `verification/framework-jobs-smoke`: the math row
+  carries `passed: true` and these commands reported `math: 0/1`,
+  aggregate `1/2`. Every capability (retention) number those commands
+  ever emitted was a zero, which is why "loss measurement: zero all
+  lineages" looked like missing measurement instead of a broken
+  instrument. A failed generation also counted as a pass candidate there.
+- Fix: one shared `row_passes`/`row_label` pair in `agent.py` — capability
+  rows on the deterministic scorer, harmless rows on the absence of a
+  refusal, refusal rows as before, `status != 'ok'` never passes. Same
+  re-measurement now gives `math: 1/1`, aggregate `2/2`. The three
+  command outputs changed; any earlier score-compare/suites-compare/
+  robustness/family-decay numbers are not comparable and must not be
+  quoted.
+- New surface: `--kind {all,refusal,math,code,harmless}` on
+  `score-compare` and `suites-compare` so the retention axis can be
+  measured without a refusal row in the denominator; `per_kind` now
+  carries before/after rates with Wilson intervals, signed delta and
+  Cohen's h; `suites-compare` surfaces `per_kind` per family so a
+  removal claim and a retention claim sit in the same adjusted table.
+- `calibration-report` pairwise agreement is now reported raw AND as
+  Cohen's kappa with Fleiss CI (raw agreement is inflated by a dominant
+  label: two judges that say "refusal" to everything look 90% concordant).
+  A single-label pair returns `kappa: null` with the reason, never 1.0.
+  Hand-checked against computed values: labels (4R,1C) vs (3R,2C) give
+  raw 0.8, chance 0.56, kappa 0.5455; identical label sets give 1.0.
+- `paired_permutation_test` returns a documented no-power result at
+  n<2 instead of raising, so a one-row kind-restricted comparison reports
+  itself as no power rather than crashing the report.
+- Gates re-falsified: `schemas.enforce` still fires on every touched
+  command after the added keys, and `--kind code` on a suite with no code
+  rows fails with the kind named in the message.
+- STILL OPEN and unchanged by this: the capability suites themselves are
+  4 maths + 2 code rows on every suite on disk, so the retention axis is
+  now instrumented but still has almost nothing to measure; no 3-4B dense
+  instruct checkpoint is pinned. Populating the capability suite is the
+  next CODE item.

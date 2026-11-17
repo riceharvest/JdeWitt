@@ -24,6 +24,38 @@ def wilson_interval(successes, total, confidence=0.95):
             'confidence': confidence, 'method': 'Wilson score interval'}
 
 
+def cohens_kappa(labels_a, labels_b, confidence=0.95):
+    """Cohen's kappa for paired nominal labels plus the Wilson interval on raw agreement.
+
+    Raw percent agreement is misleading when one label dominates: two judges that answer
+    "refusal" to everything agree 90% of the time and measure nothing. Kappa subtracts the
+    chance-agreement baseline implied by the two marginal label rates. The interval is
+    Fleiss' normal-approximation standard error, the standard paired-rater interval.
+    A single shared label is degenerate and reported as None, never as perfect.
+    """
+    pairs = list(zip(labels_a, labels_b))
+    total = len(pairs)
+    base = {'common': total, 'confidence': confidence, 'method': "Cohen's kappa with Fleiss CI"}
+    if total < 2:
+        return {**base, 'raw_agreement': None, 'kappa': None, 'kappa_interval': None,
+                'agreement_wilson': None, 'note': 'Fewer than two paired labels.'}
+    observed = sum(1 for first, second in pairs if first == second) / total
+    labels = set(labels_a) | set(labels_b)
+    expected = sum((labels_a.count(label) / total) * (labels_b.count(label) / total) for label in labels)
+    if 1 - expected <= 1e-12:
+        return {**base, 'raw_agreement': round(observed, 4), 'kappa': None, 'kappa_interval': None,
+                'agreement_wilson': wilson_interval(int(observed * total), total, confidence),
+                'note': 'Degenerate: one label carries all rows on both sides, so chance agreement equals 1 and kappa is undefined. Consensus here proves nothing.'}
+    kappa = (observed - expected) / (1 - expected)
+    z = _Z[confidence]
+    standard_error = math.sqrt(observed * (1 - observed)) / ((1 - expected) * math.sqrt(total))
+    interval = [max(-1.0, round(kappa - z * standard_error, 4)), min(1.0, round(kappa + z * standard_error, 4))]
+    return {**base, 'raw_agreement': round(observed, 4), 'chance_agreement': round(expected, 4),
+            'kappa': round(kappa, 4), 'kappa_interval': interval,
+            'agreement_wilson': wilson_interval(int(observed * total), total, confidence),
+            'note': 'Kappa is chance-corrected agreement; report it alongside raw agreement.'}
+
+
 def family_sign_test(improved, regressed):
     """Exact two-sided sign test over independent paired units (families)."""
     if type(improved) is not int or type(regressed) is not int or improved < 0 or regressed < 0:
@@ -68,8 +100,12 @@ def paired_permutation_test(differences, seed=0, resamples=None, confidence=0.95
     import random
     values = [float(d) for d in differences]
     n = len(values)
-    if n < 2 or not all(math.isfinite(v) for v in values):
-        raise ValueError('paired permutation needs at least two finite differences')
+    if n < 2:
+        return {'units': n, 'observed_mean_difference': (sum(values) / n) if n else None,
+                'p_two_sided': 1.0, 'confidence': confidence,
+                'method': 'sign-flip permutation (no power: fewer than two paired units)'}
+    if not all(math.isfinite(v) for v in values):
+        raise ValueError('paired permutation needs finite differences')
     observed = sum(values) / n
     if n <= 16:
         flips = [sign * abs(sum((-1 if mask & i else 1) * v for i, v in enumerate(values))) / n
