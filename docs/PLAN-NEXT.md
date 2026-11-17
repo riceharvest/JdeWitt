@@ -200,7 +200,11 @@ written into the item and stays GATED.
      bit-exact vs the pinned port on 8,192 real ffn_down blocks; full-file
      self-diff 290/290 bit-identical; quants-audit now has a labelled
      port_decode_only bucket (IQ4_NL x120, Q5_1 x24) so nothing on that
-     file reads unsupported.
+     file reads unsupported. First REAL cross-quant proof: IQ4_XS vs IQ3_M
+     of the same 0.5B checkpoint — 290 tensors shared, 218 bit-identical,
+     72 compared across codecs (IQ4_XS side through our port, IQ3_M side
+     through the labelled pinned port, 69 rows marked not-ours), rel_rms
+     0.0567/0.0876/0.1769 min/median/max, 20s. Both binaries stay gitignored.
 
 14. Two more curated import specs in the jailbreak-slices pattern: a code
     execution slice (runs through the existing ast-based executor) and a
