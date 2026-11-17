@@ -125,7 +125,9 @@ dtype it dequantizes an evenly spaced block sample from the real file and
 requantizes it, reporting byte-identity rate and worst value drift (on the
 672 MB Q4_K_M: F32 and Q4_K 100% byte-identical, Q6_K 85.6% byte-identical
 with zero value change — scale-bit rounding ties; decode-only dtypes are
-reported as not requant-auditable rather than skipped silently).
+reported as not requant-auditable rather than skipped silently; dtypes the
+pinned gguf.quants port dequantizes get a labelled port_decode_only bucket —
+on the real Qwen2.5-0.5B IQ4_XS checkpoint nothing is left unsupported).
 `gguf-meta INPUT OUTPUT
 --set KEY=JSON --unset KEY` edits GGUF metadata (chat templates, tokenizer
 fields) in place-style: unedited entries copy byte-for-byte, the tensor data
