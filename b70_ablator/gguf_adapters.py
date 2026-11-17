@@ -167,9 +167,11 @@ def served_deltas(path, directions, tensor_names, strength=1.0):
     from .ggufio import dequantize_tensor, projection_delta
     d = directions.detach().float().cpu().numpy() if hasattr(directions, 'detach') else np.asarray(directions, dtype=np.float32)
     d = np.atleast_2d(d).astype(np.float32)
+    from gguf import GGUFReader
+    reader = GGUFReader(str(path))
     deltas = {}
     for name in tensor_names:
-        w = dequantize_tensor(path, name)
+        w = dequantize_tensor(path, name, reader=reader)
         if d.shape[1] == w.shape[0]:
             deltas[name] = projection_delta(w, d, strength, side='output')
         elif d.shape[1] == w.shape[1]:

@@ -111,11 +111,16 @@ def edit_tensors(path, out_path, deltas):
            'tensors': reports, 'all_other_bytes_verbatim': True}
 
 
-def dequantize_tensor(path, name, tile_blocks=1 << 22):
-    """Dequantize one tensor to float32, gguf dimension order, bounded RAM."""
-    from gguf import GGUFReader
+def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None):
+    """Dequantize one tensor to float32, gguf dimension order, bounded RAM.
+
+    ``reader`` may be a prebuilt GGUFReader on the same file to skip header
+    re-parsing when many tensors of one gguf are read (served_deltas).
+    """
     path = Path(path)
-    reader = GGUFReader(str(path))
+    if reader is None:
+        from gguf import GGUFReader
+        reader = GGUFReader(str(path))
     tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
     out = np.empty(n, dtype=np.float32)
     with open(path, 'rb') as f:
