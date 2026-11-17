@@ -17,6 +17,14 @@ from .answers import atomic_text
 # model.embedding.weight -- the same target the self-referential dict fix below produces.
 _TIED_LIST=re.compile(r'(?m)^(\s*)_tied_weights_keys\s*=\s*\[\s*"lm_head\.weight"\s*,?\s*\]\s*(.*)$')
 
+# transformers 5.x renamed create_causal_mask's second parameter from input_embeds to
+# inputs_embeds, but Spark-X2.6 builds its mask kwargs under the old name.
+_MASK_KWARG='"input_embeds": inputs_embeds,'
+_MASK_KWARG_FIXED='"inputs_embeds": inputs_embeds,'
+# ... and dropped cache_position entirely from both mask factories' signatures; the cache
+# length now comes from past_key_values, while the vendor still feeds it in.
+_MASK_CACHE_POSITION='"cache_position": cache_position,'
+
 
 def repair_export_metadata(directory):
     directory=Path(directory)
@@ -25,25 +33,39 @@ def repair_export_metadata(directory):
         return []
     path=directory/'modeling_spark.py'
     source=path.read_text()
+    repairs=[]
     broken='{"lm_head.weight": "lm_head.weight"}'
     fixed='{"lm_head.weight": "model.embedding.weight"}'
-    if fixed in source:
-        return []
-    matches=_TIED_LIST.findall(source)
-    if len(matches)==1 and broken not in source:
-        source=_TIED_LIST.sub(
-            lambda m:m.group(1)+'_tied_weights_keys = {"lm_head.weight": "model.embedding.weight"}'+m.group(2),
-            source,count=1)
-        source='# B70-ablator compatibility fix: declare the tied output head in the dict form ' \
-               'transformers 5.x requires, pointing at the real input embedding.\n'+source
+    if fixed not in source:
+        matches=_TIED_LIST.findall(source)
+        if len(matches)==1 and broken not in source:
+            source=_TIED_LIST.sub(
+                lambda m:m.group(1)+'_tied_weights_keys = {"lm_head.weight": "model.embedding.weight"}'+m.group(2),
+                source,count=1)
+            source='# B70-ablator compatibility fix: declare the tied output head in the dict form ' \
+                   'transformers 5.x requires, pointing at the real input embedding.\n'+source
+            repairs.append('spark_tied_weights_dict_form')
+        elif source.count(broken)==1:
+            source=source.replace(broken,fixed)
+            source='# B70-ablator compatibility fix: tie the output head to the real input embedding.\n'+source
+            repairs.append('spark_tied_embeddings')
+        else:
+            raise ValueError('Unrecognized Spark tied-weight declaration; compatibility adapter must be reviewed')
+    if source.count(_MASK_KWARG)==1 and _MASK_KWARG_FIXED not in source:
+        source=source.replace(_MASK_KWARG,_MASK_KWARG_FIXED)
+        source='# B70-ablator compatibility fix: transformers 5.x renamed create_causal_mask input_embeds to inputs_embeds.\n'+source
+        repairs.append('spark_mask_kwargs_inputs_embeds')
+    elif source.count(_MASK_KWARG)>1:
+        raise ValueError('Unrecognized Spark causal-mask declaration; compatibility adapter must be reviewed')
+    if source.count(_MASK_CACHE_POSITION)==1:
+        source=source.replace(_MASK_CACHE_POSITION,'')
+        source='# B70-ablator compatibility fix: transformers 5.x mask factories no longer take cache_position.\n'+source
+        repairs.append('spark_mask_kwargs_no_cache_position')
+    elif source.count(_MASK_CACHE_POSITION)>1:
+        raise ValueError('Unrecognized Spark cache_position usage; compatibility adapter must be reviewed')
+    if repairs:
         atomic_text(path,source)
-        return ['spark_tied_weights_dict_form']
-    if source.count(broken)!=1:
-        raise ValueError('Unrecognized Spark tied-weight declaration; compatibility adapter must be reviewed')
-    source=source.replace(broken,fixed)
-    source='# B70-ablator compatibility fix: tie the output head to the real input embedding.\n'+source
-    atomic_text(path,source)
-    return ['spark_tied_embeddings']
+    return repairs
 
 
 @contextmanager
