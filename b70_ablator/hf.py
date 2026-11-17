@@ -44,13 +44,88 @@ class BoundaryContract:
         return {'architecture': self.architecture, 'mode': self.mode, 'version': 1}
 
 
-def require_b70():
-    if not torch.xpu.is_available():
-        raise RuntimeError('PyTorch XPU unavailable; CPU/CUDA fallback is forbidden')
-    name = torch.xpu.get_device_name(0)
-    if 'B70' not in name:
-        raise RuntimeError(f'Expected B70, found {name}')
-    return torch.device('xpu:0')
+# Compute backends, best rank first. The B70 is the only certified backend: every shipped
+# claim, VRAM gate and llama.cpp serving check is measured on it. CUDA is a second-rank test
+# backend for loop speed on a spare card and is never implied by a claim. CPU is never a
+# backend — weight arithmetic and generation stay on device, so a missing device is a refusal.
+ALLOWED_DEVICE_TYPES = ('xpu', 'cuda')
+CUDA_SECONDARY_NOTE = ('CUDA is a second-rank test backend: B70 kernels, the B70 VRAM envelope '
+                       'and the llama.cpp Vulkan serving gates were not exercised on this run.')
+
+
+def available_backends():
+    """Compute backends present on this machine, best rank first."""
+    backends = []
+    try:
+        if hasattr(torch, 'xpu') and torch.xpu.is_available():
+            name = torch.xpu.get_device_name(0)
+            if 'B70' in name:
+                backends.append({'type': 'xpu', 'index': 0, 'name': name, 'rank': 'primary'})
+    except (RuntimeError, AttributeError):
+        pass
+    try:
+        if hasattr(torch, 'cuda') and torch.cuda.is_available():
+            backends.append({'type': 'cuda', 'index': 0, 'name': torch.cuda.get_device_name(0), 'rank': 'secondary'})
+    except (RuntimeError, AttributeError):
+        pass
+    return backends
+
+
+def resolve_backend(allow_secondary=False):
+    """Best available backend. CUDA is returned only when the caller opts into the
+    second-rank test path; CPU never is."""
+    backends = available_backends()
+    for backend in backends:
+        if backend['rank'] == 'primary':
+            return backend
+    if not backends:
+        raise RuntimeError('No B70 XPU and no CUDA backend present; CPU fallback is forbidden')
+    if not allow_secondary:
+        raise RuntimeError(f'B70 XPU unavailable and only {backends[0]["name"]} is present; CUDA is a '
+                           'second-rank test backend and requires allow_cuda_secondary')
+    return backends[0]
+
+
+def backend_device(backend):
+    return torch.device(backend['type'], backend['index'])
+
+
+def require_b70(allow_secondary=False):
+    """Device for model work: B70 first, CUDA only as an opted-in second-rank backend."""
+    return backend_device(resolve_backend(allow_secondary))
+
+
+def _device_index(device):
+    return 0 if device.index is None else device.index
+
+
+def device_memory_info(device):
+    """(free, total) bytes for an allowed compute backend."""
+    index = _device_index(device)
+    if device.type == 'xpu':
+        return torch.xpu.mem_get_info(index)
+    if device.type == 'cuda':
+        return torch.cuda.mem_get_info(index)
+    raise RuntimeError(f'{device} is not an allowed compute backend')
+
+
+def device_synchronize(device):
+    index = _device_index(device)
+    if device.type == 'xpu':
+        torch.xpu.synchronize(index)
+    elif device.type == 'cuda':
+        torch.cuda.synchronize(index)
+    else:
+        raise RuntimeError(f'{device} is not an allowed compute backend')
+
+
+def device_empty_cache(device):
+    if device.type == 'xpu':
+        torch.xpu.empty_cache()
+    elif device.type == 'cuda':
+        torch.cuda.empty_cache()
+    else:
+        raise RuntimeError(f'{device} is not an allowed compute backend')
 
 
 def reply_boundary(tokenizer, generated_ids, thinking_open=False, final_marker=None):
@@ -68,8 +143,10 @@ def reply_boundary(tokenizer, generated_ids, thinking_open=False, final_marker=N
 
 
 class HFModel:
-    def __init__(self, model_id, revision, rank, max_tokens, dtype='bfloat16', trust_remote_code=False, quantization='none', trial_operator='merged-resident', ctx_size=None, edit_targets='writeback', merged_cache_bytes=0):
-        self.device = require_b70()
+    def __init__(self, model_id, revision, rank, max_tokens, dtype='bfloat16', trust_remote_code=False, quantization='none', trial_operator='merged-resident', ctx_size=None, edit_targets='writeback', merged_cache_bytes=0, allow_secondary=False):
+        self.backend = resolve_backend(allow_secondary)
+        self.device = backend_device(self.backend)
+        self.secondary_test_run = self.backend['rank'] != 'primary'
         if dtype not in {'bfloat16','float16'} or max_tokens <= 0:
             raise ValueError('Invalid B70 dtype or generation budget')
         self.config = AutoConfig.from_pretrained(model_id, revision=revision, trust_remote_code=trust_remote_code)
@@ -94,8 +171,8 @@ class HFModel:
         except BaseException:
             self._source_context.__exit__(None,None,None)
             raise
-        if any(p.device.type != 'xpu' for p in self.model.parameters()):
-            raise RuntimeError('Model weights escaped the B70')
+        if any(p.device.type != self.device.type for p in self.model.parameters()):
+            raise RuntimeError(f'Model weights escaped the {self.backend["name"]} backend')
         if 'logits_to_keep' not in inspect.signature(self.model.forward).parameters:
             raise ValueError('Architecture needs chunked-logits adapter for full-reply KL')
         self.editor = Editor(self.model, rank, operator=trial_operator, edit_targets=edit_targets,merged_cache_bytes=merged_cache_bytes)
@@ -350,7 +427,7 @@ class HFModel:
         self.model = None
         import gc
         gc.collect()
-        torch.xpu.empty_cache()
+        device_empty_cache(self.device)
         if hasattr(self, '_source_context'):
             self._source_context.__exit__(None,None,None)
 

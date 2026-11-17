@@ -73,6 +73,9 @@ class RunConfig:
     schema_version: int | None = None
     objectives: list | None = None
     warm_start_registry: str | None = None
+    # Second-rank CUDA backend, opt-in per run. Default False keeps the B70-only
+    # contract: without it a missing B70 is still a hard refusal.
+    allow_cuda_secondary: bool = False
 
     @classmethod
     def from_json(cls,obj):
@@ -89,6 +92,8 @@ class RunConfig:
                 raise ValueError(f'{field.name} must be a string')
         if config.scoring_mode not in {'judge','refusal-check'}:
             raise ValueError('scoring_mode must be judge or refusal-check')
+        if not isinstance(config.allow_cuda_secondary,bool):
+            raise ValueError('allow_cuda_secondary must be a JSON boolean (true or false)')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
                   'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry'} | (judge_fields if config.scoring_mode=='refusal-check' else set())

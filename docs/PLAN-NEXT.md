@@ -265,3 +265,20 @@ written into the item and stays GATED.
   suspect: running-sum tie behaviour in the per-acceptance test
   (slx*slx*suml2 > sumlx*sumlx*sl2) under f32. Q3_K stays DECODE_ONLY.
   Reproduce: scripts/ggml_ref/ref_23k.c vs quantize_q3_k (removed pending fix).
+
+## CUDA as a second-rank test backend (landed this run)
+- `hf.py` now resolves compute backends by rank instead of hard-refusing everything that is
+  not the B70: B70/XPU is `primary`, an NVIDIA CUDA device is `secondary`, and CPU is never a
+  backend — a missing device is still a refusal. `require_b70(allow_secondary=False)` keeps the
+  old contract by default; `HFModel(..., allow_secondary=...)` and `RunConfig.allow_cuda_secondary`
+  opt a single run in. `device_memory_info`/`device_synchronize`/`device_empty_cache` replace the
+  direct `torch.xpu.*` calls so memory gates and cache release follow the chosen device.
+- Second-rank by construction, not by comment: `export.stream_merge`/`verify_resident_export`
+  accept only an allowed device, `tree-ranker` and the tree path stay strict B70, the llama.cpp
+  Vulkan serving gate still demands a B70 device, and `provenance.json` gains
+  `compute_backend` with the `CUDA_SECONDARY_NOTE` wording **only when the run is not on the B70**
+  (provenance is digested and compared on resume, so an always-present key would break existing studies).
+- Verified: `doctor` on the B70 venv reports `compute_backend.rank=primary`; on a separate CUDA
+  venv (`torch 2.14.1+cu130`, which matches the `torch>=2.14.1,<2.15` floor) with
+  `B70ABLATOR_ALLOW_CUDA=1` it reports `secondary` with the RTX 3060 and a finite kernel sum, and
+  refuses without the flag. No model load was run on CUDA.

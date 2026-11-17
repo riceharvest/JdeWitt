@@ -603,14 +603,20 @@ def main():
             result=verify_signature(args.directory,args.public)
         elif args.command=='doctor':
             from .pipeline import configure_compiler_paths
+            import os
             configure_compiler_paths()
             import torch
-            from .hf import require_b70
-            device=require_b70()
+            from .hf import resolve_backend, backend_device, device_synchronize, CUDA_SECONDARY_NOTE
+            backend=resolve_backend(allow_secondary=os.environ.get('B70ABLATOR_ALLOW_CUDA')=='1')
+            device=backend_device(backend)
             x=torch.arange(16,device=device,dtype=torch.float32).reshape(4,4)
             product=x@x.T
-            torch.xpu.synchronize()
-            result={'torch':torch.__version__,'device':torch.xpu.get_device_name(0),'kernel_sum':float(product.sum()),'kernel_finite':bool(torch.isfinite(product).all()),'cpu_fallback':False}
+            device_synchronize(device)
+            result={'torch':torch.__version__,'device':backend['name'],
+                    'compute_backend':{'type':backend['type'],'rank':backend['rank']},
+                    'kernel_sum':float(product.sum()),'kernel_finite':bool(torch.isfinite(product).all()),
+                    'cpu_fallback':False,
+                    'note':CUDA_SECONDARY_NOTE if backend['rank']!='primary' else 'B70 primary backend; CUDA is second-rank and was not used here.'}
         elif args.command=='inspect':
             from transformers import AutoConfig
             from .editor import ARCHITECTURES

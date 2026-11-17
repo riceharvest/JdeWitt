@@ -58,8 +58,8 @@ def stream_merge(source, output, editor, max_shard_bytes=1_000_000_000):
                         raise ValueError(f'Weight layout changed: {key}')
                     # CPU is staging/storage only. Weight arithmetic occurs on B70.
                     device=adapter.A.device
-                    if device.type!='xpu':
-                        raise ValueError('Streaming merge requires B70-resident adapters')
+                    if device.type not in ('xpu','cuda'):
+                        raise ValueError('Streaming merge requires device-resident adapters (B70 primary or an allowed CUDA secondary)')
                     edited=tensor.to(device=device)
                     with torch.no_grad():
                         tensor=adapter.merge_source(edited).cpu().contiguous()
@@ -141,8 +141,8 @@ def verify_resident_export(source, output, editor):
                         raise ValueError(f'Stored export layout/precision mismatch: {key}')
                     if key in adapters:
                         a = adapters[key]
-                        if a.base.weight.device.type != 'xpu':
-                            raise ValueError('Export verification requires resident B70 weights')
+                        if a.base.weight.device.type not in ('xpu','cuda'):
+                            raise ValueError('Export verification requires device-resident weights (B70 primary or an allowed CUDA secondary)')
                         if not torch.equal(base.to(a.base.weight.device), a.base.weight):
                             raise ValueError('Resident original weights differ from export source')
                         expected = a.merge_source(a.base.weight)

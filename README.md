@@ -2,6 +2,9 @@
 
 Private Intel Arc Pro B70-only ablation tool. The objective is better
 answer-level compliance without silently losing coding or maths ability.
+CUDA is a second-rank test backend only: it must be enabled per run with
+`allow_cuda_secondary`, a secondary run is labelled in `provenance.json`, and no
+B70 gate, kernel or claim is implied by it.
 No claim of outperforming Heretic, universal architecture support, or zero
 capability loss has been established.
 

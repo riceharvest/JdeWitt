@@ -17,7 +17,7 @@ from .data import digest
 from .editor import ARCHITECTURES
 from .evaluation import DominatedTrial
 from .export import stream_merge, require_resident_precision, verify_resident_export
-from .hf import HFModel, require_b70, reply_boundary, BoundaryContract, preflight_hf
+from .hf import HFModel, require_b70, resolve_backend, backend_device, device_memory_info, CUDA_SECONDARY_NOTE, reply_boundary, BoundaryContract, preflight_hf
 from .plans import fit_plan, move_plan,direction_identity
 from .release import export_gguf, rank_quantized, ManagedGGUF, sha256_file, verify_quant, create_release
 from .scoring import summarize, extract_answer, search_rate, ConsistencyPolicy, paired_consistency
@@ -171,7 +171,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
     budget_report=preflight_hf(config.model,config.revision,{'directions':direction_tasks,'selection':selection,'holdout':holdout},
                               config.ctx_size,config.max_tokens,config.trust_remote_code)
     atomic_json(output/'prompt-budgets.json',budget_report)
-    require_b70()
+    require_b70(config.allow_cuda_secondary)
     for tool in (config.converter,config.quantizer,config.converter_python,config.llama_server):
         if not Path(tool).is_file():
             raise FileNotFoundError(tool)
@@ -221,10 +221,12 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
     needed=raw_bytes*(.7+config.finalists*1.7+1.1)
     if shutil.disk_usage(output).free<needed:
         raise RuntimeError(f'Insufficient disk: need approximately {int(needed)} free bytes for this finalist budget')
-    free,total=torch.xpu.mem_get_info(0)
+    compute_backend=resolve_backend(config.allow_cuda_secondary)
+    device=backend_device(compute_backend)
+    free,total=device_memory_info(device)
     approximate_weights=raw_bytes if config.quantization=='none' else raw_bytes*.35
     if free < approximate_weights+config.vram_headroom_gib*1024**3:
-        raise RuntimeError('Model plus configured VRAM headroom will not fit the free B70 memory')
+        raise RuntimeError(f'Model plus configured VRAM headroom will not fit the free {compute_backend["name"]} memory')
     provenance={
         'config':{k:v for k,v in asdict(config).items() if k not in {'trials','judge_url'}},
         'source_files':{p.name:sha256_file(p) for p in source.iterdir() if p.is_file() and p.suffix in {'.safetensors','.json','.jinja','.py'}},
@@ -238,10 +240,15 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         'framework_sources':{p.name:sha256_file(p) for p in Path(__file__).parent.glob('*.py')},
         'converter_sha256':sha256_file(config.converter),'quantizer_sha256':sha256_file(config.quantizer),'server_sha256':sha256_file(config.llama_server),
     }
+    if compute_backend['rank'] != 'primary':
+        # Recorded only off the B70: provenance is digested and compared on resume, so an
+        # always-present key would make every study created before this change unresumable.
+        provenance['compute_backend'] = {'type':compute_backend['type'],'name':compute_backend['name'],
+                                         'rank':compute_backend['rank'],'note':CUDA_SECONDARY_NOTE}
     study=build_study(output/'study.db',provenance,config.seed,config.startup_trials,getattr(config,'objectives',None))
     atomic_json(output/'provenance.json',provenance)
     torch.manual_seed(config.seed)
-    phases.target_factory=lambda:HFModel(str(source),None,config.rank,config.max_tokens,config.dtype,config.trust_remote_code,config.quantization,'merged-resident',config.ctx_size,config.edit_targets,config.merged_cache_bytes)
+    phases.target_factory=lambda:HFModel(str(source),None,config.rank,config.max_tokens,config.dtype,config.trust_remote_code,config.quantization,'merged-resident',config.ctx_size,config.edit_targets,config.merged_cache_bytes,allow_secondary=config.allow_cuda_secondary)
     backend=PhasedHF(phases)
     try:
         fingerprint={**backend.fingerprint,'method':config.method,'method_options_digest':digest(config.method_options or {})}
@@ -250,8 +257,8 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         if config.method=='ara' and any(a.base.weight.ndim!=2 for *_,a in backend.editor.targets):
             raise UnsupportedMethod('ARA fused-expert route-I/O is not implemented; no experts were skipped')
         workspace=require_resident_precision(source,backend.editor)
-        if torch.xpu.mem_get_info(0)[0] < workspace + config.merged_cache_bytes + config.vram_headroom_gib*1024**3:
-            raise RuntimeError('Insufficient B70 headroom for the resident merged projection workspace')
+        if device_memory_info(device)[0] < workspace + config.merged_cache_bytes + config.vram_headroom_gib*1024**3:
+            raise RuntimeError(f'Insufficient {compute_backend["name"]} headroom for the resident merged projection workspace')
     except BaseException:
         backend.release()
         raise
