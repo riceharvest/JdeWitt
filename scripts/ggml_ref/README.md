@@ -32,3 +32,10 @@ and real tensors). These caught two more real semantic bugs: q4_0 needs C's
 truncation toward zero on (x0+8.5), not rounding, and q8_0 needs roundf's
 half-away-from-zero, not round-half-to-even.
 Every quantize/dequantize pair shipped in CODECS now has compiled-C proof.
+
+ref_4150.c: q4_1/q5_0/q5_1 quantize+dequant reference (`./ref_4150 q5_0 [quantize]`).
+Proven bit-exact (dequant, random packed bytes) and byte-exact (quantize, 14
+distributions incl. exact-half ties, all-equal blocks and real tensors). The
+falsifier caught a dequantizer bias we had missed: ggml dequantize_row_q5_0
+stores an offset code and subtracts 16 (its quantizer adds 16.5 before
+truncating), which our first port omitted.

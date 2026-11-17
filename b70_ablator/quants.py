@@ -377,6 +377,107 @@ def float32_passthrough(raw, n):
     return np.frombuffer(raw, dtype=np.float32).reshape(-1)[:n]
 
 
+def quantize_q4_1(x):
+    """ggml quantize_row_q4_1_ref byte-exact: d=(max-min)/15, m=min,
+    xi = MIN(15, trunc_toward_zero((x-min)/d + 0.5))."""
+    nb = x.size // 32
+    b = x.reshape(nb, 32)
+    mn = b.min(axis=-1)
+    mx = b.max(axis=-1)
+    d = (mx - mn) / 15.0
+    idv = np.where(d != 0, 1 / np.where(d, d, 1), 0.0)
+    q = np.clip(np.trunc((b - mn[:, None]) * idv[:, None] + 0.5), 0, 15).astype(np.uint64)
+    qs = q[:, 0:16] | (q[:, 16:32] << 4)
+    out = np.empty((nb, 20), dtype=np.uint8)
+    out[:, 0:2] = _fp16_bytes(d).view(np.uint8).reshape(nb, 2)
+    out[:, 2:4] = _fp16_bytes(mn).view(np.uint8).reshape(nb, 2)
+    out[:, 4:20] = qs.astype(np.uint8)
+    return out.reshape(-1)
+
+
+def dequantize_q4_1(raw, n):
+    nb = raw.size // 20
+    b = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 20)
+    d = b[:, 0:2].view(np.float16).astype(np.float32).reshape(nb)
+    m = b[:, 2:4].view(np.float16).astype(np.float32).reshape(nb)
+    qs = b[:, 4:20].astype(np.int64)
+    y = np.empty((nb, 32), dtype=np.float32)
+    y[:, 0:16] = qs & 0xF
+    y[:, 16:32] = qs >> 4
+    return (y * d[:, None] + m[:, None]).reshape(-1)[:n]
+
+
+def _pack_qh_bit4(q5):
+    """C memcpy(qh, uint32): bit 4 of quant j -> bit j, quant 16+j -> bit 16+j."""
+    bits = ((q5 >> 4) & 1).astype(np.uint32)
+    packed = (bits.reshape(-1, 32) << np.arange(32, dtype=np.uint32)).sum(axis=-1)
+    return packed.astype(np.uint32).view(np.uint8).reshape(-1, 4)
+
+
+def quantize_q5_0(x):
+    """ggml quantize_row_q5_0_ref byte-exact: d=max/-16 (signed max),
+    xi = MIN(31, trunc(x/d + 16.5)); low nibbles in qs, bit 4 in qh."""
+    nb = x.size // 32
+    b = x.reshape(nb, 32)
+    ax = np.abs(b)
+    idx = np.argmax(ax, axis=-1)
+    maxv = b[np.arange(nb), idx]
+    d = maxv / -16
+    idv = np.where(d != 0, 1 / np.where(d, d, 1), 0.0)
+    q = np.clip(np.trunc(b * idv[:, None] + 16.5), 0, 31).astype(np.uint64)
+    qs = (q[:, 0:16] & 0xF) | ((q[:, 16:32] & 0xF) << 4)
+    out = np.empty((nb, 22), dtype=np.uint8)
+    out[:, 0:2] = _fp16_bytes(d).view(np.uint8).reshape(nb, 2)
+    out[:, 2:6] = _pack_qh_bit4(q)
+    out[:, 6:22] = qs.astype(np.uint8)
+    return out.reshape(-1)
+
+
+def dequantize_q5_0(raw, n):
+    nb = raw.size // 22
+    b = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 22)
+    d = b[:, 0:2].view(np.float16).astype(np.float32).reshape(nb)
+    qs = b[:, 6:22].astype(np.int64)
+    hi_bits = np.unpackbits(b[:, 2:6], bitorder='little', axis=1).reshape(nb, 32)
+    y = np.empty((nb, 32), dtype=np.float32)
+    y[:, 0:16] = (qs & 0xF) | (hi_bits[:, 0:16] << 4)
+    y[:, 16:32] = (qs >> 4) | (hi_bits[:, 16:32] << 4)
+    # ggml dequantize_row_q5_0 stores an offset code: x0 = (code - 16) * d
+    return ((y - 16.0) * d[:, None]).reshape(-1)[:n]
+
+
+def quantize_q5_1(x):
+    """ggml quantize_row_q5_1_ref byte-exact: d=(max-min)/31, m=min,
+    xi = trunc((x-min)/d + 0.5) with C uint8 cast (no MIN)."""
+    nb = x.size // 32
+    b = x.reshape(nb, 32)
+    mn = b.min(axis=-1)
+    mx = b.max(axis=-1)
+    d = (mx - mn) / 31.0
+    idv = np.where(d != 0, 1 / np.where(d, d, 1), 0.0)
+    q = (np.trunc((b - mn[:, None]) * idv[:, None] + 0.5) % 256).astype(np.uint64)
+    qs = (q[:, 0:16] & 0xF) | ((q[:, 16:32] & 0xF) << 4)
+    out = np.empty((nb, 24), dtype=np.uint8)
+    out[:, 0:2] = _fp16_bytes(d).view(np.uint8).reshape(nb, 2)
+    out[:, 2:4] = _fp16_bytes(mn).view(np.uint8).reshape(nb, 2)
+    out[:, 4:8] = _pack_qh_bit4(q)
+    out[:, 8:24] = qs.astype(np.uint8)
+    return out.reshape(-1)
+
+
+def dequantize_q5_1(raw, n):
+    nb = raw.size // 24
+    b = np.frombuffer(raw, dtype=np.uint8).reshape(nb, 24)
+    d = b[:, 0:2].view(np.float16).astype(np.float32).reshape(nb)
+    m = b[:, 2:4].view(np.float16).astype(np.float32).reshape(nb)
+    qs = b[:, 8:24].astype(np.int64)
+    hi_bits = np.unpackbits(b[:, 4:8], bitorder='little', axis=1).reshape(nb, 32)
+    y = np.empty((nb, 32), dtype=np.float32)
+    y[:, 0:16] = (qs & 0xF) | (hi_bits[:, 0:16] << 4)
+    y[:, 16:32] = (qs >> 4) | (hi_bits[:, 16:32] << 4)
+    return (y * d[:, None] + m[:, None]).reshape(-1)[:n]
+
+
 def quantize_bf16(x):
     """Round-to-nearest-even f32 -> bf16 bytes."""
     u = x.astype(np.float32).view(np.uint32)
@@ -398,6 +499,9 @@ def quantize_f32(x):
 # dtype name -> (bytes_per_block, elements_per_block, quantizer, dequantizer)
 CODECS = {
     'Q4_0': (18, 32, quantize_q4_0, dequantize_q4_0),
+    'Q4_1': (20, 32, quantize_q4_1, dequantize_q4_1),
+    'Q5_0': (22, 32, quantize_q5_0, dequantize_q5_0),
+    'Q5_1': (24, 32, quantize_q5_1, dequantize_q5_1),
     'Q8_0': (34, 32, quantize_q8_0, dequantize_q8_0),
     'Q4_K': (144, QK_K, quantize_q4_k, dequantize_q4_k),
     'Q5_K': (176, QK_K, quantize_q5_k, dequantize_q5_k),
