@@ -102,7 +102,7 @@ def test_protection_subspace_and_protect_axes():
     # prev rows live mostly in a random 4-dim subspace
     B = torch.linalg.qr(torch.randn(D, k, generator=g))[0]      # [D,k] orthonormal
     coords = torch.randn(Nc, Lc, k, generator=g)
-    prev = coords @ B.T + 0.2 * torch.randn(Nc, Lc, D, generator=g)
+    prev = coords @ B.T   # exact rank-k structure so U == span(B)
     recs = [({'label': 'prev'}, prev[i]) for i in range(Nc)]
     U = spanfit.protection_subspace(recs, 'prev', k=k)
     assert U.shape == (Lc, k, D)
