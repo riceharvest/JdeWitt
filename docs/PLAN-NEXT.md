@@ -370,6 +370,21 @@ written into the item and stays GATED.
   loaded. Stage-1 throughput, pruning hit rate and probe-vs-finalist
   correlation are GATED like every other speed claim.
 
+## Funnel visibility + probe admission parity (landed same run)
+- Probe short decodes now run through `plan_batches` with
+  `output_budget=probe_tokens` (new explicit parameter, default `None` = old
+  full-budget reservation): same admission limits, length packing and
+  floor-policy grouping as trial generation; serial when no batch policy is
+  set. The probe passes the configured refusal floor as `min_tokens` and
+  requires the backend's `floor_enforced` confirmation exactly like the
+  answer ledger. `from_json` refuses `probe_tokens < refusal_floor`.
+- `trial-pruned` events carry a truncated reason string; `run-status` emits
+  `search_funnel` tallies (stage1_probed/pruned, screen/kl/capability prunes)
+  plus the candidate-probe line. Tally logic verified against a synthetic
+  event file line-for-line; live `run-status` re-validated against
+  `/mnt/ssd/hermes/cache/scratch/jdewitt/evjob` (schema unchanged; the
+  run-status contract tolerates added keys, which the live command proved).
+
 ## Pre-search candidate probe (landed same run, same GATED caveat)
 - `candidate_probe: {samples, enqueue_top}` run field; refused unless
   `search_stages` is set, since the probe reuses that exact signal.

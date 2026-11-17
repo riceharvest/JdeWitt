@@ -360,14 +360,31 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                                    'harmless':backend.answer_start_margins(harmless_prompts,screening['refusal_tokens'],screening['reference_tokens'])}
                 save_checkpoint(output/'screen-baselines.pt',screen_baseline,screen_identity,{})
         stages = validate_search_stages(getattr(config,'search_stages',None), config.max_tokens)
-        stage_rows = stage_prompts = stage_checker = None
+        stage_rows = stage_checker = None
         if stages is not None:
             stage_rows = stratified_sample([t for t in selection if t['kind']=='refusal'], stages['probe_fraction'])
             if not stage_rows:
                 raise ValueError('search_stages needs refusal rows in the selection suite')
-            stage_prompts = [t['prompt'] for t in stage_rows]
             stage_checker = RefusalChecker()
+            from .batching import plan_batches
+            def probe_decode():
+                """Short-decode the probe slice under the run's own batch admission
+                policy and the same refusal-floor semantics trial answers use —
+                the probe never bypasses max_sequences/max_padded_tokens."""
+                out = {}
+                for batch, batch_floor in plan_batches(stage_rows, backend, config.refusal_floor,
+                        config.generation_batch, output_budget=stages['probe_tokens']):
+                    responses = backend.generate_batch([t['prompt'] for t in batch],
+                        min_tokens=batch_floor, max_tokens=stages['probe_tokens'])
+                    if len(responses) != len(batch):
+                        raise ValueError('Probe batch returned the wrong cardinality')
+                    for task, response in zip(batch, responses):
+                        if batch_floor is not None and response.get('floor_enforced') is not True:
+                            raise ValueError('Probe backend did not confirm the refusal floor')
+                        out[task['id']] = response
+                return [out[task['id']] for task in stage_rows]
             atomic_json(output/'search-stages.json',{'stages':stages,'probe_rows':[t['id'] for t in stage_rows],
+                'batch_policy':config.generation_batch,'refusal_floor':config.refusal_floor,
                 'note':'Stage-1 probe answers are heuristic wording verdicts on truncated short decodes; they never enter the answer store, the gates or any release report.'})
         if config.warm_starts:
             warm=json.loads(Path(config.warm_starts).read_text())
@@ -388,7 +405,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 # answer store, no KL/capability claim — see the artifact note.
                 backend.editor.apply(directions, unflatten_parameters(flat))
                 try:
-                    responses = backend.generate_batch(stage_prompts, max_tokens=stages['probe_tokens'])
+                    responses = probe_decode()
                     refused = 0
                     for task, response in zip(stage_rows, responses):
                         answer = extract_answer(response['content'], response['finish_reason'], response['thinking_open'], response.get('final_marker'))
@@ -450,7 +467,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                     from .events import emit
                     stored = trial.user_attrs.get('stage1')
                     if stored is None:
-                        responses = backend.generate_batch(stage_prompts, max_tokens=stages['probe_tokens'])
+                        responses = probe_decode()
                         refused = 0
                         rows_report = []
                         for task, response in zip(stage_rows, responses):

@@ -10,11 +10,13 @@ def validate_batch_policy(policy):
         raise ValueError('batch policy needs positive integer max_sequences and max_padded_tokens')
 
 
-def plan_batches(tasks, generator, refusal_floor, policy):
+def plan_batches(tasks, generator, refusal_floor, policy, output_budget=None):
     """Preflight all lengths, pack nearby lengths, keep generation policies apart.
 
     Reserve the full output budget even when the request has a refusal floor.
     This is a conservative token admission limit, NOT a VRAM-fit guarantee.
+    ``output_budget`` lets a short-decode probe reserve its own smaller budget;
+    ``None`` reserves the generator's full output budget as before.
     """
     validate_batch_policy(policy)
     if policy is None:
@@ -23,7 +25,12 @@ def plan_batches(tasks, generator, refusal_floor, policy):
         return []
     if not callable(getattr(generator,'generate_batch',None)) or not callable(getattr(generator,'prompt_tokens',None)):
         raise ValueError('Configured batch policy needs backend batch generation and exact prompt counts')
-    output=getattr(generator,'max_tokens',None)
+    if output_budget is None:
+        output = getattr(generator,'max_tokens',None)
+    else:
+        if type(output_budget) is not int or output_budget < 1:
+            raise ValueError('Batch output budget must be a positive integer token count')
+        output = output_budget
     if type(output) is not int or output<1:
         raise ValueError('Batch backend needs an explicit output budget')
     groups={}

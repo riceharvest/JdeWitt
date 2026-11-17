@@ -80,6 +80,39 @@ def _run_lock_held(root):
         return True
 
 
+def _funnel_summary(root):
+    """Tally the search funnel from events.jsonl (the rotated tail is skipped;
+    these are efficiency signals, not claims). Returns None when no events."""
+    path = root / 'events.jsonl'
+    if not path.is_file():
+        return None
+    summary = {}
+    tallies = {('trial-stage1', None): 'stage1_probed',
+               ('trial-pruned', 'Stage-1'): 'stage1_pruned',
+               ('trial-pruned', 'Screened out'): 'screen_pruned',
+               ('trial-pruned', 'cannot meet the damage limit'): 'kl_pruned',
+               ('trial-pruned', 'Capability or validity gate failed'): 'capability_pruned'}
+    for key in tallies.values():
+        summary[key] = 0
+    try:
+        lines = path.read_text(encoding='utf-8').splitlines()
+    except OSError:
+        return None
+    for line in lines:
+        try:
+            record = json.loads(line)
+        except ValueError:
+            continue
+        kind, reason = record.get('kind'), record.get('reason') or ''
+        for (event_kind, needle), name in tallies.items():
+            if kind == event_kind and (needle is None or needle in reason):
+                summary[name] += 1
+        if kind == 'candidate-probe':
+            summary['candidate_probe'] = {'samples': record.get('samples'), 'enqueued': record.get('enqueued'),
+                                          'best': record.get('best'), 'worst': record.get('worst')}
+    return summary
+
+
 def run_status(directory):
     root=Path(directory).resolve()
     if not root.is_dir():
@@ -89,6 +122,7 @@ def run_status(directory):
     return {'output':str(root),'trial_counts':dict(Counter(t['state'] for t in trials)),
             'trials':trials,'best_feasible':min(candidates,key=lambda t:t['value']) if candidates else None,
             'pareto_front':_study_user_attr(root/'study.db','pareto_front'),
+            'search_funnel':_funnel_summary(root),
             'cancel_requested':(root/'CANCEL').is_file(),
             'run_lock_held':_run_lock_held(root),
             'release_present':(root/'release').is_dir(),'release_verified':False,

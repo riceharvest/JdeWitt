@@ -160,6 +160,8 @@ class RunConfig:
         if config.candidate_probe is not None and config.search_stages is None:
             raise ValueError('candidate_probe requires search_stages: the probe reuses the stage-1 short-decode signal')
         validate_candidate_probe(config.candidate_probe,config.trials)
+        if config.search_stages is not None and config.refusal_floor is not None and config.refusal_floor > config.search_stages['probe_tokens']:
+            raise ValueError('search_stages.probe_tokens must reach at least refusal_floor: the short decode cannot satisfy the floor')
         if type(config.merged_cache_bytes) is not int or config.merged_cache_bytes<0:
             raise ValueError('merged_cache_bytes must be a nonnegative integer')
         from .screening import validate_screening
@@ -288,10 +290,10 @@ def execute_trials(study,objective,total,cancel_path=None,events_path=None):
                 emit(events_path,'trial-ask',number=trial.number)
         try:
             value=objective(trial)
-        except optuna.TrialPruned:
+        except optuna.TrialPruned as pruned:
             study.tell(trial,state=optuna.trial.TrialState.PRUNED)
             if events_path is not None:
-                emit(events_path,'trial-pruned',number=trial.number)
+                emit(events_path,'trial-pruned',number=trial.number,reason=str(pruned)[:200] or None)
         except BaseException as error:
             if events_path is not None:
                 emit(events_path,'trial-failed',number=trial.number,error=str(error)[:400])

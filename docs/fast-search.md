@@ -82,6 +82,20 @@ in the other direction: it assumes every trial passes stage 1.
   money the search would have spent discovering dead corners of the
   strength space is spent once, forward-ish, up front.
 
+## Funnel visibility
+
+- `run-status` reports `search_funnel`: counts of stage-1 probes, stage-1
+  prunes, screen prunes, KL prunes and capability prunes (best-effort tally
+  of the current event log), plus the candidate-probe summary. One command
+  tells an agent where the trial budget actually died.
+- Every `trial-pruned` event carries its reason, so `run-events` shows which
+  gate killed which trial.
+- The probe decodes obey the run's own batch policy (`max_sequences` /
+  `max_padded_tokens`, with the shorter probe budget reserved) and the same
+  refusal-floor semantics trial answers use, including the backend
+  confirmation. Probe tokens below a configured refusal floor are refused at
+  config time.
+
 ## Honest scope
 
 - The probe verdict is the **wording-level** refusal check on a truncated
