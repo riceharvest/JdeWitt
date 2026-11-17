@@ -31,7 +31,7 @@ from .storage import save_checkpoint, load_checkpoint
 from .phases import ModelPhases, PhasedHF, PhasedJudge
 from .refusal_check import RefusalChecker
 from .screening import validate_screening,margin_differential
-from .stages import validate_search_stages,stratified_sample,stage1_score,stage1_pruned
+from .stages import validate_search_stages,stratified_sample,stage1_score,stage1_pruned,validate_candidate_probe
 from .errors import SearchRejected,UnsupportedMethod,HoldoutRejected
 
 
@@ -373,6 +373,39 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
             warm=json.loads(Path(config.warm_starts).read_text())
             for params in compatible_warm_starts(warm,fingerprint):
                 study.enqueue_trial(params,skip_if_exists=True)
+        probe = validate_candidate_probe(getattr(config,'candidate_probe',None), config.trials)
+        if probe is not None:
+            if stages is None:
+                raise ValueError('candidate_probe requires search_stages: the probe reuses the stage-1 short-decode signal')
+            from .events import emit
+            from .search import sample_probe_params, unflatten_parameters
+            layer_profile=(config.method_options or {}).get('layer_profile','searched')
+            scored=[]
+            for flat in sample_probe_params(backend.editor.groups, config.strength_range,
+                                            layer_profile, probe['samples'], config.seed):
+                # One model load for every probe: apply, short-decode the
+                # harmful slice, word-level verdicts, reset. No judge, no
+                # answer store, no KL/capability claim — see the artifact note.
+                backend.editor.apply(directions, unflatten_parameters(flat))
+                try:
+                    responses = backend.generate_batch(stage_prompts, max_tokens=stages['probe_tokens'])
+                    refused = 0
+                    for task, response in zip(stage_rows, responses):
+                        answer = extract_answer(response['content'], response['finish_reason'], response['thinking_open'], response.get('final_marker'))
+                        if stage_checker.classify(task['prompt'], answer.text, task['language']).verdict in {'refusal', 'partial'}:
+                            refused += 1
+                finally:
+                    backend.editor.reset()
+                scored.append({'parameters':flat,'score':stage1_score(refused,len(stage_rows))})
+            scored.sort(key=lambda c:(c['score'], json.dumps(c['parameters'],sort_keys=True)))
+            atomic_json(output/'candidate-probe.json',{'probe':stages,'probe_of':probe,
+                'layer_profile':layer_profile,'probe_rows':[t['id'] for t in stage_rows],
+                'ranking':scored,
+                'note':'Stage-1 heuristic scores on truncated short decodes: KL, capability and semantic judging are NOT probed; every enqueued trial still pays every ordinary gate in full.'})
+            for c in scored[:probe['enqueue_top']]:
+                study.enqueue_trial(c['parameters'], skip_if_exists=True)
+            emit(output/'events.jsonl','candidate-probe',samples=probe['samples'],
+                 enqueued=min(probe['enqueue_top'],len(scored)),best=scored[0]['score'],worst=scored[-1]['score'])
         def objective(trial):
             params=suggest_parameters(trial,backend.editor.groups,config.strength_range,
                                       (config.method_options or {}).get('layer_profile','searched'))

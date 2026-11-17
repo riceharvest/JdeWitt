@@ -61,6 +61,27 @@ generation cost falls by (1 − keep_top)·(stage-3 cost) against the same
 funnel running without pruning. The upper bound in `describe-run` is honest
 in the other direction: it assumes every trial passes stage 1.
 
+## Pre-search candidate probe (`candidate_probe`)
+
+```json
+"candidate_probe": {"samples": 200, "enqueue_top": 8}
+```
+
+- After the direction fit, in the same single model load: sample `samples`
+  strength sets from the exact suggestion space (deterministic from the run
+  `seed`), score every one with the stage-1 short-decode probe, write the
+  full ranking to `candidate-probe.json` (plus a `candidate-probe` event),
+  and enqueue the best `enqueue_top` as the study's first trials so the
+  sampler starts from probed ground instead of a cold startup.
+- The probe is not the search. Enqueued sets are ordinary trials and pay
+  every gate in full — KL first, so a probe-winner that damages harmless
+  replies dies before generating anything. The ranking file is a labelled
+  heuristic artifact; `describe-run` prints the probe cost before you commit.
+- Why it pays: a probe is roughly two orders of magnitude cheaper than a
+  stage-3 trial (hundreds of probes for less than two full trials), so the
+  money the search would have spent discovering dead corners of the
+  strength space is spent once, forward-ish, up front.
+
 ## Honest scope
 
 - The probe verdict is the **wording-level** refusal check on a truncated
@@ -80,3 +101,6 @@ in the other direction: it assumes every trial passes stage 1.
   and probe-vs-finalist correlation are GATED behind a real B70 (or
   explicitly opt-in second-rank) study like every other speed or quality
   claim in this repo.
+- The candidate-probe ranking scores neither KL nor capability nor semantic
+  judge — it only tells you which strength sets *look* non-refusing on a
+  short decode. A probe ranking is never a removal or quality claim.

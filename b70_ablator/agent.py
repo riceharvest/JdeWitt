@@ -128,7 +128,7 @@ def studies(root):
 def describe_run(path,overrides=()):
     """Static budget/suite/family shape of a validated experiment. No model or GPU access."""
     from .search import RunConfig
-    from .stages import validate_search_stages,stratified_sample
+    from .stages import validate_search_stages,stratified_sample,validate_candidate_probe
     from .validation import validate_run_inputs
     obj=json.loads(Path(path).read_text())
     if overrides:
@@ -164,6 +164,7 @@ def describe_run(path,overrides=()):
                'judge_calls_upper_bound':(config.trials+1)*n_sel+n_hold if config.scoring_mode=='judge' else 0}
     stages = validate_search_stages(getattr(config,'search_stages',None),config.max_tokens)
     policy_stages = stages
+    probe = validate_candidate_probe(getattr(config,'candidate_probe',None),config.trials)
     if stages is not None:
         probe_rows = stratified_sample([r for r in suites['selection'] if r['kind']=='refusal'], stages['probe_fraction'])
         estimates.update({'stage1_probe_rows_per_attempt':len(probe_rows),
@@ -171,6 +172,11 @@ def describe_run(path,overrides=()):
                           'stage1_output_tokens_per_generation':stages['probe_tokens'],
                           'stage1_keep_top':stages['keep_top'],
                           'note_stage1':'upper bound: assumes every trial passes the short-decode probe; stage 1 generates at most probe_tokens on harmful rows and never certifies'})
+        if probe is not None:
+            estimates.update({'candidate_probe_samples':probe['samples'],
+                              'candidate_probe_enqueue_top':probe['enqueue_top'],
+                              'candidate_probe_probe_generations':probe['samples']*len(probe_rows),
+                              'note_candidate_probe':'pre-search probe costs samples*probe_rows short decodes in one model load; the top enqueue_top enter the study as ordinary trials and pay every gate in full'})
     return {'config':str(path),'status':'described-only, not validated on hardware',
             'source_validated':'validate_run_inputs passed before this report was built',
             'suites':{name:split_stats(rows) for name,rows in suites.items()},
@@ -179,7 +185,7 @@ def describe_run(path,overrides=()):
             'policy':{'method':config.method,'method_options':config.method_options,'rank':config.rank,
                       'trials':config.trials,'startup_trials':config.startup_trials,'finalists':config.finalists,
                       'strength_range':config.strength_range,'edit_targets':config.edit_targets,
-                      'consistency':config.consistency,'screening':config.screening,'search_stages':policy_stages},
+                      'consistency':config.consistency,'screening':config.screening,'search_stages':policy_stages,'candidate_probe':probe},
             'generation_settings':{'max_tokens':config.max_tokens,'ctx_size':config.ctx_size,'dtype':config.dtype,
                                    'generation_batch':config.generation_batch},
             'metadata_valid':report['status'],

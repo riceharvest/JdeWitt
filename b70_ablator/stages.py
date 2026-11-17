@@ -68,3 +68,21 @@ def stage1_pruned(score, prior_scores, keep_top):
     keep = max(1, math.floor(keep_top * (len(prior_scores) + 1)))
     ordered = sorted(prior_scores)
     return score > ordered[keep - 1]
+
+
+def validate_candidate_probe(spec, trials):
+    """Normalize and validate the optional ``candidate_probe`` run field.
+
+    The probe reuses the stage-1 short-decode signal, so a run that sets it
+    must also set ``search_stages`` (checked by the caller that knows both).
+    """
+    if spec is None:
+        return None
+    if not isinstance(spec, dict) or set(spec) != {'samples', 'enqueue_top'}:
+        raise ValueError('candidate_probe requires exactly samples and enqueue_top')
+    samples, top = spec['samples'], spec['enqueue_top']
+    if type(samples) is not int or not 1 <= samples <= 4000:
+        raise ValueError('candidate_probe.samples must be an integer in [1, 4000]')
+    if type(top) is not int or not 1 <= top <= min(samples, trials):
+        raise ValueError(f'candidate_probe.enqueue_top must be an integer in [1, min(samples, trials={trials})]')
+    return {'samples': samples, 'enqueue_top': top}

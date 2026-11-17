@@ -79,6 +79,10 @@ class RunConfig:
     # Optional short-decode stage-1 funnel: a heuristic prefilter of trials
     # before full-budget answer generation. None = classic single-stage eval.
     search_stages: dict | None = None
+    # Optional pre-search probe: sample N strength sets, score them with the
+    # stage-1 short-decode signal in one model load, enqueue the best few as
+    # first trials. Requires search_stages. None = no pre-search probe.
+    candidate_probe: dict | None = None
 
     @classmethod
     def from_json(cls,obj):
@@ -99,7 +103,7 @@ class RunConfig:
             raise ValueError('allow_cuda_secondary must be a JSON boolean (true or false)')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry','search_stages'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry','search_stages','candidate_probe'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:
@@ -152,6 +156,10 @@ class RunConfig:
         validate_batch_policy(config.generation_batch)
         from .stages import validate_search_stages
         validate_search_stages(config.search_stages,config.max_tokens)
+        from .stages import validate_candidate_probe
+        if config.candidate_probe is not None and config.search_stages is None:
+            raise ValueError('candidate_probe requires search_stages: the probe reuses the stage-1 short-decode signal')
+        validate_candidate_probe(config.candidate_probe,config.trials)
         if type(config.merged_cache_bytes) is not int or config.merged_cache_bytes<0:
             raise ValueError('merged_cache_bytes must be a nonnegative integer')
         from .screening import validate_screening
@@ -169,6 +177,47 @@ def compatible_warm_starts(records, fingerprint):
     return [r['parameters'] for r in records if r.get('feasible') is True and isinstance(r.get('parameters'),dict)
             and all(r.get('fingerprint',{}).get(k)==fingerprint.get(k) for k in keys)
             and all(r.get('fingerprint',{}).get(k,v)==fingerprint.get(k,v) for k,v in defaults.items())]
+
+
+def parameter_bounds(strength_range=None):
+    """The parameter space suggest_parameters explores; candidate probing samples
+    the same space. One literal table shared by both callers so they cannot drift."""
+    low, high = (0., 1.5) if strength_range is None else (strength_range[0], strength_range[1])
+    return {'strength': (low, high), 'center': (0., 1.), 'width': (.05, 1.), 'floor': (0., 1.)}
+
+
+def unflatten_parameters(flat):
+    """Optuna parameter names (``attn.strength``) back to the nested shape the
+    resident editor consumes ({'attn': {'strength': ...}})."""
+    out = {}
+    for key, value in flat.items():
+        group, name = key.split('.', 1)
+        out.setdefault(group, {})[name] = value
+    return out
+
+
+def sample_probe_params(groups, strength_range, layer_profile, samples, seed):
+    """Deterministic uniform sampling of the suggestion space for candidate
+    probing. random.Random(seed) is reproducible across processes and
+    platforms; returns optuna-shaped flat dicts keyed like the parameter names.
+    """
+    import random
+    from .methods import LAYER_PROFILES
+    if layer_profile not in LAYER_PROFILES:
+        raise ValueError(f'layer_profile must be one of {list(LAYER_PROFILES)}')
+    bounds = parameter_bounds(strength_range)
+    rng = random.Random(seed)
+    out = []
+    for _ in range(samples):
+        flat = {}
+        for group in groups:
+            flat[f'{group}.strength'] = rng.uniform(*bounds['strength'])
+            if layer_profile == 'searched':
+                flat[f'{group}.center'] = rng.uniform(*bounds['center'])
+                flat[f'{group}.width'] = rng.uniform(*bounds['width'])
+                flat[f'{group}.floor'] = rng.uniform(*bounds['floor'])
+        out.append(flat)
+    return out
 
 
 class RestartableTPE(optuna.samplers.BaseSampler):
@@ -265,27 +314,25 @@ def suggest_parameters(trial, groups=('attn','mlp'), strength_range=None, layer_
     from .methods import LAYER_PROFILES
     if layer_profile not in LAYER_PROFILES:
         raise ValueError(f'layer_profile must be one of {list(LAYER_PROFILES)}')
-    if strength_range is None:
-        low, high = 0., 1.5
-    else:
+    if strength_range is not None:
         if not isinstance(strength_range, (list, tuple)) or len(strength_range) != 2:
             raise ValueError('strength_range must be a two-element range')
-        low, high = strength_range
-    if any(type(v) not in (int, float) or not math.isfinite(v) for v in (low, high)):
+    bounds = parameter_bounds(strength_range)
+    if any(type(v) not in (int, float) or not math.isfinite(v) for v in bounds['strength']):
         raise ValueError('strength_range must be finite numbers')
-    if not 0 <= low < high <= MAX_STRENGTH:
+    if not 0 <= bounds['strength'][0] < bounds['strength'][1] <= MAX_STRENGTH:
         raise ValueError(f'strength_range must satisfy 0 <= low < high <= {MAX_STRENGTH}')
     groups = list(groups)
     if not groups or any(not isinstance(g, str) or not g.strip() for g in groups):
         raise ValueError('At least one named edit group is required')
     params = {}
     for group in groups:
-        params[group] = {'strength': trial.suggest_float(group+'.strength', low, high)}
+        params[group] = {'strength': trial.suggest_float(group+'.strength', *bounds['strength'])}
         if layer_profile == 'searched':
             # Layer-relative coordinates permit transfer between related depths.
             params[group].update({
-                'center':trial.suggest_float(group+'.center',0.,1.),
-                'width':trial.suggest_float(group+'.width',.05,1.),
-                'floor':trial.suggest_float(group+'.floor',0.,1.),
+                'center':trial.suggest_float(group+'.center',*bounds['center']),
+                'width':trial.suggest_float(group+'.width',*bounds['width']),
+                'floor':trial.suggest_float(group+'.floor',*bounds['floor']),
             })
     return params

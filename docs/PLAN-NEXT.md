@@ -369,3 +369,21 @@ written into the item and stays GATED.
   `examples/minicpm-v47/run.json` (with and without the field). No model was
   loaded. Stage-1 throughput, pruning hit rate and probe-vs-finalist
   correlation are GATED like every other speed claim.
+
+## Pre-search candidate probe (landed same run, same GATED caveat)
+- `candidate_probe: {samples, enqueue_top}` run field; refused unless
+  `search_stages` is set, since the probe reuses that exact signal.
+  `search.sample_probe_params` draws from `parameter_bounds` — the same
+  literal table `suggest_parameters` now calls, so sampler and probe cannot
+  drift; `random.Random(seed)`, reproducible across processes.
+  `unflatten_parameters` maps optuna names back to the nested shape the
+  editor consumes; discriminative plans correctly sample strength only.
+- Pipeline: after warm starts, before the objective — apply, short-decode
+  the stage-1 slice, reset; full ranking + labels in `candidate-probe.json`,
+  `candidate-probe` event, top `enqueue_top` enqueued as ordinary first
+  trials. Provenance already hashes both new config fields, so changing
+  either invalidates a resume like any other setting change.
+- Spot-checked: determinism for equal seeds, bounds per key,
+  flat/nested round trip, validator rejects (top > trials, >4000 samples,
+  wrong keys, probe-without-stages), and describe-run emits
+  `candidate_probe_probe_generations` = samples x probe rows.

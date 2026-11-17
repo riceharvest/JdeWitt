@@ -150,8 +150,11 @@ explicit unresolved limit in the README.
   generation is wasted.
   Landed (CODE): `search_stages` run field — deterministic family-stratified
   short-decode probe of harmful rows plus a successive-halving keep line,
-  before full-budget evaluation (`docs/fast-search.md`). Trial token-level
-  early stop inside stage 3 stays open; probe-vs-finalist correlation is GATED.
+  before full-budget evaluation (`docs/fast-search.md`). Landed (CODE) with
+  it: `candidate_probe` — hundreds of strength sets scored by that same
+  stage-1 signal in one model load, top sets enqueued as ordinary trials.
+  Trial token-level early stop inside stage 3 stays open; probe-vs-finalist
+  correlation is GATED.
 - Significance without ceremony: one stats module (Wilson intervals,
   family-level bootstrap, paired permutation test). Spot-checked against
   scipy once.
