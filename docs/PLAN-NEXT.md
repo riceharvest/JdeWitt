@@ -280,7 +280,7 @@ written into the item and stays GATED.
   (provenance is digested and compared on resume, so an always-present key would break existing studies).
 - Verified: `doctor` on the B70 venv reports `compute_backend.rank=primary`; on a separate CUDA
   venv (`torch 2.14.1+cu130`, which matches the `torch>=2.14.1,<2.15` floor) with
-  `B70ABLATOR_ALLOW_CUDA=1` it reports `secondary` with the RTX 3060 and a finite kernel sum, and
+  `JDEWITT_ALLOW_CUDA=1` it reports `secondary` with the RTX 3060 and a finite kernel sum, and
   refuses without the flag. No model load was run on CUDA.
 
 ## Second-rank serving proven, first model runs on the 3060 (this run)

@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from b70_ablator.data import load_suite
-from b70_ablator.search import RunConfig
-from b70_ablator.sources import import_suites, validate_import
-from b70_ablator.validation import validate_run_inputs
+from jdewitt.data import load_suite
+from jdewitt.search import RunConfig
+from jdewitt.sources import import_suites, validate_import
+from jdewitt.validation import validate_run_inputs
 
 EXAMPLES = Path(__file__).resolve().parents[1] / 'examples' / 'public-corpus'
 IMPORTED = Path(__file__).resolve().parents[1] / 'verification' / 'public-corpus-suites'

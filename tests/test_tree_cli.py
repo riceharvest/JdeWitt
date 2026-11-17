@@ -42,7 +42,7 @@ class NoModels(importlib.abc.MetaPathFinder):
   if fullname.split('.')[0] in {'torch','transformers','bitsandbytes'}:
    raise AssertionError('model runtime imported: '+fullname)
 sys.meta_path.insert(0, NoModels())
-from b70_ablator.cli import main
+from jdewitt.cli import main
 main()
 """
     return subprocess.run([sys.executable, '-c', code, *map(str, args)], cwd=ROOT, capture_output=True, text=True)
@@ -85,7 +85,7 @@ def test_tree_metadata_rejects_mismatched_or_incomplete_inputs(tmp_path, change)
 
 
 def test_lens_binding_reads_actual_upstream_tensor_format_and_records_attestation(tmp_path):
-    from b70_ablator.tree_cli import bind_lens
+    from jdewitt.tree_cli import bind_lens
     path, config, _ = config_fixture(tmp_path)
     output = tmp_path / 'bound.json'
     result = bind_lens(tmp_path / 'lens.pt', config['model_identity'], output)
@@ -98,8 +98,8 @@ def test_lens_binding_reads_actual_upstream_tensor_format_and_records_attestatio
 
 
 def test_learned_direction_bank_can_replace_token_pullbacks_and_is_identity_bound(tmp_path):
-    from b70_ablator.tree_cli import load_action_bank
-    from b70_ablator.tree_config import validate_tree
+    from jdewitt.tree_cli import load_action_bank
+    from jdewitt.tree_config import validate_tree
     path, config, _ = config_fixture(tmp_path)
     bank = tmp_path / 'bank.pt'
     basis = torch.tensor([[0., 1.]])
@@ -117,9 +117,9 @@ def test_learned_direction_bank_can_replace_token_pullbacks_and_is_identity_boun
 
 
 def test_completed_tree_checks_runtime_provenance_before_model_free_reuse(tmp_path, monkeypatch):
-    from b70_ablator.tree_cli import run_tree
+    from jdewitt.tree_cli import run_tree
     path, _, _ = config_fixture(tmp_path)
-    monkeypatch.setattr('b70_ablator.tree_hf.create_causal_mask', lambda **kwargs: None)
+    monkeypatch.setattr('jdewitt.tree_hf.create_causal_mask', lambda **kwargs: None)
     run_tree(path, model_factory=lambda raw: fake_target_factory([]))
     runtime_path = tmp_path / 'out' / 'runtime.json'
     data = json.loads(runtime_path.read_text())
@@ -155,9 +155,9 @@ def fake_target_factory(calls, interrupt=False):
 
 
 def test_run_tree_persists_search_before_decode_and_resumes_without_search_or_completed_reload(tmp_path, monkeypatch):
-    from b70_ablator.tree_cli import run_tree
+    from jdewitt.tree_cli import run_tree
     path, _, task = config_fixture(tmp_path)
-    monkeypatch.setattr('b70_ablator.tree_hf.create_causal_mask', lambda **kwargs: None)
+    monkeypatch.setattr('jdewitt.tree_hf.create_causal_mask', lambda **kwargs: None)
     calls = []
     with pytest.raises(RuntimeError, match='interruption'):
         run_tree(path, model_factory=lambda raw: fake_target_factory(calls, interrupt=True))
@@ -165,10 +165,10 @@ def test_run_tree_persists_search_before_decode_and_resumes_without_search_or_co
     assert len(list((tmp_path / 'out' / 'trees').glob('*.json'))) == 1
     assert len(list((tmp_path / 'out' / 'answers' / 'baseline' / 'items').glob('*.json'))) == 1
     assert not (tmp_path / 'out' / 'report.json').exists()
-    monkeypatch.setattr('b70_ablator.tree_search.search_tree', lambda *a, **k: pytest.fail('saved search must be reused'))
+    monkeypatch.setattr('jdewitt.tree_search.search_tree', lambda *a, **k: pytest.fail('saved search must be reused'))
     result = run_tree(path, model_factory=lambda raw: fake_target_factory(calls))
     assert result['status'] == 'experimental-unvalidated' and result['generated'] == 1
-    from b70_ablator.answers import AnswerStore
+    from jdewitt.answers import AnswerStore
     winner = AnswerStore.open(tmp_path / 'out' / 'answers' / 'rank-0', [task])
     assert winner.get(task)['floor_enforced'] is True
     replay = run_tree(path, model_factory=lambda raw: pytest.fail('completed run must remain model-free'))

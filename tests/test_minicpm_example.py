@@ -5,10 +5,10 @@ from pathlib import Path
 
 import pytest
 
-from b70_ablator.auto import AutoConfig, validate_auto
-from b70_ablator.data import load_suite
-from b70_ablator.search import RunConfig
-from b70_ablator.validation import validate_run_inputs
+from jdewitt.auto import AutoConfig, validate_auto
+from jdewitt.data import load_suite
+from jdewitt.search import RunConfig
+from jdewitt.validation import validate_run_inputs
 
 EXAMPLES = Path(__file__).resolve().parents[1] / 'examples' / 'minicpm-v47'
 MODEL = Path('/mnt/ssd/models/MiniCPM-V-4.7-1B')

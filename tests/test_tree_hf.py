@@ -32,13 +32,13 @@ def target_fixture(architecture='qwen3'):
 
 
 def test_segment_adapter_calls_only_requested_layers_and_prepares_positions_once(monkeypatch):
-    from b70_ablator.tree_hf import HFSegments
+    from jdewitt.tree_hf import HFSegments
     hf, root = target_fixture()
     mask_calls = []
     def mask(**kwargs):
         mask_calls.append(kwargs)
         return torch.zeros(1, 1, 3, 3)
-    monkeypatch.setattr('b70_ablator.tree_hf.create_causal_mask', mask)
+    monkeypatch.setattr('jdewitt.tree_hf.create_causal_mask', mask)
     backend = HFSegments(hf, {'input_ids': torch.tensor([[1, 2, 3]]),
                               'attention_mask': torch.ones(1, 3, dtype=torch.long)})
     h = backend.prepare()
@@ -54,8 +54,8 @@ def test_segment_adapter_calls_only_requested_layers_and_prepares_positions_once
 
 
 def test_prefill_replay_applies_exact_path_once_and_cleans_hooks_on_error():
-    from b70_ablator.tree_hf import PrefillReplay
-    from b70_ablator.tree_search import Action
+    from jdewitt.tree_hf import PrefillReplay
+    from jdewitt.tree_search import Action
     layers = [Block(1), Block(2)]
     action = Action('x', {0: torch.tensor([[1., 0.]])})
     path = [{'checkpoint': 0, 'action': 'x', 'strength': 1.}]
@@ -77,10 +77,10 @@ def test_prefill_replay_applies_exact_path_once_and_cleans_hooks_on_error():
 
 
 def test_prefill_replay_matches_segmented_interventions(monkeypatch):
-    from b70_ablator.tree_hf import HFSegments, PrefillReplay
-    from b70_ablator.tree_search import Action, project_last
+    from jdewitt.tree_hf import HFSegments, PrefillReplay
+    from jdewitt.tree_search import Action, project_last
     hf, root = target_fixture()
-    monkeypatch.setattr('b70_ablator.tree_hf.create_causal_mask', lambda **kwargs: None)
+    monkeypatch.setattr('jdewitt.tree_hf.create_causal_mask', lambda **kwargs: None)
     backend = HFSegments(hf, {'input_ids': torch.tensor([[1, 2]])})
     initial = backend.prepare()
     action = Action('x', {0: torch.tensor([[1., 0.]]), 1: torch.tensor([[0., 1.]])})
@@ -95,7 +95,7 @@ def test_prefill_replay_matches_segmented_interventions(monkeypatch):
 
 
 def test_unknown_architecture_and_active_weight_edits_are_rejected():
-    from b70_ablator.tree_hf import HFSegments
+    from jdewitt.tree_hf import HFSegments
     hf, _ = target_fixture('unverified')
     with pytest.raises(ValueError, match='segment adapter'):
         HFSegments(hf, {'input_ids': torch.tensor([[1]])})
@@ -108,10 +108,10 @@ def test_unknown_architecture_and_active_weight_edits_are_rejected():
 @pytest.mark.xpu
 @pytest.mark.parametrize('architecture', ['llama', 'qwen3', 'qwen3_5_text'])
 def test_real_b70_segment_and_replay_logits_match_full_forward(architecture):
-    from b70_ablator.hf import HFModel, require_b70
-    from b70_ablator.editor import Editor
-    from b70_ablator.tree_hf import HFSegments, PrefillReplay
-    from b70_ablator.tree_search import Action, project_last
+    from jdewitt.hf import HFModel, require_b70
+    from jdewitt.editor import Editor
+    from jdewitt.tree_hf import HFSegments, PrefillReplay
+    from jdewitt.tree_search import Action, project_last
     from transformers import LlamaConfig, LlamaForCausalLM, Qwen3Config, Qwen3ForCausalLM
     from transformers import Qwen3_5TextConfig, Qwen3_5ForCausalLM
     constructors = {'llama': (LlamaConfig, LlamaForCausalLM),

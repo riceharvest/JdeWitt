@@ -1,7 +1,7 @@
 """Explicit fixtures for consistency gates; not real refusal-quality evidence."""
 import pytest
 import torch
-from b70_ablator import numerics, data, scoring
+from jdewitt import numerics, data, scoring
 
 
 def policy():

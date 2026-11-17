@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from types import SimpleNamespace
 import pytest
 import torch
-from b70_ablator.phases import ModelPhases, PhasedHF, PhasedJudge
+from jdewitt.phases import ModelPhases, PhasedHF, PhasedJudge
 
 
 class FixtureEditor:
@@ -132,8 +132,8 @@ def test_judge_rubric_binding_does_not_load_any_model():
 def test_real_b70_weights_are_freed_between_phases():
     import gc
     from transformers import LlamaConfig,LlamaForCausalLM
-    from b70_ablator.hf import HFModel,require_b70
-    from b70_ablator.editor import Editor
+    from jdewitt.hf import HFModel,require_b70
+    from jdewitt.editor import Editor
     device=require_b70()
     # Remove prior tests' delayed Python references before taking the baseline.
     gc.collect()

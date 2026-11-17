@@ -7,10 +7,10 @@
     "hidden_size": 1024
   },
   "dtype": "bfloat16",
-  "lens_manifest": "/mnt/ssd/dev workspace/b70-ablator/verification/qwen35-08b-baseline/lens-manifest.json",
+  "lens_manifest": "/mnt/ssd/dev workspace/jdewitt/verification/qwen35-08b-baseline/lens-manifest.json",
   "suite": "suite.jsonl",
   "suite_role": "development",
-  "output": "/mnt/ssd/dev workspace/b70-ablator/runs/qwen35-08b-tree-proxy-01",
+  "output": "/mnt/ssd/dev workspace/jdewitt/runs/qwen35-08b-tree-proxy-01",
   "ctx_size": 4096,
   "max_tokens": 1024,
   "refusal_floor": 150,

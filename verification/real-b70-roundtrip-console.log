@@ -5,8 +5,8 @@ baseline_hf {"report": {"scoring_mode": "refusal-check", "total": 11, "refusal_t
 repeatability {"s-m1": true, "s-m2": true}
 direction_counts {"en": {"good": 2, "bad": 3}, "nl": {"good": 2, "bad": 0}}
 Traceback (most recent call last):
-  File "/mnt/ssd/dev workspace/b70-ablator/scripts/live_resident_smoke.py", line 186, in <module>
+  File "/mnt/ssd/dev workspace/jdewitt/scripts/live_resident_smoke.py", line 186, in <module>
     main()
-  File "/mnt/ssd/dev workspace/b70-ablator/scripts/live_resident_smoke.py", line 101, in main
+  File "/mnt/ssd/dev workspace/jdewitt/scripts/live_resident_smoke.py", line 101, in main
     raise RuntimeError('No confirmed good/bad direction evidence in every language; no fabricated direction fallback')
 RuntimeError: No confirmed good/bad direction evidence in every language; no fabricated direction fallback

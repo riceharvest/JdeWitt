@@ -46,6 +46,6 @@ The installed adapter registry contains 61 model_type names. Native definition t
 
 Recent supported layout families include Qwen3.8/4-Exp, GLM5/5.3, Gemma4, Muse Glimmer/Spark, DeepSeek V4, LFM2/2.5, OLMo3, MiniMax M3 text, Step3.5/3.7, Mistral4, Hy3/Hy4, Ling/Bailing hybrid, native MiMo V2 Flash and NemotronH/Omni. Marketing versions reuse older model_type values; they were not guessed from names. Vision/audio towers are not ablated.
 
-Run `b70-ablator architectures` for the packaged machine-readable inventory and pinned config URLs. It explicitly identifies unimplemented DeepSeek V4.1 and Kimi K3 loaders, custom MiMo V2.6/Bolmo/Youtu wrappers, LLaDA/d1 diffusion samplers, custom Ling VL, draft-only Muse assistant, and Qwen Drive planning models. They are NOT silently routed through an older similarly named adapter.
+Run `jdewitt architectures` for the packaged machine-readable inventory and pinned config URLs. It explicitly identifies unimplemented DeepSeek V4.1 and Kimi K3 loaders, custom MiMo V2.6/Bolmo/Youtu wrappers, LLaDA/d1 diffusion samplers, custom Ling VL, draft-only Muse assistant, and Qwen Drive planning models. They are NOT silently routed through an older similarly named adapter.
 
 No full recent pretrained checkpoint is newly certified by this pass. Some published MoEs cannot fit their original-precision weights on one B70 regardless of adapter support. Native model definition availability does not establish XPU kernel or GGUF converter compatibility. No CPU weight offload or other GPU is substituted to make that claim.

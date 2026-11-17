@@ -2,8 +2,8 @@ import json
 import math
 import pytest
 
-from b70_ablator.scoring import Judgment, extract_answer, summarize, cannot_beat
-from b70_ablator.data import load_suite, validate_splits
+from jdewitt.scoring import Judgment, extract_answer, summarize, cannot_beat
+from jdewitt.data import load_suite, validate_splits
 
 
 def test_thinking_refusal_is_not_answer_refusal():

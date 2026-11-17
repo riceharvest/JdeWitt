@@ -3,9 +3,9 @@ import math
 import pytest
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM
-from b70_ablator.editor import Editor
-from b70_ablator.hf import HFModel, require_b70
-from b70_ablator.pipeline import configure_compiler_paths
+from jdewitt.editor import Editor
+from jdewitt.hf import HFModel, require_b70
+from jdewitt.pipeline import configure_compiler_paths
 
 pytestmark = pytest.mark.xpu
 

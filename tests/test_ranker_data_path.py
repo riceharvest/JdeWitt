@@ -12,11 +12,11 @@ import numpy as np
 import pytest
 import torch
 
-from b70_ablator.answers import AnswerStore
-from b70_ablator.data import digest
-from b70_ablator import tree_behavior_data as tbd
-from b70_ablator import tree_ranker as trk
-from b70_ablator.tree_cli import _seal
+from jdewitt.answers import AnswerStore
+from jdewitt.data import digest
+from jdewitt import tree_behavior_data as tbd
+from jdewitt import tree_ranker as trk
+from jdewitt.tree_cli import _seal
 
 CHECKPOINTS = [0, 3, 7]
 TOKENS = [101, 202, 303, 404]

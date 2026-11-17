@@ -1,6 +1,6 @@
 import json
 import pytest
-from b70_ablator.style_judge import StyleJudge
+from jdewitt.style_judge import StyleJudge
 
 
 class Client:

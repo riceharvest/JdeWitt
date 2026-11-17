@@ -1,274 +1,274 @@
 Building source distribution...
 running egg_info
-writing b70_ablator.egg-info/PKG-INFO
-writing dependency_links to b70_ablator.egg-info/dependency_links.txt
-writing entry points to b70_ablator.egg-info/entry_points.txt
-writing requirements to b70_ablator.egg-info/requires.txt
-writing top-level names to b70_ablator.egg-info/top_level.txt
-reading manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing jdewitt.egg-info/PKG-INFO
+writing dependency_links to jdewitt.egg-info/dependency_links.txt
+writing entry points to jdewitt.egg-info/entry_points.txt
+writing requirements to jdewitt.egg-info/requires.txt
+writing top-level names to jdewitt.egg-info/top_level.txt
+reading manifest file 'jdewitt.egg-info/SOURCES.txt'
 adding license file 'LICENSE'
 adding license file 'NOTICE'
-writing manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing manifest file 'jdewitt.egg-info/SOURCES.txt'
 running sdist
 running egg_info
-writing b70_ablator.egg-info/PKG-INFO
-writing dependency_links to b70_ablator.egg-info/dependency_links.txt
-writing entry points to b70_ablator.egg-info/entry_points.txt
-writing requirements to b70_ablator.egg-info/requires.txt
-writing top-level names to b70_ablator.egg-info/top_level.txt
-reading manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing jdewitt.egg-info/PKG-INFO
+writing dependency_links to jdewitt.egg-info/dependency_links.txt
+writing entry points to jdewitt.egg-info/entry_points.txt
+writing requirements to jdewitt.egg-info/requires.txt
+writing top-level names to jdewitt.egg-info/top_level.txt
+reading manifest file 'jdewitt.egg-info/SOURCES.txt'
 adding license file 'LICENSE'
 adding license file 'NOTICE'
-writing manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing manifest file 'jdewitt.egg-info/SOURCES.txt'
 running check
-creating b70_ablator-0.1.0
-creating b70_ablator-0.1.0/b70_ablator
-creating b70_ablator-0.1.0/b70_ablator.egg-info
-creating b70_ablator-0.1.0/b70_ablator/assets
-creating b70_ablator-0.1.0/tests
-copying files to b70_ablator-0.1.0...
-copying LICENSE -> b70_ablator-0.1.0
-copying NOTICE -> b70_ablator-0.1.0
-copying README.md -> b70_ablator-0.1.0
-copying pyproject.toml -> b70_ablator-0.1.0
-copying b70_ablator/__init__.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/__main__.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/agent.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/answers.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/architectures.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/arguments.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/chat.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/cli.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/compat.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/data.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/editor.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/erasure.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/evaluation.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/export.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/grounded_judge.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/hf.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/job_cli.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/methods.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/numerics.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/phases.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/pipeline.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/plans.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/refusal_check.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/release.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/scoring.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/search.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/storage.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/style_judge.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/training.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/transport.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator/validation.py -> b70_ablator-0.1.0/b70_ablator
-copying b70_ablator.egg-info/PKG-INFO -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator.egg-info/SOURCES.txt -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator.egg-info/dependency_links.txt -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator.egg-info/entry_points.txt -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator.egg-info/requires.txt -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator.egg-info/top_level.txt -> b70_ablator-0.1.0/b70_ablator.egg-info
-copying b70_ablator/assets/architecture-inventory.json -> b70_ablator-0.1.0/b70_ablator/assets
-copying b70_ablator/assets/evidence-system.txt -> b70_ablator-0.1.0/b70_ablator/assets
-copying b70_ablator/assets/judge-calibration.json -> b70_ablator-0.1.0/b70_ablator/assets
-copying b70_ablator/assets/rubric-system.txt -> b70_ablator-0.1.0/b70_ablator/assets
-copying b70_ablator/assets/style-system.txt -> b70_ablator-0.1.0/b70_ablator/assets
-copying tests/test_adapter_hybrid.py -> b70_ablator-0.1.0/tests
-copying tests/test_agent_interface.py -> b70_ablator-0.1.0/tests
-copying tests/test_answer_jobs.py -> b70_ablator-0.1.0/tests
-copying tests/test_architecture_extensions.py -> b70_ablator-0.1.0/tests
-copying tests/test_boundaries.py -> b70_ablator-0.1.0/tests
-copying tests/test_cache_validation.py -> b70_ablator-0.1.0/tests
-copying tests/test_consistency.py -> b70_ablator-0.1.0/tests
-copying tests/test_damage_gates.py -> b70_ablator-0.1.0/tests
-copying tests/test_distribution.py -> b70_ablator-0.1.0/tests
-copying tests/test_edit_plans.py -> b70_ablator-0.1.0/tests
-copying tests/test_evaluation.py -> b70_ablator-0.1.0/tests
-copying tests/test_export.py -> b70_ablator-0.1.0/tests
-copying tests/test_export_recovery.py -> b70_ablator-0.1.0/tests
-copying tests/test_extension_regressions.py -> b70_ablator-0.1.0/tests
-copying tests/test_final_answer_generation.py -> b70_ablator-0.1.0/tests
-copying tests/test_full_phased_fixture.py -> b70_ablator-0.1.0/tests
-copying tests/test_grounded_judge.py -> b70_ablator-0.1.0/tests
-copying tests/test_hf.py -> b70_ablator-0.1.0/tests
-copying tests/test_job_cli.py -> b70_ablator-0.1.0/tests
-copying tests/test_judge_integrity.py -> b70_ablator-0.1.0/tests
-copying tests/test_judge_reason_first.py -> b70_ablator-0.1.0/tests
-copying tests/test_judge_schema.py -> b70_ablator-0.1.0/tests
-copying tests/test_kl_efficiency.py -> b70_ablator-0.1.0/tests
-copying tests/test_managed_judge.py -> b70_ablator-0.1.0/tests
-copying tests/test_method_xpu.py -> b70_ablator-0.1.0/tests
-copying tests/test_methods.py -> b70_ablator-0.1.0/tests
-copying tests/test_model_phases.py -> b70_ablator-0.1.0/tests
-copying tests/test_negative_controls.py -> b70_ablator-0.1.0/tests
-copying tests/test_numerics.py -> b70_ablator-0.1.0/tests
-copying tests/test_pipeline.py -> b70_ablator-0.1.0/tests
-copying tests/test_prompt_budgets.py -> b70_ablator-0.1.0/tests
-copying tests/test_refusal_check.py -> b70_ablator-0.1.0/tests
-copying tests/test_release_integrity.py -> b70_ablator-0.1.0/tests
-copying tests/test_release_search.py -> b70_ablator-0.1.0/tests
-copying tests/test_resident_operator.py -> b70_ablator-0.1.0/tests
-copying tests/test_scoring.py -> b70_ablator-0.1.0/tests
-copying tests/test_search_resume.py -> b70_ablator-0.1.0/tests
-copying tests/test_storage_recovery.py -> b70_ablator-0.1.0/tests
-copying tests/test_style_judge.py -> b70_ablator-0.1.0/tests
-copying tests/test_training.py -> b70_ablator-0.1.0/tests
-copying tests/test_vendor_compat.py -> b70_ablator-0.1.0/tests
-Writing b70_ablator-0.1.0/setup.cfg
+creating jdewitt-0.1.0
+creating jdewitt-0.1.0/jdewitt
+creating jdewitt-0.1.0/jdewitt.egg-info
+creating jdewitt-0.1.0/jdewitt/assets
+creating jdewitt-0.1.0/tests
+copying files to jdewitt-0.1.0...
+copying LICENSE -> jdewitt-0.1.0
+copying NOTICE -> jdewitt-0.1.0
+copying README.md -> jdewitt-0.1.0
+copying pyproject.toml -> jdewitt-0.1.0
+copying jdewitt/__init__.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/__main__.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/agent.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/answers.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/architectures.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/arguments.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/chat.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/cli.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/compat.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/data.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/editor.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/erasure.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/evaluation.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/export.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/grounded_judge.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/hf.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/job_cli.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/methods.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/numerics.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/phases.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/pipeline.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/plans.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/refusal_check.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/release.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/scoring.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/search.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/storage.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/style_judge.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/training.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/transport.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt/validation.py -> jdewitt-0.1.0/jdewitt
+copying jdewitt.egg-info/PKG-INFO -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt.egg-info/SOURCES.txt -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt.egg-info/dependency_links.txt -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt.egg-info/entry_points.txt -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt.egg-info/requires.txt -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt.egg-info/top_level.txt -> jdewitt-0.1.0/jdewitt.egg-info
+copying jdewitt/assets/architecture-inventory.json -> jdewitt-0.1.0/jdewitt/assets
+copying jdewitt/assets/evidence-system.txt -> jdewitt-0.1.0/jdewitt/assets
+copying jdewitt/assets/judge-calibration.json -> jdewitt-0.1.0/jdewitt/assets
+copying jdewitt/assets/rubric-system.txt -> jdewitt-0.1.0/jdewitt/assets
+copying jdewitt/assets/style-system.txt -> jdewitt-0.1.0/jdewitt/assets
+copying tests/test_adapter_hybrid.py -> jdewitt-0.1.0/tests
+copying tests/test_agent_interface.py -> jdewitt-0.1.0/tests
+copying tests/test_answer_jobs.py -> jdewitt-0.1.0/tests
+copying tests/test_architecture_extensions.py -> jdewitt-0.1.0/tests
+copying tests/test_boundaries.py -> jdewitt-0.1.0/tests
+copying tests/test_cache_validation.py -> jdewitt-0.1.0/tests
+copying tests/test_consistency.py -> jdewitt-0.1.0/tests
+copying tests/test_damage_gates.py -> jdewitt-0.1.0/tests
+copying tests/test_distribution.py -> jdewitt-0.1.0/tests
+copying tests/test_edit_plans.py -> jdewitt-0.1.0/tests
+copying tests/test_evaluation.py -> jdewitt-0.1.0/tests
+copying tests/test_export.py -> jdewitt-0.1.0/tests
+copying tests/test_export_recovery.py -> jdewitt-0.1.0/tests
+copying tests/test_extension_regressions.py -> jdewitt-0.1.0/tests
+copying tests/test_final_answer_generation.py -> jdewitt-0.1.0/tests
+copying tests/test_full_phased_fixture.py -> jdewitt-0.1.0/tests
+copying tests/test_grounded_judge.py -> jdewitt-0.1.0/tests
+copying tests/test_hf.py -> jdewitt-0.1.0/tests
+copying tests/test_job_cli.py -> jdewitt-0.1.0/tests
+copying tests/test_judge_integrity.py -> jdewitt-0.1.0/tests
+copying tests/test_judge_reason_first.py -> jdewitt-0.1.0/tests
+copying tests/test_judge_schema.py -> jdewitt-0.1.0/tests
+copying tests/test_kl_efficiency.py -> jdewitt-0.1.0/tests
+copying tests/test_managed_judge.py -> jdewitt-0.1.0/tests
+copying tests/test_method_xpu.py -> jdewitt-0.1.0/tests
+copying tests/test_methods.py -> jdewitt-0.1.0/tests
+copying tests/test_model_phases.py -> jdewitt-0.1.0/tests
+copying tests/test_negative_controls.py -> jdewitt-0.1.0/tests
+copying tests/test_numerics.py -> jdewitt-0.1.0/tests
+copying tests/test_pipeline.py -> jdewitt-0.1.0/tests
+copying tests/test_prompt_budgets.py -> jdewitt-0.1.0/tests
+copying tests/test_refusal_check.py -> jdewitt-0.1.0/tests
+copying tests/test_release_integrity.py -> jdewitt-0.1.0/tests
+copying tests/test_release_search.py -> jdewitt-0.1.0/tests
+copying tests/test_resident_operator.py -> jdewitt-0.1.0/tests
+copying tests/test_scoring.py -> jdewitt-0.1.0/tests
+copying tests/test_search_resume.py -> jdewitt-0.1.0/tests
+copying tests/test_storage_recovery.py -> jdewitt-0.1.0/tests
+copying tests/test_style_judge.py -> jdewitt-0.1.0/tests
+copying tests/test_training.py -> jdewitt-0.1.0/tests
+copying tests/test_vendor_compat.py -> jdewitt-0.1.0/tests
+Writing jdewitt-0.1.0/setup.cfg
 Creating tar archive
-removing 'b70_ablator-0.1.0' (and everything under it)
+removing 'jdewitt-0.1.0' (and everything under it)
 Building wheel from source distribution...
 running egg_info
-writing b70_ablator.egg-info/PKG-INFO
-writing dependency_links to b70_ablator.egg-info/dependency_links.txt
-writing entry points to b70_ablator.egg-info/entry_points.txt
-writing requirements to b70_ablator.egg-info/requires.txt
-writing top-level names to b70_ablator.egg-info/top_level.txt
-reading manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing jdewitt.egg-info/PKG-INFO
+writing dependency_links to jdewitt.egg-info/dependency_links.txt
+writing entry points to jdewitt.egg-info/entry_points.txt
+writing requirements to jdewitt.egg-info/requires.txt
+writing top-level names to jdewitt.egg-info/top_level.txt
+reading manifest file 'jdewitt.egg-info/SOURCES.txt'
 adding license file 'LICENSE'
 adding license file 'NOTICE'
-writing manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing manifest file 'jdewitt.egg-info/SOURCES.txt'
 running bdist_wheel
 running build
 running build_py
-creating build/lib/b70_ablator
-copying b70_ablator/__init__.py -> build/lib/b70_ablator
-copying b70_ablator/__main__.py -> build/lib/b70_ablator
-copying b70_ablator/agent.py -> build/lib/b70_ablator
-copying b70_ablator/answers.py -> build/lib/b70_ablator
-copying b70_ablator/architectures.py -> build/lib/b70_ablator
-copying b70_ablator/arguments.py -> build/lib/b70_ablator
-copying b70_ablator/chat.py -> build/lib/b70_ablator
-copying b70_ablator/cli.py -> build/lib/b70_ablator
-copying b70_ablator/compat.py -> build/lib/b70_ablator
-copying b70_ablator/data.py -> build/lib/b70_ablator
-copying b70_ablator/editor.py -> build/lib/b70_ablator
-copying b70_ablator/erasure.py -> build/lib/b70_ablator
-copying b70_ablator/evaluation.py -> build/lib/b70_ablator
-copying b70_ablator/export.py -> build/lib/b70_ablator
-copying b70_ablator/grounded_judge.py -> build/lib/b70_ablator
-copying b70_ablator/hf.py -> build/lib/b70_ablator
-copying b70_ablator/job_cli.py -> build/lib/b70_ablator
-copying b70_ablator/methods.py -> build/lib/b70_ablator
-copying b70_ablator/numerics.py -> build/lib/b70_ablator
-copying b70_ablator/phases.py -> build/lib/b70_ablator
-copying b70_ablator/pipeline.py -> build/lib/b70_ablator
-copying b70_ablator/plans.py -> build/lib/b70_ablator
-copying b70_ablator/refusal_check.py -> build/lib/b70_ablator
-copying b70_ablator/release.py -> build/lib/b70_ablator
-copying b70_ablator/scoring.py -> build/lib/b70_ablator
-copying b70_ablator/search.py -> build/lib/b70_ablator
-copying b70_ablator/storage.py -> build/lib/b70_ablator
-copying b70_ablator/style_judge.py -> build/lib/b70_ablator
-copying b70_ablator/training.py -> build/lib/b70_ablator
-copying b70_ablator/transport.py -> build/lib/b70_ablator
-copying b70_ablator/validation.py -> build/lib/b70_ablator
+creating build/lib/jdewitt
+copying jdewitt/__init__.py -> build/lib/jdewitt
+copying jdewitt/__main__.py -> build/lib/jdewitt
+copying jdewitt/agent.py -> build/lib/jdewitt
+copying jdewitt/answers.py -> build/lib/jdewitt
+copying jdewitt/architectures.py -> build/lib/jdewitt
+copying jdewitt/arguments.py -> build/lib/jdewitt
+copying jdewitt/chat.py -> build/lib/jdewitt
+copying jdewitt/cli.py -> build/lib/jdewitt
+copying jdewitt/compat.py -> build/lib/jdewitt
+copying jdewitt/data.py -> build/lib/jdewitt
+copying jdewitt/editor.py -> build/lib/jdewitt
+copying jdewitt/erasure.py -> build/lib/jdewitt
+copying jdewitt/evaluation.py -> build/lib/jdewitt
+copying jdewitt/export.py -> build/lib/jdewitt
+copying jdewitt/grounded_judge.py -> build/lib/jdewitt
+copying jdewitt/hf.py -> build/lib/jdewitt
+copying jdewitt/job_cli.py -> build/lib/jdewitt
+copying jdewitt/methods.py -> build/lib/jdewitt
+copying jdewitt/numerics.py -> build/lib/jdewitt
+copying jdewitt/phases.py -> build/lib/jdewitt
+copying jdewitt/pipeline.py -> build/lib/jdewitt
+copying jdewitt/plans.py -> build/lib/jdewitt
+copying jdewitt/refusal_check.py -> build/lib/jdewitt
+copying jdewitt/release.py -> build/lib/jdewitt
+copying jdewitt/scoring.py -> build/lib/jdewitt
+copying jdewitt/search.py -> build/lib/jdewitt
+copying jdewitt/storage.py -> build/lib/jdewitt
+copying jdewitt/style_judge.py -> build/lib/jdewitt
+copying jdewitt/training.py -> build/lib/jdewitt
+copying jdewitt/transport.py -> build/lib/jdewitt
+copying jdewitt/validation.py -> build/lib/jdewitt
 running egg_info
-writing b70_ablator.egg-info/PKG-INFO
-writing dependency_links to b70_ablator.egg-info/dependency_links.txt
-writing entry points to b70_ablator.egg-info/entry_points.txt
-writing requirements to b70_ablator.egg-info/requires.txt
-writing top-level names to b70_ablator.egg-info/top_level.txt
-reading manifest file 'b70_ablator.egg-info/SOURCES.txt'
+writing jdewitt.egg-info/PKG-INFO
+writing dependency_links to jdewitt.egg-info/dependency_links.txt
+writing entry points to jdewitt.egg-info/entry_points.txt
+writing requirements to jdewitt.egg-info/requires.txt
+writing top-level names to jdewitt.egg-info/top_level.txt
+reading manifest file 'jdewitt.egg-info/SOURCES.txt'
 adding license file 'LICENSE'
 adding license file 'NOTICE'
-writing manifest file 'b70_ablator.egg-info/SOURCES.txt'
-creating build/lib/b70_ablator/assets
-copying b70_ablator/assets/evidence-system.txt -> build/lib/b70_ablator/assets
-copying b70_ablator/assets/rubric-system.txt -> build/lib/b70_ablator/assets
-copying b70_ablator/assets/style-system.txt -> build/lib/b70_ablator/assets
-copying b70_ablator/assets/architecture-inventory.json -> build/lib/b70_ablator/assets
-copying b70_ablator/assets/judge-calibration.json -> build/lib/b70_ablator/assets
+writing manifest file 'jdewitt.egg-info/SOURCES.txt'
+creating build/lib/jdewitt/assets
+copying jdewitt/assets/evidence-system.txt -> build/lib/jdewitt/assets
+copying jdewitt/assets/rubric-system.txt -> build/lib/jdewitt/assets
+copying jdewitt/assets/style-system.txt -> build/lib/jdewitt/assets
+copying jdewitt/assets/architecture-inventory.json -> build/lib/jdewitt/assets
+copying jdewitt/assets/judge-calibration.json -> build/lib/jdewitt/assets
 installing to build/bdist.linux-x86_64/wheel
 running install
 running install_lib
 creating build/bdist.linux-x86_64/wheel
-creating build/bdist.linux-x86_64/wheel/b70_ablator
-copying build/lib/b70_ablator/__init__.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/__main__.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/agent.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/answers.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/architectures.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/arguments.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/chat.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/cli.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/compat.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/data.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/editor.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/erasure.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/evaluation.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/export.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/grounded_judge.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/hf.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/job_cli.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/methods.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/numerics.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/phases.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/pipeline.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/plans.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/refusal_check.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/release.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/scoring.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/search.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/storage.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/style_judge.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/training.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/transport.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-copying build/lib/b70_ablator/validation.py -> build/bdist.linux-x86_64/wheel/./b70_ablator
-creating build/bdist.linux-x86_64/wheel/b70_ablator/assets
-copying build/lib/b70_ablator/assets/evidence-system.txt -> build/bdist.linux-x86_64/wheel/./b70_ablator/assets
-copying build/lib/b70_ablator/assets/rubric-system.txt -> build/bdist.linux-x86_64/wheel/./b70_ablator/assets
-copying build/lib/b70_ablator/assets/style-system.txt -> build/bdist.linux-x86_64/wheel/./b70_ablator/assets
-copying build/lib/b70_ablator/assets/architecture-inventory.json -> build/bdist.linux-x86_64/wheel/./b70_ablator/assets
-copying build/lib/b70_ablator/assets/judge-calibration.json -> build/bdist.linux-x86_64/wheel/./b70_ablator/assets
+creating build/bdist.linux-x86_64/wheel/jdewitt
+copying build/lib/jdewitt/__init__.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/__main__.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/agent.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/answers.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/architectures.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/arguments.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/chat.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/cli.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/compat.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/data.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/editor.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/erasure.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/evaluation.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/export.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/grounded_judge.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/hf.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/job_cli.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/methods.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/numerics.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/phases.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/pipeline.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/plans.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/refusal_check.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/release.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/scoring.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/search.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/storage.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/style_judge.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/training.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/transport.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+copying build/lib/jdewitt/validation.py -> build/bdist.linux-x86_64/wheel/./jdewitt
+creating build/bdist.linux-x86_64/wheel/jdewitt/assets
+copying build/lib/jdewitt/assets/evidence-system.txt -> build/bdist.linux-x86_64/wheel/./jdewitt/assets
+copying build/lib/jdewitt/assets/rubric-system.txt -> build/bdist.linux-x86_64/wheel/./jdewitt/assets
+copying build/lib/jdewitt/assets/style-system.txt -> build/bdist.linux-x86_64/wheel/./jdewitt/assets
+copying build/lib/jdewitt/assets/architecture-inventory.json -> build/bdist.linux-x86_64/wheel/./jdewitt/assets
+copying build/lib/jdewitt/assets/judge-calibration.json -> build/bdist.linux-x86_64/wheel/./jdewitt/assets
 running install_egg_info
-Copying b70_ablator.egg-info to build/bdist.linux-x86_64/wheel/./b70_ablator-0.1.0-py3.14.egg-info
+Copying jdewitt.egg-info to build/bdist.linux-x86_64/wheel/./jdewitt-0.1.0-py3.14.egg-info
 running install_scripts
-creating build/bdist.linux-x86_64/wheel/b70_ablator-0.1.0.dist-info/WHEEL
-creating '/mnt/ssd/dev workspace/b70-ablator/dist/.tmp-z6bpcxjw/b70_ablator-0.1.0-py3-none-any.whl' and adding 'build/bdist.linux-x86_64/wheel' to it
-adding 'b70_ablator/__init__.py'
-adding 'b70_ablator/__main__.py'
-adding 'b70_ablator/agent.py'
-adding 'b70_ablator/answers.py'
-adding 'b70_ablator/architectures.py'
-adding 'b70_ablator/arguments.py'
-adding 'b70_ablator/chat.py'
-adding 'b70_ablator/cli.py'
-adding 'b70_ablator/compat.py'
-adding 'b70_ablator/data.py'
-adding 'b70_ablator/editor.py'
-adding 'b70_ablator/erasure.py'
-adding 'b70_ablator/evaluation.py'
-adding 'b70_ablator/export.py'
-adding 'b70_ablator/grounded_judge.py'
-adding 'b70_ablator/hf.py'
-adding 'b70_ablator/job_cli.py'
-adding 'b70_ablator/methods.py'
-adding 'b70_ablator/numerics.py'
-adding 'b70_ablator/phases.py'
-adding 'b70_ablator/pipeline.py'
-adding 'b70_ablator/plans.py'
-adding 'b70_ablator/refusal_check.py'
-adding 'b70_ablator/release.py'
-adding 'b70_ablator/scoring.py'
-adding 'b70_ablator/search.py'
-adding 'b70_ablator/storage.py'
-adding 'b70_ablator/style_judge.py'
-adding 'b70_ablator/training.py'
-adding 'b70_ablator/transport.py'
-adding 'b70_ablator/validation.py'
-adding 'b70_ablator/assets/architecture-inventory.json'
-adding 'b70_ablator/assets/evidence-system.txt'
-adding 'b70_ablator/assets/judge-calibration.json'
-adding 'b70_ablator/assets/rubric-system.txt'
-adding 'b70_ablator/assets/style-system.txt'
-adding 'b70_ablator-0.1.0.dist-info/licenses/LICENSE'
-adding 'b70_ablator-0.1.0.dist-info/licenses/NOTICE'
-adding 'b70_ablator-0.1.0.dist-info/METADATA'
-adding 'b70_ablator-0.1.0.dist-info/WHEEL'
-adding 'b70_ablator-0.1.0.dist-info/entry_points.txt'
-adding 'b70_ablator-0.1.0.dist-info/top_level.txt'
-adding 'b70_ablator-0.1.0.dist-info/RECORD'
+creating build/bdist.linux-x86_64/wheel/jdewitt-0.1.0.dist-info/WHEEL
+creating '/mnt/ssd/dev workspace/jdewitt/dist/.tmp-z6bpcxjw/jdewitt-0.1.0-py3-none-any.whl' and adding 'build/bdist.linux-x86_64/wheel' to it
+adding 'jdewitt/__init__.py'
+adding 'jdewitt/__main__.py'
+adding 'jdewitt/agent.py'
+adding 'jdewitt/answers.py'
+adding 'jdewitt/architectures.py'
+adding 'jdewitt/arguments.py'
+adding 'jdewitt/chat.py'
+adding 'jdewitt/cli.py'
+adding 'jdewitt/compat.py'
+adding 'jdewitt/data.py'
+adding 'jdewitt/editor.py'
+adding 'jdewitt/erasure.py'
+adding 'jdewitt/evaluation.py'
+adding 'jdewitt/export.py'
+adding 'jdewitt/grounded_judge.py'
+adding 'jdewitt/hf.py'
+adding 'jdewitt/job_cli.py'
+adding 'jdewitt/methods.py'
+adding 'jdewitt/numerics.py'
+adding 'jdewitt/phases.py'
+adding 'jdewitt/pipeline.py'
+adding 'jdewitt/plans.py'
+adding 'jdewitt/refusal_check.py'
+adding 'jdewitt/release.py'
+adding 'jdewitt/scoring.py'
+adding 'jdewitt/search.py'
+adding 'jdewitt/storage.py'
+adding 'jdewitt/style_judge.py'
+adding 'jdewitt/training.py'
+adding 'jdewitt/transport.py'
+adding 'jdewitt/validation.py'
+adding 'jdewitt/assets/architecture-inventory.json'
+adding 'jdewitt/assets/evidence-system.txt'
+adding 'jdewitt/assets/judge-calibration.json'
+adding 'jdewitt/assets/rubric-system.txt'
+adding 'jdewitt/assets/style-system.txt'
+adding 'jdewitt-0.1.0.dist-info/licenses/LICENSE'
+adding 'jdewitt-0.1.0.dist-info/licenses/NOTICE'
+adding 'jdewitt-0.1.0.dist-info/METADATA'
+adding 'jdewitt-0.1.0.dist-info/WHEEL'
+adding 'jdewitt-0.1.0.dist-info/entry_points.txt'
+adding 'jdewitt-0.1.0.dist-info/top_level.txt'
+adding 'jdewitt-0.1.0.dist-info/RECORD'
 removing build/bdist.linux-x86_64/wheel
-Successfully built dist/b70_ablator-0.1.0.tar.gz
-Successfully built dist/b70_ablator-0.1.0-py3-none-any.whl
+Successfully built dist/jdewitt-0.1.0.tar.gz
+Successfully built dist/jdewitt-0.1.0-py3-none-any.whl

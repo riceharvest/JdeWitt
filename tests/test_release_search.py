@@ -1,8 +1,8 @@
 
 from pathlib import Path
 import pytest
-from b70_ablator.release import rank_quantized, verify_quant, export_gguf
-from b70_ablator.search import build_study, compatible_warm_starts, RunConfig
+from jdewitt.release import rank_quantized, verify_quant, export_gguf
+from jdewitt.search import build_study, compatible_warm_starts, RunConfig
 
 
 def result(rate, capability=1., invalid=0):

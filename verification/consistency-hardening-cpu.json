@@ -1,6 +1,6 @@
 {
   "purpose": "Consistency implementation verification, not model-quality evidence",
-  "project": "/mnt/ssd/dev workspace/b70-ablator",
+  "project": "/mnt/ssd/dev workspace/jdewitt",
   "cpu_suite": {
     "command": ".venv/bin/python -m pytest tests -m 'not xpu' -n 0 -q",
     "passed": 161,
@@ -10,14 +10,14 @@
     "gpu_initialization_guard": true
   },
   "lint": {
-    "command": ".venv/bin/python -m ruff check b70_ablator tests scripts conftest.py",
+    "command": ".venv/bin/python -m ruff check jdewitt tests scripts conftest.py",
     "result": "All checks passed"
   },
   "build": {
     "command": "uv build",
     "artifacts": [
-      "dist/b70_ablator-0.1.0.tar.gz",
-      "dist/b70_ablator-0.1.0-py3-none-any.whl"
+      "dist/jdewitt-0.1.0.tar.gz",
+      "dist/jdewitt-0.1.0-py3-none-any.whl"
     ]
   },
   "coverage": [

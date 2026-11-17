@@ -11,15 +11,15 @@ import time
 
 import torch
 
-from b70_ablator.answers import AnswerStore, atomic_json, portable_response
-from b70_ablator.data import digest, load_suite
-from b70_ablator.hf import HFModel
-from b70_ablator.pipeline import configure_compiler_paths
-from b70_ablator.refusal_check import RefusalChecker
-from b70_ablator.scoring import extract_answer, degenerate_output
-from b70_ablator.storage import file_digest
-from b70_ablator.tree_hf import HFSegments
-from b70_ablator.tree_cli import bind_lens
+from jdewitt.answers import AnswerStore, atomic_json, portable_response
+from jdewitt.data import digest, load_suite
+from jdewitt.hf import HFModel
+from jdewitt.pipeline import configure_compiler_paths
+from jdewitt.refusal_check import RefusalChecker
+from jdewitt.scoring import extract_answer, degenerate_output
+from jdewitt.storage import file_digest
+from jdewitt.tree_hf import HFSegments
+from jdewitt.tree_cli import bind_lens
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
                 'max_tokens': budget['max_tokens'], 'ctx_size': budget['ctx_size'],
                 'refusal_floor': budget['refusal_floor'], 'dtype': budget['dtype'], 'suite_digest': digest(suite),
                 'probe_source_sha256': file_digest(Path(__file__)),
-                'hf_source_sha256': file_digest(Path(__file__).parents[1] / 'b70_ablator/hf.py')}
+                'hf_source_sha256': file_digest(Path(__file__).parents[1] / 'jdewitt/hf.py')}
     store = AnswerStore(args.output / 'answers', suite, identity)
     configure_compiler_paths()
     started = time.perf_counter()

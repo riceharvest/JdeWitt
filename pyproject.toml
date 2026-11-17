@@ -3,7 +3,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "b70-ablator"
+name = "jdewitt"
 version = "0.1.0"
 description = "B70 ablation with answer-level judging and quantized release gates"
 readme = "README.md"
@@ -18,14 +18,14 @@ test = ["pytest>=8", "pytest-xdist>=3", "ruff>=0.14"]
 datasets = ["pyarrow>=20"]
 
 [project.scripts]
-b70-ablator = "b70_ablator.cli:main"
+jdewitt = "jdewitt.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["b70_ablator*"]
+include = ["jdewitt*"]
 
 [tool.setuptools.package-data]
-b70_ablator = ["assets/*.txt", "assets/*.json"]
+jdewitt = ["assets/*.txt", "assets/*.json"]
 
 [tool.pytest.ini_options]
 addopts = "-n auto --dist loadgroup"

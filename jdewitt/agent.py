@@ -50,7 +50,7 @@ def _trial_rows(db_path):
             JOIN studies s ON s.study_id=t.study_id
             LEFT JOIN trial_values v ON v.trial_id=t.trial_id AND v.objective=0
             LEFT JOIN trial_user_attributes a ON a.trial_id=t.trial_id AND a.key='feasible'
-            WHERE s.study_name='b70-ablator' ORDER BY t.number''').fetchall()
+            WHERE s.study_name='jdewitt' ORDER BY t.number''').fetchall()
     return [{'number':n,'state':state,'value':value,'feasible':json.loads(feasible) is True if feasible else False}
             for n,state,value,feasible in rows]
 
@@ -62,7 +62,7 @@ def _study_user_attr(db_path, key):
         connection.execute('PRAGMA query_only=ON')
         row=connection.execute('''SELECT sa.value_json FROM study_user_attributes sa
             JOIN studies s ON s.study_id=sa.study_id
-            WHERE s.study_name='b70-ablator' AND sa.key=?''', (key,)).fetchone()
+            WHERE s.study_name='jdewitt' AND sa.key=?''', (key,)).fetchone()
     return json.loads(row[0]) if row else None
 
 
@@ -1639,7 +1639,7 @@ def _study_trial_params(db_path):
         rows=connection.execute('''SELECT t.number,tp.param_name,tp.param_value FROM trials t
             JOIN studies s ON s.study_id=t.study_id
             LEFT JOIN trial_params tp ON tp.trial_id=t.trial_id
-            WHERE s.study_name='b70-ablator' ''').fetchall()
+            WHERE s.study_name='jdewitt' ''').fetchall()
     out={}
     for number,name,value in rows:
         if name is not None:

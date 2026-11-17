@@ -1,12 +1,12 @@
-"""Tests for b70_ablator.spanfit — answer-span per-layer rank-1 removal."""
+"""Tests for jdewitt.spanfit — answer-span per-layer rank-1 removal."""
 import sys
 import numpy as np
 import torch
 import torch.nn as nn
 
 sys.path.insert(0, '/mnt/ssd/dev workspace/llama.cpp-dspark/gguf-py')
-from b70_ablator import spanfit
-from b70_ablator.ggufio import dequantize_tensor
+from jdewitt import spanfit
+from jdewitt.ggufio import dequantize_tensor
 
 L, D, N = 4, 16, 8
 
@@ -105,8 +105,8 @@ def test_mixed_axes_endpoints_and_unit_norm():
     axes0 = spanfit.mixed_axes(pl, s, 0.0)
     axes1 = spanfit.mixed_axes(pl, s, 1.0)
     assert torch.allclose(axes0, pl, atol=1e-6)
-    for l in range(Lc):
-        assert torch.allclose(axes1[l], s[0], atol=1e-6)
+    for lay in range(Lc):
+        assert torch.allclose(axes1[lay], s[0], atol=1e-6)
     mid = spanfit.mixed_axes(pl, s, 0.5)
     assert torch.allclose(mid.norm(dim=1), torch.ones(Lc), atol=1e-5)
     cos1 = float((mid[0] @ s[0]).abs())
@@ -130,10 +130,10 @@ def test_protection_subspace_and_protect_axes():
     axis = v / v.norm(dim=1, keepdim=True) + 0.6 * inside / inside.norm(dim=1, keepdim=True)
     axis = axis / axis.norm(dim=1, keepdim=True)
     pa, kept = spanfit.protect_axes(axis, U)
-    for l in range(Lc):
-        proj = U[l] @ pa[l]
+    for lay in range(Lc):
+        proj = U[lay] @ pa[lay]
         assert float(proj.norm()) < 1e-4
-        assert 0.0 < kept[l] <= 1.0
+        assert 0.0 < kept[lay] <= 1.0
     # axis fully inside subspace -> layer skipped (zeroed)
     full = inside / inside.norm(dim=1, keepdim=True)
     pa2, kept2 = spanfit.protect_axes(full, U)
@@ -151,8 +151,11 @@ def test_build_merged_rewrites_targets_only(tmp_path):
     w = GGUFWriter(str(src), 'ggmf')
     for name, arr in tensors.items():
         w.add_tensor(name, arr)
-    w.open_output_file(); w.write_header_to_file()
-    w.write_kv_data_to_file(); w.write_tensors_to_file(); w.close()
+    w.open_output_file()
+    w.write_header_to_file()
+    w.write_kv_data_to_file()
+    w.write_tensors_to_file()
+    w.close()
     axes = torch.nn.functional.normalize(
         torch.from_numpy(g.standard_normal((L, D)).astype(np.float32)), dim=1)
     keys = ['model.layers.0.self_attn.o_proj.weight',

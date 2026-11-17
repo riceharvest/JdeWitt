@@ -2,7 +2,7 @@
 """Per-category accounting and gating: a harm-specific regression cannot hide."""
 import pytest
 
-from b70_ablator import scoring
+from jdewitt import scoring
 
 
 def policy(**overrides):

@@ -93,7 +93,7 @@ than a free improvement.
   every expert, which already overlaps Abliterix's basic EGA operator. EGA does
   not itself require independently learned expert directions.
 
-`b70-ablator methods` reports the same list under `not_verified`, and every
+`jdewitt methods` reports the same list under `not_verified`, and every
 catalogued method still declares `full_model_b70_verified: false`.
 
 ## Tests

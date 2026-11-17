@@ -1,7 +1,7 @@
 """Exercise real Optuna persistence with explicit deterministic objective fixtures."""
 import optuna
 import pytest
-from b70_ablator.search import build_study, execute_trials
+from jdewitt.search import build_study, execute_trials
 
 
 @pytest.mark.parametrize('startup', [20, 2])
@@ -44,7 +44,7 @@ def test_sampler_contract_rejects_changed_seed_and_legacy_trials(tmp_path):
     execute_trials(study, lambda t:t.suggest_float('x', 0., 1.), 1)
     with pytest.raises(ValueError, match='Sampler contract'):
         build_study(path, {'fixture':'contract'}, 8, 20)
-    legacy = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(tmp_path/'legacy.db'))
+    legacy = optuna.create_study(study_name='jdewitt', storage='sqlite:///'+str(tmp_path/'legacy.db'))
     legacy.optimize(lambda t:t.suggest_float('x', 0., 1.), n_trials=1)
     with pytest.raises(ValueError, match='legacy'):
         build_study(tmp_path/'legacy.db', {'fixture':'legacy'}, 7, 20)

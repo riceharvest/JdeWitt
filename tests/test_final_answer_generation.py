@@ -1,8 +1,8 @@
 """Final-answer policy fixtures; no model inference or GPU initialization."""
 
-from b70_ablator.hf import HFModel
-from b70_ablator.transport import ChatClient
-from b70_ablator.answers import AnswerStore, portable_response
+from jdewitt.hf import HFModel
+from jdewitt.transport import ChatClient
+from jdewitt.answers import AnswerStore, portable_response
 
 
 def test_hf_template_closes_thinking_instead_of_starting_it():

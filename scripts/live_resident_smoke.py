@@ -6,16 +6,16 @@ import signal
 from pathlib import Path
 import time
 import torch
-from b70_ablator.answers import AnswerStore, atomic_json, generate_answers
-from b70_ablator.data import load_suite
-from b70_ablator.evaluation import score_response
-from b70_ablator.export import stream_merge, verify_resident_export
-from b70_ablator.hf import HFModel
-from b70_ablator.numerics import directions_from_languages
-from b70_ablator.refusal_check import RefusalChecker
-from b70_ablator.release import export_gguf, ManagedGGUF, create_release, sha256_file
-from b70_ablator.scoring import extract_answer, summarize
-from b70_ablator.storage import save_checkpoint
+from jdewitt.answers import AnswerStore, atomic_json, generate_answers
+from jdewitt.data import load_suite
+from jdewitt.evaluation import score_response
+from jdewitt.export import stream_merge, verify_resident_export
+from jdewitt.hf import HFModel
+from jdewitt.numerics import directions_from_languages
+from jdewitt.refusal_check import RefusalChecker
+from jdewitt.release import export_gguf, ManagedGGUF, create_release, sha256_file
+from jdewitt.scoring import extract_answer, summarize
+from jdewitt.storage import save_checkpoint
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
         print(stage, json.dumps(value,ensure_ascii=False),flush=True)
     source_hashes={p.name:sha256_file(p) for p in source.iterdir() if p.suffix in {'.safetensors','.json','.jinja','.py'}}
     identity={'source_files':source_hashes,'max_tokens':cfg['max_tokens'],'ctx_size':cfg['ctx_size'],
-              'framework_sources':{p.name:sha256_file(p) for p in (Path(__file__).resolve().parents[1]/'b70_ablator').glob('*.py')}}
+              'framework_sources':{p.name:sha256_file(p) for p in (Path(__file__).resolve().parents[1]/'jdewitt').glob('*.py')}}
     model=HFModel(str(source),None,1,cfg['max_tokens'],cfg['dtype'],cfg['trust_remote_code'],ctx_size=cfg['ctx_size'])
     try:
         checkpoint('loaded',{'all_weights_on_b70':all(p.device.type=='xpu' for p in model.model.parameters()),
@@ -133,7 +133,7 @@ def main():
                                'peak_allocated_bytes':torch.xpu.max_memory_allocated()})
         harmless=next(t for t in tasks if t['kind']=='harmless')
         reference=baselines[harmless['id']]
-        from b70_ablator.hf import reply_boundary
+        from jdewitt.hf import reply_boundary
         boundary=reply_boundary(model.tokenizer,reference['generated_ids'],reference['thinking_open'])
         checkpoint('full_reply_kl',model.trajectory_kl(reference['sequence'].to(model.device),reference['prompt_length'],boundary))
         encoded,_=model.encode(first['prompt'])

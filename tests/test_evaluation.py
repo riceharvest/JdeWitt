@@ -2,8 +2,8 @@ import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
-from b70_ablator.transport import ChatClient, Judge
-from b70_ablator.evaluation import evaluate, grade_math, grade_python
+from jdewitt.transport import ChatClient, Judge
+from jdewitt.evaluation import evaluate, grade_math, grade_python
 
 
 @pytest.fixture

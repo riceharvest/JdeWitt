@@ -5,10 +5,10 @@ from types import SimpleNamespace
 import torch
 import optuna
 import pytest
-from b70_ablator import pipeline
-from b70_ablator.release import sha256_file
-from b70_ablator.scoring import Judgment
-from b70_ablator.search import RunConfig
+from jdewitt import pipeline
+from jdewitt.release import sha256_file
+from jdewitt.scoring import Judgment
+from jdewitt.search import RunConfig
 
 
 @pytest.mark.parametrize('scoring_mode,interrupt,corrupt_export,selection_only',[
@@ -193,7 +193,7 @@ def test_full_fixture_run_never_overlaps_target_and_judge(tmp_path,monkeypatch,s
         with pytest.raises(ConnectionError,match='disconnected'):
             pipeline.run(config)
         assert not any(live.values())
-        study=optuna.load_study(study_name='b70-ablator',storage='sqlite:///'+str(Path(config.output)/'study.db'))
+        study=optuna.load_study(study_name='jdewitt',storage='sqlite:///'+str(Path(config.output)/'study.db'))
         assert len(study.trials)==1 and study.trials[0].state==optuna.trial.TrialState.RUNNING
         original=list(target_generations)
     result=pipeline.run(config,selection_only=True) if selection_only else pipeline.run(config)

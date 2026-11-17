@@ -6,7 +6,7 @@
   "invalid_scores_after_retry": 0,
   "judge_calls_for_retry": 1,
   "console_status": {
-    "answers": "/mnt/ssd/dev workspace/b70-ablator/verification/framework-hardening-smoke/answers",
+    "answers": "/mnt/ssd/dev workspace/jdewitt/verification/framework-hardening-smoke/answers",
     "total": 2,
     "completed": 2,
     "missing": 0,

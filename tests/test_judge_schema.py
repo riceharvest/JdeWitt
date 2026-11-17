@@ -1,7 +1,7 @@
 import json
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from b70_ablator.transport import ChatClient, Judge
+from jdewitt.transport import ChatClient, Judge
 
 
 def test_judge_requests_enforced_schema_not_just_any_json():

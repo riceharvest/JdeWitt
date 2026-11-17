@@ -6,7 +6,7 @@
   "lint": "passed",
   "build": "wheel-and-sdist-passed",
   "wheel_probes": {
-    "artifact": "b70_ablator-0.1.0-py3-none-any.whl",
+    "artifact": "jdewitt-0.1.0-py3-none-any.whl",
     "outside_source_tree": true,
     "model_imports_blocked": true,
     "probes": [
@@ -93,8 +93,8 @@
   },
   "artifacts": {
     ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
-    "b70_ablator-0.1.0-py3-none-any.whl": "5a5bb3873f1bdf4c873465eea7dfa39b0998cf24bffb0d4f377d9196ef208149",
-    "b70_ablator-0.1.0.tar.gz": "fcf5cf8f88915d6d26dd994b6291ca310a49bfce4fcb7a194f9b15c26c37d0b7"
+    "jdewitt-0.1.0-py3-none-any.whl": "5a5bb3873f1bdf4c873465eea7dfa39b0998cf24bffb0d4f377d9196ef208149",
+    "jdewitt-0.1.0.tar.gz": "fcf5cf8f88915d6d26dd994b6291ca310a49bfce4fcb7a194f9b15c26c37d0b7"
   },
   "documentation": "docs/automatic-selection.md"
 }

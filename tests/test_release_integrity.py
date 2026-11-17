@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 import subprocess
 import pytest
-from b70_ablator import release
+from jdewitt import release
 
 
 def inputs(tmp_path):
@@ -95,7 +95,7 @@ def test_release_recovers_after_partial_copy_without_publishing_partial_files(tm
 
 def test_actual_console_verify_release_reads_only_files(tmp_path):
     destination,_,_,_=build(tmp_path)
-    command=[str(Path(sys.executable).parent/'b70-ablator'),'verify-release',str(destination)]
+    command=[str(Path(sys.executable).parent/'jdewitt'),'verify-release',str(destination)]
     result=subprocess.run(command,capture_output=True,text=True)
     assert result.returncode==0,result.stderr
     proof=json.loads(result.stdout)

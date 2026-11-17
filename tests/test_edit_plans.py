@@ -3,12 +3,12 @@ import pytest
 import torch
 from torch import nn
 from transformers import LlamaConfig,LlamaForCausalLM
-from b70_ablator.editor import Editor
-from b70_ablator.methods import fit_directions
-from b70_ablator.plans import fit_plan,move_plan
-from b70_ablator.scoring import ConsistencyPolicy,extract_answer
-from b70_ablator.hf import BoundaryContract
-from b70_ablator.erasure import leace_factors
+from jdewitt.editor import Editor
+from jdewitt.methods import fit_directions
+from jdewitt.plans import fit_plan,move_plan
+from jdewitt.scoring import ConsistencyPolicy,extract_answer
+from jdewitt.hf import BoundaryContract
+from jdewitt.erasure import leace_factors
 
 
 def data():
@@ -36,7 +36,7 @@ def test_leace_operator_erases_binary_mean_contrast_not_just_svd_direction():
 
 
 def test_all_registered_architectures_have_explicit_boundary_contracts():
-    from b70_ablator.architectures import ARCHITECTURES
+    from jdewitt.architectures import ARCHITECTURES
     for name in ARCHITECTURES:
         assert BoundaryContract.for_architecture(name).architecture==name
 
@@ -92,7 +92,7 @@ def test_ascii_harmony_and_unfinished_analysis_fail_closed():
 
 
 def test_hyperconnection_residuals_use_explicit_backbone_width():
-    from b70_ablator.hf import residual_vector
+    from jdewitt.hf import residual_vector
     from types import SimpleNamespace
     config=SimpleNamespace(model_type='qwen4_exp_text',hidden_size=4,hc_count=2)
     hidden=torch.arange(8.).reshape(1,1,8)

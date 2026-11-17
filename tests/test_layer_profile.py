@@ -3,13 +3,13 @@ import math
 import pytest
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM
-from b70_ablator.editor import Editor, MAX_STRENGTH
-from b70_ablator.errors import DirectionRejected
-from b70_ablator.methods import (LAYER_PROFILES, layer_discriminability, method_catalog,
+from jdewitt.editor import Editor, MAX_STRENGTH
+from jdewitt.errors import DirectionRejected
+from jdewitt.methods import (LAYER_PROFILES, layer_discriminability, method_catalog,
                                  validate_method_options)
-from b70_ablator.plans import fit_plan
-from b70_ablator.scoring import ConsistencyPolicy
-from b70_ablator.search import RunConfig, suggest_parameters
+from jdewitt.plans import fit_plan
+from jdewitt.scoring import ConsistencyPolicy
+from jdewitt.search import RunConfig, suggest_parameters
 
 
 def records(signal=(10., .01)):

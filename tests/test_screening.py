@@ -2,8 +2,8 @@
 import math
 import pytest
 
-from b70_ablator.search import RunConfig
-from b70_ablator.screening import validate_screening, margin_differential
+from jdewitt.search import RunConfig
+from jdewitt.screening import validate_screening, margin_differential
 
 
 def good_spec(**overrides):

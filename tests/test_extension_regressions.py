@@ -6,8 +6,8 @@ from pathlib import Path
 import tomllib
 import pytest
 import torch
-from b70_ablator.numerics import stable_directions
-from b70_ablator.scoring import ConsistencyPolicy
+from jdewitt.numerics import stable_directions
+from jdewitt.scoring import ConsistencyPolicy
 
 
 def test_direction_coverage_keeps_entirely_rejected_languages_visible():
@@ -28,7 +28,7 @@ class Block(importlib.abc.MetaPathFinder):
   if fullname.split('.')[0] in {'torch','transformers','optuna','bitsandbytes'}:
    raise AssertionError('heavy import: '+fullname)
 sys.meta_path.insert(0,Block())
-from b70_ablator.cli import main
+from jdewitt.cli import main
 main()
 """
     for args in (['--help'], ['generate', '--help'], ['train','--help'], ['methods'], ['architectures']):
@@ -39,7 +39,7 @@ main()
 
 
 def test_completed_conversion_binds_mutable_imatrix_contents(tmp_path, monkeypatch):
-    from b70_ablator import release
+    from jdewitt import release
     source = tmp_path / 'hf'
     source.mkdir()
     (source / 'config.json').write_text('{}')
@@ -63,9 +63,9 @@ def test_uv_routes_xpu_triton_to_same_index_as_torch():
 
 
 def test_harmless_refusals_are_scored_instead_of_silently_ignored():
-    from b70_ablator.evaluation import score_response
-    from b70_ablator.refusal_check import RefusalChecker
-    from b70_ablator.scoring import summarize
+    from jdewitt.evaluation import score_response
+    from jdewitt.refusal_check import RefusalChecker
+    from jdewitt.scoring import summarize
     task = {'id': 'ordinary', 'kind': 'harmless', 'language': 'en', 'prompt': 'Write a poem about a tree.'}
     row = score_response(task, {'content': 'I cannot help with that request.', 'finish_reason': 'stop'}, RefusalChecker())
     report = summarize([row], [task['id']])
@@ -74,7 +74,7 @@ def test_harmless_refusals_are_scored_instead_of_silently_ignored():
 
 
 def test_method_options_fail_before_any_model_is_loaded():
-    from b70_ablator.search import RunConfig
+    from jdewitt.search import RunConfig
     root=Path(__file__).resolve().parents[1]
     config=json.loads((root/'examples/first-test/run-refusal-check.json').read_text())
     with pytest.raises(ValueError,match='ridge'):
@@ -84,7 +84,7 @@ def test_method_options_fail_before_any_model_is_loaded():
 
 
 def test_direction_checkpoint_identity_binds_method_options_judge_and_policy():
-    from b70_ablator.plans import direction_identity
+    from jdewitt.plans import direction_identity
     base=dict(generation={'model':'same'},suite_digest='same',method='svd',options={},
               scoring={'judge':'first'},consistency={'overlap':.9},seed=7)
     original=direction_identity(**base)
@@ -94,7 +94,7 @@ def test_direction_checkpoint_identity_binds_method_options_judge_and_policy():
 
 
 def test_warmstarts_do_not_cross_method_or_method_options():
-    from b70_ablator.search import compatible_warm_starts
+    from jdewitt.search import compatible_warm_starts
     fp={'architecture':'qwen3','rank':1,'dtype':'bfloat16','quantization':'none',
         'method':'svd','method_options_digest':'original'}
     records=[{'fingerprint':fp|change,'feasible':True,'parameters':{'attn.strength':.5}}
@@ -104,7 +104,7 @@ def test_warmstarts_do_not_cross_method_or_method_options():
 
 @pytest.mark.parametrize('changed',[{'method':[]},{'dtype':{}},{'scoring_mode':[]},{'model':7}])
 def test_run_config_rejects_wrong_setting_types_as_validation_errors(changed):
-    from b70_ablator.search import RunConfig
+    from jdewitt.search import RunConfig
     config=json.loads((Path(__file__).resolve().parents[1]/'examples/first-test/run-refusal-check.json').read_text())
     with pytest.raises(ValueError):
         RunConfig.from_json(config|changed)

@@ -49,8 +49,8 @@ def result(rate):
 
 def runner_fixture(events,interrupt=None,holdout_failure=False,changed_baseline=False):
     def runner(config,*,selection_only=False,expected_winner=None):
-        from b70_ablator.answers import atomic_json
-        from b70_ablator.errors import HoldoutRejected
+        from jdewitt.answers import atomic_json
+        from jdewitt.errors import HoldoutRejected
         root=Path(config.output)
         name=root.name
         events.append((name,selection_only,expected_winner))
@@ -58,7 +58,7 @@ def runner_fixture(events,interrupt=None,holdout_failure=False,changed_baseline=
             assert expected_winner=='0'
             if holdout_failure:
                 raise HoldoutRejected('Fixture selected candidate failed sealed holdout')
-            from b70_ablator.release import create_release
+            from jdewitt.release import create_release
             artifacts=json.loads((root/'quantized-ranking.json').read_text())['candidates'][0]['artifacts']
             hf=root/'fixture-hf'
             hf.mkdir(exist_ok=True)
@@ -74,7 +74,7 @@ def runner_fixture(events,interrupt=None,holdout_failure=False,changed_baseline=
             file=root/(q+'.gguf')
             file.parent.mkdir(parents=True,exist_ok=True)
             file.write_bytes(('NOT GGUF: '+name+q).encode())
-            from b70_ablator.storage import file_digest
+            from jdewitt.storage import file_digest
             artifacts[q]={'path':str(file),'sha256':file_digest(file),'quant':q,'bytes':file.stat().st_size}
             baseline_artifacts[q]={'sha256':('different' if changed_baseline and name=='subspace' else 'same')+q}
         candidate={'id':'0','artifacts':artifacts,'quants':{q:result(rate) for q in QUANTS}}
@@ -88,13 +88,13 @@ def runner_fixture(events,interrupt=None,holdout_failure=False,changed_baseline=
 @pytest.mark.parametrize('change',[{'total_trials':3},{'total_trials':True},
     {'candidates':[]},{'candidates':[{'id':'../escape','method':'svd','rank':1,'method_options':{},'trials':4}]}])
 def test_auto_configuration_requires_an_explicit_valid_fixed_budget(tmp_path,change):
-    from b70_ablator.auto import AutoConfig
+    from jdewitt.auto import AutoConfig
     with pytest.raises(ValueError):
         AutoConfig.from_json(settings(tmp_path)|change)
 
 
 def test_auto_runs_selection_for_all_methods_then_only_certifies_global_winner(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     events=[]
     config=AutoConfig.from_json(settings(tmp_path))
     result=run_auto(config,runner=runner_fixture(events))
@@ -106,7 +106,7 @@ def test_auto_runs_selection_for_all_methods_then_only_certifies_global_winner(t
 
 
 def test_auto_resumes_completed_selection_without_rerunning_other_method(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     runner=runner_fixture(events,interrupt='subspace')
@@ -118,8 +118,8 @@ def test_auto_resumes_completed_selection_without_rerunning_other_method(tmp_pat
 
 
 def test_auto_holdout_failure_never_falls_back_to_another_method(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
-    from b70_ablator.errors import HoldoutRejected
+    from jdewitt.auto import AutoConfig,run_auto
+    from jdewitt.errors import HoldoutRejected
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     runner=runner_fixture(events,holdout_failure=True)
@@ -133,7 +133,7 @@ def test_auto_holdout_failure_never_falls_back_to_another_method(tmp_path):
 
 
 def test_auto_rejects_changed_inputs_before_reusing_selection(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     runner=runner_fixture(events,interrupt='subspace')
@@ -146,7 +146,7 @@ def test_auto_rejects_changed_inputs_before_reusing_selection(tmp_path):
 
 
 def test_auto_rejects_incomparable_quantized_baselines(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     with pytest.raises(ValueError,match='baseline'):
@@ -155,7 +155,7 @@ def test_auto_rejects_incomparable_quantized_baselines(tmp_path):
 
 
 def test_auto_rejects_corrupted_completed_selection_artifacts(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     runner=runner_fixture(events,interrupt='subspace')
@@ -168,7 +168,7 @@ def test_auto_rejects_corrupted_completed_selection_artifacts(tmp_path):
 
 
 def test_auto_configuration_does_not_mutate_the_callers_config(tmp_path):
-    from b70_ablator.auto import AutoConfig
+    from jdewitt.auto import AutoConfig
     raw=settings(tmp_path)
     before=copy.deepcopy(raw)
     parsed=AutoConfig.from_json(raw)
@@ -180,7 +180,7 @@ def test_auto_configuration_does_not_mutate_the_callers_config(tmp_path):
 
 
 def test_completed_auto_run_is_reused_without_loading_any_model(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     runner=runner_fixture(events)
@@ -191,7 +191,7 @@ def test_completed_auto_run_is_reused_without_loading_any_model(tmp_path):
 
 
 def test_auto_resumes_the_sealed_winner_after_certification_interrupt(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
+    from jdewitt.auto import AutoConfig,run_auto
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     delegate=runner_fixture(events)
@@ -208,8 +208,8 @@ def test_auto_resumes_the_sealed_winner_after_certification_interrupt(tmp_path):
 
 
 def test_auto_records_incompatible_methods_without_silently_spending_their_budget(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
-    from b70_ablator.errors import UnsupportedMethod
+    from jdewitt.auto import AutoConfig,run_auto
+    from jdewitt.errors import UnsupportedMethod
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     delegate=runner_fixture(events)
@@ -225,8 +225,8 @@ def test_auto_records_incompatible_methods_without_silently_spending_their_budge
 
 
 def test_auto_records_rejected_directions_without_hiding_runtime_failures(tmp_path):
-    from b70_ablator.auto import AutoConfig,run_auto
-    from b70_ablator.errors import DirectionRejected
+    from jdewitt.auto import AutoConfig,run_auto
+    from jdewitt.errors import DirectionRejected
     config=AutoConfig.from_json(settings(tmp_path))
     events=[]
     delegate=runner_fixture(events)
@@ -240,14 +240,14 @@ def test_auto_records_rejected_directions_without_hiding_runtime_failures(tmp_pa
 
 def test_degenerate_direction_fitting_is_an_explicit_method_rejection():
     import torch
-    from b70_ablator.numerics import directions_from_languages
-    from b70_ablator.errors import DirectionRejected
+    from jdewitt.numerics import directions_from_languages
+    from jdewitt.errors import DirectionRejected
     with pytest.raises(DirectionRejected,match='Degenerate'):
         directions_from_languages({'en':torch.zeros(1,3)},{'en':torch.zeros(1,3)},1)
 
 
 def test_validate_auto_rejects_outputs_that_overlap_original_weights(tmp_path):
-    from b70_ablator.auto import AutoConfig,validate_auto
+    from jdewitt.auto import AutoConfig,validate_auto
     raw=settings(tmp_path)
     raw['run']['output']=str(Path(raw['run']['model'])/'experiment')
     with pytest.raises(ValueError,match='overlap'):

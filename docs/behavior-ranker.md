@@ -57,7 +57,7 @@ families are not evidence of independent topics.
 
 The existing command owns execution:
 
-    b70-ablator tree-search /absolute/path/collection-tree.json
+    jdewitt tree-search /absolute/path/collection-tree.json
 
 Besides baseline/finalist answers, collection writes one feature index and
 AnswerStore under `behavior/<source-task-digest>/`. It decodes each visited path
@@ -96,7 +96,7 @@ exclusion; unmatched labels and missing answers are errors.
 
 Use `examples/tree-search/ranker-data.template.json`:
 
-    b70-ablator tree-ranker-data /absolute/path/data-spec.json
+    jdewitt tree-ranker-data /absolute/path/data-spec.json
 
 Each source supplies a job directory, completed labels file and explicit split:
 `train`, `calibration` or `test`. The converter checks exact response digests and
@@ -116,7 +116,7 @@ recognition labels or correctness outcomes are invented.
 
 Use `examples/tree-search/ranker-train.template.json`:
 
-    b70-ablator tree-ranker-train /absolute/path/train-spec.json
+    jdewitt tree-ranker-train /absolute/path/train-spec.json
 
 All network size, ensemble seeds, epoch/batch/pair budgets, optimizer settings,
 loss weights, outcome utilities and calibration settings are explicit. Completion
@@ -182,7 +182,7 @@ are not fed back into it automatically.
 
 Use `examples/tree-search/ranker-audit.template.json`:
 
-    b70-ablator tree-ranker-audit /absolute/path/audit-spec.json
+    jdewitt tree-ranker-audit /absolute/path/audit-spec.json
 
 This command predicts on the independent test split, rejects overlap with the
 artifact's train/calibration prompts/families/directions, and reports:

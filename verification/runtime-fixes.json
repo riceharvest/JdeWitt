@@ -4,7 +4,7 @@
     "command": ".venv/bin/python -m pytest tests -m 'not xpu' -q -p no:randomly --tb=short",
     "passed": 407,
     "ruff": "All checks passed",
-    "build": ["dist/b70_ablator-0.1.0.tar.gz", "dist/b70_ablator-0.1.0-py3-none-any.whl"],
+    "build": ["dist/jdewitt-0.1.0.tar.gz", "dist/jdewitt-0.1.0-py3-none-any.whl"],
     "packaged_cli": ["methods", "generate --help"],
     "packaged_cli_model_runtime_imports": "blocked during smoke",
     "gpu_tests_executed_this_change": false

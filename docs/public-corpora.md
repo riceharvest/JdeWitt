@@ -1,8 +1,8 @@
 # Importing public prompt corpora
 
 ```sh
-b70-ablator validate-import spec.json                 # spec + local files, no downloads
-b70-ablator import-suite spec.json --output DIR       # downloads and writes the suites
+jdewitt validate-import spec.json                 # spec + local files, no downloads
+jdewitt import-suite spec.json --output DIR       # downloads and writes the suites
 ```
 
 Public refusal corpora are larger and broader than anything worth authoring by
@@ -81,7 +81,7 @@ the runs use, so a spec that reuses rows fails instead of writing bad suites.
   English-only, so either keep authored multilingual directions or supply a
   multilingual corpus with a language column. This is a hard gate in the tool,
   not an importer choice.
-- Parquet corpora need the optional extra: `uv pip install "b70-ablator[datasets]"`.
+- Parquet corpora need the optional extra: `uv pip install "jdewitt[datasets]"`.
   CSV, JSON, JSONL and TXT import without it.
 - Importing proves nothing about harmfulness, refusal wording, token budgets or
   model fit. A 60-family synthetic grouping is a harness for measuring a change,

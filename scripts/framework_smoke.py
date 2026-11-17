@@ -5,8 +5,8 @@ from pathlib import Path
 import subprocess
 import sys
 
-from b70_ablator.answers import AnswerStore, atomic_json, generate_answers, score_answers
-from b70_ablator.scoring import Judgment
+from jdewitt.answers import AnswerStore, atomic_json, generate_answers, score_answers
+from jdewitt.scoring import Judgment
 
 
 class FixtureGenerator:
@@ -59,7 +59,7 @@ def main():
     repaired=FixtureJudge()
     final=score_answers(tasks,store,repaired,args.output/'scores',identity,retry_invalid=True)
     assert final['invalid']==0 and len(repaired.calls)==1
-    binary=Path(sys.executable).parent/'b70-ablator'
+    binary=Path(sys.executable).parent/'jdewitt'
     readback=subprocess.run([str(binary),'status','--answers',str(store.directory.resolve()),
                             '--scores',str((args.output/'scores').resolve())],capture_output=True,text=True,check=True)
     status=json.loads(readback.stdout)

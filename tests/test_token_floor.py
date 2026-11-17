@@ -2,12 +2,12 @@
 """The minimum-token floor: why it exists, and that it fails closed."""
 import pytest
 
-from b70_ablator.answers import portable_response
-from b70_ablator.evaluation import score_response
-from b70_ablator.refusal_check import RefusalChecker
-from b70_ablator.scoring import degenerate_output, extract_answer
-from b70_ablator.search import RunConfig
-from b70_ablator.transport import ChatClient
+from jdewitt.answers import portable_response
+from jdewitt.evaluation import score_response
+from jdewitt.refusal_check import RefusalChecker
+from jdewitt.scoring import degenerate_output, extract_answer
+from jdewitt.search import RunConfig
+from jdewitt.transport import ChatClient
 
 
 def test_degenerate_output_flags_filler_but_not_real_answers():

@@ -18,7 +18,7 @@
   "verification": {
     "suite_command": ".venv/bin/python -m pytest tests -m 'not xpu' -q -p no:randomly --tb=short",
     "suite_result": "435 passed in 108.92s",
-    "lint_command": ".venv/bin/python -m ruff check b70_ablator tests",
+    "lint_command": ".venv/bin/python -m ruff check jdewitt tests",
     "lint_result": "All checks passed!",
     "build_command": "uv build",
     "build_result": "wheel and sdist built successfully",

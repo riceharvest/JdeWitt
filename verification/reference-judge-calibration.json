@@ -9,7 +9,7 @@
   "scope": "Hand-authored calibration cases, not an ablation benchmark or evidence of model improvement.",
   "execution": "The first invocation persisted 19 cases before timing out. The remaining 5 cases were run separately; completed cases were not rescored.",
   "parts": [
-    "/home/dario/.hermes/cache/scratch/b70-ablator-live-reference-judge-qwen38-27b/predictions.jsonl",
-    "/home/dario/.hermes/cache/scratch/b70-ablator-live-reference-judge-qwen38-27b-remainder/predictions.jsonl"
+    "/home/dario/.hermes/cache/scratch/jdewitt-live-reference-judge-qwen38-27b/predictions.jsonl",
+    "/home/dario/.hermes/cache/scratch/jdewitt-live-reference-judge-qwen38-27b-remainder/predictions.jsonl"
   ]
 }

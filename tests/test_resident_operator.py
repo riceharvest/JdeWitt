@@ -2,8 +2,8 @@
 import pytest
 import torch
 from torch import nn
-from b70_ablator.editor import AblatedLinear, Editor
-from b70_ablator.hf import require_b70
+from jdewitt.editor import AblatedLinear, Editor
+from jdewitt.hf import require_b70
 
 
 @pytest.mark.parametrize('dtype', [torch.float16, torch.bfloat16])
@@ -28,7 +28,7 @@ def test_resident_operator_uses_export_rounding_and_keeps_base_immutable(dtype):
 
 def test_resident_precision_preflight_rejects_search_export_dtype_mismatch(tmp_path):
     from transformers import LlamaConfig, LlamaForCausalLM
-    from b70_ablator.export import require_resident_precision
+    from jdewitt.export import require_resident_precision
     model = LlamaForCausalLM(LlamaConfig(vocab_size=64, hidden_size=32, intermediate_size=64,
         num_hidden_layers=2, num_attention_heads=4, num_key_value_heads=2)).to(dtype=torch.float16)
     model.save_pretrained(tmp_path)
@@ -73,7 +73,7 @@ def test_actual_b70_resident_operator_never_offloads_or_changes_weights(dtype, m
 @pytest.mark.xpu
 def test_actual_b70_resident_logits_match_reloaded_streamed_export(tmp_path):
     from transformers import LlamaConfig, LlamaForCausalLM
-    from b70_ablator.export import stream_merge
+    from jdewitt.export import stream_merge
     import gc
     device = require_b70()
     torch.manual_seed(23)
@@ -91,7 +91,7 @@ def test_actual_b70_resident_logits_match_reloaded_streamed_export(tmp_path):
         expected = model(ids, use_cache=False).logits.detach().clone()
     output = tmp_path / 'export'
     stream_merge(source, output, editor)
-    from b70_ablator.export import verify_resident_export
+    from jdewitt.export import verify_resident_export
     audit = verify_resident_export(source, output, editor)
     assert audit['edited_tensors'] == 4 and audit['operator'] == 'merged-resident'
     from safetensors.torch import load_file, save_file

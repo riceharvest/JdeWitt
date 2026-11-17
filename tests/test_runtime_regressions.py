@@ -3,8 +3,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 from torch import nn
-from b70_ablator.editor import Editor
-from b70_ablator.phases import ModelPhases, PhasedHF
+from jdewitt.editor import Editor
+from jdewitt.phases import ModelPhases, PhasedHF
 
 
 def tiny_modules():

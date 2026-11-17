@@ -1,6 +1,6 @@
 import json
 import pytest
-from b70_ablator.grounded_judge import GroundedJudge
+from jdewitt.grounded_judge import GroundedJudge
 
 
 class Client:

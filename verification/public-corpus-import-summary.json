@@ -1,10 +1,10 @@
 {
   "feature": "public prompt-corpus import for the extraction/evaluation stage",
   "commands": {
-    "validate-import": "b70-ablator validate-import SPEC.json (no downloads, no writes)",
-    "import-suite": "b70-ablator import-suite SPEC.json --output DIR"
+    "validate-import": "jdewitt validate-import SPEC.json (no downloads, no writes)",
+    "import-suite": "jdewitt import-suite SPEC.json --output DIR"
   },
-  "module": "b70_ablator/sources.py",
+  "module": "jdewitt/sources.py",
   "docs": "docs/public-corpora.md",
   "real_import": {
     "spec": "examples/public-corpus/import.json",

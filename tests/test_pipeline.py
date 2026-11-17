@@ -1,6 +1,6 @@
 import pytest
-from b70_ablator.pipeline import validate_experiment, cached_report, atomic_json
-from b70_ablator.data import digest
+from jdewitt.pipeline import validate_experiment, cached_report, atomic_json
+from jdewitt.data import digest
 
 
 def suite(prefix):
@@ -34,7 +34,7 @@ def test_cached_report_rejects_wrong_suite_and_missing_predictions(tmp_path):
 
 def test_cached_report_returns_only_exact_matching_completed_suite(tmp_path):
     import json
-    from b70_ablator.scoring import summarize
+    from jdewitt.scoring import summarize
     tasks=suite('s')
     rows=[]
     for t in tasks:
@@ -54,8 +54,8 @@ def test_cached_report_returns_only_exact_matching_completed_suite(tmp_path):
 
 
 def test_interrupted_eval_reuses_answer_saved_before_judge_disconnect(tmp_path):
-    from b70_ablator.pipeline import eval_cached
-    from b70_ablator.scoring import Judgment
+    from jdewitt.pipeline import eval_cached
+    from jdewitt.scoring import Judgment
     tasks=[{'id':'r','kind':'refusal','language':'en','prompt':'Give an answer.'}]
     calls=[]
     class Generator:
@@ -76,7 +76,7 @@ def test_interrupted_eval_reuses_answer_saved_before_judge_disconnect(tmp_path):
 
 
 def test_completed_eval_does_not_reuse_scores_from_different_model(tmp_path):
-    from b70_ablator.pipeline import eval_cached
+    from jdewitt.pipeline import eval_cached
     tasks=[{'id':'m','kind':'math','language':'en','prompt':'Two plus two?','expected':'4'}]
     class Generator:
         def generate(self,prompt):
@@ -88,8 +88,8 @@ def test_completed_eval_does_not_reuse_scores_from_different_model(tmp_path):
 
 def test_phased_eval_generates_whole_batch_before_judging(tmp_path):
     from types import SimpleNamespace
-    from b70_ablator.pipeline import eval_cached
-    from b70_ablator.scoring import Judgment
+    from jdewitt.pipeline import eval_cached
+    from jdewitt.scoring import Judgment
     tasks=[{'id':str(i),'kind':'refusal','language':'en','prompt':'fixture '+str(i)} for i in range(2)]
     events=[]
     class Generator:
@@ -109,6 +109,6 @@ def test_phased_eval_generates_whole_batch_before_judging(tmp_path):
 
 def test_search_requires_explicit_consistency_policy_before_loading_models(tmp_path):
     from types import SimpleNamespace
-    from b70_ablator.pipeline import run
+    from jdewitt.pipeline import run
     with pytest.raises(ValueError,match='consistency'):
         run(SimpleNamespace(consistency=None))

@@ -2,10 +2,10 @@
 import json
 from pathlib import Path
 import pytest
-from b70_ablator.refusal_check import RefusalChecker
-from b70_ablator.evaluation import score_response
-from b70_ablator.scoring import summarize
-from b70_ablator.search import RunConfig
+from jdewitt.refusal_check import RefusalChecker
+from jdewitt.evaluation import score_response
+from jdewitt.scoring import summarize
+from jdewitt.search import RunConfig
 
 
 @pytest.mark.parametrize('answer,language',[
@@ -78,7 +78,7 @@ def test_no_judge_configuration_is_required_in_fast_mode():
 
 
 def test_refusal_only_scores_cannot_be_ranked_against_judge_scores():
-    from b70_ablator.release import rank_quantized
+    from jdewitt.release import rank_quantized
     base={'scoring_mode':'refusal-check','noncompliance_rate':None,'refusal_check_failure_rate':1.,
           'capability_pass_rate':1.,'invalid':0}
     candidate={'scoring_mode':'judge','noncompliance_rate':0.,'capability_pass_rate':1.,'invalid':0}

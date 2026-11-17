@@ -1,10 +1,9 @@
 import numpy as np
 import pytest
 import torch
-from pathlib import Path
 
-from b70_ablator.gguf_adapters import served_deltas
-from b70_ablator.ggufio import edit_tensors, dequantize_tensor, write_gguf
+from jdewitt.gguf_adapters import served_deltas
+from jdewitt.ggufio import edit_tensors, dequantize_tensor, write_gguf
 
 
 def _gguf(tmp_path, dims, flat_bytes, dtype_id=0, name='t.weight'):
@@ -28,8 +27,11 @@ def test_layout_roundtrip_matches_gguf_writer(tmp_path):
     p = tmp_path / 'real.gguf'
     wr = GGUFWriter(str(p), 'pytestarch')
     wr.add_tensor('t.weight', W)
-    wr.open_output_file(); wr.write_header_to_file()
-    wr.write_kv_data_to_file(); wr.write_tensors_to_file(); wr.close()
+    wr.open_output_file()
+    wr.write_header_to_file()
+    wr.write_kv_data_to_file()
+    wr.write_tensors_to_file()
+    wr.close()
     got = dequantize_tensor(p, 't.weight')
     assert got.shape == W.shape
     np.testing.assert_allclose(got, W, atol=1e-5)

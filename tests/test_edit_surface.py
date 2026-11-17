@@ -3,7 +3,7 @@ import pytest
 import torch
 from torch import nn
 from transformers import LlamaConfig, LlamaForCausalLM
-from b70_ablator.editor import AblatedLinear, Editor, MAX_STRENGTH, discover_targets
+from jdewitt.editor import AblatedLinear, Editor, MAX_STRENGTH, discover_targets
 
 
 def llama():
@@ -154,8 +154,8 @@ def test_unknown_edit_surface_is_rejected():
 def test_full_surface_survives_streamed_export_on_the_b70(tmp_path):
     """Read-side edits are a new device operator; prove them through a real export."""
     from transformers import LlamaConfig, LlamaForCausalLM
-    from b70_ablator.export import stream_merge, verify_resident_export
-    from b70_ablator.hf import require_b70
+    from jdewitt.export import stream_merge, verify_resident_export
+    from jdewitt.hf import require_b70
     import gc
     device = require_b70()
     torch.manual_seed(29)

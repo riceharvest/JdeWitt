@@ -2,7 +2,7 @@
 import pytest
 import torch
 from torch import nn
-from b70_ablator.editor import Editor, AblatedLinear
+from jdewitt.editor import Editor, AblatedLinear
 from test_runtime_regressions import tiny_modules
 
 

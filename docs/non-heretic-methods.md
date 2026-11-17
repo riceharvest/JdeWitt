@@ -27,7 +27,7 @@ fork plugin. So SOM and J-space count as not-in-Heretic.
 
 ## Implemented here, not upstream
 
-Mechanisms as they actually exist in `b70_ablator/methods.py` — not as the
+Mechanisms as they actually exist in `jdewitt/methods.py` — not as the
 papers describe them.
 
 ### `whitened-svd` — ridge-whitened contrast subspace
@@ -85,7 +85,7 @@ AlphaSteer 2506.07022, null-space-constrained refusal steering.)
   direction method here as a collateral-damage cap (CODE to fit, GATED to
   claim).
 
-### `sft` / `dpo` — trained low-rank edit factors (`b70-ablator train`)
+### `sft` / `dpo` — trained low-rank edit factors (`jdewitt train`)
 Heretic is training-free by design, so this is a genuine family it never
 does. SFT masks prompt tokens; DPO uses the unedited model as reference
 without a second copy in VRAM.
@@ -293,8 +293,8 @@ waves shape-judged by the working agent:
   edit ~5 s, cert wave ~2 min; the search step itself (fit+edit+cert) stays under 5
   minutes. Deployment via gguf merge still to verify per lineage (LFM3 has no local
   llama.cpp support at all — HF-serving-only for now).
-- TOOL-IFIED 2026-11-17 (commits e5cbf5b..11537c6) as `b70_ablator/spanfit.py` +
-  `python -m b70_ablator.spanfit {axes|build} --records R.pt --shape {perlayer|shared}`:
+- TOOL-IFIED 2026-11-17 (commits e5cbf5b..11537c6) as `jdewitt/spanfit.py` +
+  `python -m jdewitt.spanfit {axes|build} --records R.pt --shape {perlayer|shared}`:
   per_layer_axes, shared_axis (SAS), gguf merge (build_merged, reuses ggufio
   edit_tensors + gguf_adapters name resolution) and InPlaceRemoval for HF weights.
   Reproduction runs at the pinned config: mc47 per-layer artifact rebuilt through

@@ -207,7 +207,7 @@ def rank_quantized(candidates, baseline, max_capability_drop, require_consistenc
     return [c for _,c in sorted(ranked,key=lambda pair:pair[0])]
 
 
-GPU_LOCK_PATH = Path(os.environ.get('B70_ABLATOR_GPU_LOCK', '/tmp/b70-ablator-gpu.lock'))
+GPU_LOCK_PATH = Path(os.environ.get('JDEWITT_GPU_LOCK', '/tmp/jdewitt-gpu.lock'))
 
 
 def acquire_gpu_lock(timeout, secondary=False):
@@ -226,8 +226,8 @@ def acquire_gpu_lock(timeout, secondary=False):
             if time.monotonic() >= deadline:
                 handle.close()
                 raise RuntimeError(
-                    f'GPU ({lock_path.name}) is held by another b70-ablator job; waited {timeout}s '
-                    '(override with B70_ABLATOR_GPU_WAIT or kill the holding job)')
+                    f'GPU ({lock_path.name}) is held by another jdewitt job; waited {timeout}s '
+                    '(override with JDEWITT_GPU_WAIT or kill the holding job)')
             time.sleep(.5)
 
 
@@ -246,7 +246,7 @@ class ManagedGGUF:
         self.log, self.startup_timeout = Path(log), startup_timeout
         self.process = None
         self.serving_backend = None
-        wait = gpu_wait if gpu_wait is not None else float(os.environ.get('B70_ABLATOR_GPU_WAIT', '300'))
+        wait = gpu_wait if gpu_wait is not None else float(os.environ.get('JDEWITT_GPU_WAIT', '300'))
         self.gpu_wait = 0.0 if wait is None else float(wait)
 
     def command(self,device,port,alias):
@@ -672,5 +672,5 @@ def create_release(directory,hf,artifacts,metadata,readme):
         stage.rename(directory)
         sync_directory(directory.parent)
         add_claim(directory,'Release created: file set matches the verified finalist and evaluation record',
-                  'files.json release index','b70-ablator create_release')
+                  'files.json release index','jdewitt create_release')
         return verify_release(directory,identity)

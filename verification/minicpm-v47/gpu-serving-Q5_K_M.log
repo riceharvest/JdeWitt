@@ -9,8 +9,8 @@
 0.00.122.573 I srv  init_listene: The UI is disabled
 0.00.122.575 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
 0.00.122.612 I srv          init: using 31 threads for HTTP server
-0.00.125.922 I srv    load_model: loading model '/mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf'
-0.00.125.926 I srv    load_model: local path '/mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf'
+0.00.125.922 I srv    load_model: loading model '/mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf'
+0.00.125.926 I srv    load_model: local path '/mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf'
 0.00.125.940 I cmn  common_init_: fitting params to device memory ...
 0.00.125.940 I cmn  common_init_: (for bugs during this step try to reproduce them with -fit off, or provide --verbose logs if the bug only occurs with -fit on)
 0.00.125.967 I common_params_fit_impl: getting device memory data for initial parameters:
@@ -21,7 +21,7 @@
 0.00.756.046 I common_params_fit_impl: will leave 27541 >= 1024 MiB of free device memory, no changes needed
 0.00.756.047 I common_fit_params: successfully fit params to free device memory
 0.00.756.051 I common_fit_params: fitting params to free memory took 0.63 seconds
-0.00.795.604 I llama_model_loader: loaded meta data with 43 key-value pairs and 321 tensors from /mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf (version GGUF V3 (latest))
+0.00.795.604 I llama_model_loader: loaded meta data with 43 key-value pairs and 321 tensors from /mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf (version GGUF V3 (latest))
 0.00.795.619 I llama_model_loader: Dumping metadata keys/values. Note: KV overrides do not apply in this output.
 0.00.795.623 I llama_model_loader: - kv   0:                       general.architecture str              = qwen35
 0.00.795.624 I llama_model_loader: - kv   1:                               general.type str              = model

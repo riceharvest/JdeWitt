@@ -13,7 +13,7 @@ def emit(path, kind, **fields):
     """Append one JSON line and rotate to .1 once past 8 MiB (best effort).
 
     Single small O_APPEND writes are atomic across processes on Linux, so several
-    b70-ablator jobs may share one run log safely. A logging failure never kills
+    jdewitt jobs may share one run log safely. A logging failure never kills
     the run; the durable artifacts stay the source of truth.
     """
     path = Path(path)

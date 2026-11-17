@@ -1,8 +1,8 @@
 import json
 import stat
 import pytest
-from b70_ablator.compat import compatible_source, repair_export_metadata
-from b70_ablator.release import load_mode_flags
+from jdewitt.compat import compatible_source, repair_export_metadata
+from jdewitt.release import load_mode_flags
 
 
 def source(tmp_path):

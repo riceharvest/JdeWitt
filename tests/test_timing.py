@@ -1,5 +1,4 @@
-import json
-from b70_ablator import timing
+from jdewitt import timing
 
 
 def test_record_load_roundtrip(tmp_path):

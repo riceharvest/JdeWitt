@@ -2,9 +2,9 @@
 from types import SimpleNamespace
 import pytest
 import torch
-from b70_ablator.answers import AnswerStore, generate_answers
-from b70_ablator.hf import HFModel, BoundaryContract
-from b70_ablator.transport import ChatClient
+from jdewitt.answers import AnswerStore, generate_answers
+from jdewitt.hf import HFModel, BoundaryContract
+from jdewitt.transport import ChatClient
 
 
 def tasks():
@@ -156,8 +156,8 @@ def test_silent_backend_floor_loss_is_rejected_before_persisting(tmp_path):
 
 
 def test_server_parallelism_keeps_the_per_request_context_budget(tmp_path,monkeypatch):
-    from b70_ablator.release import ManagedGGUF
-    monkeypatch.setattr('b70_ablator.release.load_mode_flags',lambda _:['--load-mode','none'])
+    from jdewitt.release import ManagedGGUF
+    monkeypatch.setattr('jdewitt.release.load_mode_flags',lambda _:['--load-mode','none'])
     manager=ManagedGGUF(tmp_path/'fixture.gguf','never-executed',128,32,tmp_path/'log',parallel=3)
     command=manager.command('Vulkan0',12345,'fixture')
     assert command[command.index('--parallel')+1]=='3'
@@ -168,7 +168,7 @@ def test_server_parallelism_keeps_the_per_request_context_budget(tmp_path,monkey
 def test_batch_and_cache_run_settings_are_explicit_and_validated():
     import json
     from pathlib import Path
-    from b70_ablator.search import RunConfig
+    from jdewitt.search import RunConfig
     raw=json.loads((Path(__file__).parents[1]/'examples/harsh-corpus/run.json').read_text())
     config=RunConfig.from_json({**raw,'generation_batch':{'max_sequences':3,'max_padded_tokens':8192},
                               'merged_cache_bytes':4096})

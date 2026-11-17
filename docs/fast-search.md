@@ -35,10 +35,10 @@ directory labels them explicitly, and per-trial scores land in
 
 ```sh
 # 1. What would this cost, static only:
-b70-ablator describe-run run.json --set 'search_stages={"probe_fraction":0.25,"probe_tokens":96,"keep_top":0.5}'
+jdewitt describe-run run.json --set 'search_stages={"probe_fraction":0.25,"probe_tokens":96,"keep_top":0.5}'
 # 2. Run with the funnel enabled (add the same object to run.json, or --set at run time).
 # 3. Watch, don't poll with inference:
-b70-ablator run-events OUTPUT          # trial-stage1 lines show probe scores as they land
+jdewitt run-events OUTPUT          # trial-stage1 lines show probe scores as they land
 # 4. Finish as before: run-status, suites-compare, verify-release.
 ```
 
@@ -153,7 +153,7 @@ Readings that change the funnel math:
 
 ## Adapter serving path (mechanism proven, loop not yet wired)
 
-`b70_ablator/gguf_adapters.py` writes an in-memory edit as a GGUF LoRA adapter
+`jdewitt/gguf_adapters.py` writes an in-memory edit as a GGUF LoRA adapter
 so a llama.cpp server can serve the *edited* model with its quantized weights
 untouched: the editor already stores every edit as `W + B @ A`
 (`AblatedLinear`), and llama.cpp applies exactly that delta at adapter load.

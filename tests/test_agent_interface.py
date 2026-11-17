@@ -15,7 +15,7 @@ class NoModels(importlib.abc.MetaPathFinder):
   if fullname.split('.')[0] in {'torch','transformers','bitsandbytes'}:
    raise AssertionError('Model runtime imported by metadata command: '+fullname)
 sys.meta_path.insert(0,NoModels())
-from b70_ablator.cli import main
+from jdewitt.cli import main
 main()
 """
     return subprocess.run([sys.executable,'-c',code,*map(str,args)],cwd=ROOT,capture_output=True,text=True)
@@ -57,14 +57,14 @@ def test_run_status_missing_directory_does_not_create_it(tmp_path):
 
 
 def test_run_status_reads_trials_without_mutating_database(tmp_path):
-    from b70_ablator.search import build_study
-    from b70_ablator.agent import run_status
+    from jdewitt.search import build_study
+    from jdewitt.agent import run_status
     study=build_study(tmp_path/'study.db',{'fixture':True},7,1)
     trial=study.ask()
     trial.set_user_attr('feasible',True)
     study.tell(trial,.25)
     study.ask()
-    from b70_ablator.storage import file_digest
+    from jdewitt.storage import file_digest
     before=file_digest(tmp_path/'study.db')
     status=run_status(tmp_path)
     assert status['trial_counts']=={'COMPLETE':1,'RUNNING':1}
@@ -75,8 +75,8 @@ def test_run_status_reads_trials_without_mutating_database(tmp_path):
 
 
 def test_validation_reuses_actual_suite_gates_and_never_creates_output(tmp_path):
-    from b70_ablator.search import RunConfig
-    from b70_ablator.validation import validate_run_inputs
+    from jdewitt.search import RunConfig
+    from jdewitt.validation import validate_run_inputs
     raw=json.loads((ROOT/'examples/first-test/run-refusal-check.json').read_text())
     raw['output']=str(tmp_path/'not-created')
     config=RunConfig.from_json(raw)

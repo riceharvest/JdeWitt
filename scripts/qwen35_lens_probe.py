@@ -5,11 +5,11 @@ from pathlib import Path
 
 import torch
 
-from b70_ablator.answers import atomic_json
-from b70_ablator.hf import HFModel
-from b70_ablator.pipeline import configure_compiler_paths
-from b70_ablator.storage import file_digest
-from b70_ablator.tree_hf import HFSegments
+from jdewitt.answers import atomic_json
+from jdewitt.hf import HFModel
+from jdewitt.pipeline import configure_compiler_paths
+from jdewitt.storage import file_digest
+from jdewitt.tree_hf import HFSegments
 
 
 def main():

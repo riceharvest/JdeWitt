@@ -3,7 +3,7 @@
 0.00.002.838 I srv  init_listene: The UI is disabled
 0.00.002.840 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
 0.00.002.931 W srv  llama_server: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
-0.00.005.663 I srv    load_model: loading model '/mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf'
+0.00.005.663 I srv    load_model: loading model '/mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf'
 0.01.325.908 I cmn          init: llama threadpool init, n_threads = 16
 0.01.420.654 I srv    load_model: initializing, n_slots = 1, n_ctx_slot = 4096, kv_unified = 'false'
 0.01.424.404 I srv  llama_server: model loaded

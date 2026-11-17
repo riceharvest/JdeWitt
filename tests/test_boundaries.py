@@ -1,6 +1,6 @@
 import pytest
-from b70_ablator import hf
-from b70_ablator.scoring import extract_answer
+from jdewitt import hf
+from jdewitt.scoring import extract_answer
 
 
 class Tokens:

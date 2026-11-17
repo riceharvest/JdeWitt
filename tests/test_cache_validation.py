@@ -2,8 +2,8 @@
 import json
 from types import SimpleNamespace
 import pytest
-from b70_ablator.pipeline import eval_cached
-from b70_ablator.data import digest
+from jdewitt.pipeline import eval_cached
+from jdewitt.data import digest
 
 
 TASKS = [{'id':'m','kind':'math','language':'en','prompt':'Fixture: two plus two?','expected':'4'}]

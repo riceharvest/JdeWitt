@@ -97,7 +97,7 @@ def read_parquet(path):
         import pyarrow.parquet as pq
     except ImportError as error:
         raise RuntimeError('Reading parquet prompt corpora needs the optional datasets extra: '
-                           'uv pip install "b70-ablator[datasets]"') from error
+                           'uv pip install "jdewitt[datasets]"') from error
     return pq.read_table(str(path)).to_pylist()
 
 

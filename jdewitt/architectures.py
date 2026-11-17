@@ -58,7 +58,7 @@ ARCHITECTURES['spark2_5'] = {**ARCHITECTURES['spark2_5'], 'attn_in': ('self_attn
 def architecture_catalog():
     import json
     from importlib.resources import files
-    inventory=json.loads(files('b70_ablator').joinpath('assets/architecture-inventory.json').read_text())
+    inventory=json.loads(files('jdewitt').joinpath('assets/architecture-inventory.json').read_text())
     return {'scope': 'Text-backbone adapter layouts; not proof of XPU kernels, model fit, chat boundaries or GGUF conversion.',
             'recent_releases':inventory,
             'architectures': {name: {'adapter': True, 'full_checkpoint_b70_verified': False,

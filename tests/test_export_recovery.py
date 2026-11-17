@@ -6,7 +6,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 from safetensors.torch import save_file
-from b70_ablator import export, release
+from jdewitt import export, release
 
 
 def test_interrupted_safetensors_write_never_commits_a_truncated_shard(tmp_path,monkeypatch):

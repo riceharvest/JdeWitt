@@ -1,8 +1,8 @@
 import torch
 import pytest
 from transformers import LlamaConfig, LlamaForCausalLM
-from b70_ablator.editor import Editor
-from b70_ablator.hf import HFModel, require_b70
+from jdewitt.editor import Editor
+from jdewitt.hf import HFModel, require_b70
 
 
 @pytest.mark.xpu

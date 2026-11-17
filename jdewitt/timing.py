@@ -53,7 +53,6 @@ def load(path: str) -> list[dict]:
 def summarize(events: list[dict], *, by_lineage: bool = False) -> dict:
     """Phase percentage breakdown, wall-relevant kinds only + proxy counted
     separately (judge is read-cost proxy, not a GPU second)."""
-    gpu_phases = ('wave', 'serve_swap', 'capture', 'baseline')
     groups = {}
     for e in events:
         key = (e['lineage'], e['kind']) if by_lineage else e['kind']
@@ -87,18 +86,18 @@ def summarize(events: list[dict], *, by_lineage: bool = False) -> dict:
 
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog='b70_ablator.timing')
+    ap = argparse.ArgumentParser(prog='jdewitt.timing')
     sub = ap.add_subparsers(dest='cmd', required=True)
     s = sub.add_parser('summarize')
     s.add_argument('--ledger', required=True)
     s.add_argument('--lineages', action='store_true')
-    l = sub.add_parser('log')
-    l.add_argument('--ledger', required=True)
-    l.add_argument('--lineage', required=True)
-    l.add_argument('--phase', required=True)
-    l.add_argument('--seconds', required=True, type=float)
-    l.add_argument('--kind', default='wall', choices=VALID_KINDS)
-    l.add_argument('--source', default='measured')
+    plog = sub.add_parser('log')
+    plog.add_argument('--ledger', required=True)
+    plog.add_argument('--lineage', required=True)
+    plog.add_argument('--phase', required=True)
+    plog.add_argument('--seconds', required=True, type=float)
+    plog.add_argument('--kind', default='wall', choices=VALID_KINDS)
+    plog.add_argument('--source', default='measured')
     args = ap.parse_args(argv)
     if args.cmd == 'log':
         record(args.ledger, lineage=args.lineage, phase=args.phase,

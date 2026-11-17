@@ -2,8 +2,8 @@
 import pytest
 import torch
 from torch import nn
-from b70_ablator.methods import fit_directions, method_catalog, fit_ara
-from b70_ablator.editor import AblatedLinear
+from jdewitt.methods import fit_directions, method_catalog, fit_ara
+from jdewitt.editor import AblatedLinear
 
 
 def records():

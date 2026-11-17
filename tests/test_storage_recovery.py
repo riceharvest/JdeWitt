@@ -4,7 +4,7 @@ import json
 from types import SimpleNamespace
 import pytest
 import torch
-from b70_ablator import pipeline, answers
+from jdewitt import pipeline, answers
 
 
 def test_pipeline_atomic_json_preserves_old_file_when_commit_fails(tmp_path, monkeypatch):
@@ -21,7 +21,7 @@ def test_pipeline_atomic_json_preserves_old_file_when_commit_fails(tmp_path, mon
 
 
 def test_tensor_checkpoint_commits_payload_and_audit_with_one_pointer(tmp_path):
-    from b70_ablator import storage
+    from jdewitt import storage
     path=tmp_path/'directions.pt'
     identity={'fixture':'fixed source and settings'}
     data=torch.arange(6).reshape(2,3)
@@ -37,7 +37,7 @@ def test_tensor_checkpoint_commits_payload_and_audit_with_one_pointer(tmp_path):
 
 
 def test_checkpoint_failed_pointer_commit_never_trusts_orphan_payload(tmp_path,monkeypatch):
-    from b70_ablator import storage
+    from jdewitt import storage
     path=tmp_path/'directions.pt'
     identity={'fixture':'same'}
     original=storage.atomic_json
@@ -56,7 +56,7 @@ def test_checkpoint_failed_pointer_commit_never_trusts_orphan_payload(tmp_path,m
 
 
 def test_checkpoint_truncated_write_never_replaces_previous_valid_state(tmp_path,monkeypatch):
-    from b70_ablator import storage
+    from jdewitt import storage
     path=tmp_path/'references.pt'
     identity={'fixture':'same'}
     storage.save_checkpoint(path,torch.ones(2),identity,{})
@@ -80,7 +80,7 @@ def test_interrupted_invalid_score_retry_can_resume_without_old_report_conflict(
     class Disconnected:
         def classify(self,*args):
             raise ConnectionError('Fixture retry disconnect')
-    from b70_ablator.scoring import Judgment
+    from jdewitt.scoring import Judgment
     valid=SimpleNamespace(classify=lambda *args:Judgment('compliance',False,0,1.,'Fixture evidence'))
     directory=tmp_path/'scores'
     identity={'fixture':'same judge'}

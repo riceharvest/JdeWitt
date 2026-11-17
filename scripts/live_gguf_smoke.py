@@ -2,9 +2,9 @@
 import argparse
 import json
 from pathlib import Path
-from b70_ablator.release import export_gguf, ManagedGGUF, verify_quant, QUANTS
-from b70_ablator.evaluation import grade_math
-from b70_ablator.scoring import extract_answer
+from jdewitt.release import export_gguf, ManagedGGUF, verify_quant, QUANTS
+from jdewitt.evaluation import grade_math
+from jdewitt.scoring import extract_answer
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--hf',type=Path,required=True)

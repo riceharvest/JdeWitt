@@ -3,8 +3,8 @@
 Commands:
 
 ```sh
-b70-ablator validate-auto /absolute/path/auto.json
-b70-ablator auto /absolute/path/auto.json
+jdewitt validate-auto /absolute/path/auto.json
+jdewitt auto /absolute/path/auto.json
 ```
 
 The automatic workflow compares configured methods and ranks on the same model,
@@ -83,7 +83,7 @@ without loading any model. A recorded holdout failure stays failed on resume.
 Changing inputs/settings/code requires a new output directory; existing work is
 not deleted or silently migrated.
 
-Use `b70-ablator run-status PARENT/candidates/ID` for each method's actual trial
+Use `jdewitt run-status PARENT/candidates/ID` for each method's actual trial
 counts. Parent progress is ordinary JSON and does not prove process liveness.
 Hashes require reading the model/artifacts; completed-resume verification can be
 I/O-heavy. Methods currently use separate baseline caches and a winning-method

@@ -25,7 +25,7 @@ UNRESOLVED_GAPS = [
 
 def inventory_authors():
     from importlib.resources import files
-    inventory = json.loads(files('b70_ablator').joinpath('assets/architecture-inventory.json').read_text())
+    inventory = json.loads(files('jdewitt').joinpath('assets/architecture-inventory.json').read_text())
     return [a['author'] if isinstance(a, dict) else a for a in inventory.get('authors', [])]
 
 

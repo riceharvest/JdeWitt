@@ -20,9 +20,9 @@ def completion_script(parser, shell):
     real flag surface; regenerate with `commands --completions bash > ...`.
     """
     import argparse as _argparse
-    prog = parser.prog or 'b70-ablator'
+    prog = parser.prog or 'jdewitt'
     if prog.endswith('__main__.py') or '/' in prog:
-        prog = 'b70-ablator'
+        prog = 'jdewitt'
     safe_prog = prog.replace('-', '_').replace('.', '_')
     subactions = None
     for action in parser._actions:
@@ -115,7 +115,7 @@ def command_manifest(parser):
 def main():
     parser=AgentParser(description='B70-only ablation with real answer and quantized release gates')
     from . import __version__
-    parser.add_argument('--version',action='version',version=f'b70-ablator {__version__}')
+    parser.add_argument('--version',action='version',version=f'jdewitt {__version__}')
     sub=parser.add_subparsers(dest='command',required=True)
     sub.add_parser('doctor',help='Run a real XPU kernel on the B70')
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
@@ -608,7 +608,7 @@ def main():
             configure_compiler_paths()
             import torch
             from .hf import resolve_backend, backend_device, device_synchronize, CUDA_SECONDARY_NOTE
-            backend=resolve_backend(allow_secondary=os.environ.get('B70ABLATOR_ALLOW_CUDA')=='1')
+            backend=resolve_backend(allow_secondary=os.environ.get('JDEWITT_ALLOW_CUDA')=='1')
             device=backend_device(backend)
             x=torch.arange(16,device=device,dtype=torch.float32).reshape(4,4)
             product=x@x.T

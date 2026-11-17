@@ -148,7 +148,7 @@ class RunConfig:
             ConsistencyPolicy.from_json(config.consistency)
         from .methods import IMPLEMENTED,validate_method_options
         if config.method not in IMPLEMENTED:
-            raise ValueError(f'Method {config.method!r} is not implemented; see b70-ablator methods')
+            raise ValueError(f'Method {config.method!r} is not implemented; see jdewitt methods')
         if config.method_options is not None and not isinstance(config.method_options,dict):
             raise ValueError('method_options must be an object')
         validate_method_options(config.method,config.method_options or {})
@@ -248,10 +248,10 @@ class RestartableTPE(optuna.samplers.BaseSampler):
 def build_study(path, provenance, seed, startup_trials, objectives=None):
     sampler = RestartableTPE(seed, startup_trials)
     if objectives is None:
-        study = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, direction='minimize', sampler=sampler)
+        study = optuna.create_study(study_name='jdewitt', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, direction='minimize', sampler=sampler)
         contract = {'algorithm':'keyed-tpe-v1', 'seed':seed, 'startup_trials':startup_trials, 'optuna':optuna.__version__}
     else:
-        study = optuna.create_study(study_name='b70-ablator', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, directions=['minimize']*len(objectives), sampler=sampler)
+        study = optuna.create_study(study_name='jdewitt', storage='sqlite:///'+str(Path(path).resolve()), load_if_exists=True, directions=['minimize']*len(objectives), sampler=sampler)
         contract = {'algorithm':'keyed-mo-tpe-v1', 'seed':seed, 'startup_trials':startup_trials, 'optuna':optuna.__version__, 'objectives':list(objectives)}
     prior = study.user_attrs.get('sampler_contract')
     if prior != contract and (prior is not None or study.trials):

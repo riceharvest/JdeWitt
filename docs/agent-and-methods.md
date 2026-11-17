@@ -16,18 +16,18 @@ No remote model upload, publishing, offloading, or automatic parameter selection
 Typical read-only commands:
 
 ```sh
-b70-ablator methods
-b70-ablator architectures
-b70-ablator validate-run /absolute/path/run.json
-b70-ablator run-status /absolute/path/experiment
-b70-ablator verify-release /absolute/path/experiment/release
+jdewitt methods
+jdewitt architectures
+jdewitt validate-run /absolute/path/run.json
+jdewitt run-status /absolute/path/experiment
+jdewitt verify-release /absolute/path/experiment/release
 ```
 
 Validation is not execution: tokenized context budgets, GPU memory, kernels, converter architecture support, and answer quality are checked separately during the real workflow. The old first-test configs intentionally lack hardened consistency settings; they are not launch-ready presets.
 
 ## Implemented search methods
 
-Each of these is reachable through the `method` field of `b70-ablator run CONFIG`, direction fitting, the resident editor, streaming safetensors export, and existing release gates. The seven direction methods and dense ARA optimizer have small actual-B70 operator tests. These tests do not establish refusal-removal quality on a real pretrained checkpoint. For pros/cons and cross-model evidence of the methods upstream Heretic does not ship, see `docs/non-heretic-methods.md`.
+Each of these is reachable through the `method` field of `jdewitt run CONFIG`, direction fitting, the resident editor, streaming safetensors export, and existing release gates. The seven direction methods and dense ARA optimizer have small actual-B70 operator tests. These tests do not establish refusal-removal quality on a real pretrained checkpoint. For pros/cons and cross-model evidence of the methods upstream Heretic does not ship, see `docs/non-heretic-methods.md`.
 
 | Method | Operator | Required method_options |
 | --- | --- | --- |
@@ -52,7 +52,7 @@ Limitations matter:
 
 ## SFT and DPO
 
-`b70-ablator train CONFIG` trains low-rank edit factors on the B70 while freezing the original model. SFT masks prompt positions and optimizes completion likelihood. DPO uses explicit chosen/rejected completions and the unedited model as the reference. It does not hold a second reference model in VRAM.
+`jdewitt train CONFIG` trains low-rank edit factors on the B70 while freezing the original model. SFT masks prompt positions and optimizes completion likelihood. DPO uses explicit chosen/rejected completions and the unedited model as the reference. It does not hold a second reference model in VRAM.
 
 The configuration requires exactly these fields:
 

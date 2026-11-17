@@ -2,8 +2,8 @@ import json
 import pytest
 import torch
 from safetensors.torch import load_file
-from b70_ablator.export import stream_merge
-from b70_ablator.editor import Editor, AblatedLinear
+from jdewitt.export import stream_merge
+from jdewitt.editor import Editor, AblatedLinear
 from transformers import LlamaConfig, LlamaForCausalLM
 
 

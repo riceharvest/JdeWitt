@@ -1,8 +1,8 @@
 import torch
 import pytest
 from transformers.models.qwen3_5.modeling_qwen3_5 import Qwen3_5Config, Qwen3_5TextConfig, Qwen3_5ForConditionalGeneration
-from b70_ablator.editor import discover_targets, Editor
-from b70_ablator.hf import HFModel, require_b70
+from jdewitt.editor import discover_targets, Editor
+from jdewitt.hf import HFModel, require_b70
 
 
 def make_model():

@@ -95,7 +95,7 @@ one or quietly replace it with a logit lens.
 
 Save the `model_identity` object in a separate JSON file, then run:
 
-    b70-ablator bind-tree-lens /absolute/path/lens.pt \
+    jdewitt bind-tree-lens /absolute/path/lens.pt \
       --model-identity /absolute/path/model-identity.json \
       --output /absolute/path/lens-manifest.json
 
@@ -133,8 +133,8 @@ fitted from the evaluation suite, and no synthetic labels are generated.
 
 ## Validate, run and score later
 
-    b70-ablator validate-tree /absolute/path/tree.json
-    b70-ablator tree-search /absolute/path/tree.json
+    jdewitt validate-tree /absolute/path/tree.json
+    jdewitt tree-search /absolute/path/tree.json
 
 `validate-tree` imports no torch/Transformers runtime, initializes no device,
 checks file identities/metadata/budgets, and creates no outputs. It deliberately

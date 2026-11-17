@@ -2,14 +2,14 @@
 import pytest
 import torch
 from transformers import LlamaConfig,LlamaForCausalLM
-from b70_ablator.editor import Editor
-from b70_ablator.hf import require_b70
-from b70_ablator.pipeline import configure_compiler_paths
-from b70_ablator.methods import fit_ara
-from b70_ablator.plans import fit_plan,move_plan
-from b70_ablator.scoring import ConsistencyPolicy
-from b70_ablator.training import train_adapters
-from b70_ablator.export import stream_merge,verify_resident_export
+from jdewitt.editor import Editor
+from jdewitt.hf import require_b70
+from jdewitt.pipeline import configure_compiler_paths
+from jdewitt.methods import fit_ara
+from jdewitt.plans import fit_plan,move_plan
+from jdewitt.scoring import ConsistencyPolicy
+from jdewitt.training import train_adapters
+from jdewitt.export import stream_merge,verify_resident_export
 
 pytestmark=pytest.mark.xpu
 

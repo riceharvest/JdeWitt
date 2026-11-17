@@ -1,6 +1,6 @@
 
-from b70_ablator.release import rank_quantized
-from b70_ablator.scoring import summarize
+from jdewitt.release import rank_quantized
+from jdewitt.scoring import summarize
 
 
 def test_code_regression_cannot_hide_behind_improved_maths():

@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 from torch import nn
-from b70_ablator.editor import Editor, discover_targets
+from jdewitt.editor import Editor, discover_targets
 
 
 @pytest.mark.parametrize('name', ['qwen3_moe', 'qwen3_next', 'qwen3_5_moe_text', 'qwen4_exp_text',
@@ -81,7 +81,7 @@ def test_fused_experts_are_edited_without_mutating_original_storage(transposed):
 
 
 def test_systemless_templates_fold_system_content_without_hiding_other_errors():
-    from b70_ablator.chat import render_chat
+    from jdewitt.chat import render_chat
     class Tokenizer:
         def apply_chat_template(self, messages, **kwargs):
             if messages[0]['role'] == 'system':

@@ -1,5 +1,5 @@
 import pytest
-from b70_ablator.scoring import Judgment, extract_answer
+from jdewitt.scoring import Judgment, extract_answer
 
 
 def test_preamble_length_comes_from_exact_text_not_judge_arithmetic():

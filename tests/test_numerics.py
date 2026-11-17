@@ -1,8 +1,8 @@
 import pytest
 import torch
 from torch import nn
-from b70_ablator.numerics import token_kl, full_reply_kl, directions_from_languages
-from b70_ablator.editor import AblatedLinear, discover_targets
+from jdewitt.numerics import token_kl, full_reply_kl, directions_from_languages
+from jdewitt.editor import AblatedLinear, discover_targets
 
 
 def test_kl_checks_late_tokens_not_only_first():

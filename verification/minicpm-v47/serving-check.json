@@ -1,11 +1,11 @@
 {
   "scope": "llama-server GGUF load + ablator ChatClient round trip on CPU. Does NOT prove Vulkan GPU offload, which is checked separately by ManagedGGUF.",
   "server": "/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-server",
-  "artifact": "/mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+  "artifact": "/mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
   "cmd": [
     "/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-server",
     "--model",
-    "/mnt/ssd/dev workspace/b70-ablator/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+    "/mnt/ssd/dev workspace/jdewitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
     "--alias",
     "minicpm-v47-check",
     "--device",

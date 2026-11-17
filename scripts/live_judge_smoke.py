@@ -2,9 +2,9 @@
 import argparse
 import json
 from pathlib import Path
-from b70_ablator.release import ManagedGGUF
-from b70_ablator.grounded_judge import GroundedJudge
-from b70_ablator.data import append_jsonl
+from jdewitt.release import ManagedGGUF
+from jdewitt.grounded_judge import GroundedJudge
+from jdewitt.data import append_jsonl
 
 parser=argparse.ArgumentParser()
 parser.add_argument('--judge',type=Path,required=True)

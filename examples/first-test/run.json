@@ -5,7 +5,7 @@
   "directions": "/mnt/ssd/dev workspace/JdeWitt/examples/first-test/directions.jsonl",
   "selection": "/mnt/ssd/dev workspace/JdeWitt/examples/first-test/selection.jsonl",
   "holdout": "/mnt/ssd/dev workspace/JdeWitt/examples/first-test/holdout.jsonl",
-  "calibration": "/mnt/ssd/dev workspace/JdeWitt/b70_ablator/assets/judge-calibration.json",
+  "calibration": "/mnt/ssd/dev workspace/JdeWitt/jdewitt/assets/judge-calibration.json",
   "judge_url": "managed",
   "judge_model": "managed-fixed-artifact",
   "judge_artifact": "/home/dario/models/Qwen3.8-27B-GGUF/Qwen3.8-27B-UD-Q4_K_M.gguf",

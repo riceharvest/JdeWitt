@@ -5,8 +5,8 @@ import subprocess
 import sys
 from types import SimpleNamespace
 import pytest
-from b70_ablator import cli
-from b70_ablator.answers import AnswerStore, generate_answers
+from jdewitt import cli
+from jdewitt.answers import AnswerStore, generate_answers
 
 
 def fixture_suite(tmp_path):
@@ -18,7 +18,7 @@ def fixture_suite(tmp_path):
 
 @pytest.mark.parametrize('command',['generate','score','status'])
 def test_real_console_commands_are_available(command):
-    binary=Path(sys.executable).parent/'b70-ablator'
+    binary=Path(sys.executable).parent/'jdewitt'
     result=subprocess.run([str(binary),command,'--help'],capture_output=True,text=True)
     assert result.returncode==0,result.stderr
     assert command in result.stdout
@@ -28,14 +28,14 @@ def test_status_reads_answer_count_without_starting_a_model(tmp_path,monkeypatch
     rows,path=fixture_suite(tmp_path)
     store=AnswerStore(tmp_path/'answers',rows,{'fixture':'status'})
     store.put(rows[0],{'content':'4','finish_reason':'stop'})
-    monkeypatch.setattr(sys,'argv',['b70-ablator','status','--answers',str(store.directory)])
+    monkeypatch.setattr(sys,'argv',['jdewitt','status','--answers',str(store.directory)])
     cli.main()
     result=json.loads(capsys.readouterr().out)
     assert result['completed']==1 and result['missing']==0
 
 
 def test_generate_closes_target_before_score_command_starts_judge(tmp_path,monkeypatch,capsys):
-    from b70_ablator import job_cli
+    from jdewitt import job_cli
     rows,path=fixture_suite(tmp_path)
     model=tmp_path/'fixture-model.gguf'
     server=tmp_path/'fixture-server'
@@ -59,13 +59,13 @@ def test_generate_closes_target_before_score_command_starts_judge(tmp_path,monke
     monkeypatch.setattr(job_cli,'ManagedGGUF',Manager)
     monkeypatch.setattr(job_cli,'verify_judge',lambda args:FixedJudge())
     monkeypatch.setattr(job_cli,'sandbox_identity',lambda image:'fixture-sandbox-image-id')
-    monkeypatch.setattr(sys,'argv',['b70-ablator','generate','--model',str(model),'--server',str(server),
+    monkeypatch.setattr(sys,'argv',['jdewitt','generate','--model',str(model),'--server',str(server),
         '--suite',str(path),'--max-tokens','32','--ctx-size','128','--output',str(tmp_path/'answers')])
     cli.main()
     capsys.readouterr()
     calibration=tmp_path/'calibration.json'
     calibration.write_text(json.dumps([{'language':'en'}]))
-    monkeypatch.setattr(sys,'argv',['b70-ablator','score','--answers',str(tmp_path/'answers'),
+    monkeypatch.setattr(sys,'argv',['jdewitt','score','--answers',str(tmp_path/'answers'),
         '--suite',str(path),'--server',str(server),'--judge-artifact',str(judge),'--calibration',str(calibration),
         '--judge-max-tokens','32','--ctx-size','128','--judge-min-confidence','0',
         '--judge-min-accuracy','1','--sandbox-image','fixture-sandbox','--output',str(tmp_path/'scores')])
@@ -79,7 +79,7 @@ def test_generate_closes_target_before_score_command_starts_judge(tmp_path,monke
 
 
 def test_score_job_rejects_missing_answers_before_loading_judge(tmp_path,monkeypatch):
-    from b70_ablator import job_cli
+    from jdewitt import job_cli
     rows,path=fixture_suite(tmp_path)
     store=AnswerStore(tmp_path/'answers',rows,{'fixture':'missing'})
     monkeypatch.setattr(job_cli,'ManagedGGUF',lambda *args:pytest.fail('Judge must not start'))
@@ -97,7 +97,7 @@ def test_answer_job_fixture_is_reused_without_generator(tmp_path):
 
 
 def test_generate_cli_forwards_floor_batch_policy_and_resume_identity(tmp_path,monkeypatch,capsys):
-    from b70_ablator import job_cli
+    from jdewitt import job_cli
     rows=[{'id':'r','kind':'refusal','language':'en','prompt':'Fixture request.'}]
     path=tmp_path/'refusals.jsonl'
     path.write_text(json.dumps(rows[0])+'\n')
@@ -116,7 +116,7 @@ def test_generate_cli_forwards_floor_batch_policy_and_resume_identity(tmp_path,m
         def __exit__(self,*args):
             pass
     monkeypatch.setattr(job_cli,'ManagedGGUF',Manager)
-    monkeypatch.setattr(sys,'argv',['b70-ablator','generate','--model',str(model),'--server',str(server),
+    monkeypatch.setattr(sys,'argv',['jdewitt','generate','--model',str(model),'--server',str(server),
         '--suite',str(path),'--max-tokens','32','--ctx-size','128','--output',str(tmp_path/'answers'),
         '--refusal-floor','8','--batch-max-sequences','2','--batch-token-budget','128'])
     cli.main()
@@ -130,7 +130,7 @@ def test_generate_cli_forwards_floor_batch_policy_and_resume_identity(tmp_path,m
 
 
 def test_refusal_only_cli_needs_no_judge_arguments_or_model(tmp_path,monkeypatch,capsys):
-    from b70_ablator import job_cli
+    from jdewitt import job_cli
     rows=[{'id':'r','kind':'refusal','language':'en','prompt':'Fixture request.'}]
     path=tmp_path/'suite.jsonl'
     path.write_text(json.dumps(rows[0])+'\n')
@@ -138,7 +138,7 @@ def test_refusal_only_cli_needs_no_judge_arguments_or_model(tmp_path,monkeypatch
     store.put(rows[0],{'content':'I cannot assist with that request.','finish_reason':'stop'})
     monkeypatch.setattr(job_cli,'ManagedGGUF',lambda *args:pytest.fail('Fast check must never load a model'))
     monkeypatch.setattr(job_cli,'verify_judge',lambda *args:pytest.fail('Fast check must never verify a judge'))
-    monkeypatch.setattr(sys,'argv',['b70-ablator','score','--mode','refusal-check',
+    monkeypatch.setattr(sys,'argv',['jdewitt','score','--mode','refusal-check',
         '--answers',str(store.directory),'--suite',str(path),'--output',str(tmp_path/'scores')])
     cli.main()
     result=json.loads(capsys.readouterr().out)

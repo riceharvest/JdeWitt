@@ -12,7 +12,7 @@ from ggml-common.h, and a stdin/stdout main().
 Build and falsify:
     gcc -O1 -o ref_q4k scripts/ggml_ref/ref_q4k.c -lm
     ./ref_q4k < weights.f32 > c.bin       # weights.f32: raw float32, multiple of 256 elements
-    python -c "import numpy as np; from b70_ablator.quants import quantize_q4_k; \
+    python -c "import numpy as np; from jdewitt.quants import quantize_q4_k; \
         x=np.frombuffer(open('weights.f32','rb').read(), np.float32); \
         c=np.frombuffer(open('c.bin','rb').read(), np.uint8); \
         print('byte-exact:', (np.frombuffer(quantize_q4_k(x), np.uint8)==c).all())"

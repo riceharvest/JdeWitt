@@ -2,8 +2,8 @@
 import pytest
 import torch
 from transformers import LlamaConfig,LlamaForCausalLM
-from b70_ablator.editor import Editor
-from b70_ablator.training import completion_logprob,dpo_loss,train_adapters
+from jdewitt.editor import Editor
+from jdewitt.training import completion_logprob,dpo_loss,train_adapters
 
 
 def test_completion_logprob_masks_prompt_tokens_and_dpo_prefers_chosen():
@@ -41,7 +41,7 @@ def test_training_updates_only_edit_factors_and_real_loss(mode,monkeypatch):
 @pytest.mark.parametrize('changed',[{'steps':0},{'rank':True},{'seed':-1},{'learning_rate':float('nan')},
                                     {'beta':0.},{'ctx_size':8},{'trust_remote_code':'yes'},{'mode':[]},{'dtype':[]}])
 def test_training_rejects_invalid_settings_before_model_loading(changed):
-    from b70_ablator.training import validate_training_config
+    from jdewitt.training import validate_training_config
     config=dict(mode='sft',model='/reviewed/local/model',revision=None,rank=1,ctx_size=64,max_tokens=8,
                 dtype='bfloat16',trust_remote_code=False,data='train.jsonl',holdout='holdout.jsonl',
                 steps=1,learning_rate=.01,beta=.1,seed=7,output='new-output')

@@ -4,11 +4,11 @@ import json
 
 import pytest
 
-from b70_ablator.data import load_suite
-from b70_ablator.sources import (apply_where, extract_prompts, family_ids, format_prompt,
+from jdewitt.data import load_suite
+from jdewitt.sources import (apply_where, extract_prompts, family_ids, format_prompt,
                                  import_suites, near_duplicate_dedupe, prune_small_families,
                                  read_local, resolve_hub_file, slug, source_rows, validate_import)
-from b70_ablator.validation import validate_experiment
+from jdewitt.validation import validate_experiment
 
 
 def write_jsonl(path, rows):

@@ -6,7 +6,7 @@ import torch
 
 
 def api():
-    from b70_ablator.tree_search import Action, TreeSettings, search_tree
+    from jdewitt.tree_search import Action, TreeSettings, search_tree
     return Action, TreeSettings, search_tree
 
 
@@ -101,7 +101,7 @@ def test_invalid_settings_or_insufficient_complete_search_budget(field, value):
 
 
 def test_projection_changes_only_last_token_and_never_mutates_parent():
-    from b70_ablator.tree_search import project_last
+    from jdewitt.tree_search import project_last
     h = torch.tensor([[[1., 2.], [3., 4.]]])
     before = h.clone()
     edited = project_last(h, torch.tensor([[1., 0.]]), 1.)
@@ -112,7 +112,7 @@ def test_projection_changes_only_last_token_and_never_mutates_parent():
 
 
 def test_jspace_transport_norm_and_selected_logits_match_explicit_math():
-    from b70_ablator.tree_search import JSpaceReadout
+    from jdewitt.tree_search import JSpaceReadout
     class RMS(torch.nn.Module):
         def forward(self, h):
             return h / h.square().mean(-1, keepdim=True).add(1e-6).sqrt()
@@ -135,7 +135,7 @@ def test_jspace_transport_norm_and_selected_logits_match_explicit_math():
 
 
 def test_jspace_rejects_missing_lens_and_degenerate_axes():
-    from b70_ablator.tree_search import JSpaceReadout
+    from jdewitt.tree_search import JSpaceReadout
     args = ({0: torch.eye(2)}, torch.nn.Identity(), torch.eye(4, 2))
     with pytest.raises(ValueError, match='disjoint'):
         JSpaceReadout(*args, [0], [0], [2, 3], max_protected_kl=1., max_norm_change=1., drift_weight=1.)

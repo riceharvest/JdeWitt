@@ -1,8 +1,8 @@
 import pytest
 import torch
 from transformers import LlamaConfig, LlamaForCausalLM
-from b70_ablator.hf import require_b70, reply_boundary, HFModel
-from b70_ablator.editor import Editor
+from jdewitt.hf import require_b70, reply_boundary, HFModel
+from jdewitt.editor import Editor
 
 
 def test_boundary_after_closing_think_not_before():

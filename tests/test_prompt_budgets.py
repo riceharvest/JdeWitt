@@ -2,8 +2,8 @@
 from types import SimpleNamespace
 import pytest
 import torch
-from b70_ablator.hf import HFModel, BoundaryContract
-from b70_ablator.transport import ChatClient
+from jdewitt.hf import HFModel, BoundaryContract
+from jdewitt.transport import ChatClient
 
 
 class Tokens:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """One clock for artifacts, so a run can be reproduced with a pinned stamp.
 
-Set B70_ABLATOR_CLOCK to an epoch float or an ISO-8601 instant and every
+Set JDEWITT_CLOCK to an epoch float or an ISO-8601 instant and every
 artifact timestamp written through here resolves to that instant.
 """
 import datetime
@@ -10,7 +10,7 @@ import time
 
 
 def now_iso():
-    override = os.environ.get('B70_ABLATOR_CLOCK')
+    override = os.environ.get('JDEWITT_CLOCK')
     epoch = None
     if override is not None:
         try:

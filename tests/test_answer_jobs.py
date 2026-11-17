@@ -1,8 +1,8 @@
 """Framework fixtures, not target-model compliance measurements."""
 import json
 import pytest
-from b70_ablator.answers import AnswerStore, generate_answers, score_answers
-from b70_ablator.scoring import Judgment
+from jdewitt.answers import AnswerStore, generate_answers, score_answers
+from jdewitt.scoring import Judgment
 
 
 IDENTITY={'fixture_model':'deterministic-test-generator','max_tokens':32}
@@ -154,7 +154,7 @@ def test_generation_identity_is_an_immutable_snapshot(tmp_path):
 
 
 def test_status_rejects_scores_from_another_answer_job(tmp_path):
-    from b70_ablator.answers import score_status
+    from jdewitt.answers import score_status
     tasks=suite()
     first=AnswerStore(tmp_path/'first',tasks,IDENTITY)
     generate_answers(tasks,Generator(),first)
@@ -165,7 +165,7 @@ def test_status_rejects_scores_from_another_answer_job(tmp_path):
 
 
 def test_saved_answer_scoring_prunes_hopeless_trial_without_losing_answers(tmp_path):
-    from b70_ablator.evaluation import DominatedTrial
+    from jdewitt.evaluation import DominatedTrial
     tasks=suite()[:1]
     store=AnswerStore(tmp_path/'answers',tasks,IDENTITY)
     generate_answers(tasks,Generator(),store)

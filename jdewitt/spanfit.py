@@ -100,10 +100,10 @@ def protection_subspace(records: list[tuple], label: str, k: int = 8) -> torch.T
     uses in the residual write-space that removal edits must not destroy."""
     X = group_means(records, label)                    # [N, L, D] double
     U = torch.zeros(X.shape[1], k, X.shape[2], dtype=torch.float64)
-    for l in range(X.shape[1]):
-        Xl = X[:, l, :] - X[:, l, :].mean(0, keepdim=True)
+    for lay in range(X.shape[1]):
+        Xl = X[:, lay, :] - X[:, lay, :].mean(0, keepdim=True)
         _, _, Vh = torch.linalg.svd(Xl, full_matrices=False)
-        U[l] = Vh[:k]
+        U[lay] = Vh[:k]
     return U.float()
 
 
@@ -115,14 +115,14 @@ def protect_axes(axes: torch.Tensor, subspace: torch.Tensor,
     (axis zeroed) rather than removing an un-protected fraction of it."""
     a = axes.clone()
     kept = torch.ones(a.shape[0])
-    for l in range(a.shape[0]):
-        U = subspace[l].to(a.dtype)
-        a[l] = a[l] - (U.T @ (U @ a[l]))
-        n = float(a[l].norm())
-        n0 = float(axes[l].norm())
-        kept[l] = n / max(n0, 1e-12)
+    for lay in range(a.shape[0]):
+        U = subspace[lay].to(a.dtype)
+        a[lay] = a[lay] - (U.T @ (U @ a[lay]))
+        n = float(a[lay].norm())
+        n0 = float(axes[lay].norm())
+        kept[lay] = n / max(n0, 1e-12)
         if n < min_norm * n0:
-            a[l] = 0.0
+            a[lay] = 0.0
     a = a / a.norm(dim=1, keepdim=True).clamp_min(1e-12)
     return a, kept
 
@@ -256,7 +256,7 @@ class InPlaceRemoval:
 # ---------- CLI ----------
 
 def main(argv=None):
-    ap = argparse.ArgumentParser(prog="b70_ablator.spanfit")
+    ap = argparse.ArgumentParser(prog="jdewitt.spanfit")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     a = sub.add_parser("build", help="fit axes from records, write merged gguf")

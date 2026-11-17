@@ -3,15 +3,15 @@
   "status": "implementation-only-not-exercised",
   "owner_instruction": "implement dont test",
   "source_modules": [
-    "b70_ablator/tree_behavior_data.py",
-    "b70_ablator/tree_behavior.py",
-    "b70_ablator/tree_ranker.py"
+    "jdewitt/tree_behavior_data.py",
+    "jdewitt/tree_behavior.py",
+    "jdewitt/tree_ranker.py"
   ],
   "integration_modules": [
-    "b70_ablator/tree_search.py",
-    "b70_ablator/tree_cli.py",
-    "b70_ablator/tree_config.py",
-    "b70_ablator/cli.py"
+    "jdewitt/tree_search.py",
+    "jdewitt/tree_cli.py",
+    "jdewitt/tree_config.py",
+    "jdewitt/cli.py"
   ],
   "implemented_paths": [
     "whole observed J-space checkpoint trajectories with baseline and inter-layer differences",
