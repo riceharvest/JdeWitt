@@ -195,8 +195,12 @@ written into the item and stays GATED.
      refusing inf). Proven on a 3-tensor IQ GGUF fixture: IQ4_XS flip →
      rel_rms 0.00152 ours; IQ2_XS flip → rel_rms 0.007319 labelled port;
      I8 flip → codec_unsupported with note; quants-audit lists IQ4_XS as
-     decode-only. Still open: one small real downloaded IQ checkpoint for
-     an end-to-end non-synthetic proof.
+     decode-only. REAL-DATA PROOF LANDED: Qwen2.5-0.5B IQ4_XS checkpoint
+     (verification/iq05b, 290 tensors, 5 dtypes) — our IQ4_XS decoder is
+     bit-exact vs the pinned port on 8,192 real ffn_down blocks; full-file
+     self-diff 290/290 bit-identical; quants-audit now has a labelled
+     port_decode_only bucket (IQ4_NL x120, Q5_1 x24) so nothing on that
+     file reads unsupported.
 
 14. Two more curated import specs in the jailbreak-slices pattern: a code
     execution slice (runs through the existing ast-based executor) and a
