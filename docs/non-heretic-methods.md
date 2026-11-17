@@ -333,7 +333,10 @@ Optimization lanes (2026-11-17 brainstorm, unprioritized inventory):
    (q25-class o/down), screen candidates via --lora swaps (~2s, screening space
    only, never for cert verdicts per R8); 2-server parallel screening pools if
    VRAM allows at a smaller screening config (all candidates share it). Net
-   estimate: 20-40 candidates/hour vs the measured 15 with full 40-row waves.
+   estimate: 20-40 candidates/hour vs the measured 15 with full 40-row waves;
+   SCREENING VALIDATED on q25-plr1: 10 rows x 150 tok wave = 9.5 s vs 87.7 s full
+   (9.2x) and 10/10 verdicts matched the full wave (screening space = pinned cert
+   config, so the comparison is config-honest per R9).
    Always 2 configs for finalists, report robustly-removed set (R9); fold the
    whole tournament into ablator search.
 7. DEPLOYMENT: each delta is rank-1 = exact rank-1 LoRA (tiny, quant-safe,
