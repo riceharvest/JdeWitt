@@ -323,9 +323,18 @@ Optimization lanes (2026-11-17 brainstorm, unprioritized inventory):
    regularization in the fit; produce a measured removal% vs dperp Pareto front.
 5. BOUNDARY: harm-vs-prevention pair captures to move the decision without
    flattening prevention answers - the only plausible route mc47 36->40.
-6. VERIFICATION ECONOMICS: opener prescreen (max_tokens~96, stop on refusal shape;
-   refusal-heavy waves 2-4x cheaper); 10-prompt screening subsets with CIs, full 40
-   only for finalists; always 2 configs, report robustly-removed set (R9); fold the
+6. VERIFICATION ECONOMICS (measured 2026-11-17, packets in scratch): opener
+   prescreen (max_tokens~96) only helps refusal-HEAVY waves - Spark baseline
+   34/40 refused saved ~42% chars; post-edit candidate waves have ~0-30% refusals
+   and save ~0-10%, so prescreen is a BASELINE/CAPTURE optimization only. The
+   levers for candidate screening are: 10-row screening subsets (4x) x short
+   screening decode ~150 tokens (2.5x) - which then make the ~20-35s serve swap
+   dominant; on lineages where served_deltas proves the adapter curve honest
+   (q25-class o/down), screen candidates via --lora swaps (~2s, screening space
+   only, never for cert verdicts per R8); 2-server parallel screening pools if
+   VRAM allows at a smaller screening config (all candidates share it). Net
+   estimate: 20-40 candidates/hour vs the measured 15 with full 40-row waves.
+   Always 2 configs for finalists, report robustly-removed set (R9); fold the
    whole tournament into ablator search.
 7. DEPLOYMENT: each delta is rank-1 = exact rank-1 LoRA (tiny, quant-safe,
    load-merge; verify merged artifact, R8); serve-time hook masks for non-gguf
