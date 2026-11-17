@@ -293,5 +293,18 @@ waves shape-judged by the working agent:
   edit ~5 s, cert wave ~2 min; the search step itself (fit+edit+cert) stays under 5
   minutes. Deployment via gguf merge still to verify per lineage (LFM3 has no local
   llama.cpp support at all — HF-serving-only for now).
+- TOOL-IFIED 2026-11-17 (commits e5cbf5b..11537c6) as `b70_ablator/spanfit.py` +
+  `python -m b70_ablator.spanfit {axes|build} --records R.pt --shape {perlayer|shared}`:
+  per_layer_axes, shared_axis (SAS), gguf merge (build_merged, reuses ggufio
+  edit_tensors + gguf_adapters name resolution) and InPlaceRemoval for HF weights.
+  Reproduction runs at the pinned config: mc47 per-layer artifact rebuilt through
+  spanfit = 36/40, identical prevention-pivot leftovers as the probe artifact
+  (<=1 bf16 ulp byte parity) - the certified oracle-ceiling result is REPRODUCED by
+  the tool. q25 rebuilt per-layer = 28/40, far below its shared-axis SAS 40/40: the
+  axis SHAPE is lineage-dependent (q25's layer mean-contrasts only weakly agree,
+  mean cross-layer cos 0.22; mc47's differ enough that per-layer wins). Per R7 the
+  searcher must fit BOTH shapes and certify each on real checkpoints; "which shape
+  wins" is never decided by prose.
+
 
 
