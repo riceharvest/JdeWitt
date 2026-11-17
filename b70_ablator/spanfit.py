@@ -1,0 +1,239 @@
+"""Answer-span per-layer rank-1 removal: the cross-lineage fit (METHODOLOGY R4/R7).
+
+Label-only procedure (no oracle, no per-model constants):
+  1. capture.py-style hooks record each decoder layer's OUTPUT projection input at
+     the mean of the answer span, for harmful rows (bad) and harmless rows (good);
+  2. M[L] = mean(bad)[L] - mean(good)[L] is that layer's refusal direction;
+  3. for every output-side projection W of layer L (the last matrices that touch the
+     residual stream before it continues -- o_proj/out_proj/down_proj/w2, found from
+     the module tree, not a constant table), subtract W's component along M[L]:
+         delta = -(a^T (a W)),  a = M[L]/||M[L]||.
+The same math runs on a merged gguf (deployment artifact, R8) or in-memory on HF
+weights (serve space == edit space, for lineages with no local llama.cpp support).
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import time
+
+import numpy as np
+import torch
+
+
+# ---------- fit ----------
+
+def _label(meta) -> str | None:
+    if isinstance(meta, str):
+        return meta
+    if isinstance(meta, dict):
+        return meta.get("label")
+    return None
+
+
+def group_means(records: list[tuple], label: str) -> torch.Tensor:
+    """Stack per-layer contrast vectors [N,L,W] for rows whose meta label == label."""
+    arrs = []
+    for meta, rec in records:
+        if _label(meta) != label:
+            continue
+        if torch.is_tensor(rec):
+            arrs.append(rec.double())
+        elif isinstance(rec, dict):
+            arrs.append(torch.stack([torch.as_tensor(np.asarray(rec[k])).double()
+                                     for k in sorted(rec, key=int)]))
+    if not arrs:
+        raise SystemExit(f"no records with label={label!r} in {len(records)} records")
+    return torch.stack(arrs)
+
+
+def per_layer_axes(records: list[tuple], label_bad: str = "bad",
+                    label_good: str = "good") -> torch.Tensor:
+    """Normalized per-layer refusal axis M[L,W] from (meta, rec) pairs."""
+    bad = group_means(records, label_bad)
+    good = group_means(records, label_good)
+    M = (bad.mean(0) - good.mean(0))
+    M = M / M.norm(dim=1, keepdim=True).clamp_min(1e-12)
+    return M.float()
+
+
+def load_records(path: str) -> list[tuple]:
+    st = torch.load(path, map_location="cpu", weights_only=False)
+    return st["records"] if isinstance(st, dict) and "records" in st else st
+
+
+# ---------- edit ----------
+
+def removal_delta(weight: torch.Tensor, axis: torch.Tensor,
+                  strength: float = 1.0) -> torch.Tensor:
+    """-(a (a^T W)); axis acts on dim 0 of W ([out, in]), i.e. the layer's
+    residual-write side. Caller supplies matching layouts (torch params or
+    ggufio logical [out, in] dequantized arrays)."""
+    a = axis.reshape(-1, 1).to(weight.dtype)
+    return -(strength * (a @ (a.T @ weight)))
+
+
+def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
+                 source_keys: list[str], *, name_map=None) -> dict:
+    """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
+
+    source_keys are HF-style names ('model.layers.<L>.<suffix>'); each must resolve
+    to a gguf tensor whose input dim matches axes.shape[1]. Layout follows the
+    ggufio convention: file order = reversed logical dims, i.e. ggml [in,out].
+    """
+    from .gguf_adapters import gguf_weight_shapes, resolve_gguf_names
+    from .ggufio import dequantize_tensor, edit_tensors
+
+    t0 = time.monotonic()
+    shapes = gguf_weight_shapes(gguf_in)
+    names = resolve_gguf_names(source_keys, shapes) if name_map is None else name_map
+    reader = None
+    try:
+        from gguf import GGUFReader  # provided by dspark gguf-py on sys.path
+        reader = GGUFReader(gguf_in)
+    except Exception:
+        pass
+    if not names:
+        raise SystemExit("no target tensors resolved from source keys")
+
+    deltas = {}
+    skipped = []
+    for key, base in names.items():
+        layer = int([p for p in key.split(".") if p.isdigit()][0])
+        w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
+        axis = axes[layer]
+        if w.shape[0] != axis.shape[0]:
+            skipped.append(base)
+            continue
+        deltas[base] = -(axis.reshape(-1, 1).numpy() @
+                         (axis.reshape(1, -1).numpy() @ w)).astype(np.float32)
+    report = edit_tensors(gguf_in, gguf_out, deltas)
+    report["skipped"] = skipped
+    report["elapsed_s"] = round(time.monotonic() - t0, 1)
+    return report
+
+
+def target_source_keys(n_layers: int, out_key_suffixes: tuple[str, ...]) -> list[str]:
+    """HF source keys for every output-side projection found under decoder layers."""
+    keys = []
+    for L in range(n_layers):
+        for suf in out_key_suffixes:
+            keys.append(f"model.layers.{L}.{suf}")
+    return keys
+
+
+def discover_out_keys(model: torch.nn.Module, layer_path: str = "") -> list[str]:
+    """Structural discovery of output-side projections: the final matrix on each
+    branch that writes back into the residual stream. Name vocabulary, not a table:
+    matches *o_proj / *out_proj / *w2 / *down_proj under decoder layers."""
+    base = model
+    if layer_path:
+        for hop in layer_path.split("."):
+            base = getattr(base, hop)
+    found = {}
+    for L, block in enumerate(base):
+        for pname, _ in block.named_parameters():
+            tail = pname.split(".")[-1]
+            stem = pname[: -len(tail)]
+            if tail.endswith("_weight"):
+                stem = stem[:-len("_weight")]
+            if (stem.endswith("o_proj") or stem.endswith("out_proj")
+                    or stem.endswith("down_proj") or stem in ("w2", "fc2")):
+                found[L] = sorted(found.get(L, []) + [pname])
+    suffixes = sorted({p for names in found.values() for p in names})
+    return suffixes
+
+
+# ---------- in-memory apply (non-gguf lineages) ----------
+
+class InPlaceRemoval:
+    """Apply/revert per-layer rank-1 removals directly on live HF weights."""
+
+    def __init__(self, model: torch.nn.Module, axes: torch.Tensor,
+                 key_format: str = "model.layers.{L}.{suffix}"):
+        self.model, self.axes, self.key_format = model, axes, key_format
+        self.saved: dict[str, torch.Tensor] = {}
+
+    def _targets(self):
+        out = []
+        for L in range(self.axes.shape[0]):
+            for suffix in self.suffixes:
+                key = self.key_format.format(L=L, suffix=suffix)
+                try:
+                    p = self.model.get_parameter(key)
+                except AttributeError:
+                    continue
+                out.append((key, p, L, suffix))
+        return out
+
+    @property
+    def suffixes(self):  # filled by caller/CLI from discovery or args
+        return self._suffixes
+
+    def apply(self, suffixes: list[str]):
+        self._suffixes = suffixes
+        for key, p, L, _ in self._targets():
+            w = p.detach().float()
+            axis = self.axes[L]
+            if w.shape[0] != axis.shape[0]:  # axis lives on the out dim
+                continue
+            self.saved.setdefault(key, p.detach().to("cpu").clone())
+            delta = axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ w)
+            with torch.no_grad():
+                p.copy_((w - delta).to(p.dtype))
+        return len(self.saved)
+
+    def revert(self):
+        for key, saved in self.saved.items():
+            p = self.model.get_parameter(key)
+            with torch.no_grad():
+                p.copy_(saved.to(p.device))
+        self.saved.clear()
+
+
+# ---------- CLI ----------
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="b70_ablator.spanfit")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+
+    a = sub.add_parser("build", help="fit axes from records, write merged gguf")
+    a.add_argument("--records", required=True)
+    a.add_argument("--gguf-in", required=True)
+    a.add_argument("--out", required=True)
+    a.add_argument("--source-key", action="append", required=True,
+                   help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
+    a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
+    m = sub.add_parser("axes", help="fit axes and save the [L,W] tensor")
+    m.add_argument("--records", required=True)
+    m.add_argument("--out", required=True)
+    m.add_argument("--cos-to", help="report max cosine distance vs another axes tensor")
+    args = ap.parse_args(argv)
+
+    t0 = time.monotonic()
+    axes = per_layer_axes(load_records(args.records))
+    if args.cmd == "axes":
+        torch.save({"axes": axes}, args.out)
+        rep = {"axes": list(axes.shape), "elapsed_s": round(time.monotonic() - t0, 1)}
+        if args.cos_to:
+            other = torch.load(args.cos_to, map_location="cpu")["axes"]
+            cos = torch.nn.functional.cosine_similarity(axes, other, dim=1)
+            rep["min_cos_vs"] = float(cos.min())
+            rep["mean_cos_vs"] = float(cos.mean())
+        print(json.dumps(rep))
+        return
+
+    keys = []
+    for k in args.source_key:
+        if "*" in k:
+            keys += [k.replace("*", str(L)) for L in range(args.layers)]
+        else:
+            keys.append(k)
+    rep = build_merged(args.gguf_in, args.out, axes, keys)
+    rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
+    print(json.dumps(rep))
+
+
+if __name__ == "__main__":
+    main()
