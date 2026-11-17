@@ -62,3 +62,14 @@ stable-but-topic-bound directions are rejected even if they make the word list q
 ## R6 — Probes stay probes
 Short decodes, word screenings and candidate probes prune; full gates (shape certification,
 capability retention, stability audit) certify. A pruned trial never becomes a finding.
+
+## R7 — The tool is model-agnostic; the edit is per-model
+The tool ships no model-specific constants, hard-coded directions, or per-model recipes, and
+never certifies one model's result as transferable. New models are released continuously, so
+the pipeline's contract is: given *any* base model that refuses, discover within the
+inference budget the optimal edit set for *that* model — its target tensors, fit locus,
+span, rank and scale are search variables found at run time, including whether the
+embedding/logit space is part of the edit at all. What one model's oracle teaches (which
+tensors carry the refusal shape, what the edit must span) becomes a hypothesis to test on
+the next model, never a constant baked into the tool. A method that only works because it
+was tuned for one model fails R7.
