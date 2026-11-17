@@ -145,9 +145,13 @@ explicit unresolved limit in the README.
   refusal-margin already exist — extend to candidate ranking),
   judge-size sweeps per model family to answer the open cost question,
   offline ensemble aggregation over saved verdict files (pure CODE).
-- Partial-answer early stopping: kill trials after a stratified answer
-  subset if they cannot reach the gate; reuse the durable answer cache so
-  no generation is wasted.
+- Partial-answer early stopping: kill trials after a stratified answer subset
+  if they cannot reach the gate; reuse the durable answer cache so no
+  generation is wasted.
+  Landed (CODE): `search_stages` run field — deterministic family-stratified
+  short-decode probe of harmful rows plus a successive-halving keep line,
+  before full-budget evaluation (`docs/fast-search.md`). Trial token-level
+  early stop inside stage 3 stays open; probe-vs-finalist correlation is GATED.
 - Significance without ceremony: one stats module (Wilson intervals,
   family-level bootstrap, paired permutation test). Spot-checked against
   scipy once.

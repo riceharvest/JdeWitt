@@ -156,8 +156,8 @@ class PhasedHF:
     def prompt_tokens(self,prompt):
         return self.phases.target().prompt_tokens(prompt)
 
-    def generate_batch(self,prompts,min_tokens=None):
-        responses=self.phases.target().generate_batch(prompts,min_tokens=min_tokens)
+    def generate_batch(self,prompts,min_tokens=None,max_tokens=None):
+        responses=self.phases.target().generate_batch(prompts,min_tokens=min_tokens,max_tokens=max_tokens)
         for response in responses:
             if isinstance(response.get('sequence'),torch.Tensor):
                 response['sequence']=response['sequence'].detach().cpu()

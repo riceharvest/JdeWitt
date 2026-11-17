@@ -31,6 +31,7 @@ from .storage import save_checkpoint, load_checkpoint
 from .phases import ModelPhases, PhasedHF, PhasedJudge
 from .refusal_check import RefusalChecker
 from .screening import validate_screening,margin_differential
+from .stages import validate_search_stages,stratified_sample,stage1_score,stage1_pruned
 from .errors import SearchRejected,UnsupportedMethod,HoldoutRejected
 
 
@@ -358,6 +359,16 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                 screen_baseline = {'bad':backend.answer_start_margins(bad_prompts,screening['refusal_tokens'],screening['reference_tokens']),
                                    'harmless':backend.answer_start_margins(harmless_prompts,screening['refusal_tokens'],screening['reference_tokens'])}
                 save_checkpoint(output/'screen-baselines.pt',screen_baseline,screen_identity,{})
+        stages = validate_search_stages(getattr(config,'search_stages',None), config.max_tokens)
+        stage_rows = stage_prompts = stage_checker = None
+        if stages is not None:
+            stage_rows = stratified_sample([t for t in selection if t['kind']=='refusal'], stages['probe_fraction'])
+            if not stage_rows:
+                raise ValueError('search_stages needs refusal rows in the selection suite')
+            stage_prompts = [t['prompt'] for t in stage_rows]
+            stage_checker = RefusalChecker()
+            atomic_json(output/'search-stages.json',{'stages':stages,'probe_rows':[t['id'] for t in stage_rows],
+                'note':'Stage-1 probe answers are heuristic wording verdicts on truncated short decodes; they never enter the answer store, the gates or any release report.'})
         if config.warm_starts:
             warm=json.loads(Path(config.warm_starts).read_text())
             for params in compatible_warm_starts(warm,fingerprint):
@@ -396,6 +407,37 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                                                      'statistic':statistic,'threshold':screening['min_margin_drop']})
                     if not passed:
                         raise optuna.TrialPruned('Screened out: refusal-margin change below threshold; no answers were generated')
+                if stages is not None:
+                    # Short-decode stage 1: generate probe_tokens on a stratified
+                    # harmful slice, word-level refusal verdicts only. Heuristic
+                    # prefilter, never a certification; probe answers never enter
+                    # the answer store. Trials that reach stage 2 pay for their
+                    # own full-budget generation, so total spend falls with the
+                    # keep line, not with luck.
+                    from .events import emit
+                    stored = trial.user_attrs.get('stage1')
+                    if stored is None:
+                        responses = backend.generate_batch(stage_prompts, max_tokens=stages['probe_tokens'])
+                        refused = 0
+                        rows_report = []
+                        for task, response in zip(stage_rows, responses):
+                            answer = extract_answer(response['content'], response['finish_reason'], response['thinking_open'], response.get('final_marker'))
+                            verdict = stage_checker.classify(task['prompt'], answer.text, task['language']).verdict
+                            if verdict in {'refusal', 'partial'}:
+                                refused += 1
+                            rows_report.append({'id': task['id'], 'verdict': verdict, 'finish_reason': response['finish_reason']})
+                        stored = {'score': stage1_score(refused, len(stage_rows)), 'refused': refused,
+                                  'rows': len(stage_rows), 'probe_tokens': stages['probe_tokens']}
+                        atomic_json(output / f'trial-{trial.number}' / 'stage1.json', dict(stored, rows=rows_report))
+                        trial.set_user_attr('stage1', stored)
+                        emit(output / 'events.jsonl', 'trial-stage1', number=trial.number,
+                             score=stored['score'], rows=stored['rows'], probe_tokens=stages['probe_tokens'])
+                    # Keep line over trials that actually paid for stage 2.
+                    prior = [t.user_attrs['stage1']['score'] for t in study.trials
+                             if t.user_attrs.get('stage1') is not None
+                             and (t.user_attrs.get('report') is not None or t.state == optuna.trial.TrialState.COMPLETE)]
+                    if stage1_pruned(stored['score'], prior, stages['keep_top']):
+                        raise optuna.TrialPruned('Stage-1 probe refusal rate worse than the keep line; no full-budget answers were generated')
                 incumbent=min([v for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible') and (v:=t.values[0] if config.objectives else t.value) is not None],default=None)
                 report=eval_cached(selection,backend,judge,output/f'trial-{trial.number}',config.sandbox_image,
                                    {**generation_identity,'edit_identity':edit_identity,'edit_parameters':params},phases,scoring_identity,incumbent,

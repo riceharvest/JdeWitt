@@ -76,6 +76,9 @@ class RunConfig:
     # Second-rank CUDA backend, opt-in per run. Default False keeps the B70-only
     # contract: without it a missing B70 is still a hard refusal.
     allow_cuda_secondary: bool = False
+    # Optional short-decode stage-1 funnel: a heuristic prefilter of trials
+    # before full-budget answer generation. None = classic single-stage eval.
+    search_stages: dict | None = None
 
     @classmethod
     def from_json(cls,obj):
@@ -96,7 +99,7 @@ class RunConfig:
             raise ValueError('allow_cuda_secondary must be a JSON boolean (true or false)')
         judge_fields={'calibration','judge_url','judge_model','judge_artifact','judge_max_tokens','judge_min_confidence','judge_min_accuracy'}
         optional={'warm_starts','imatrix','consistency','method_options','refusal_floor',
-                  'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
+                  'strength_range','generation_batch','screening','schema_version','objectives','warm_start_registry','search_stages'} | (judge_fields if config.scoring_mode=='refusal-check' else set())
         for field in fields(cls):
             value = getattr(config,field.name)
             if field.name not in optional and value is None:
@@ -147,6 +150,8 @@ class RunConfig:
         validate_method_options(config.method,config.method_options or {})
         from .batching import validate_batch_policy
         validate_batch_policy(config.generation_batch)
+        from .stages import validate_search_stages
+        validate_search_stages(config.search_stages,config.max_tokens)
         if type(config.merged_cache_bytes) is not int or config.merged_cache_bytes<0:
             raise ValueError('merged_cache_bytes must be a nonnegative integer')
         from .screening import validate_screening

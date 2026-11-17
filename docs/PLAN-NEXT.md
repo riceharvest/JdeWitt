@@ -340,3 +340,32 @@ written into the item and stays GATED.
 - First valid second-rank baseline on record: `runs/minicpm-3060-public-fit/baseline-hf` (244 rows)
   refusal_rate 0.867, capability_pass_rate 0.833, harmless over-refusals 1/118, invalid 0, and
   `provenance.json` carries `compute_backend.rank=secondary` with the disclosure note as designed.
+
+## Short-decode stage-1 trial funnel (landed this run)
+- `hf.py` `generate`/`generate_batch` accept an optional `max_tokens` that must be
+  a positive integer `<=` the backend budget (and `>=` any `min_tokens` floor);
+  `PhasedHF` forwards it and keeps the GPU-tensor->CPU detach.
+- New pure module `stages.py` (no torch): exact-key validation of the
+  `search_stages` run object; deterministic family-stratified sampling with no
+  RNG to serialize; `stage1_pruned` successive-halving keep line (at least
+  `max(2, ceil(1/keep_top))` stage-3 priors, strict-worse pruning, ties always
+  survive). Hand spot-checks: 7-row family at 0.5 picks `{a0,a2,a4,a5}`, 3-row
+  family `{b0,b2}`; `keep_top=0.5` with priors `[0.2,0.1]` prunes `0.20`, passes
+  the tie `0.10`; `keep_top=0.25` stays dormant until 4 priors exist.
+- `RunConfig.search_stages` is optional and validated in `from_json`
+  (`--set search_stages={...}` works); `search_stages: null` keeps the classic
+  single-stage objective unchanged. `describe-run` reports stage-1 probe-row
+  counts, generation and token bounds as upper bounds, and shows the field in
+  `policy`.
+- Pipeline objective inserts stage 1 after the margin screen and before any
+  full-budget generation: short-decode the stratified harmful slice at
+  `probe_tokens`, word-level `RefusalChecker` verdicts only, per-trial
+  `trial-N/stage1.json` plus a `trial-stage1` event; the keep line is computed
+  only over trials that actually reached stage 3 (`report` user attr or
+  COMPLETE). Resume reuses the stored probe score without re-decoding. Probe
+  answers never enter the answer store, the gates or release reports; the run
+  directory carries `search-stages.json` saying so.
+- Verified: ruff green, `validate-run`/`describe-run` on
+  `examples/minicpm-v47/run.json` (with and without the field). No model was
+  loaded. Stage-1 throughput, pruning hit rate and probe-vs-finalist
+  correlation are GATED like every other speed claim.

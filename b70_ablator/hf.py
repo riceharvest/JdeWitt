@@ -242,13 +242,18 @@ class HFModel:
         return inputs['input_ids'].shape[1]
 
     @torch.inference_mode()
-    def generate(self, prompt, min_tokens=None):
-        return self.generate_batch([prompt],min_tokens=min_tokens)[0]
+    def generate(self, prompt, min_tokens=None, max_tokens=None):
+        return self.generate_batch([prompt],min_tokens=min_tokens,max_tokens=max_tokens)[0]
 
     @torch.inference_mode()
-    def generate_batch(self, prompts, min_tokens=None):
+    def generate_batch(self, prompts, min_tokens=None, max_tokens=None):
         if not prompts:
             raise ValueError('A generation batch cannot be empty')
+        budget = self.max_tokens if max_tokens is None else max_tokens
+        if type(budget) is not int or not 0 < budget <= self.max_tokens:
+            raise ValueError('max_tokens must be a positive integer within the backend output budget')
+        if min_tokens is not None and min_tokens > budget:
+            raise ValueError('min_tokens must not exceed the requested output budget')
         # Validate every rendered row before transferring even the first row.
         prepared=[]
         for prompt in prompts:
@@ -272,7 +277,7 @@ class HFModel:
             # min_tokens, so a delayed refusal still appears inside the window.
             kwargs['min_new_tokens'] = min_tokens
             floor_enforced = True
-        sequence = self.model.generate(**padded, max_new_tokens=self.max_tokens, do_sample=False, pad_token_id=pad, **kwargs)
+        sequence = self.model.generate(**padded, max_new_tokens=budget, do_sample=False, pad_token_id=pad, **kwargs)
         if sequence.shape[0]!=len(prepared):
             raise ValueError('Model returned the wrong batch cardinality')
         eos = self.model.generation_config.eos_token_id
