@@ -274,3 +274,24 @@ data, R8-correct STATIC MERGE path, config pinned per R9:
   The prompt-end-plane-only reading of 52% is superseded: the fit LOCUS (R4) is the
   variable, not just the span rank.
 
+Cross-lineage generalization of the ANSWER-SPAN PER-LAYER r1 fit (2026-11-17). Same
+zero-extra-inference procedure (mean answer-span contrast per layer -> unit direction ->
+output-side removal on that layer's out/down projections), run in-memory on HF bf16
+weights (serve space == edit space; no gguf round trip), cert = harmful-40 + harmless-8
+waves shape-judged by the working agent:
+
+- LFM3-1.7B (LiquidAI, hybrid conv+attn `model.layers`, custom code): refusal openers
+  40/40 removed; ~34-36/40 clearly deliver, a degraded tail (one incoherent CP row,
+  self-harm pivots); harmless 8/8. Oracle ceiling unpublished here; baseline refusals
+  were narration-style ("The user asks... clearly disallowed") and vanished entirely.
+- Spark-X2.6-1.7B (vendor remote-code `spark2_5`, needs compat.repair_export_metadata
+  on a private copy): refusal-loop ("We need answer... Must refuse") gone 40/40, with
+  every row planning to deliver the requested content; harmless 8/8.
+- Capture cost: contrast t-stats peaked 22-24 and cross-layer |cos| 0.35-0.51 — real
+  answer-span signal on both; the same last-token contrast that was weak on mc47.
+- Loop cost per new lineage, cold: baseline gen ~2 min, capture ~3-4 min, fit <1 s,
+  edit ~5 s, cert wave ~2 min; the search step itself (fit+edit+cert) stays under 5
+  minutes. Deployment via gguf merge still to verify per lineage (LFM3 has no local
+  llama.cpp support at all — HF-serving-only for now).
+
+
