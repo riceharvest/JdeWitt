@@ -18,9 +18,11 @@ Conventions pinned by reading this fork's code, not assumed:
   * llama-adapter.cpp requires general.type == 'adapter' and adapter.type == 'lora',
     and names adapter tensors '<base-tensor>.lora_a'/'.lora_b' with '.weight'
     intact (it strips the suffix and looks the remainder up verbatim).
-  * POST /lora-adapters (server-common.cpp parse_lora_request) accepts only
-    {"id":N,"scale":S} entries for adapters the server knows; new files are
-    picked up from a dynamic --lora-path directory, not by request path.
+  * Runtime lifecycle, PROVEN live on this fork (2026-11-17): adapters are listed
+    at startup only (--lora comma list, ids in load order); POST /lora-adapters
+    sets {id,scale} in ~1 ms; scale 0 disables; several adapter files touching
+    the SAME tensor apply additively (a+b differs from either alone). There is
+    NO dynamic file loading — new files never reach a running server.
 
 A delta that serves the truth must be derived from the served artifact's own
 weights: A = d @ W and the served W is quantized, so write adapters computed
@@ -86,6 +88,32 @@ def serve_factors(direction, weight, strength):
         a = d @ w
         b = -strength * d.T
     return a, b
+
+def per_direction_adapters(basis, serve_weights, names_by_index, arch, out_dir, rank_cap=None):
+    """One rank-1 adapter file per basis direction: file i = -d_i^T (d_i W_q).
+
+    basis: [R, hidden] float, rows are the orthonormal directions the search
+    mixes; names_by_index maps basis row i (or a subset) to an artifact tensor
+    name; serve_weights maps tensor name -> served weight in torch [out,in].
+    The server preloads all files (--lora comma list, ids in this order); a
+    trial is then one POST /lora-adapters carrying per-direction scales, which
+    is exactly the AblatedLinear strength/selection mix at row_normalization
+    'none'. Returns per-direction file reports.
+    """
+    files = []
+    for i in range(basis.shape[0] if rank_cap is None else min(rank_cap, basis.shape[0])):
+        pairs = []
+        for name in names_by_index.get(i, []):
+            w = serve_weights[name]
+            a, b = serve_factors(basis[i:i + 1], w, strength=1.0)  # rank-1 slice [1, out]
+            pairs.append((name, a, b))
+        if not pairs:
+            continue
+        path = Path(out_dir) / f'dir{i:03d}.gguf'
+        path.parent.mkdir(parents=True, exist_ok=True)
+        report = write_adapter(path, pairs, arch)
+        files.append({'direction': i, 'tensors': len(pairs), **report})
+    return files
 
 def write_adapter(path, pairs, arch):
     """pairs: iterable of (gguf_base_name, A_torch[rank,in], B_torch[out,rank]).

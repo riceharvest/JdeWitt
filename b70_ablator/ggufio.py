@@ -111,6 +111,27 @@ def edit_tensors(path, out_path, deltas):
            'tensors': reports, 'all_other_bytes_verbatim': True}
 
 
+def dequantize_tensor(path, name, tile_blocks=1 << 22):
+    """Dequantize one tensor to float32, gguf dimension order, bounded RAM."""
+    from gguf import GGUFReader
+    path = Path(path)
+    reader = GGUFReader(str(path))
+    tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+    out = np.empty(n, dtype=np.float32)
+    with open(path, 'rb') as f:
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.MAP_SHARED)
+        try:
+            nb = n // els
+            for start in range(0, nb, tile_blocks):
+                tile = min(tile_blocks, nb - start)
+                byte0, byte1 = start * bs, (start + tile) * bs
+                raw = np.frombuffer(bytes(mm[offset + byte0:offset + byte1]), dtype=np.uint8)
+                out[start * els:(start + tile) * els] = dequantize(raw, tile * els).reshape(-1)
+        finally:
+            mm.close()
+    return out.reshape(shape)
+
+
 # --- GGUF v3 metadata editing -------------------------------------------------
 # Header layout: magic GGUF, u32 version, u64 n_tensors, u64 n_kv, then n_kv
 # (key, type, value) entries, then n_tensors tensor-info records, padding to
