@@ -1660,7 +1660,25 @@ def quants_audit(path, blocks_per_dtype=4096):
     reader = GGUFReader(str(path))
     reports = {}
     decode_only = {}
+    port_only = {}
     unsupported = {}
+    port_cache = {}
+
+    def port_supported(t_enum):
+        if t_enum in port_cache:
+            return port_cache[t_enum]
+        ok = False
+        try:
+            from gguf import quants as gq_port
+            from gguf.constants import GGML_QUANT_SIZES
+            _els, bs = GGML_QUANT_SIZES[t_enum]
+            gq_port.dequantize(np.zeros(bs, dtype=np.uint8).reshape(1, bs), t_enum)
+            ok = True
+        except Exception:
+            ok = False
+        port_cache[t_enum] = ok
+        return ok
+
     with open(path, 'rb') as f:
         for tensor in reader.tensors:
             dtype = tensor.tensor_type.name
@@ -1671,7 +1689,12 @@ def quants_audit(path, blocks_per_dtype=4096):
                 decode_only[dtype]['bytes'] += n_bytes
                 continue
             if dtype not in CODECS:
-                unsupported[dtype] = unsupported.get(dtype, 0) + 1
+                if port_supported(tensor.tensor_type):
+                    port_only[dtype] = port_only.get(dtype, {'tensors': 0, 'bytes': 0})
+                    port_only[dtype]['tensors'] += 1
+                    port_only[dtype]['bytes'] += n_bytes
+                else:
+                    unsupported[dtype] = unsupported.get(dtype, 0) + 1
                 continue
             block_bytes, block_elements, quantize, dequantize = CODECS[dtype]
             nb = n_bytes // block_bytes
@@ -1713,5 +1736,7 @@ def quants_audit(path, blocks_per_dtype=4096):
             'per_dtype': {dtype: finish(rep) for dtype, rep in sorted(reports.items())},
             'decode_only_dtypes': {dtype: dict(rep, note='dequant verified elsewhere; no reference quantizer ported, requant not auditable')
                                    for dtype, rep in sorted(decode_only.items())},
+            'port_decode_only_dtypes': {dtype: dict(rep, note='dequantizable only via the pinned gguf.quants port (not ours); no quantizer in reach, requant not auditable')
+                                        for dtype, rep in sorted(port_only.items())},
             'unsupported_dtypes': dict(sorted(unsupported.items())),
             'note': 'Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec; byte identity expected except at rounding-tie edges.'}

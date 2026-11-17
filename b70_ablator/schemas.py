@@ -149,9 +149,10 @@ SCHEMAS = {
         'description': 'quants-audit output contract.',
         'type': 'object',
         'required': ['file', 'dtypes_audited', 'per_dtype', 'decode_only_dtypes',
-                     'unsupported_dtypes', 'note'],
+                     'port_decode_only_dtypes', 'unsupported_dtypes', 'note'],
         'properties': {'file': {'type': 'string'}, 'dtypes_audited': {'type': 'array'},
                        'per_dtype': {'type': 'object'}, 'decode_only_dtypes': {'type': 'object'},
+                       'port_decode_only_dtypes': {'type': 'object'},
                        'unsupported_dtypes': {'type': 'object'}, 'note': {'type': 'string'}}},
     'verdict-audit.command.json': {
         'description': 'verdict-audit output contract.',
