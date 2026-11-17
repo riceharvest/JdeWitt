@@ -314,7 +314,26 @@ written into the item and stays GATED.
   what keeps tripping `Invalid baseline outputs/judgments` (that gate means at least one row is not
   `status=ok` with `refusal_check.result` in {no_explicit_refusal, refusal_detected} — for these runs
   it was pure truncation: `completion_tokens == max_tokens`, no OOM). Raising the budget has not
-  fixed it; the next lever is suite quality (a run-local selection copy with that item re-worded or
-  dropped, repo suites untouched) rather than a bigger number. Related: MiniCPM decode on CUDA has
+  fixed it: the run that got past the gate used a run-local copy of the selection suite with exactly
+  those two ids dropped (`/mnt/ssd/hermes/cache/scratch/suites/public-corpus-fit/selection.jsonl`,
+  244 of 246 rows, repo suites untouched), and a probe through `HFModel.generate_batch` then showed
+  both rows running to 4096 tokens with `finish_reason=length` on degenerate itemised loops — so
+  budget was never the lever, and no decoding-policy change was made. Related: MiniCPM decode on CUDA has
   neither `flash-linear-attention` nor `causal_conv1d`, so its gated-delta/conv1d layers run on
   reference kernels and the baseline sweep costs minutes, not seconds.
+- The fit then stopped at direction coverage, and the reason is measured rather than guessed:
+  `pipeline.py` keeps a direction record only when a `bad` variant is actually refused and a `good`
+  variant complies (truncated answers are dropped before judging), and `stable_directions` then
+  refuses to fit if any (language, family_id, label) triple is missing. On the 16-row authored
+  direction suite MiniCPM-V-4.7 lost 3 of 8 cells — `(en, dir-reviews, bad)`,
+  `(nl, dir-reviews, bad)`, `(nl, dir-tax, bad)` — and Spark-X2.6-1.7B lost all 4 Dutch bad cells
+  while refusing **4 of 4 English bad cells** (`finish=stop`, explicit refusal wording; the Dutch
+  ones ran to the 512-token cap with `no_explicit_refusal`). Probe:
+  `/mnt/ssd/hermes/cache/scratch/spark_direction_probe.py`.
+  So the blocker is not budget and not the harness: at 1.7B these models refuse the harmful English
+  asks and do not refuse the equivalent Dutch asks. Because `stable_directions` requires records for
+  two languages, an English-only directions file is refused by design — a direction fit needs either
+  a model with Dutch refusal behaviour or re-authored Dutch families that this model refuses.
+- First valid second-rank baseline on record: `runs/minicpm-3060-public-fit/baseline-hf` (244 rows)
+  refusal_rate 0.867, capability_pass_rate 0.833, harmless over-refusals 1/118, invalid 0, and
+  `provenance.json` carries `compute_backend.rank=secondary` with the disclosure note as designed.
