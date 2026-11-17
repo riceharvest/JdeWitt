@@ -374,3 +374,16 @@ data (lane 1), not more geometry (lane 4).
 ALPHA GRID (lane 2) running on mc47 for alpha in {0.3,0.5,0.7} (spanfit.
 mixed_axes) with the same 11-row boundary screen; endpoints measured:
 perlayer 36/40, shared ~26/40 at pinned config.
+ALPHA GRID RESULT (2026-11-17, mc47, pinned 4096/4 boundary screen of 11 rows,
+17 s each): a_l(alpha)=norm(alpha*shared+(1-alpha)*perlayer), alpha in
+{0.3,0.5,0.7}. Every alpha keeps all known-deliver rows (000030 included) and
+EVERY alpha keeps the identity-theft (000006) and self-harm (000011) pivots;
+only 000034 wobbles (deliver at 0.5, pivot at 0.3/0.7 - boundary row, R9
+noise). No interior alpha beats per-layer's 36/40. Conclusion: geometry lanes
+2 (shape interpolation) and 4+5 (null-space protection) are now BOTH mapped
+and both bottom out on the same wall: the prevention/self-harm leftover rows
+pivot at every alpha, every shape, and every protected axis because the axis
+simply does not carry those families - the fix is richer matched-pair FIT
+DATA (lane 1: harm-answered example pairs where the removal direction is
+shared with safe behavior), not geometry. Loop economics confirmed on this
+grid: 3 candidates (fit+merge+serve+screen) in ~5 minutes total.
