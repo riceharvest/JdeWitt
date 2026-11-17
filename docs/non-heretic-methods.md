@@ -306,5 +306,34 @@ waves shape-judged by the working agent:
   searcher must fit BOTH shapes and certify each on real checkpoints; "which shape
   wins" is never decided by prose.
 
+Optimization lanes (2026-11-17 brainstorm, unprioritized inventory):
+1. DATA: more prompts (tighter axes = less leak + smaller necessary edit); better
+   controls matter more than count - matched harm-vs-prevention pairs (same topic
+   asked safely) isolate the refusal BOUNDARY, which is exactly where mc47's 4
+   leftover prevention-pivot families live; answer-span-weighted/longer teachers;
+   multilingual; held-out families as the only honest "complete removal" measure.
+2. GEOMETRY: rank-k per layer; iterative remove-recapture-remove (kills leftovers);
+   whitened (Mahalanobis) contrast; MIXED SHAPE a*shared + (1-a)*perlayer with a
+   searched on a screening subset - q25 is a=1, mc47 a=0, most models are interior.
+3. LOCUS/STRENGTH: per-tensor/per-layer strengths; layer subsets; embed+head
+   diffuse targets (oracle edits them, we never tested; leftover families may live
+   there).
+4. PRESERVATION (capability-loss objective): null-space protection - project the
+   delta orthogonal to benign-anchor activations (closed-form for rank-1); KL/perp
+   regularization in the fit; produce a measured removal% vs dperp Pareto front.
+5. BOUNDARY: harm-vs-prevention pair captures to move the decision without
+   flattening prevention answers - the only plausible route mc47 36->40.
+6. VERIFICATION ECONOMICS: opener prescreen (max_tokens~96, stop on refusal shape;
+   refusal-heavy waves 2-4x cheaper); 10-prompt screening subsets with CIs, full 40
+   only for finalists; always 2 configs, report robustly-removed set (R9); fold the
+   whole tournament into ablator search.
+7. DEPLOYMENT: each delta is rank-1 = exact rank-1 LoRA (tiny, quant-safe,
+   load-merge; verify merged artifact, R8); serve-time hook masks for non-gguf
+   lineages (LFM3).
+NEXT-BEST EXPERIMENT (if forced to pick one): lane 4+5 combined - null-space-
+protected fit trained on harmful-vs-prevention pairs, certified on held-out
+families; it raises ceiling and lowers loss with the same GPU spend.
+
+
 
 
