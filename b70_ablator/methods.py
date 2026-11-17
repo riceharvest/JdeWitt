@@ -19,7 +19,7 @@ SOURCES = {
     'rdo': ['https://arxiv.org/abs/2502.17420'],
     'router-prebias': ['https://github.com/p-e-w/heretic/issues/322'],
     'sae': ['https://github.com/elder-plinius/OBLITERATUS'],
-    'nullspace': ['https://arxiv.org/abs/2301.12627'],
+    'nullspace': ['https://arxiv.org/abs/2506.07022'],
 }
 DIRECTION_METHODS = {'directional','projected','mpoa','svd','whitened-svd','som','leace','nullspace'}
 # Methods whose operator is a plain per-layer projection, so a per-layer

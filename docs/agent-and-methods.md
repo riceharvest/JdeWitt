@@ -27,7 +27,7 @@ Validation is not execution: tokenized context budgets, GPU memory, kernels, con
 
 ## Implemented search methods
 
-Each of these is reachable through the `method` field of `b70-ablator run CONFIG`, direction fitting, the resident editor, streaming safetensors export, and existing release gates. The seven direction methods and dense ARA optimizer have small actual-B70 operator tests. These tests do not establish refusal-removal quality on a real pretrained checkpoint.
+Each of these is reachable through the `method` field of `b70-ablator run CONFIG`, direction fitting, the resident editor, streaming safetensors export, and existing release gates. The seven direction methods and dense ARA optimizer have small actual-B70 operator tests. These tests do not establish refusal-removal quality on a real pretrained checkpoint. For pros/cons and cross-model evidence of the methods upstream Heretic does not ship, see `docs/non-heretic-methods.md`.
 
 | Method | Operator | Required method_options |
 | --- | --- | --- |
