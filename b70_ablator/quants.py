@@ -328,7 +328,8 @@ def quantize_q4_0(x):
     maxv = blocks[np.arange(nb), idx]
     d = maxv / -8
     idv = np.where(d != 0, 1 / np.where(d, d, 1), 0.0)
-    q = np.clip(_rint(blocks * idv[:, None]) + 8, 0, 15).astype(np.uint64)
+    # C: MIN(15, (int8_t)(x0 + 8.5f)) — truncation toward zero, not rounding
+    q = np.clip(np.trunc(blocks * idv[:, None] + np.float32(8.5)), 0, 15).astype(np.uint64)
     qs = q[:, 0:16] | (q[:, 16:32] << 4)
     out = np.empty((nb, 18), dtype=np.uint8)
     out[:, 0:2] = _fp16_bytes(d).reshape(nb, 1).view(np.uint8).reshape(nb, 2)[:, :2]
@@ -354,7 +355,10 @@ def quantize_q8_0(x):
     amax = np.abs(blocks).max(axis=-1)
     d = amax / 127
     idv = np.where(d != 0, 1 / np.where(d, d, 1), 0.0)
-    q = np.clip(_rint(blocks * idv[:, None]), -127, 127).astype(np.int8)
+    x0 = blocks * idv[:, None]
+    # C: roundf — half away from zero (np.rint rounds half to even, a real difference)
+    q = np.where(x0 >= 0, np.trunc(x0 + np.float32(0.5)),
+                 -np.trunc(-x0 + np.float32(0.5))).astype(np.int8)
     out = np.empty((nb, 34), dtype=np.uint8)
     out[:, 0:2] = _fp16_bytes(d).reshape(nb, 1).view(np.uint8).reshape(nb, 2)[:, :2]
     out[:, 2:34] = q.view(np.uint8)

@@ -23,3 +23,12 @@ GROUP_MAX_EPS boundary, negative-dominant, and six real F32 tensors of
 verification/minicpm-v47-Q4_K_M.gguf. These harnesses caught four real port
 bugs (stale running min, missing f16 round-trip on requant scales, int64->
 float64 promotion, C-order left-fold sums) — keep them when touching quants.py.
+
+ref_dq.c: dequant reference for q4_0/q8_0/q4_K/q5_K/q6_K (`./ref_dq q4k < blocks.bin > f32.bin`).
+ref_q.c: q4_0/q8_0 quantizer reference (`./ref_q q4_0 < weights.f32 > blocks.bin`).
+Proven bit-exact (dequant, random packed bytes incl. NaN/inf scale bits and real
+tensor blocks) and byte-exact (quantize, 11 distributions incl. exact-half ties
+and real tensors). These caught two more real semantic bugs: q4_0 needs C's
+truncation toward zero on (x0+8.5), not rounding, and q8_0 needs roundf's
+half-away-from-zero, not round-half-to-even.
+Every quantize/dequantize pair shipped in CODECS now has compiled-C proof.
