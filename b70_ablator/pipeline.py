@@ -275,7 +275,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
         baseline=eval_cached(selection,backend,judge,output/'baseline-hf',config.sandbox_image,generation_identity,
                              phases,scoring_identity,refusal_floor=config.refusal_floor,batch_policy=config.generation_batch)
         if baseline['invalid']:
-            raise ValueError('Invalid baseline outputs/judgments: adjust budgets or judge, not model weights')
+            raise ValueError(f"Invalid baseline outputs/judgments ({_invalid_row_detail(output/'baseline-hf')}): adjust budgets or judge, not model weights")
         direction_file=output/'directions.pt'
         checkpoint_identity=direction_identity(generation_identity,provenance['directions_digest'],config.method,
             config.method_options or {},scoring_identity,config.consistency,config.seed)
@@ -540,6 +540,22 @@ def _dependency_version(name):
         return version(name)
     except PackageNotFoundError:
         return None
+
+
+def _invalid_row_detail(directory):
+    """Name the rows that made a baseline unusable, from the predictions already on disk.
+    The bare gate message forced an operator to open the JSON by hand; the ids and the token
+    count at which a row stopped are exactly what separates 'raise the budget' from 'this model
+    never terminates'. Read-only, and it can never make an invalid baseline pass."""
+    try:
+        rows = [json.loads(line) for line in (Path(directory) / 'predictions.jsonl').read_text().splitlines() if line.strip()]
+    except OSError:
+        return 'details unreadable'
+    bad = [r for r in rows if r.get('status') != 'ok']
+    if not bad:
+        return 'no non-compliant rows recorded'
+    listed = ', '.join(f"{r.get('id')} {r.get('language')} {r.get('status')}@{r.get('completion_tokens')}" for r in bad[:5])
+    return f"{len(bad)} non-compliant rows: {listed}" + ('...' if len(bad) > 5 else '')
 
 
 def read_predictions(directory):
