@@ -199,9 +199,13 @@ are now authored and scorer-proven (300 maths in `verification/capability/capabi
 42 code tasks in `capability-code.jsonl`, answers re-derived and graders shown
 to reject wrong answers), and `suites-compare --kind math` / `--kind code` emits
 before/after rates with Wilson intervals and Cohen's h per kind. What is still
-missing is a measured wave: no before/after retention number exists until a
-certification run scores those rows on the pinned config, and the bake-off table
-must report the capability kind alongside the removal rate.
+first measured wave ran on 2026-11-17 on Qwen2.5-1.5B-Instruct (base vs a
+published ablation vs our certified SAS@1.5, one config, `docs/RETENTION-MEASUREMENTS.md`),
+so the axis is instrumented AND measured on one lineage: our edit gained maths and
+lost format-following, code loss points negative but n=42 cannot separate it from
+noise. The bake-off table still has to report removal rate, capability kind and
+format-following together, and it still has to run on a base where the competitor
+publishes a build (3–4B, pinned below).
 
 The 3–4B dense instruct pick is no longer "none pinned": triaged 2026-11-17
 against `architectures.NAMES` with anonymous Hub probes, config.json read from

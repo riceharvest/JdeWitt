@@ -475,7 +475,13 @@ written into the item and stays GATED.
   ONE split (the certification holdout) for new runs — a selection/holdout split of
   them buys nothing because the fit never reads capability rows, and
   `validate_splits` would refuse the shared `cap-*` family ids anyway.
-- Remaining retention gaps, stated plainly: no before/after retention number exists
-  yet (needs a serve wave), no nl code slice, one code task per family so a per-family
-  code rate is a single sample, and maths difficulty is uncalibrated against any
-  published benchmark.
+- First measured retention wave taken 2026-11-17 on the 3060 (see
+  `docs/RETENTION-MEASUREMENTS.md` and `verification/retention-q25/`). It found two
+  measurement defects worth keeping in mind: a generation cap below the edited
+  model's verbosity scores truncation as capability loss, and the strict grade
+  conflating skill with format compliance (now reported separately by
+  `scripts/capability_format_audit.py`).
+- Remaining retention gaps, stated plainly: one lineage measured (q25 1.5B) and no
+  competitor build on that base, no nl code slice, one code task per family so a
+  per-family code rate is a single sample and the code deltas are under-powered at
+  n=42, and maths difficulty is uncalibrated against any published benchmark.

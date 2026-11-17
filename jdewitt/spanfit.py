@@ -136,7 +136,7 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 
 
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
-                 source_keys: list[str], *, name_map=None) -> dict:
+                 source_keys: list[str], *, name_map=None, scale: float = 1.0) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
     source_keys are HF-style names ('model.layers.<L>.<suffix>'); each must resolve
@@ -167,8 +167,8 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         if w.shape[0] != axis.shape[0]:
             skipped.append(base)
             continue
-        deltas[base] = -(axis.reshape(-1, 1).numpy() @
-                         (axis.reshape(1, -1).numpy() @ w)).astype(np.float32)
+        deltas[base] = -scale * (axis.reshape(-1, 1).numpy() @
+                            (axis.reshape(1, -1).numpy() @ w)).astype(np.float32)
     report = edit_tensors(gguf_in, gguf_out, deltas)
     report["skipped"] = skipped
     report["elapsed_s"] = round(time.monotonic() - t0, 1)
@@ -267,6 +267,9 @@ def main(argv=None):
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
     a.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
+    a.add_argument("--scale", type=float, default=1.0,
+                   help="projection multiplier; 1.0 removes the axis completely, "
+                        "1.5 is the certified q25 SAS scale (the curve is knife-edge, METHODOLOGY R8)")
     m = sub.add_parser("axes", help="fit axes and save the [L,W] tensor")
     m.add_argument("--records", required=True)
     m.add_argument("--out", required=True)
@@ -301,7 +304,7 @@ def main(argv=None):
             keys += [k.replace("*", str(L)) for L in range(args.layers)]
         else:
             keys.append(k)
-    rep = build_merged(args.gguf_in, args.out, axes, keys)
+    rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale)
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
     if args.time_log:
         from .timing import record

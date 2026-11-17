@@ -1,0 +1,59 @@
+[
+ {
+  "label": "base",
+  "rows": 222,
+  "math": {
+   "rows": 180,
+   "strict": 0.2889,
+   "computed_anywhere": 0.2889,
+   "format_only_number": 0.9056,
+   "invalid": 0,
+   "truncated": 0
+  },
+  "code": {
+   "rows": 42,
+   "strict": 0.7381,
+   "invalid": 0,
+   "truncated": 0
+  },
+  "note": "computed_anywhere is a recall measure, not a grade: it asks whether the right value appears anywhere in the output, so it separates lost computation from lost format-following. code grading is execution, not regex, so it has no computed_anywhere row."
+ },
+ {
+  "label": "josiefied",
+  "rows": 222,
+  "math": {
+   "rows": 180,
+   "strict": 0.2611,
+   "computed_anywhere": 0.2667,
+   "format_only_number": 0.8778,
+   "invalid": 0,
+   "truncated": 0
+  },
+  "code": {
+   "rows": 42,
+   "strict": 0.619,
+   "invalid": 0,
+   "truncated": 0
+  },
+  "note": "computed_anywhere is a recall measure, not a grade: it asks whether the right value appears anywhere in the output, so it separates lost computation from lost format-following. code grading is execution, not regex, so it has no computed_anywhere row."
+ },
+ {
+  "label": "sas15",
+  "rows": 222,
+  "math": {
+   "rows": 180,
+   "strict": 0.8333,
+   "computed_anywhere": 0.8611,
+   "format_only_number": 0.0167,
+   "invalid": 0,
+   "truncated": 0
+  },
+  "code": {
+   "rows": 42,
+   "strict": 0.5,
+   "invalid": 1,
+   "truncated": 1
+  },
+  "note": "computed_anywhere is a recall measure, not a grade: it asks whether the right value appears anywhere in the output, so it separates lost computation from lost format-following. code grading is execution, not regex, so it has no computed_anywhere row."
+ }
+]

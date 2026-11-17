@@ -1,0 +1,21 @@
+{
+  "scope": "First measured capability-retention waves. Same suite, same serve config, same greedy decoding, three artifacts of the same base.",
+  "date_utc": "2026-11-17",
+  "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "suite": "verification/capability/capability-run-en.jsonl (180 authored maths + 42 authored code, en)",
+  "decoding": "temperature 0, one prompt per row, max_tokens 1024",
+  "serve_config": "-c 8192 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 (CUDA llama-server from llama.cpp-dspark/build-cuda, 2048 tokens per slot)",
+  "artifacts": {
+    "base": {"file": "q25-1.5b-bf16.gguf", "sha256_prefix_16": "b86f6dcf79a159bf", "edit": "none"},
+    "sas15": {"file": "q25-v4-dir000.gguf", "sha256_prefix_16": "f624ee38614d8bc5",
+              "edit": "shared sign-aligned rank-1 refusal axis on o_proj + mlp.down_proj, served as a llama.cpp adapter on the unmodified base at scale 1.5 (POST /lora-adapters id 0 scale 1.5), verified cross-layer cos 1.000 across all 28 layers on both modules",
+              "certified_removal": "40/40 in-sample + 24/24 held-out refusal families + harmless clean, at the pinned 4096/4 config (v4_signaligned@1.5)"},
+    "josiefied": {"file": "josiefied-bf16.gguf", "sha256_prefix_16": "2615943fdcafc296",
+                  "edit": "published third-party ablation, general.name='Josiefied Qwen2.5 1.5B Instruct Abliterated v1'; scored as a file, its removal tool was never run"}
+  },
+  "scripts": ["scripts/capability_wave.py (generation + shipped deterministic grading)",
+              "scripts/capability_format_audit.py (strict / computed-anywhere / format-following / truncation split)"],
+  "superseded": "Waves at -c 4096 --parallel 4 (1024 tokens per slot) with max_tokens 512 are kept only in scratch. There the edited model truncated 17/222 rows, so its code rate (.429) read worse than the same edit allowed at 1024 tokens (.500). Truncation caused by a generation cap is a measurement artifact, not capability loss; the config-A numbers must not be quoted against the config-B numbers for a loss claim.",
+  "config_dependence": "The same bytes score differently by config: base passed 85/222 at 4096/4 and 83/222 at 8192/4. Every number in this directory belongs to the single serve_config recorded above (METHODOLOGY R9).",
+  "not_committed": "No harmful-suite answers live here; this directory contains only maths and code generations."
+}
