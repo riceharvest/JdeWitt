@@ -260,12 +260,17 @@ data, R8-correct STATIC MERGE path, config pinned per R9:
   bytes. Harmless rows intact in both.
 - The published `Abiray/MiniCPM-V-4.7-1B-abliterated-heretic-GGUF` Q8_0 serves 36/40
   (91%) at the pinned `4096/4` config, and its byte-reproduced static merge matches it.
-  So on this lineage the known-best edit is 91% removal at the pinned config and the
-  contrast-plane fit does NOT match it (52%) — the earlier "matches the oracle ceiling"
-  reading was a config confound and is retracted.
-- Oracle diff: 35 nonzero rank-1 tensors with near-orthogonal per-layer u/v (u-cos ~0.02
+  Oracle diff: 35 nonzero rank-1 tensors with near-orthogonal per-layer u/v (u-cos ~0.02
   ssm_out, ~0.10 attn_output) + diffuse embedding edits (relnorm 0.039) — NOT a shared
   axis. Consistent with SAS being the right structure only when the model routes refusal
-  through one shared output direction (q25); mc47's refusal is per-layer structured and
-  embedding-assisted, which the current fit vocabulary does not express.
+  through one shared output direction (q25); mc47's refusal is per-layer structured.
+- ANSWER-SPAN PER-LAYER rank-1 (tool-fit, label-only): for each layer L, take the top
+  contrast direction of the refusal-vs-compliant ANSWER-SPAN residual means (R4 locus)
+  and remove it from that layer's ssm_out/attn_output/ffn_down (merge in-place,
+  strength 1.0). At the pinned `4096/4` config: 36/40 removed (90%), harmless 8/8.
+  This matches the published oracle's 36/40 under R9 config-matched comparison, from
+  the tool's own contrast data — same CEILING, different leftover rows (tool leaves
+  prevention-pivot families: identity theft, self-harm, credit-card, CP-website).
+  The prompt-end-plane-only reading of 52% is superseded: the fit LOCUS (R4) is the
+  variable, not just the span rank.
 
