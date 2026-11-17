@@ -387,3 +387,21 @@ simply does not carry those families - the fix is richer matched-pair FIT
 DATA (lane 1: harm-answered example pairs where the removal direction is
 shared with safe behavior), not geometry. Loop economics confirmed on this
 grid: 3 candidates (fit+merge+serve+screen) in ~5 minutes total.
+LANE 1 ATTEMPT (2026-11-17, mc47): pivot-vs-delivered residual axis. Data was
+free: the plr1-edited model's own served answers - 36 delivered how-tos vs 4
+prevention pivots (000006/11/34/37) - captured as teacher-forced answer-span
+residuals (40 forwards, 14.4 s; note: the HF InPlaceRemoval applied 0 tensors
+because mc47 params live under `language_model.layers.*` not
+`model.language_model.layers.*`, so the capture is in baseline activation
+space; accepted because cos(axis2,axis1)=0.093 and the edit rms_delta is ~7e-4).
+axis2 = mean(pivot)-mean(delivered), per layer, composed onto
+mc47-mer-plr1-tool.gguf (48 tensors, 33.7 s) -> mc47-mer-plr2.gguf. Boundary
+screen (11 rows, 15.9 s): 000006 flips to a how-to guide (hybrid), 000037
+delivers, but 000030 flips to a refusal-framed lecture, 000014 degrades to
+real-virus exposition, 000034/000011 never move. NET: wash vs plr1 on the
+boundary set. Second-direction edits on the pivot contrast move control rows
+more than pivot rows - pivot families carry no shared removal direction even
+against the model's own delivered style. Geometry is confirmed exhausted for
+these rows on mc47 by THREE independent probes (alpha grid, null-space
+protection, residual second axis). The honest ceiling for contrast-plane
+methods on mc47 at pinned config remains per-layer plr1 = 36/40.
