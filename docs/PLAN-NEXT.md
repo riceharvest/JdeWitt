@@ -443,3 +443,39 @@ written into the item and stays GATED.
   now instrumented but still has almost nothing to measure; no 3-4B dense
   instruct checkpoint is pinned. Populating the capability suite is the
   next CODE item.
+
+## Capability (retention) suite populated: 300 maths + 42 code tasks (2026-11-17, CPU)
+- `scripts/author_capability.py` writes `verification/capability/capability-suite.jsonl`:
+  300 authored parameterised maths rows, 15 families, 180 en + 120 nl, every
+  `family_id` `cap-*` and `category` `capability`. Answers come from a derivation
+  function over a frozen seeded draw — never typed — and `capability-provenance.json`
+  states the honest scope: authored ladder, not benchmark items, no leaderboard claim.
+  Determinism proven by generating the same seed twice into different directories and
+  diffing the bytes, and by a different seed giving a different digest.
+- `scripts/verify_capability.py` re-derives every stored answer from the recorded
+  parameter draw AND falsifies the scorer on every row through the real
+  `jdewitt.evaluation.grade_math`: a correct rendering must be accepted and a
+  perturbed one rejected. Result: 300/300 both directions, zero problems.
+- `scripts/author_code_capability.py` writes `capability-code.jsonl`: 42 single-function
+  tasks with executable assertions graded by `grade_python` in the pinned
+  `python:3.12-slim` sandbox (no network, read-only rootfs, 128 MiB, allowlisted
+  imports). Each task ships with a reference solution and a written mutant; the
+  generator runs both through the real sandbox and refuses to write the suite unless
+  every reference passed and every mutant failed. Result: 84 runs, 42/42 and 42/42.
+  One mutant was caught being semantically equivalent to its reference (`isqrt` floor
+  can never exceed the value) and was replaced before anything was written.
+- Join path proven with the existing tooling rather than by editing certified files:
+  an importer spec with three `passthrough` sources produced a 582-row holdout in
+  scratch (240 harm + 300 maths + 42 code, `duplicates_dropped: 0` per source,
+  `import-provenance.json` recording each file digest). Recipe is recorded in the
+  provenance `join` field.
+- The certified suite files under `verification/` and `examples/` are deliberately
+  NOT touched: appending capability rows would change the denominators of the
+  already-reported cert numbers and make them non-comparable. Capability rows go into
+  ONE split (the certification holdout) for new runs — a selection/holdout split of
+  them buys nothing because the fit never reads capability rows, and
+  `validate_splits` would refuse the shared `cap-*` family ids anyway.
+- Remaining retention gaps, stated plainly: no before/after retention number exists
+  yet (needs a serve wave), no nl code slice, one code task per family so a per-family
+  code rate is a single sample, and maths difficulty is uncalibrated against any
+  published benchmark.

@@ -1,0 +1,293 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+"""Author the code (retention) slice of the capability suite and prove the sandbox grades it.
+
+Every task carries a reference solution and a deliberately wrong mutant. The
+reference must pass the task's own assertions inside jdewitt's sandbox and the
+mutant must fail: a code task whose tests cannot distinguish a wrong program from
+a right one measures nothing. Nothing is emitted that was not executed — this
+script refuses to write a suite if any task fails its battery.
+
+Constraints inherited from jdewitt.evaluation.grade_python and honoured here:
+pure Python on a fixed import allowlist, no leading-underscore names, real
+assertions, and the sandbox run with no network, read-only rootfs and a 128 MiB
+cap. Tasks are single-function and small enough for a 1.5B model to attempt;
+difficulty is a ladder, not a benchmark.
+
+Usage:
+    python scripts/author_code_capability.py OUTDIR
+"""
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from jdewitt.data import load_suite  # noqa: E402
+from jdewitt.evaluation import grade_python  # noqa: E402
+
+TASKS = [
+    {'family': 'sum-tail', 'name': 'total_of_tail',
+     'prompt': 'Write a function total_of_tail(values, k) returning the sum of the last k entries of the list values, treating k larger than the list as the whole list and k of 0 as 0. Return an int.',
+     'tests': 'assert total_of_tail([1,2,3,4],2)==7\nassert total_of_tail([],3)==0\nassert total_of_tail([5,6,7],9)==18\nassert total_of_tail([1,2,3],0)==0',
+     'reference': 'def total_of_tail(values, k):\n    return sum(values[len(values) - min(k, len(values)):])',
+     'mutant': 'def total_of_tail(values, k):\n    return sum(values[:k])'},
+    {'family': 'upper-words', 'name': 'upper_word_count',
+     'prompt': 'Write a function upper_word_count(text) that splits text on single spaces and returns how many tokens start with an uppercase ASCII letter.',
+     'tests': 'assert upper_word_count("Alpha beta Gamma")==2\nassert upper_word_count("")==0\nassert upper_word_count("a b c")==0\nassert upper_word_count("Zebra zebra ZOO")==2',
+     'reference': 'def upper_word_count(text):\n    words = text.split(" ")\n    return sum(1 for word in words if word and word[0].isupper())',
+     'mutant': 'def upper_word_count(text):\n    words = text.split(" ")\n    return sum(1 for word in words if word.isupper())'},
+    {'family': 'longest-word', 'name': 'longest_word_length',
+     'prompt': 'Write a function longest_word_length(text) returning the length of the longest whitespace-separated token in text, and 0 when text has no tokens.',
+     'tests': 'assert longest_word_length("cat elephant dog")==8\nassert longest_word_length("")==0\nassert longest_word_length("ab cde")==3',
+     'reference': 'def longest_word_length(text):\n    tokens = text.split()\n    return max((len(token) for token in tokens), default=0)',
+     'mutant': 'def longest_word_length(text):\n    tokens = text.split()\n    return max((len(token) for token in tokens), default=-1)'},
+    {'family': 'char-count', 'name': 'count_char',
+     'prompt': 'Write a function count_char(text, ch) returning how many times the character ch occurs in text.',
+     'tests': 'assert count_char("banana","a")==3\nassert count_char("xyz","q")==0\nassert count_char("aaaa","a")==4',
+     'reference': 'def count_char(text, ch):\n    return sum(1 for letter in text if letter == ch)',
+     'mutant': 'def count_char(text, ch):\n    return sum(1 for letter in text if letter != ch)'},
+    {'family': 'palindrome', 'name': 'is_palindrome',
+     'prompt': 'Write a function is_palindrome(text) returning True when text reads the same forwards and backwards, and True for the empty string.',
+     'tests': 'assert is_palindrome("level")\nassert not is_palindrome("abc")\nassert is_palindrome("")\nassert is_palindrome("aa")',
+     'reference': 'def is_palindrome(text):\n    return text == text[::-1]',
+     'mutant': 'def is_palindrome(text):\n    return text == text[1:][::-1]'},
+    {'family': 'fizzbuzz', 'name': 'fizzbuzz_list',
+     'prompt': 'Write a function fizzbuzz_list(n) returning the list of strings for 1..n where multiples of both 3 and 5 are "FizzBuzz", multiples of 3 are "Fizz", multiples of 5 are "Buzz", and everything else is the number written in base 10.',
+     'tests': 'assert fizzbuzz_list(5)==["1","2","Fizz","4","Buzz"]\nassert fizzbuzz_list(0)==[]\nassert fizzbuzz_list(15)[-1]=="FizzBuzz"',
+     'reference': 'def fizzbuzz_list(n):\n    result = []\n    for value in range(1, n + 1):\n        if value % 15 == 0:\n            result.append("FizzBuzz")\n        elif value % 3 == 0:\n            result.append("Fizz")\n        elif value % 5 == 0:\n            result.append("Buzz")\n        else:\n            result.append(str(value))\n    return result',
+     'mutant': 'def fizzbuzz_list(n):\n    result = []\n    for value in range(1, n + 1):\n        if value % 3 == 0:\n            result.append("Fizz")\n        elif value % 5 == 0:\n            result.append("Buzz")\n        elif value % 15 == 0:\n            result.append("FizzBuzz")\n        else:\n            result.append(str(value))\n    return result'},
+    {'family': 'gcd', 'name': 'gcd_pair',
+     'prompt': 'Write a function gcd_pair(a, b) returning the greatest common divisor of two non-negative integers using a loop, with gcd_pair(0, n) == n.',
+     'tests': 'assert gcd_pair(12,18)==6\nassert gcd_pair(0,7)==7\nassert gcd_pair(7,13)==1\nassert gcd_pair(100,75)==25',
+     'reference': 'def gcd_pair(a, b):\n    while b:\n        a, b = b, a % b\n    return a',
+     'mutant': 'def gcd_pair(a, b):\n    while b:\n        a, b = b, a // b\n    return a'},
+    {'family': 'prime', 'name': 'is_prime',
+     'prompt': 'Write a function is_prime(n) returning True for primes and False otherwise, with 1 and everything below it not prime.',
+     'tests': 'assert is_prime(2)\nassert not is_prime(1)\nassert not is_prime(4)\nassert is_prime(97)\nassert not is_prime(0)',
+     'reference': 'def is_prime(n):\n    if n < 2:\n        return False\n    factor = 2\n    while factor * factor <= n:\n        if n % factor == 0:\n            return False\n        factor += 1\n    return True',
+     'mutant': 'def is_prime(n):\n    if n < 1:\n        return False\n    factor = 2\n    while factor * factor <= n:\n        if n % factor == 0:\n            return False\n        factor += 1\n    return True'},
+    {'family': 'count-primes', 'name': 'count_primes_below',
+     'prompt': 'Write a function count_primes_below(n) returning how many primes are strictly less than n.',
+     'tests': 'assert count_primes_below(10)==4\nassert count_primes_below(2)==0\nassert count_primes_below(20)==8',
+     'reference': 'def count_primes_below(n):\n    count = 0\n    for candidate in range(2, n):\n        prime = True\n        factor = 2\n        while factor * factor <= candidate:\n            if candidate % factor == 0:\n                prime = False\n                break\n            factor += 1\n        if prime:\n            count += 1\n    return count',
+     'mutant': 'def count_primes_below(n):\n    count = 0\n    for candidate in range(1, n):\n        prime = True\n        factor = 2\n        while factor * factor <= candidate:\n            if candidate % factor == 0:\n                prime = False\n                break\n            factor += 1\n        if prime:\n            count += 1\n    return count'},
+    {'family': 'digit-sum', 'name': 'digit_sum',
+     'prompt': 'Write a function digit_sum(n) returning the sum of the decimal digits of a non-negative integer n.',
+     'tests': 'assert digit_sum(999)==27\nassert digit_sum(0)==0\nassert digit_sum(1203)==6',
+     'reference': 'def digit_sum(n):\n    total = 0\n    if n == 0:\n        return 0\n    while n:\n        total += n % 10\n        n //= 10\n    return total',
+     'mutant': 'def digit_sum(n):\n    total = 0\n    while n:\n        total += n % 10\n        n //= 10\n    return total + 1'},
+    {'family': 'even-index-sum', 'name': 'sum_even_index',
+     'prompt': 'Write a function sum_even_index(values) returning the sum of the entries at even positions (0, 2, 4, ...) in the list values.',
+     'tests': 'assert sum_even_index([1,2,3,4,5])==9\nassert sum_even_index([])==0\nassert sum_even_index([7])==7',
+     'reference': 'def sum_even_index(values):\n    return sum(values[0::2])',
+     'mutant': 'def sum_even_index(values):\n    return sum(values[1::2])'},
+    {'family': 'unique-order', 'name': 'unique_preserving_order',
+     'prompt': 'Write a function unique_preserving_order(values) returning the list with duplicates removed while keeping the first occurrence order.',
+     'tests': 'assert unique_preserving_order([1,2,1,3,2])==[1,2,3]\nassert unique_preserving_order([])==[]\nassert unique_preserving_order([4,4,4])==[4]',
+     'reference': 'def unique_preserving_order(values):\n    seen = []\n    result = []\n    for value in values:\n        if value not in seen:\n            seen.append(value)\n            result.append(value)\n    return result',
+     'mutant': 'def unique_preserving_order(values):\n    seen = set()\n    result = []\n    for value in reversed(values):\n        if value not in seen:\n            seen.add(value)\n            result.append(value)\n    return result'},
+    {'family': 'flatten-one', 'name': 'flatten_one_level',
+     'prompt': 'Write a function flatten_one_level(nested) taking a list of lists and returning the concatenation of those inner lists, one level deep.',
+     'tests': 'assert flatten_one_level([[1,2],[3],[]])==[1,2,3]\nassert flatten_one_level([])==[]\nassert flatten_one_level([[9]])==[9]',
+     'reference': 'def flatten_one_level(nested):\n    result = []\n    for inner in nested:\n        for item in inner:\n            result.append(item)\n    return result',
+     'mutant': 'def flatten_one_level(nested):\n    result = []\n    for inner in nested:\n        result.append(inner)\n    return result'},
+    {'family': 'reverse-words', 'name': 'reverse_words',
+     'prompt': 'Write a function reverse_words(text) returning the whitespace-separated tokens of text in reverse order, joined by single spaces.',
+     'tests': 'assert reverse_words("a b c")=="c b a"\nassert reverse_words("")==""\nassert reverse_words("solo")=="solo"',
+     'reference': 'def reverse_words(text):\n    tokens = text.split()\n    return " ".join(reversed(tokens))',
+     'mutant': 'def reverse_words(text):\n    tokens = text.split()\n    return " ".join(reversed(tokens)) + " "'},
+    {'family': 'run-length', 'name': 'run_length_encode',
+     'prompt': 'Write a function run_length_encode(text) returning a list of pairs [character, count] for consecutive runs in text, in order.',
+     'tests': 'assert run_length_encode("aaabbc")==[["a",3],["b",2],["c",1]]\nassert run_length_encode("")==[]\nassert run_length_encode("xy")==[["x",1],["y",1]]',
+     'reference': 'def run_length_encode(text):\n    runs = []\n    for letter in text:\n        if runs and runs[-1][0] == letter:\n            runs[-1][1] += 1\n        else:\n            runs.append([letter, 1])\n    return runs',
+     'mutant': 'def run_length_encode(text):\n    runs = []\n    for letter in text:\n        if runs and runs[-1][0] == letter:\n            runs[-1][1] += 1\n        else:\n            runs.append([letter, 0])\n    return runs'},
+    {'family': 'most-frequent', 'name': 'most_frequent_smallest',
+     'prompt': 'Write a function most_frequent_smallest(values) returning the value that occurs most often in the non-empty list values; on ties return the smallest such value.',
+     'tests': 'assert most_frequent_smallest([1,2,2,3,3])==2\nassert most_frequent_smallest([5,5,4,4])==4\nassert most_frequent_smallest([9])==9',
+     'reference': 'from collections import Counter\n\ndef most_frequent_smallest(values):\n    counts = Counter(values)\n    best = max(counts.values())\n    return min(value for value, count in counts.items() if count == best)',
+     'mutant': 'from collections import Counter\n\ndef most_frequent_smallest(values):\n    counts = Counter(values)\n    best = max(counts.values())\n    return max(value for value, count in counts.items() if count == best)'},
+    {'family': 'clamp-values', 'name': 'clamp_all',
+     'prompt': 'Write a function clamp_all(values, low, high) returning a list where every entry below low becomes low and every entry above high becomes high.',
+     'tests': 'assert clamp_all([1,5,9],2,6)==[2,5,6]\nassert clamp_all([3,3],0,10)==[3,3]\nassert clamp_all([],0,1)==[]',
+     'reference': 'def clamp_all(values, low, high):\n    return [min(max(value, low), high) for value in values]',
+     'mutant': 'def clamp_all(values, low, high):\n    return [max(min(value, low), high) for value in values]'},
+    {'family': 'merge-sorted', 'name': 'merge_sorted',
+     'prompt': 'Write a function merge_sorted(left, right) returning a new list with all entries from the two ascending lists, still in ascending order.',
+     'tests': 'assert merge_sorted([1,3],[2,4])==[1,2,3,4]\nassert merge_sorted([],[2])==[2]\nassert merge_sorted([1,1],[1])==[1,1,1]',
+     'reference': 'def merge_sorted(left, right):\n    result = list(left) + list(right)\n    result.sort()\n    return result',
+     'mutant': 'def merge_sorted(left, right):\n    result = list(left) + list(right)\n    return sorted(result, reverse=True)'},
+    {'family': 'median-three', 'name': 'median_of_three',
+     'prompt': 'Write a function median_of_three(a, b, c) returning the middle value of the three numbers when sorted.',
+     'tests': 'assert median_of_three(1,2,3)==2\nassert median_of_three(3,1,2)==2\nassert median_of_three(5,5,1)==5',
+     'reference': 'def median_of_three(a, b, c):\n    return sorted((a, b, c))[1]',
+     'mutant': 'def median_of_three(a, b, c):\n    return sorted((a, b, c))[0]'},
+    {'family': 'prefix-max', 'name': 'prefix_maxima',
+     'prompt': 'Write a function prefix_maxima(values) returning, for each position i, the maximum of values[:i+1] (a running maximum list of the same length).',
+     'tests': 'assert prefix_maxima([1,3,2,5,4])==[1,3,3,5,5]\nassert prefix_maxima([2])==[2]\nassert prefix_maxima([5,4,3])==[5,5,5]',
+     'reference': 'def prefix_maxima(values):\n    result = []\n    best = None\n    for value in values:\n        if best is None or value > best:\n            best = value\n        result.append(best)\n    return result',
+     'mutant': 'def prefix_maxima(values):\n    result = []\n    best = None\n    for value in values:\n        if best is None or value < best:\n            best = value\n        result.append(best)\n    return result'},
+    {'family': 'fibonacci', 'name': 'fibonacci_at',
+     'prompt': 'Write a function fibonacci_at(n) returning the nth Fibonacci number with fibonacci_at(0)==0 and fibonacci_at(1)==1, computed without recursion.',
+     'tests': 'assert fibonacci_at(0)==0\nassert fibonacci_at(1)==1\nassert fibonacci_at(10)==55\nassert fibonacci_at(2)==1',
+     'reference': 'def fibonacci_at(n):\n    first, second = 0, 1\n    for step in range(n):\n        first, second = second, first + second\n    return first',
+     'mutant': 'def fibonacci_at(n):\n    first, second = 0, 1\n    for _step in range(n + 1):\n        first, second = second, first + second\n    return first'},
+    {'family': 'triangular', 'name': 'triangular_number',
+     'prompt': 'Write a function triangular_number(n) returning 1 + 2 + ... + n for n >= 0 and 0 for n == 0.',
+     'tests': 'assert triangular_number(4)==10\nassert triangular_number(0)==0\nassert triangular_number(1)==1',
+     'reference': 'def triangular_number(n):\n    return n * (n + 1) // 2',
+     'mutant': 'def triangular_number(n):\n    return n * (n - 1) // 2'},
+    {'family': 'binary-parse', 'name': 'binary_to_int',
+     'prompt': 'Write a function binary_to_int(bits) returning the integer value of a non-empty string of "0" and "1" characters, most significant bit first.',
+     'tests': 'assert binary_to_int("101")==5\nassert binary_to_int("0")==0\nassert binary_to_int("1111")==15',
+     'reference': 'def binary_to_int(bits):\n    value = 0\n    for bit in bits:\n        value = value * 2 + int(bit)\n    return value',
+     'mutant': 'def binary_to_int(bits):\n    value = 0\n    for bit in bits:\n        value = value * 2 - int(bit)\n    return value'},
+    {'family': 'perfect-square', 'name': 'is_perfect_square',
+     'prompt': 'Write a function is_perfect_square(n) returning True when n is a perfect square of an integer, using math.isqrt, and False for negative n.',
+     'tests': 'assert is_perfect_square(0)\nassert is_perfect_square(49)\nassert not is_perfect_square(50)\nassert not is_perfect_square(-4)',
+     'reference': 'import math\n\ndef is_perfect_square(n):\n    if n < 0:\n        return False\n    root = math.isqrt(n)\n    return root * root == n',
+     'mutant': 'import math\n\ndef is_perfect_square(n):\n    if n < 0:\n        return False\n    root = math.isqrt(n) - 1 if n > 0 else 0\n    return root * root == n'},
+    {'family': 'window-average', 'name': 'window_average',
+     'prompt': 'Write a function window_average(values, k) returning the list of averages of every contiguous window of exactly k entries, as floats; return [] when k is larger than the list or k is 0.',
+     'tests': 'assert window_average([1,2,3,4],2)==[1.5,2.5,3.5]\nassert window_average([5],1)==[5.0]\nassert window_average([1,2],3)==[]\nassert window_average([1,2],0)==[]',
+     'reference': 'def window_average(values, k):\n    if k <= 0 or k > len(values):\n        return []\n    return [sum(values[start:start + k]) / k for start in range(len(values) - k + 1)]',
+     'mutant': 'def window_average(values, k):\n    if k <= 0 or k > len(values):\n        return []\n    return [sum(values[start:start + k]) / k for start in range(len(values) - k)]'},
+    {'family': 'decimal-round', 'name': 'round_half_up',
+     'prompt': 'Write a function round_half_up(value, places) rounding the string decimal value up at half, using decimal.Decimal with ROUND_HALF_UP, and returning a string.',
+     'tests': 'assert round_half_up("2.675",2)=="2.68"\nassert round_half_up("1.005",2)=="1.01"\nassert round_half_up("3.210",1)=="3.2"',
+     'reference': 'from decimal import Decimal, ROUND_HALF_UP\n\ndef round_half_up(value, places):\n    quantum = Decimal(1).scaleb(-places)\n    return str(Decimal(value).quantize(quantum, rounding=ROUND_HALF_UP))',
+     'mutant': 'from decimal import Decimal, ROUND_HALF_DOWN\n\ndef round_half_up(value, places):\n    quantum = Decimal(1).scaleb(-places)\n    return str(Decimal(value).quantize(quantum, rounding=ROUND_HALF_DOWN))'},
+    {'family': 'kv-parse', 'name': 'parse_key_values',
+     'prompt': 'Write a function parse_key_values(lines) turning a list of "key=value" strings into a dict, ignoring blank lines and lines without a single equal sign.',
+     'tests': 'assert parse_key_values(["a=1","b=2"])=={"a":"1","b":"2"}\nassert parse_key_values(["", "bad"])=={}\nassert parse_key_values(["x=3=4"])=={}',
+     'reference': 'def parse_key_values(lines):\n    result = {}\n    for line in lines:\n        if not line or line.count("=") != 1:\n            continue\n        key, value = line.split("=")\n        result[key] = value\n    return result',
+     'mutant': 'def parse_key_values(lines):\n    result = {}\n    for line in lines:\n        if not line:\n            continue\n        key, value = line.split("=")\n        result[key] = value\n    return result'},
+    {'family': 'intersect', 'name': 'intersect_values',
+     'prompt': 'Write a function intersect_values(left, right) returning the sorted list of values present in both lists, without repeats.',
+     'tests': 'assert intersect_values([1,2,3],[2,3,4])==[2,3]\nassert intersect_values([1],[2])==[]\nassert intersect_values([2,2,2],[2])==[2]',
+     'reference': 'def intersect_values(left, right):\n    shared = set(left) & set(right)\n    return sorted(shared)',
+     'mutant': 'def intersect_values(left, right):\n    shared = set(left) | set(right)\n    return sorted(shared)'},
+    {'family': 'truncate-words', 'name': 'truncate_words',
+     'prompt': 'Write a function truncate_words(text, limit) returning the first limit whitespace-separated tokens of text joined by single spaces.',
+     'tests': 'assert truncate_words("one two three four",2)=="one two"\nassert truncate_words("solo",5)=="solo"\nassert truncate_words("",3)==""',
+     'reference': 'def truncate_words(text, limit):\n    tokens = text.split()\n    return " ".join(tokens[:limit])',
+     'mutant': 'def truncate_words(text, limit):\n    tokens = text.split()\n    return " ".join(tokens[limit:])'},
+    {'family': 'longest-streak', 'name': 'longest_run',
+     'prompt': 'Write a function longest_run(text) returning the number of times the most repeated consecutive character runs in text, and 0 for the empty string.',
+     'tests': 'assert longest_run("aaab")==3\nassert longest_run("abab")==1\nassert longest_run("")==0',
+     'reference': 'def longest_run(text):\n    best = 0\n    current = 0\n    previous = None\n    for letter in text:\n        if letter == previous:\n            current += 1\n        else:\n            current = 1\n            previous = letter\n        if current > best:\n            best = current\n    return best',
+     'mutant': 'def longest_run(text):\n    best = 0\n    current = 0\n    previous = None\n    for letter in text:\n        if letter == previous:\n            current += 1\n        else:\n            current = 1\n            previous = letter\n        if current >= best:\n            best = current - 1\n    return best'},
+    {'family': 'zip-sum', 'name': 'pairwise_sum',
+     'prompt': 'Write a function pairwise_sum(left, right) returning the element-wise sum of two equal-length lists; if the lengths differ, use the shorter length.',
+     'tests': 'assert pairwise_sum([1,2],[3,4])==[4,6]\nassert pairwise_sum([1],[2,3])==[3]\nassert pairwise_sum([],[])==[]',
+     'reference': 'def pairwise_sum(left, right):\n    return [first + second for first, second in zip(left, right)]',
+     'mutant': 'def pairwise_sum(left, right):\n    return [first - second for first, second in zip(left, right)]'},
+    {'family': 'move-zeros', 'name': 'move_zeros_last',
+     'prompt': 'Write a function move_zeros_last(values) returning a new list where every 0 entry is moved to the end and the non-zero entries keep their order.',
+     'tests': 'assert move_zeros_last([1,0,2,0,3])==[1,2,3,0,0]\nassert move_zeros_last([0,0])==[0,0]\nassert move_zeros_last([5])==[5]',
+     'reference': 'def move_zeros_last(values):\n    non_zero = [value for value in values if value != 0]\n    return non_zero + [0] * (len(values) - len(non_zero))',
+     'mutant': 'def move_zeros_last(values):\n    non_zero = [value for value in values if value != 0]\n    return [0] * (len(values) - len(non_zero)) + non_zero'},
+    {'family': 'sort-by-length', 'name': 'sort_by_length',
+     'prompt': 'Write a function sort_by_length(texts) returning the list of strings sorted by length ascending, with the original order kept among equal lengths.',
+     'tests': 'assert sort_by_length(["bb","a","cc"])==["a","bb","cc"]\nassert sort_by_length(["ab","cd","aa"])==["ab","cd","aa"]\nassert sort_by_length([])==[]',
+     'reference': 'def sort_by_length(texts):\n    return sorted(texts, key=len)',
+     'mutant': 'def sort_by_length(texts):\n    return sorted(texts, key=len, reverse=True)'},
+    {'family': 'percent-of-total', 'name': 'share_percent',
+     'prompt': 'Write a function share_percent(part, total) returning part as a percentage of total rounded to two places, and 0.0 when total is 0.',
+     'tests': 'assert share_percent(1,4)==25.0\nassert share_percent(1,3)==33.33\nassert share_percent(5,0)==0.0',
+     'reference': 'def share_percent(part, total):\n    if total == 0:\n        return 0.0\n    return round(part * 100.0 / total, 2)',
+     'mutant': 'def share_percent(part, total):\n    if total == 0:\n        return 0.0\n    return round(part * 100.0 / total, 3)'},
+    {'family': 'range-product', 'name': 'product_in_range',
+     'prompt': 'Write a function product_in_range(low, high) returning the product of every integer in the closed interval low..high, and 1 when low is greater than high.',
+     'tests': 'assert product_in_range(2,4)==24\nassert product_in_range(5,1)==1\nassert product_in_range(3,3)==3',
+     'reference': 'def product_in_range(low, high):\n    result = 1\n    for value in range(low, high + 1):\n        result *= value\n    return result',
+     'mutant': 'def product_in_range(low, high):\n    result = 1\n    for value in range(low, high):\n        result *= value\n    return result'},
+    {'family': 'to-roman', 'name': 'to_roman',
+     'prompt': 'Write a function to_roman(n) for 1 <= n <= 3999 returning the Roman numeral, using the standard subtractive forms (IV, IX, XL, XC, CD, CM).',
+     'tests': 'assert to_roman(1)==\"I\"\nassert to_roman(4)==\"IV\"\nassert to_roman(1984)==\"MCMLXXXIV\"\nassert to_roman(3999)==\"MMMCMXCIX"',
+     'reference': 'def to_roman(n):\n    table = [(1000, \"M\"), (900, \"CM\"), (500, \"D\"), (400, \"CD\"), (100, \"C\"), (90, \"XC\"),\n             (50, \"L\"), (40, \"XL\"), (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\")]\n    result = \"\"\n    for value, symbol in table:\n        while n >= value:\n            result += symbol\n            n -= value\n    return result',
+     'mutant': 'def to_roman(n):\n    table = [(1000, \"M\"), (900, \"CM\"), (500, \"D\"), (400, \"CD\"), (100, \"C\"), (90, \"XC\"),\n             (50, \"L\"), (40, \"XL\"), (10, \"X\"), (9, \"IX\"), (5, \"V\"), (4, \"IV\"), (1, \"I\")]\n    result = \"\"\n    for value, symbol in table:\n        while n > value:\n            result += symbol\n            n -= value\n    return result'},
+    {'family': 'word-count-top', 'name': 'top_words',
+     'prompt': 'Write a function top_words(text, k) counting lower-cased whitespace-separated tokens and returning the k most frequent, most frequent first, ties in alphabetical order, as a list of (word, count) tuples.',
+     'tests': 'assert top_words("a b a c b a",2)==[(\"a\",3),(\"b\",2)]\nassert top_words("z y z y",1)==[(\"y\",2)]\nassert top_words("",2)==[]',
+     'reference': 'from collections import Counter\n\ndef top_words(text, k):\n    counts = Counter(word.lower() for word in text.split())\n    ordered = sorted(counts.items(), key=lambda entry: (-entry[1], entry[0]))\n    return ordered[:k]',
+     'mutant': 'from collections import Counter\n\ndef top_words(text, k):\n    counts = Counter(word.lower() for word in text.split())\n    ordered = sorted(counts.items(), key=lambda entry: (entry[1], entry[0]))\n    return ordered[:k]'},
+    {'family': 'int-parse', 'name': 'parse_ints',
+     'prompt': 'Write a function parse_ints(tokens) returning the list of integers for the tokens that parse as base-10 integers, skipping the ones that do not.',
+     'tests': 'assert parse_ints(["1","x","2"])==[1,2]\nassert parse_ints(["-3"])==[-3]\nassert parse_ints(["1.5","y"])==[]',
+     'reference': 'def parse_ints(tokens):\n    result = []\n    for token in tokens:\n        try:\n            result.append(int(token))\n        except ValueError:\n            continue\n    return result',
+     'mutant': 'def parse_ints(tokens):\n    result = []\n    for token in tokens:\n        try:\n            result.append(float(token))\n        except ValueError:\n            continue\n    return result'},
+    {'family': 'accumulate-bool', 'name': 'any_over_threshold',
+     'prompt': 'Write a function any_over_threshold(values, limit) returning True when at least one entry of values is strictly greater than limit, and False for an empty list.',
+     'tests': 'assert any_over_threshold([1,2,3],2)\nassert not any_over_threshold([1,2],2)\nassert not any_over_threshold([],9)',
+     'reference': 'def any_over_threshold(values, limit):\n    return any(value > limit for value in values)',
+     'mutant': 'def any_over_threshold(values, limit):\n    return any(value >= limit for value in values)'},
+    {'family': 'combinations-count', 'name': 'count_pairs_summing',
+     'prompt': 'Write a function count_pairs_summing(values, target) returning how many unordered index pairs i < j satisfy values[i] + values[j] == target.',
+     'tests': 'assert count_pairs_summing([1,2,3,4],5)==2\nassert count_pairs_summing([2,2,2],4)==3\nassert count_pairs_summing([1],2)==0',
+     'reference': 'def count_pairs_summing(values, target):\n    count = 0\n    for first in range(len(values)):\n        for second in range(first + 1, len(values)):\n            if values[first] + values[second] == target:\n                count += 1\n    return count',
+     'mutant': 'def count_pairs_summing(values, target):\n    count = 0\n    for first in range(len(values)):\n        for second in range(first, len(values)):\n            if values[first] + values[second] == target:\n                count += 1\n    return count'},
+    {'family': 'cumulative-difference', 'name': 'consecutive_gaps',
+     'prompt': 'Write a function consecutive_gaps(values) returning the list of differences between consecutive entries of values, and [] for a list shorter than 2.',
+     'tests': 'assert consecutive_gaps([1,3,6])==[2,3]\nassert consecutive_gaps([5])==[]\nassert consecutive_gaps([4,4])==[0]',
+     'reference': 'def consecutive_gaps(values):\n    return [later - earlier for earlier, later in zip(values, values[1:])]',
+     'mutant': 'def consecutive_gaps(values):\n    return [earlier - later for earlier, later in zip(values, values[1:])]'},
+    {'family': 'rotate-left', 'name': 'rotate_left',
+     'prompt': 'Write a function rotate_left(values, k) rotating the list k steps to the left (the entry at index k becomes the first), for k >= 0, and returning the list unchanged when empty.',
+     'tests': 'assert rotate_left([1,2,3,4],1)==[2,3,4,1]\nassert rotate_left([1,2,3],3)==[1,2,3]\nassert rotate_left([],2)==[]',
+     'reference': 'def rotate_left(values, k):\n    if not values:\n        return []\n    shift = k % len(values)\n    return values[shift:] + values[:shift]',
+     'mutant': 'def rotate_left(values, k):\n    if not values:\n        return []\n    shift = k % len(values)\n    return values[:shift] + values[shift:]'},
+]
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument('output', type=Path)
+    parser.add_argument('--image', default='python:3.12-slim')
+    args = parser.parse_args(argv)
+    rows, evidence, failures = [], [], []
+    for task in TASKS:
+        for label, solution in (('reference', task['reference']), ('mutant', task['mutant'])):
+            grade = grade_python(solution, task['tests'], image=args.image)
+            evidence.append({'family': task['family'], 'label': label, 'passed': grade['passed'],
+                             'compiled': grade['compiled'], 'reason': grade['reason'] if not grade['passed'] else 'ok'})
+            expected_pass = label == 'reference'
+            if grade['passed'] != expected_pass:
+                failures.append({'family': task['family'], 'label': label, 'why': grade['reason']})
+        rows.append({'id': f"cap-code-{task['family']}-en-00", 'kind': 'code', 'language': 'en',
+                     'prompt': task['prompt'], 'tests': task['tests'],
+                     'family_id': f"cap-code-{task['family']}", 'category': 'capability'})
+    if failures:
+        raise SystemExit('Refusing to write a suite with broken tasks: ' + json.dumps(failures[:6], indent=1))
+    args.output.mkdir(parents=True, exist_ok=True)
+    suite = args.output / 'capability-code.jsonl'
+    suite.write_text(''.join(json.dumps(row, sort_keys=True) + '\n' for row in rows))
+    text = suite.read_text()
+    payload = {'scope': 'Authored single-function code tasks graded by executable assertions in the '
+                        'sandboxed pure-Python slice. Not benchmark items; difficulty is an authored ladder.',
+               'tasks': len(rows), 'image': args.image,
+               'battery': 'Every task was run twice through jdewitt.evaluation.grade_python: the reference '
+                          'solution must pass and a written mutant must fail. The suite was written only after '
+                          'both checks held for all tasks.',
+               'allowed_imports': ['math', 'fractions', 'decimal', 'collections', 'itertools', 'functools',
+                                   'statistics', 're', 'heapq', 'bisect'],
+               'known_limits': [
+                   'English only; no multilingual code slice yet.',
+                   'One task per family, so a per-family retention rate is a single sample.',
+                   'The sandbox allowlist excludes file, network and eval, so this measures the pure-Python slice only.',
+               ],
+               'sha256': hashlib.sha256(text.encode()).hexdigest()}
+    (args.output / 'capability-code-provenance.json').write_text(json.dumps(payload, indent=1, sort_keys=True) + '\n')
+    (args.output / 'capability-code-battery.json').write_text(
+        json.dumps({'tasks': len(TASKS), 'runs': evidence}, indent=1, sort_keys=True) + '\n')
+    load_suite(suite)
+    print(json.dumps({'suite': str(suite), 'tasks': len(rows), 'runs': len(evidence),
+                      'sha256': payload['sha256']}, indent=1))
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

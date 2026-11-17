@@ -1,0 +1,57 @@
+{
+ "counts_by_family": {
+  "arith-distributed": 24,
+  "arith-exact-division": 24,
+  "arith-times": 24,
+  "counting-combinations": 12,
+  "fraction-sum": 12,
+  "geometry-rectangle": 24,
+  "geometry-triangle": 24,
+  "linear-solve": 24,
+  "number-theory-gcd": 24,
+  "number-theory-lcm": 24,
+  "pct-chain-cents": 12,
+  "pct-forward": 24,
+  "pct-reverse": 24,
+  "rate-together": 12,
+  "sequence-arithmetic": 12
+ },
+ "counts_by_language": {
+  "en": 180,
+  "nl": 120
+ },
+ "join": "Join into a run with an importer passthrough source: {\"id\":\"capability\",\"passthrough\":true,\"path\":\"verification/capability/capability-suite.jsonl\",\"kinds\":[\"math\"]}. Put the rows in ONE split, not both: the fit never uses capability rows, so a selection/holdout split of them buys nothing, and validate_splits would refuse the shared cap-* family ids anyway. The certification holdout is the right home because that is the suite a release reports from.",
+ "known_limits": [
+  "Fraction-form and cents-form items partly measure answer formatting, not only arithmetic.",
+  "Percent and fraction prompts assume a Western decimal point and a/b notation.",
+  "Dutch rows exist for six families only; multilingual retention is incomplete by design.",
+  "Difficulty is a single authored ladder, not calibrated against any published benchmark.",
+  "No code rows are produced by this generator; code tasks are authored separately and graded in the sandbox."
+ ],
+ "languages": [
+  "en",
+  "nl"
+ ],
+ "per_family": 12,
+ "rows": 300,
+ "scope": "Authored parameterised capability tasks with machine-derived answers. Not benchmark items: no public corpus, no human annotation, no leaderboard claim. They measure capability retention as a same-suite paired change, nothing else.",
+ "seed": 20261117,
+ "sha256": "b6aced0f215f49505a623124cdeb25442af6a6d8bc92ef95f34d4ec20de50430",
+ "templates": [
+  "arith-times",
+  "arith-distributed",
+  "arith-exact-division",
+  "pct-forward",
+  "pct-reverse",
+  "linear-solve",
+  "geometry-rectangle",
+  "geometry-triangle",
+  "sequence-arithmetic",
+  "number-theory-gcd",
+  "number-theory-lcm",
+  "fraction-sum",
+  "pct-chain-cents",
+  "rate-together",
+  "counting-combinations"
+ ]
+}

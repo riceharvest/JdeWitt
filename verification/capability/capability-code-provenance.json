@@ -1,0 +1,24 @@
+{
+ "allowed_imports": [
+  "math",
+  "fractions",
+  "decimal",
+  "collections",
+  "itertools",
+  "functools",
+  "statistics",
+  "re",
+  "heapq",
+  "bisect"
+ ],
+ "battery": "Every task was run twice through jdewitt.evaluation.grade_python: the reference solution must pass and a written mutant must fail. The suite was written only after both checks held for all tasks.",
+ "image": "python:3.12-slim",
+ "known_limits": [
+  "English only; no multilingual code slice yet.",
+  "One task per family, so a per-family retention rate is a single sample.",
+  "The sandbox allowlist excludes file, network and eval, so this measures the pure-Python slice only."
+ ],
+ "scope": "Authored single-function code tasks graded by executable assertions in the sandboxed pure-Python slice. Not benchmark items; difficulty is an authored ladder.",
+ "sha256": "82ac784ea3d6bb1e326f3c2c6792ba4468189fbd3437e707f6fa961875af4dce",
+ "tasks": 42
+}

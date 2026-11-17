@@ -1,0 +1,2873 @@
+{
+ "entries": [
+  {
+   "expected": "111",
+   "id": "cap-arith-times-en-00",
+   "parameters": [
+    7,
+    3,
+    10,
+    9
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "225",
+   "id": "cap-arith-times-nl-00",
+   "parameters": [
+    9,
+    13,
+    12,
+    9
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "250",
+   "id": "cap-arith-times-en-01",
+   "parameters": [
+    14,
+    17,
+    4,
+    3
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "508",
+   "id": "cap-arith-times-nl-01",
+   "parameters": [
+    26,
+    14,
+    12,
+    12
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "564",
+   "id": "cap-arith-times-en-02",
+   "parameters": [
+    18,
+    25,
+    6,
+    19
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "534",
+   "id": "cap-arith-times-nl-02",
+   "parameters": [
+    26,
+    15,
+    18,
+    8
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "660",
+   "id": "cap-arith-times-en-03",
+   "parameters": [
+    7,
+    12,
+    24,
+    24
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "560",
+   "id": "cap-arith-times-nl-03",
+   "parameters": [
+    20,
+    21,
+    20,
+    7
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "800",
+   "id": "cap-arith-times-en-04",
+   "parameters": [
+    22,
+    10,
+    29,
+    20
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "718",
+   "id": "cap-arith-times-nl-04",
+   "parameters": [
+    8,
+    21,
+    22,
+    25
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "780",
+   "id": "cap-arith-times-en-05",
+   "parameters": [
+    25,
+    24,
+    9,
+    20
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "152",
+   "id": "cap-arith-times-nl-05",
+   "parameters": [
+    6,
+    7,
+    5,
+    22
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "67",
+   "id": "cap-arith-times-en-06",
+   "parameters": [
+    5,
+    5,
+    6,
+    7
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "278",
+   "id": "cap-arith-times-nl-06",
+   "parameters": [
+    19,
+    8,
+    6,
+    21
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "840",
+   "id": "cap-arith-times-en-07",
+   "parameters": [
+    12,
+    25,
+    27,
+    20
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "356",
+   "id": "cap-arith-times-nl-07",
+   "parameters": [
+    25,
+    8,
+    12,
+    13
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "634",
+   "id": "cap-arith-times-en-08",
+   "parameters": [
+    5,
+    5,
+    21,
+    29
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "434",
+   "id": "cap-arith-times-nl-08",
+   "parameters": [
+    8,
+    14,
+    23,
+    14
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "347",
+   "id": "cap-arith-times-en-09",
+   "parameters": [
+    7,
+    11,
+    18,
+    15
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "276",
+   "id": "cap-arith-times-nl-09",
+   "parameters": [
+    6,
+    26,
+    8,
+    15
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "718",
+   "id": "cap-arith-times-en-10",
+   "parameters": [
+    22,
+    19,
+    25,
+    12
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "422",
+   "id": "cap-arith-times-nl-10",
+   "parameters": [
+    18,
+    9,
+    13,
+    20
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "498",
+   "id": "cap-arith-times-en-11",
+   "parameters": [
+    21,
+    3,
+    29,
+    15
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "558",
+   "id": "cap-arith-times-nl-11",
+   "parameters": [
+    14,
+    9,
+    27,
+    16
+   ],
+   "template": "arith-times"
+  },
+  {
+   "expected": "826",
+   "id": "cap-arith-distributed-en-00",
+   "parameters": [
+    14,
+    29,
+    30
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "108",
+   "id": "cap-arith-distributed-nl-00",
+   "parameters": [
+    3,
+    16,
+    20
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "561",
+   "id": "cap-arith-distributed-en-01",
+   "parameters": [
+    11,
+    13,
+    38
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "988",
+   "id": "cap-arith-distributed-nl-01",
+   "parameters": [
+    19,
+    13,
+    39
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "312",
+   "id": "cap-arith-distributed-en-02",
+   "parameters": [
+    6,
+    34,
+    18
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "216",
+   "id": "cap-arith-distributed-nl-02",
+   "parameters": [
+    8,
+    20,
+    7
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "247",
+   "id": "cap-arith-distributed-en-03",
+   "parameters": [
+    13,
+    5,
+    14
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "741",
+   "id": "cap-arith-distributed-nl-03",
+   "parameters": [
+    13,
+    33,
+    24
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "468",
+   "id": "cap-arith-distributed-en-04",
+   "parameters": [
+    12,
+    34,
+    5
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "592",
+   "id": "cap-arith-distributed-nl-04",
+   "parameters": [
+    16,
+    25,
+    12
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "657",
+   "id": "cap-arith-distributed-en-05",
+   "parameters": [
+    9,
+    33,
+    40
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "702",
+   "id": "cap-arith-distributed-nl-05",
+   "parameters": [
+    18,
+    7,
+    32
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "243",
+   "id": "cap-arith-distributed-en-06",
+   "parameters": [
+    9,
+    11,
+    16
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "270",
+   "id": "cap-arith-distributed-nl-06",
+   "parameters": [
+    5,
+    32,
+    22
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "1020",
+   "id": "cap-arith-distributed-en-07",
+   "parameters": [
+    17,
+    30,
+    30
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "231",
+   "id": "cap-arith-distributed-nl-07",
+   "parameters": [
+    11,
+    4,
+    17
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "533",
+   "id": "cap-arith-distributed-en-08",
+   "parameters": [
+    13,
+    27,
+    14
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "78",
+   "id": "cap-arith-distributed-nl-08",
+   "parameters": [
+    6,
+    11,
+    2
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "96",
+   "id": "cap-arith-distributed-en-09",
+   "parameters": [
+    3,
+    11,
+    21
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "442",
+   "id": "cap-arith-distributed-nl-09",
+   "parameters": [
+    17,
+    23,
+    3
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "688",
+   "id": "cap-arith-distributed-en-10",
+   "parameters": [
+    16,
+    26,
+    17
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "896",
+   "id": "cap-arith-distributed-nl-10",
+   "parameters": [
+    16,
+    26,
+    30
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "930",
+   "id": "cap-arith-distributed-en-11",
+   "parameters": [
+    15,
+    33,
+    29
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "204",
+   "id": "cap-arith-distributed-nl-11",
+   "parameters": [
+    4,
+    14,
+    37
+   ],
+   "template": "arith-distributed"
+  },
+  {
+   "expected": "12",
+   "id": "cap-arith-exact-division-en-00",
+   "parameters": [
+    29,
+    103,
+    11
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "27",
+   "id": "cap-arith-exact-division-nl-00",
+   "parameters": [
+    73,
+    8,
+    3
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "23",
+   "id": "cap-arith-exact-division-en-01",
+   "parameters": [
+    22,
+    93,
+    5
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "39",
+   "id": "cap-arith-exact-division-nl-01",
+   "parameters": [
+    109,
+    164,
+    7
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "8",
+   "id": "cap-arith-exact-division-en-02",
+   "parameters": [
+    2,
+    62,
+    8
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "32",
+   "id": "cap-arith-exact-division-nl-02",
+   "parameters": [
+    107,
+    117,
+    7
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "39",
+   "id": "cap-arith-exact-division-en-03",
+   "parameters": [
+    127,
+    29,
+    4
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "17",
+   "id": "cap-arith-exact-division-nl-03",
+   "parameters": [
+    63,
+    5,
+    4
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "40",
+   "id": "cap-arith-exact-division-en-04",
+   "parameters": [
+    81,
+    199,
+    7
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "27",
+   "id": "cap-arith-exact-division-nl-04",
+   "parameters": [
+    66,
+    96,
+    6
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "30",
+   "id": "cap-arith-exact-division-en-05",
+   "parameters": [
+    16,
+    74,
+    3
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "23",
+   "id": "cap-arith-exact-division-nl-05",
+   "parameters": [
+    103,
+    12,
+    5
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "24",
+   "id": "cap-arith-exact-division-en-06",
+   "parameters": [
+    136,
+    32,
+    7
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "20",
+   "id": "cap-arith-exact-division-nl-06",
+   "parameters": [
+    132,
+    28,
+    8
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "39",
+   "id": "cap-arith-exact-division-en-07",
+   "parameters": [
+    456,
+    12,
+    12
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "12",
+   "id": "cap-arith-exact-division-nl-07",
+   "parameters": [
+    16,
+    56,
+    6
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "32",
+   "id": "cap-arith-exact-division-en-08",
+   "parameters": [
+    30,
+    322,
+    11
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "15",
+   "id": "cap-arith-exact-division-nl-08",
+   "parameters": [
+    40,
+    5,
+    3
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "13",
+   "id": "cap-arith-exact-division-en-09",
+   "parameters": [
+    110,
+    46,
+    12
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "21",
+   "id": "cap-arith-exact-division-nl-09",
+   "parameters": [
+    220,
+    32,
+    12
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "21",
+   "id": "cap-arith-exact-division-en-10",
+   "parameters": [
+    50,
+    139,
+    9
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "24",
+   "id": "cap-arith-exact-division-nl-10",
+   "parameters": [
+    77,
+    163,
+    10
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "28",
+   "id": "cap-arith-exact-division-en-11",
+   "parameters": [
+    78,
+    118,
+    7
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "23",
+   "id": "cap-arith-exact-division-nl-11",
+   "parameters": [
+    66,
+    118,
+    8
+   ],
+   "template": "arith-exact-division"
+  },
+  {
+   "expected": "92",
+   "id": "cap-pct-forward-en-00",
+   "parameters": [
+    80,
+    115
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "93",
+   "id": "cap-pct-forward-nl-00",
+   "parameters": [
+    75,
+    124
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "66",
+   "id": "cap-pct-forward-en-01",
+   "parameters": [
+    40,
+    165
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "17",
+   "id": "cap-pct-forward-nl-01",
+   "parameters": [
+    25,
+    68
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "64",
+   "id": "cap-pct-forward-en-02",
+   "parameters": [
+    40,
+    160
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "20",
+   "id": "cap-pct-forward-nl-02",
+   "parameters": [
+    25,
+    80
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "69",
+   "id": "cap-pct-forward-en-03",
+   "parameters": [
+    60,
+    115
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "26",
+   "id": "cap-pct-forward-nl-03",
+   "parameters": [
+    5,
+    520
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "66",
+   "id": "cap-pct-forward-en-04",
+   "parameters": [
+    60,
+    110
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "34",
+   "id": "cap-pct-forward-nl-04",
+   "parameters": [
+    5,
+    680
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "13",
+   "id": "cap-pct-forward-en-05",
+   "parameters": [
+    10,
+    130
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "39",
+   "id": "cap-pct-forward-nl-05",
+   "parameters": [
+    25,
+    156
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "4",
+   "id": "cap-pct-forward-en-06",
+   "parameters": [
+    40,
+    10
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "33",
+   "id": "cap-pct-forward-nl-06",
+   "parameters": [
+    50,
+    66
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "8",
+   "id": "cap-pct-forward-en-07",
+   "parameters": [
+    20,
+    40
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "16",
+   "id": "cap-pct-forward-nl-07",
+   "parameters": [
+    10,
+    160
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "38",
+   "id": "cap-pct-forward-en-08",
+   "parameters": [
+    50,
+    76
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "30",
+   "id": "cap-pct-forward-nl-08",
+   "parameters": [
+    60,
+    50
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "24",
+   "id": "cap-pct-forward-en-09",
+   "parameters": [
+    75,
+    32
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "7",
+   "id": "cap-pct-forward-nl-09",
+   "parameters": [
+    50,
+    14
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "36",
+   "id": "cap-pct-forward-en-10",
+   "parameters": [
+    40,
+    90
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "69",
+   "id": "cap-pct-forward-nl-10",
+   "parameters": [
+    75,
+    92
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "99",
+   "id": "cap-pct-forward-en-11",
+   "parameters": [
+    75,
+    132
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "19",
+   "id": "cap-pct-forward-nl-11",
+   "parameters": [
+    20,
+    95
+   ],
+   "template": "pct-forward"
+  },
+  {
+   "expected": "10",
+   "id": "cap-pct-reverse-en-00",
+   "parameters": [
+    50,
+    5
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "100",
+   "id": "cap-pct-reverse-nl-00",
+   "parameters": [
+    10,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "38",
+   "id": "cap-pct-reverse-en-01",
+   "parameters": [
+    50,
+    19
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "24",
+   "id": "cap-pct-reverse-nl-01",
+   "parameters": [
+    25,
+    6
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "35",
+   "id": "cap-pct-reverse-en-02",
+   "parameters": [
+    20,
+    7
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "190",
+   "id": "cap-pct-reverse-nl-02",
+   "parameters": [
+    10,
+    19
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "40",
+   "id": "cap-pct-reverse-en-03",
+   "parameters": [
+    20,
+    8
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "32",
+   "id": "cap-pct-reverse-nl-03",
+   "parameters": [
+    50,
+    16
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "55",
+   "id": "cap-pct-reverse-en-04",
+   "parameters": [
+    20,
+    11
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "25",
+   "id": "cap-pct-reverse-nl-04",
+   "parameters": [
+    40,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "40",
+   "id": "cap-pct-reverse-en-05",
+   "parameters": [
+    25,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "65",
+   "id": "cap-pct-reverse-nl-05",
+   "parameters": [
+    20,
+    13
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "40",
+   "id": "cap-pct-reverse-en-06",
+   "parameters": [
+    10,
+    4
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "140",
+   "id": "cap-pct-reverse-nl-06",
+   "parameters": [
+    40,
+    56
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "70",
+   "id": "cap-pct-reverse-en-07",
+   "parameters": [
+    10,
+    7
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "150",
+   "id": "cap-pct-reverse-nl-07",
+   "parameters": [
+    40,
+    60
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "24",
+   "id": "cap-pct-reverse-en-08",
+   "parameters": [
+    50,
+    12
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "15",
+   "id": "cap-pct-reverse-nl-08",
+   "parameters": [
+    40,
+    6
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "50",
+   "id": "cap-pct-reverse-en-09",
+   "parameters": [
+    20,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "100",
+   "id": "cap-pct-reverse-nl-09",
+   "parameters": [
+    25,
+    25
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "25",
+   "id": "cap-pct-reverse-en-10",
+   "parameters": [
+    40,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "50",
+   "id": "cap-pct-reverse-nl-10",
+   "parameters": [
+    20,
+    10
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "16",
+   "id": "cap-pct-reverse-en-11",
+   "parameters": [
+    50,
+    8
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "18",
+   "id": "cap-pct-reverse-nl-11",
+   "parameters": [
+    50,
+    9
+   ],
+   "template": "pct-reverse"
+  },
+  {
+   "expected": "30",
+   "id": "cap-linear-solve-en-00",
+   "parameters": [
+    9,
+    55,
+    325
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "14",
+   "id": "cap-linear-solve-nl-00",
+   "parameters": [
+    16,
+    32,
+    256
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "30",
+   "id": "cap-linear-solve-en-01",
+   "parameters": [
+    9,
+    47,
+    317
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "10",
+   "id": "cap-linear-solve-nl-01",
+   "parameters": [
+    4,
+    50,
+    90
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "17",
+   "id": "cap-linear-solve-en-02",
+   "parameters": [
+    4,
+    36,
+    104
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "10",
+   "id": "cap-linear-solve-nl-02",
+   "parameters": [
+    17,
+    33,
+    203
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "2",
+   "id": "cap-linear-solve-en-03",
+   "parameters": [
+    3,
+    14,
+    20
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "14",
+   "id": "cap-linear-solve-nl-03",
+   "parameters": [
+    15,
+    32,
+    242
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "23",
+   "id": "cap-linear-solve-en-04",
+   "parameters": [
+    15,
+    60,
+    405
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "16",
+   "id": "cap-linear-solve-nl-04",
+   "parameters": [
+    3,
+    43,
+    91
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "28",
+   "id": "cap-linear-solve-en-05",
+   "parameters": [
+    16,
+    52,
+    500
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "15",
+   "id": "cap-linear-solve-nl-05",
+   "parameters": [
+    3,
+    32,
+    77
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "7",
+   "id": "cap-linear-solve-en-06",
+   "parameters": [
+    5,
+    22,
+    57
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "18",
+   "id": "cap-linear-solve-nl-06",
+   "parameters": [
+    16,
+    40,
+    328
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "15",
+   "id": "cap-linear-solve-en-07",
+   "parameters": [
+    15,
+    26,
+    251
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "24",
+   "id": "cap-linear-solve-nl-07",
+   "parameters": [
+    5,
+    33,
+    153
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "21",
+   "id": "cap-linear-solve-en-08",
+   "parameters": [
+    4,
+    47,
+    131
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "7",
+   "id": "cap-linear-solve-nl-08",
+   "parameters": [
+    3,
+    24,
+    45
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "14",
+   "id": "cap-linear-solve-en-09",
+   "parameters": [
+    7,
+    19,
+    117
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "13",
+   "id": "cap-linear-solve-nl-09",
+   "parameters": [
+    8,
+    17,
+    121
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "4",
+   "id": "cap-linear-solve-en-10",
+   "parameters": [
+    14,
+    7,
+    63
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "30",
+   "id": "cap-linear-solve-nl-10",
+   "parameters": [
+    6,
+    33,
+    213
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "17",
+   "id": "cap-linear-solve-en-11",
+   "parameters": [
+    4,
+    53,
+    121
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "26",
+   "id": "cap-linear-solve-nl-11",
+   "parameters": [
+    7,
+    8,
+    190
+   ],
+   "template": "linear-solve"
+  },
+  {
+   "expected": "100",
+   "id": "cap-geometry-rectangle-en-00",
+   "parameters": [
+    6,
+    44
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "164",
+   "id": "cap-geometry-rectangle-nl-00",
+   "parameters": [
+    42,
+    40
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "176",
+   "id": "cap-geometry-rectangle-en-01",
+   "parameters": [
+    45,
+    43
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "90",
+   "id": "cap-geometry-rectangle-nl-01",
+   "parameters": [
+    14,
+    31
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "88",
+   "id": "cap-geometry-rectangle-en-02",
+   "parameters": [
+    33,
+    11
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "50",
+   "id": "cap-geometry-rectangle-nl-02",
+   "parameters": [
+    6,
+    19
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "114",
+   "id": "cap-geometry-rectangle-en-03",
+   "parameters": [
+    38,
+    19
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "132",
+   "id": "cap-geometry-rectangle-nl-03",
+   "parameters": [
+    44,
+    22
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "96",
+   "id": "cap-geometry-rectangle-en-04",
+   "parameters": [
+    40,
+    8
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "104",
+   "id": "cap-geometry-rectangle-nl-04",
+   "parameters": [
+    13,
+    39
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "82",
+   "id": "cap-geometry-rectangle-en-05",
+   "parameters": [
+    9,
+    32
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "118",
+   "id": "cap-geometry-rectangle-nl-05",
+   "parameters": [
+    24,
+    35
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "126",
+   "id": "cap-geometry-rectangle-en-06",
+   "parameters": [
+    25,
+    38
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "28",
+   "id": "cap-geometry-rectangle-nl-06",
+   "parameters": [
+    4,
+    10
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "102",
+   "id": "cap-geometry-rectangle-en-07",
+   "parameters": [
+    6,
+    45
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "40",
+   "id": "cap-geometry-rectangle-nl-07",
+   "parameters": [
+    11,
+    9
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "52",
+   "id": "cap-geometry-rectangle-en-08",
+   "parameters": [
+    19,
+    7
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "112",
+   "id": "cap-geometry-rectangle-nl-08",
+   "parameters": [
+    14,
+    42
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "100",
+   "id": "cap-geometry-rectangle-en-09",
+   "parameters": [
+    20,
+    30
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "118",
+   "id": "cap-geometry-rectangle-nl-09",
+   "parameters": [
+    37,
+    22
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "106",
+   "id": "cap-geometry-rectangle-en-10",
+   "parameters": [
+    18,
+    35
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "24",
+   "id": "cap-geometry-rectangle-nl-10",
+   "parameters": [
+    9,
+    3
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "78",
+   "id": "cap-geometry-rectangle-en-11",
+   "parameters": [
+    35,
+    4
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "80",
+   "id": "cap-geometry-rectangle-nl-11",
+   "parameters": [
+    6,
+    34
+   ],
+   "template": "geometry-rectangle"
+  },
+  {
+   "expected": "483",
+   "id": "cap-geometry-triangle-en-00",
+   "parameters": [
+    42,
+    23
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "209",
+   "id": "cap-geometry-triangle-nl-00",
+   "parameters": [
+    38,
+    11
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "234",
+   "id": "cap-geometry-triangle-en-01",
+   "parameters": [
+    52,
+    9
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "529",
+   "id": "cap-geometry-triangle-nl-01",
+   "parameters": [
+    46,
+    23
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "384",
+   "id": "cap-geometry-triangle-en-02",
+   "parameters": [
+    48,
+    16
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "570",
+   "id": "cap-geometry-triangle-nl-02",
+   "parameters": [
+    38,
+    30
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "105",
+   "id": "cap-geometry-triangle-en-03",
+   "parameters": [
+    10,
+    21
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "161",
+   "id": "cap-geometry-triangle-nl-03",
+   "parameters": [
+    14,
+    23
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "259",
+   "id": "cap-geometry-triangle-en-04",
+   "parameters": [
+    14,
+    37
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "495",
+   "id": "cap-geometry-triangle-nl-04",
+   "parameters": [
+    30,
+    33
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "528",
+   "id": "cap-geometry-triangle-en-05",
+   "parameters": [
+    48,
+    22
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "48",
+   "id": "cap-geometry-triangle-nl-05",
+   "parameters": [
+    8,
+    12
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "425",
+   "id": "cap-geometry-triangle-en-06",
+   "parameters": [
+    34,
+    25
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "24",
+   "id": "cap-geometry-triangle-nl-06",
+   "parameters": [
+    6,
+    8
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "783",
+   "id": "cap-geometry-triangle-en-07",
+   "parameters": [
+    58,
+    27
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "144",
+   "id": "cap-geometry-triangle-nl-07",
+   "parameters": [
+    12,
+    24
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "112",
+   "id": "cap-geometry-triangle-en-08",
+   "parameters": [
+    32,
+    7
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "700",
+   "id": "cap-geometry-triangle-nl-08",
+   "parameters": [
+    56,
+    25
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "783",
+   "id": "cap-geometry-triangle-en-09",
+   "parameters": [
+    54,
+    29
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "208",
+   "id": "cap-geometry-triangle-nl-09",
+   "parameters": [
+    52,
+    8
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "435",
+   "id": "cap-geometry-triangle-en-10",
+   "parameters": [
+    58,
+    15
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "728",
+   "id": "cap-geometry-triangle-nl-10",
+   "parameters": [
+    56,
+    26
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "160",
+   "id": "cap-geometry-triangle-en-11",
+   "parameters": [
+    8,
+    40
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "870",
+   "id": "cap-geometry-triangle-nl-11",
+   "parameters": [
+    60,
+    29
+   ],
+   "template": "geometry-triangle"
+  },
+  {
+   "expected": "34",
+   "id": "cap-sequence-arithmetic-en-00",
+   "parameters": [
+    7,
+    3,
+    10
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "211",
+   "id": "cap-sequence-arithmetic-en-01",
+   "parameters": [
+    13,
+    9,
+    23
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "202",
+   "id": "cap-sequence-arithmetic-en-02",
+   "parameters": [
+    12,
+    10,
+    20
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "268",
+   "id": "cap-sequence-arithmetic-en-03",
+   "parameters": [
+    15,
+    11,
+    24
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "289",
+   "id": "cap-sequence-arithmetic-en-04",
+   "parameters": [
+    16,
+    13,
+    22
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "124",
+   "id": "cap-sequence-arithmetic-en-05",
+   "parameters": [
+    12,
+    7,
+    17
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "141",
+   "id": "cap-sequence-arithmetic-en-06",
+   "parameters": [
+    9,
+    11,
+    13
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "170",
+   "id": "cap-sequence-arithmetic-en-07",
+   "parameters": [
+    2,
+    8,
+    22
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "200",
+   "id": "cap-sequence-arithmetic-en-08",
+   "parameters": [
+    13,
+    11,
+    18
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "105",
+   "id": "cap-sequence-arithmetic-en-09",
+   "parameters": [
+    5,
+    10,
+    11
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "277",
+   "id": "cap-sequence-arithmetic-en-10",
+   "parameters": [
+    13,
+    12,
+    23
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "176",
+   "id": "cap-sequence-arithmetic-en-11",
+   "parameters": [
+    20,
+    13,
+    13
+   ],
+   "template": "sequence-arithmetic"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-00",
+   "parameters": [
+    69,
+    76
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-00",
+   "parameters": [
+    55,
+    24
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "2",
+   "id": "cap-number-theory-gcd-en-01",
+   "parameters": [
+    32,
+    30
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-01",
+   "parameters": [
+    59,
+    9
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "35",
+   "id": "cap-number-theory-gcd-en-02",
+   "parameters": [
+    35,
+    35
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-02",
+   "parameters": [
+    7,
+    88
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-03",
+   "parameters": [
+    87,
+    11
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "3",
+   "id": "cap-number-theory-gcd-nl-03",
+   "parameters": [
+    33,
+    78
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-04",
+   "parameters": [
+    74,
+    29
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "3",
+   "id": "cap-number-theory-gcd-nl-04",
+   "parameters": [
+    6,
+    39
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-05",
+   "parameters": [
+    51,
+    79
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-05",
+   "parameters": [
+    49,
+    6
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "13",
+   "id": "cap-number-theory-gcd-en-06",
+   "parameters": [
+    78,
+    65
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-06",
+   "parameters": [
+    57,
+    46
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-07",
+   "parameters": [
+    64,
+    41
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-07",
+   "parameters": [
+    77,
+    58
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "2",
+   "id": "cap-number-theory-gcd-en-08",
+   "parameters": [
+    62,
+    38
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-08",
+   "parameters": [
+    80,
+    79
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "2",
+   "id": "cap-number-theory-gcd-en-09",
+   "parameters": [
+    22,
+    20
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-09",
+   "parameters": [
+    81,
+    22
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-10",
+   "parameters": [
+    44,
+    37
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-nl-10",
+   "parameters": [
+    74,
+    39
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "1",
+   "id": "cap-number-theory-gcd-en-11",
+   "parameters": [
+    17,
+    14
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "5",
+   "id": "cap-number-theory-gcd-nl-11",
+   "parameters": [
+    55,
+    45
+   ],
+   "template": "number-theory-gcd"
+  },
+  {
+   "expected": "3080",
+   "id": "cap-number-theory-lcm-en-00",
+   "parameters": [
+    40,
+    77
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "986",
+   "id": "cap-number-theory-lcm-nl-00",
+   "parameters": [
+    29,
+    34
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "494",
+   "id": "cap-number-theory-lcm-en-01",
+   "parameters": [
+    38,
+    13
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1104",
+   "id": "cap-number-theory-lcm-nl-01",
+   "parameters": [
+    23,
+    48
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1677",
+   "id": "cap-number-theory-lcm-en-02",
+   "parameters": [
+    39,
+    43
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "3010",
+   "id": "cap-number-theory-lcm-nl-02",
+   "parameters": [
+    86,
+    35
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "3904",
+   "id": "cap-number-theory-lcm-en-03",
+   "parameters": [
+    61,
+    64
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "33",
+   "id": "cap-number-theory-lcm-nl-03",
+   "parameters": [
+    11,
+    33
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "666",
+   "id": "cap-number-theory-lcm-en-04",
+   "parameters": [
+    9,
+    74
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "240",
+   "id": "cap-number-theory-lcm-nl-04",
+   "parameters": [
+    60,
+    16
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "660",
+   "id": "cap-number-theory-lcm-en-05",
+   "parameters": [
+    60,
+    22
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1113",
+   "id": "cap-number-theory-lcm-nl-05",
+   "parameters": [
+    53,
+    21
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1775",
+   "id": "cap-number-theory-lcm-en-06",
+   "parameters": [
+    25,
+    71
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "572",
+   "id": "cap-number-theory-lcm-nl-06",
+   "parameters": [
+    13,
+    44
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "5256",
+   "id": "cap-number-theory-lcm-en-07",
+   "parameters": [
+    72,
+    73
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "306",
+   "id": "cap-number-theory-lcm-nl-07",
+   "parameters": [
+    17,
+    18
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "66",
+   "id": "cap-number-theory-lcm-en-08",
+   "parameters": [
+    66,
+    11
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1785",
+   "id": "cap-number-theory-lcm-nl-08",
+   "parameters": [
+    35,
+    51
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "4212",
+   "id": "cap-number-theory-lcm-en-09",
+   "parameters": [
+    52,
+    81
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "960",
+   "id": "cap-number-theory-lcm-nl-09",
+   "parameters": [
+    15,
+    64
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "506",
+   "id": "cap-number-theory-lcm-en-10",
+   "parameters": [
+    23,
+    22
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1064",
+   "id": "cap-number-theory-lcm-nl-10",
+   "parameters": [
+    56,
+    76
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "3626",
+   "id": "cap-number-theory-lcm-en-11",
+   "parameters": [
+    49,
+    74
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "1653",
+   "id": "cap-number-theory-lcm-nl-11",
+   "parameters": [
+    57,
+    87
+   ],
+   "template": "number-theory-lcm"
+  },
+  {
+   "expected": "8/5",
+   "id": "cap-fraction-sum-en-00",
+   "parameters": [
+    4,
+    5,
+    8,
+    10
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "1",
+   "id": "cap-fraction-sum-en-01",
+   "parameters": [
+    2,
+    7,
+    5,
+    7
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "11/12",
+   "id": "cap-fraction-sum-en-02",
+   "parameters": [
+    4,
+    6,
+    3,
+    12
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "4/3",
+   "id": "cap-fraction-sum-en-03",
+   "parameters": [
+    1,
+    6,
+    7,
+    6
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "3/5",
+   "id": "cap-fraction-sum-en-04",
+   "parameters": [
+    1,
+    5,
+    2,
+    5
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "9/5",
+   "id": "cap-fraction-sum-en-05",
+   "parameters": [
+    8,
+    5,
+    2,
+    10
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "9/7",
+   "id": "cap-fraction-sum-en-06",
+   "parameters": [
+    3,
+    7,
+    6,
+    7
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "1",
+   "id": "cap-fraction-sum-en-07",
+   "parameters": [
+    7,
+    9,
+    2,
+    9
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "9/5",
+   "id": "cap-fraction-sum-en-08",
+   "parameters": [
+    5,
+    5,
+    4,
+    5
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "3",
+   "id": "cap-fraction-sum-en-09",
+   "parameters": [
+    7,
+    4,
+    5,
+    4
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "5/3",
+   "id": "cap-fraction-sum-en-10",
+   "parameters": [
+    8,
+    6,
+    2,
+    6
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "1/3",
+   "id": "cap-fraction-sum-en-11",
+   "parameters": [
+    1,
+    6,
+    3,
+    18
+   ],
+   "template": "fraction-sum"
+  },
+  {
+   "expected": "2178",
+   "id": "cap-pct-chain-cents-en-00",
+   "parameters": [
+    2640,
+    25,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "2646",
+   "id": "cap-pct-chain-cents-en-01",
+   "parameters": [
+    2800,
+    10,
+    5
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1512",
+   "id": "cap-pct-chain-cents-en-02",
+   "parameters": [
+    1800,
+    20,
+    5
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "2457",
+   "id": "cap-pct-chain-cents-en-03",
+   "parameters": [
+    3120,
+    25,
+    5
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "2688",
+   "id": "cap-pct-chain-cents-en-04",
+   "parameters": [
+    3200,
+    20,
+    5
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1953",
+   "id": "cap-pct-chain-cents-en-05",
+   "parameters": [
+    2480,
+    25,
+    5
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1848",
+   "id": "cap-pct-chain-cents-en-06",
+   "parameters": [
+    2100,
+    20,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "924",
+   "id": "cap-pct-chain-cents-en-07",
+   "parameters": [
+    1120,
+    25,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1881",
+   "id": "cap-pct-chain-cents-en-08",
+   "parameters": [
+    2280,
+    25,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1056",
+   "id": "cap-pct-chain-cents-en-09",
+   "parameters": [
+    1200,
+    20,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "1320",
+   "id": "cap-pct-chain-cents-en-10",
+   "parameters": [
+    1500,
+    20,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "627",
+   "id": "cap-pct-chain-cents-en-11",
+   "parameters": [
+    760,
+    25,
+    10
+   ],
+   "template": "pct-chain-cents"
+  },
+  {
+   "expected": "9/2",
+   "id": "cap-rate-together-en-00",
+   "parameters": [
+    9,
+    9
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "5/3",
+   "id": "cap-rate-together-en-01",
+   "parameters": [
+    10,
+    2
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "55/16",
+   "id": "cap-rate-together-en-02",
+   "parameters": [
+    5,
+    11
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "77/18",
+   "id": "cap-rate-together-en-03",
+   "parameters": [
+    11,
+    7
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "8/5",
+   "id": "cap-rate-together-en-04",
+   "parameters": [
+    8,
+    2
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "12/7",
+   "id": "cap-rate-together-en-05",
+   "parameters": [
+    4,
+    3
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "60/11",
+   "id": "cap-rate-together-en-06",
+   "parameters": [
+    12,
+    10
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "35/12",
+   "id": "cap-rate-together-en-07",
+   "parameters": [
+    7,
+    5
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "3/2",
+   "id": "cap-rate-together-en-08",
+   "parameters": [
+    6,
+    2
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "30/13",
+   "id": "cap-rate-together-en-09",
+   "parameters": [
+    3,
+    10
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "28/11",
+   "id": "cap-rate-together-en-10",
+   "parameters": [
+    4,
+    7
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "56/15",
+   "id": "cap-rate-together-en-11",
+   "parameters": [
+    7,
+    8
+   ],
+   "template": "rate-together"
+  },
+  {
+   "expected": "78",
+   "id": "cap-counting-combinations-en-00",
+   "parameters": [
+    13,
+    2
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "91",
+   "id": "cap-counting-combinations-en-01",
+   "parameters": [
+    14,
+    2
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "364",
+   "id": "cap-counting-combinations-en-02",
+   "parameters": [
+    14,
+    3
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "210",
+   "id": "cap-counting-combinations-en-03",
+   "parameters": [
+    10,
+    4
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "21",
+   "id": "cap-counting-combinations-en-04",
+   "parameters": [
+    7,
+    5
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "1287",
+   "id": "cap-counting-combinations-en-05",
+   "parameters": [
+    13,
+    5
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "35",
+   "id": "cap-counting-combinations-en-06",
+   "parameters": [
+    7,
+    4
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "252",
+   "id": "cap-counting-combinations-en-07",
+   "parameters": [
+    10,
+    5
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "56",
+   "id": "cap-counting-combinations-en-08",
+   "parameters": [
+    8,
+    3
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "28",
+   "id": "cap-counting-combinations-en-09",
+   "parameters": [
+    8,
+    2
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "3003",
+   "id": "cap-counting-combinations-en-10",
+   "parameters": [
+    14,
+    6
+   ],
+   "template": "counting-combinations"
+  },
+  {
+   "expected": "455",
+   "id": "cap-counting-combinations-en-11",
+   "parameters": [
+    15,
+    3
+   ],
+   "template": "counting-combinations"
+  }
+ ],
+ "seed": 20261117
+}

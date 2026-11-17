@@ -1,0 +1,593 @@
+{
+ "runs": [
+  {
+   "compiled": true,
+   "family": "sum-tail",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "sum-tail",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "upper-words",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "upper-words",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "longest-word",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "longest-word",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "char-count",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "char-count",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "palindrome",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "palindrome",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "fizzbuzz",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "fizzbuzz",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 3, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "gcd",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "gcd",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "prime",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "prime",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "count-primes",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "count-primes",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "digit-sum",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "digit-sum",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "even-index-sum",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "even-index-sum",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "unique-order",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "unique-order",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "flatten-one",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "flatten-one",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "reverse-words",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "reverse-words",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "run-length",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "run-length",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "most-frequent",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "most-frequent",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "clamp-values",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "clamp-values",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "merge-sorted",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "merge-sorted",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "median-three",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "median-three",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "prefix-max",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "prefix-max",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "fibonacci",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": false,
+   "family": "fibonacci",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Private/dunder access is not permitted in the pure-Python slice"
+  },
+  {
+   "compiled": true,
+   "family": "triangular",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "triangular",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "binary-parse",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "binary-parse",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "perfect-square",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "perfect-square",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "window-average",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "window-average",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "decimal-round",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "decimal-round",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "kv-parse",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "kv-parse",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\n  File \"candidate.py\", line 6, in parse_key_values\nValueError: not enough values to unpack (expected 2, got 1)\n"
+  },
+  {
+   "compiled": true,
+   "family": "intersect",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "intersect",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "truncate-words",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "truncate-words",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "longest-streak",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "longest-streak",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "zip-sum",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "zip-sum",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "move-zeros",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "move-zeros",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "sort-by-length",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "sort-by-length",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "percent-of-total",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "percent-of-total",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "range-product",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "range-product",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "to-roman",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "to-roman",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "word-count-top",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "word-count-top",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "int-parse",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "int-parse",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 3, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "accumulate-bool",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "accumulate-bool",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "combinations-count",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "combinations-count",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 2, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "cumulative-difference",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "cumulative-difference",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  },
+  {
+   "compiled": true,
+   "family": "rotate-left",
+   "label": "reference",
+   "passed": true,
+   "reason": "ok"
+  },
+  {
+   "compiled": true,
+   "family": "rotate-left",
+   "label": "mutant",
+   "passed": false,
+   "reason": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n  File \"tests.py\", line 1, in <module>\nAssertionError\n"
+  }
+ ],
+ "tasks": 42
+}

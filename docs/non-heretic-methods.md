@@ -194,6 +194,14 @@ Known blockers before GPU time: the direction-suite coverage trap
 PLAN-NEXT 2026-11-16), selection-suite item `s-reviews-r3` non-termination,
 and no 3–4B dense instruct checkpoint pinned yet (the two 1B models on disk
 compress the retention axis to nothing and serve only as loop-speed models).
+The retention axis is no longer an un-instrumented blocker: capability rows
+are now authored and scorer-proven (300 maths in `verification/capability/capability-suite.jsonl`,
+42 code tasks in `capability-code.jsonl`, answers re-derived and graders shown
+to reject wrong answers), and `suites-compare --kind math` / `--kind code` emits
+before/after rates with Wilson intervals and Cohen's h per kind. What is still
+missing is a measured wave: no before/after retention number exists until a
+certification run scores those rows on the pinned config, and the bake-off table
+must report the capability kind alongside the removal rate.
 
 ## Maintenance rule
 
