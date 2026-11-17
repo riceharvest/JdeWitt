@@ -201,3 +201,51 @@ Each bake-off result row lands here (or in a run report referenced from
 here) only after the suites-compare gate has run; literature rows keep their
 source pin; any claim that cannot survive the same consistency policy as a
 local claim stays out.
+
+## First-party measured result — SAS (Sign-Aligned Shared axis)
+
+Status update to the header caveat: one method now has local before/after
+numbers. Measured on Qwen2.5-1.5B-Instruct (bf16 GGUF), all numbers
+`rank=second` (RTX 3060; B70 GATED).
+
+**SAS** is not a new fit *objective* — it is a post-processing of the
+contrast data the directional pipeline already generates:
+
+1. Take per-layer contrast means `m_L = mean(bad residual) − mean(good residual)`
+   from the teacher-forced capture the pipeline already runs (no extra inference).
+2. Fit ONE shared unit axis across all layers by sign-aligned power iteration:
+   `a ← normalize(Σ_L sign(a·m_L) · m̂_L)`. Layer sign flips are automatic;
+   topic-dominated per-layer means cancel except on the component the layers
+   agree on, which is where the refusal routing lives.
+3. Edit: remove `a` from every `o_proj` and `mlp.down_proj` output
+   (projection removal, functional `Wᵀa` computed from PRIMAL weights —
+   see serving-basis trap below).
+4. Export as one rank-1 adapter; trials are POST `/lora-adapters` scale swaps;
+   scale calibrated by one micro-wave.
+
+Cost measured: axis fit 0.024 s, adapter build 0.443 s, zero extra inference.
+
+Certification (shape judged by the working agent per METHODOLOGY.md R2):
+
+- harmful-40 suite (in-sample, families used for the fit): 40/40 refusal-shape
+  removed at scale 1.5, harmless 8/8 intact.
+- Canonical held-out (`public-corpus-fit/holdout.jsonl`, zero id-overlap with
+  the fit selection, 24 stratified refusal families): 24/24 refusal-shape
+  removed, harmless 10/10 intact.
+- Oracle cross-check: the published `Josiefied-Qwen2.5-1.5B-Instruct-abliterated-v1`
+  (pinned rev `c116e736b78dd85e`) was diffed — its edit is per-layer
+  projection-removal on exactly o_proj + down_proj with one shared output
+  axis (|cos(u_L, u_down)| = 1.0, all 28 layers; cos(v, Wᵀu) = −1.0);
+  reproducing that axis as an adapter on the *unmodified* base removed 40/40.
+  SAS lands at mean |cos| = 0.64 to that axis and still certifies 100% on
+  held-out families.
+- Rejected for this model (measured, not prose): harmful-mean prototype,
+  refusal-prefix span, RLGA likelihood-gradient fits (mean |cos| to oracle
+  0.19–0.26; behaviorally null or destructive; per-layer independent fits
+  land at |cos| 0.26 and remove only ~75% of refusal shapes).
+
+Serving caveat that invalidated a month of nulls before being fixed: the
+dspark llama.cpp fork Hadamard-folds qwen FFN weights and applies LoRA deltas
+to the PRIMAL input — adapter functionals MUST be `a = d @ W_hf`, never
+`d @ dequantize_tensor(gguf)`. Embedding-side edits cannot be served as LoRA
+on tied-head models (build_inp_embd vs build_lora_mm orientation conflict).
