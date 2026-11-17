@@ -81,6 +81,21 @@ def test_inplace_removal_apply_revert():
         assert abs(got - before[i]) < 1e-3 * max(before[i], 1.0)
 
 
+def test_shared_axis_recovers_layer_invariant_direction():
+    g = torch.Generator().manual_seed(23)
+    axis = torch.randn(D, generator=g)
+    axis = axis / axis.norm()
+    Lc, Nc = 6, 10
+    bad = axis.view(1, 1, D) + 0.05 * torch.randn(Nc, Lc, D, generator=g)
+    good = 0.05 * torch.randn(Nc, Lc, D, generator=g)
+    recs = ([({'label': 'bad'}, bad[i]) for i in range(Nc)] +
+            [({'label': 'good'}, good[i]) for i in range(Nc)])
+    axes, a = spanfit.shared_axis(recs)
+    assert axes.shape == (Lc, D)
+    assert abs(float(a @ axis)) > 0.95
+    assert torch.allclose(axes[0], axes[-1], atol=1e-6)
+
+
 def test_build_merged_rewrites_targets_only(tmp_path):
     from gguf import GGUFWriter
     g = np.random.default_rng(3)

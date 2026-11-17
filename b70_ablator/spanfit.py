@@ -74,6 +74,26 @@ def removal_delta(weight: torch.Tensor, axis: torch.Tensor,
     return -(strength * (a @ (a.T @ weight)))
 
 
+def shared_axis(records: list[tuple], label_bad: str = "bad",
+                label_good: str = "good") -> torch.Tensor:
+    """Sign-aligned shared refusal axis broadcast over layers (the SAS fit that
+    certified q25 at 40/40; on mc47 the per-layer fit beat it 90 vs 65 - the
+    searcher certifies which SHAPE wins, per R7)."""
+    bad = group_means(records, label_bad)
+    good = group_means(records, label_good)
+    D = bad.shape[-1]
+    M = bad.mean(0) - good.mean(0)            # [L, D]
+    R = M / M.norm(dim=1, keepdim=True).clamp_min(1e-12)  # rows onto the sphere
+    G = torch.zeros(D, D, dtype=bad.dtype)
+    for r in R:
+        G += torch.outer(r, r)
+    evals, evecs = torch.linalg.eigh(G)
+    a = evecs[:, -1]                           # top eigenvector = shared direction
+    if float(a @ M.mean(0)) < 0:
+        a = -a
+    return (a.unsqueeze(0).expand(bad.shape[0], D).float().contiguous(), a.float())
+
+
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
@@ -205,14 +225,18 @@ def main(argv=None):
     a.add_argument("--source-key", action="append", required=True,
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
+    a.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
     m = sub.add_parser("axes", help="fit axes and save the [L,W] tensor")
     m.add_argument("--records", required=True)
     m.add_argument("--out", required=True)
     m.add_argument("--cos-to", help="report max cosine distance vs another axes tensor")
+    m.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
     args = ap.parse_args(argv)
 
     t0 = time.monotonic()
-    axes = per_layer_axes(load_records(args.records))
+    recs = load_records(args.records)
+    axes = (shared_axis(recs)[0] if args.shape == "shared"
+            else per_layer_axes(recs))
     if args.cmd == "axes":
         torch.save({"axes": axes}, args.out)
         rep = {"axes": list(axes.shape), "elapsed_s": round(time.monotonic() - t0, 1)}
