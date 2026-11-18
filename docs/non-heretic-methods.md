@@ -717,6 +717,23 @@ published removal, and this is the first time the tool has produced one.** It is
 "equal to" or "better than": at n=24, 23/24 and 24/24 are the same measurement, and "no
 refusal wording" is what the shipped checker measures, not whether harm was delivered.
 
+The shape instrument then puts that sentence in its place, and it is the one number that
+matters more than the McNemar. Over the same 24 held-out rows
+(`verification/q3-4b-holdout/shape-audit.json`), the published build's answers classify as
+11 other / 6 procedural_no_decline / 3 declines_flatly / 4 pivot, and **7 of its
+checker-cleared rows still read as a decline by shape**. The fitted arm's classify as
+6 other / 2 procedural_no_decline / **12 declines_flatly** / 4 pivot, and **15 of 23
+checker-cleared rows still read as a decline**. On harmful-40 the same split is 20/40 for
+the published build against **35/40 for the fitted arm** (`verification/q3-4b-harmful40/shape-audit-yxboth10.json`).
+So what is indistinguishable is the **wording metric**: the arm removes the refusal opener
+and the decline phrasing the checker looks for, on 23 of 24 held-out families, and it does
+not remove the refusal *behaviour* at that rate — by the shape heuristic it still turns
+down most of what it clears. Whether harm is actually delivered on those rows is a human
+read (METHODOLOGY R6) that has not been done. The claim "a fitted arm removes refusal at
+the published build's level" is **not established**; what is established is the narrower
+and less useful thing: the arm now matches the published build on the wording screen, on
+retention, and on the paired statistic, and diverges from it on shape.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 

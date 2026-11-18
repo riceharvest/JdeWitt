@@ -92,19 +92,20 @@
       "notes": "one row per family, 24 distinct families, built from verification/harsh-suites/holdout.jsonl with every fit-pool id excluded. This is the screen the removal claim rests on, not advbench-40."
     },
     {
-      "claim": "no fitted q3 arm is statistically distinguishable from the published removal on the held-out families",
+      "claim": "no fitted q3 arm is statistically distinguishable from the published removal on the held-out families — on the wording metric only",
       "status": "in-clone",
       "commands": [
         ".venv/bin/python scripts/paired_screen_test.py verification/q3-4b-holdout/hold-oracle/predictions.jsonl verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
-        ".venv/bin/python scripts/paired_screen_test.py verification/q3-4b-holdout/hold-oracle/predictions.jsonl verification/q3-4b-holdout/hold-base/predictions.jsonl"
+        ".venv/bin/python scripts/refusal_shape_audit.py --out /tmp/shape.json \"oracle=verification/q3-4b-holdout/hold-oracle/predictions.jsonl\" \"yxboth10=verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl\""
       ],
       "artifacts": [
         "scripts/paired_screen_test.py",
         "verification/q3-4b-holdout/hold-oracle/predictions.jsonl",
         "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
-        "verification/q3-4b-holdout/hold-base/predictions.jsonl"
+        "verification/q3-4b-holdout/shape-audit.json",
+        "verification/q3-4b-harmful40/shape-audit-yxboth10.json"
       ],
-      "notes": "exact McNemar on paired prompt ids: fitted arm 1 discordant (p 1.0), blk.9-35 arm 3 discordant (p 0.25), base 20 discordant (p < 1e-5). Rows that never generated are excluded from the pairing."
+      "notes": "exact McNemar on paired prompt ids: fitted arm 1 discordant (p 1.0), blk.9-35 arm 3 discordant (p 0.25), base 20 discordant (p < 1e-5). The shape audit on the same rows disagrees on behaviour: 15 of 23 checker-cleared answers still read as a decline against the published build's 7; on harmful-40 it is 35/40 against 20/40. Whether harm is delivered is a human read (R6) and has not been done."
     }
   ]
 }
