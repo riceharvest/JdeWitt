@@ -709,3 +709,16 @@ pool, not on 800.
   (0 tok) -> cascade screen only if dR looks alive -> agent reads the pool.
 - Ladder rerun on the 800-row refusal corpus in flight (16 artifacts,
   zero-generation); validates per-prompt dR against the BR findings.
+
+## 2026-11-18 — cascade policy sweep on banked records (zero new inference)
+
+Greedy continuation is prefix-deterministic, so one banked run reconstructs
+what any K/cap policy would have cost. Sweep (`scripts/cascade_policy_sim.py`,
+tables in verification/q3-4b-harmful800/*-policy-sim.json): K=100 saves ~10%
+(202k vs 224k on f15s15-800) and never adds a false delivery-settle; K beyond
+150 is strictly worse. The structural finding: the escalation branch owns >90%
+of cascade tokens — K tuning is a ±10% knob, not the next order. The zero-gen
+refusal-corpus probe is the lever that removes escalation cost from the
+SEARCH loop; the 41-85% escalators remain only for finalist artifacts.
+Char-boundary noise at the observed K is 2-4% — the sim ranks policies, it
+doesn't clone runs.
