@@ -93,6 +93,30 @@ fn run(
                 JobEvent::Done { code, label } => {
                     let tint = if code == 0 { Color::Green } else { Color::Red };
                     app.push_log(format!("! {label} exit {code}"));
+                    // A `spanfit build` that edited nothing has exited 0 twice tonight,
+                    // so the exit code alone is not the claim the user cares about.
+                    // Check the file the command was told to write, in the UI, before
+                    // calling it done.
+                    if let Some(out) = app.out.clone() {
+                        match std::fs::metadata(&out) {
+                            Ok(m) if m.len() > 0 => {
+                                app.push_log(format!(
+                                    "artifact: {} bytes at {}",
+                                    m.len(),
+                                    out.display()
+                                ));
+                            }
+                            Ok(_) => app.push_log(format!(
+                                "NO ARTIFACT: {} is zero bytes despite exit 0",
+                                out.display()
+                            )),
+                            Err(_) => app.push_log(format!(
+                                "NO ARTIFACT: exit {} but {} was never written",
+                                code,
+                                out.display()
+                            )),
+                        }
+                    }
                     app.running = None;
                     app.last_code = Some(code);
                     fx_manager.add_effect(fx::fade_from_fg(
@@ -289,11 +313,22 @@ fn handle_key(
                     Mode::Auto => Mode::DeltaPack,
                 };
                 app.pick = None;
+                app.sync_output_path();
                 fx_flash(fx_manager, "mode");
             }
-            KeyCode::Char('1') => app.mode = Mode::DeltaPack,
-            KeyCode::Char('2') => app.mode = Mode::Direction,
-            KeyCode::Char('3') => app.mode = Mode::Auto,
+            KeyCode::Char('1') => {
+                app.mode = Mode::DeltaPack;
+                app.error = None;
+            }
+            KeyCode::Char('2') => {
+                app.mode = Mode::Direction;
+                app.error = None;
+                app.sync_output_path();
+            }
+            KeyCode::Char('3') => {
+                app.mode = Mode::Auto;
+                app.error = None;
+            }
             KeyCode::Char('k') => {
                 if app.axes_keys.len() > 1 {
                     let cur = app.axes_key.clone();

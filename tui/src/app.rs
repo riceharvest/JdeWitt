@@ -170,13 +170,39 @@ impl App {
     /// Assign the file being picked, and move to the next needed slot.
     pub fn accept_pick(&mut self, path: PathBuf) {
         let pick = self.pick.take().unwrap_or(Pick::Main);
+        self.error = None;
+        // Slots have types. Filling the axes slot with a GGUF used to be accepted
+        // silently and produced a `spanfit build --axes base.gguf`, which is the same
+        // class of error as a build that edits nothing: it exits, and the output is
+        // not what the words on screen promised.
+        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        let wants = match pick {
+            Pick::Axes => "pt",
+            Pick::Main if self.mode == Mode::Auto => "json",
+            Pick::Main | Pick::Ablated | Pick::OutDir => "gguf",
+        };
+        if ext != wants {
+            self.error = Some(match pick {
+                Pick::Axes => format!(
+                    "the axes slot wants a .pt direction/axes file; {} is a .{ext}",
+                    path.display()
+                ),
+                Pick::Main if wants == "json" => format!(
+                    "the auto recipe wants a config .json; {} is a .{ext}",
+                    path.display()
+                ),
+                _ => format!(
+                    "this slot wants a .gguf; {} is a .{ext}",
+                    path.display()
+                ),
+            });
+            return;
+        }
         match pick {
             Pick::Main => match self.mode {
                 Mode::DeltaPack | Mode::Direction => {
                     self.base = Some(path);
-                    if self.mode == Mode::Direction && self.out.is_none() {
-                        self.out = self.default_out();
-                    }
+                    self.sync_output_path();
                 }
                 Mode::Auto => self.auto_config = Some(path),
             },
@@ -184,7 +210,15 @@ impl App {
             Pick::Axes => self.axes = Some(path),
             Pick::OutDir => self.out = Some(path),
         }
-        self.error = None;
+    }
+
+    /// Direction builds write a GGUF next to the base. Recomputed whenever the
+    /// mode or the base changes, so a build is never about to run with no output
+    /// path just because the base was chosen while a different recipe was open.
+    pub fn sync_output_path(&mut self) {
+        if self.mode == Mode::Direction && self.base.is_some() && self.out.is_none() {
+            self.out = self.default_out();
+        }
     }
 
     /// The command line the current recipe will run, as it would be shown to a user.
