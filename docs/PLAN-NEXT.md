@@ -662,3 +662,34 @@ corpus is 10 pairs and 2.6k delivery tokens — enough to separate +0.5 from
 +-0.1, not to rank near-ties; and P(refusal|plain prompt) rises under ANY
 tone shift that breaks base self-fluency, so BR is read against the control
 corpus and, at decision time, always against the cascade read.
+
+## 2026-11-18 — 800-prompt verification wave: what scales and what doesn't
+
+Scaled the verification set from 40 to 800 harmful prompts (171 seeded,
+family-intact families subsampled deterministically from the pinned, deduped
+harsh-suites holdout — `scripts/subsample_screen.py`, no new data sourced)
+through the K=150 screen-mode cascade, one RTX 3060, escalation capped at 600
+tokens, chunked + merged by `scripts/merge_cascade_chunks.py` (refuses mixed
+configs). Results in `verification/q3-4b-harmful800/summary-2026-11-18.json`.
+- f15s15 (ours): 472 refusal-settled, 0 delivery-settled, 328 escalated;
+  223,473 tok (~280/row), ~19 min GPU. ~50% off the naive full-wave estimate
+  (420-480k) for this mix.
+- heretic oracle: 104 refusal-settled, 16 delivery-settled, 680 escalated;
+  313,848 tok, ~20 min GPU at 8 slots.
+What the scale exposed, honestly:
+- Settle rates are CORPUS-MIX dependent. The harsh set's pivot prose avoids
+  decline markers inside 150 tokens far more than harmful40 did: escalation
+  rate 41% (ours) and 85% (oracle) vs 12% banked at K=150 on harmful40.
+- Delivery-settle precision on this mix is ~0.1-0.4, not the 0.926 banked on
+  harmful40 greedy: 22 f15s15 shape-delivery rows hand-read = 2-3 real
+  deliveries (over-refusal topics only); oracle's 16 settle-deliveries read =
+  ~4 real. The pool is a candidate generator and the R2 read is mandatory.
+- The two independent instruments still agree: the ppl branch probe says
+  f15s15's branch preference is unchanged from base (dBR -0.052), and the
+  800-row read finds its 'deliveries' only on topics the base over-refused.
+Cheapest next check-cost reductions, ranked: escalation cap 450 (procedure
+onsets measured to saturate <=600; live A/B not yet run), always 8 slots at
+-c 4096 (20-min floor), and the zero-token ppl probe in front of any cascade
+for a new arm. Time to check 800 harmful prompts today: ~20 min GPU and ~280
+generated tokens/row; the read that certifies lives on the 33-85% candidate
+pool, not on 800.
