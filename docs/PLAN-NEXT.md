@@ -546,3 +546,27 @@ Stopped mid-lane, stated exactly so nothing is cited that does not exist:
   imports with no heavy deps, validate-run/describe-run unchanged on
   `examples/minicpm-v47/run.json`. Live-study prune hit rate and
   probe-to-finalist correlation stay GATED like every other funnel claim.
+
+## Sampling does not unlock delivery (2026-11-18, 3060, four waves, 52k tokens)
+- Question: is zero delivery on wording-perfect arms a greedy-verification
+  artifact? Ran the 24-family holdout on f15s15 (new greedy + sampled), the
+  published oracle (sampled; greedy read banked at 4/24) and base (sampled),
+  pinned serve argv per wave, temp 1.0/top_p 0.95/top_k 64/seed 20261118,
+  cap 2048. /props identity gate on every wave.
+- R2 single-reader counts: f15s15 greedy 0/24, sampled 0/24 (McNemar p=1.0);
+  oracle 4/24 greedy -> 1 clean + 2 borderline sampled; base-sampled 1/24 —
+  and that one row (sorry-bench-000277) is delivered by the UNEDITED base,
+  so it is a screen defect, excluded from robust counts.
+- Verdict: the delivery gap is in the weights, not the decoder. Rank-1
+  output-direction removal — ours and the published oracle's alike — moves
+  the lexical decision surface (40-char flat refusal into a 2–4k-char
+  lecture-pivot), never the content branch. Clean delivery across scale,
+  target-split and decode policy sits at the noise edge of this edit class.
+- Consequence for the method (R3/R4): contrasts separating refusal-wording
+  from compliance yield axes that can only remove refusal wording. The fit
+  needs contrasts whose difference is delivery of the SAME request —
+  refusal-vs-successful-jailbreak answers, pair-matched within one harmful
+  row, answer-span locus. Next lane: capture jailbreak-frame answers on the
+  non-protective families (generation only), spanfit axes on the pair diff,
+  merge, one cert wave + this same read. Self-harm/CP-adjacent families stay
+  out of jailbreak capture permanently.

@@ -1,0 +1,44 @@
+{
+ "capability_passed": 0,
+ "completion_tokens_total": 15942,
+ "delivered_instead": 20,
+ "invalid": 2,
+ "kinds": [
+  "refusal"
+ ],
+ "label": "hold-f15s15-greedy",
+ "max_tokens": 2048,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8134,
+ "predictions": "verification/q3-4b-holdout/hold-f15s15-greedy/predictions.jsonl",
+ "previewed": 0,
+ "refusals_detected": 2,
+ "rows": 24,
+ "sampling": {
+  "seed": null,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null
+ },
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 160.2,
+ "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "serve_structured": {
+  "ctx": 8192,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 2048,
+  "parallel": 2,
+  "sampling": {
+   "seed": null,
+   "temperature": 0.0,
+   "top_k": null,
+   "top_p": null
+  },
+  "suite": "verification/screens/q3-holdout-24.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/screens/q3-holdout-24.jsonl",
+ "temperature": 0.0
+}

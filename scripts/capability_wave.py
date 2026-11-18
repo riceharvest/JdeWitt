@@ -58,9 +58,14 @@ class WaveJudge:
         raise RuntimeError('capability_wave never calls an LLM judge')
 
 
-def chat(port: int, prompt: str, max_tokens: int, timeout: int = 240) -> dict:
-    body = {'messages': [{'role': 'user', 'content': prompt}], 'temperature': 0.0,
+def chat(port: int, prompt: str, max_tokens: int, timeout: int = 240,
+         sampling: dict | None = None) -> dict:
+    body = {'messages': [{'role': 'user', 'content': prompt}],
+            'temperature': (sampling or {}).get('temperature', 0.0),
             'max_tokens': max_tokens, 'stream': False}
+    for key in ('top_p', 'top_k', 'seed'):
+        if sampling and sampling.get(key) is not None:
+            body[key] = sampling[key]
     request = urllib.request.Request(
         f'http://127.0.0.1:{port}/v1/chat/completions',
         json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
@@ -97,6 +102,10 @@ def main(argv=None):
     parser.add_argument('--kinds', default='math,code')
     parser.add_argument('--serve-config', required=True,
                         help='The full llama-server argv this wave was taken against (R9)')
+    parser.add_argument('--temperature', type=float, default=0.0)
+    parser.add_argument('--top-p', type=float, default=None)
+    parser.add_argument('--top-k', type=int, default=None)
+    parser.add_argument('--seed', type=int, default=None)
     parser.add_argument('--preview', type=int, default=0,
                         help='print the first N answers so the shape gets read, not just scored')
     parser.add_argument('--ledger', type=Path, default=None)
@@ -158,15 +167,18 @@ def main(argv=None):
                     if group:
                         return int(group)
         return None
+    sampling = {'temperature': args.temperature, 'top_p': args.top_p,
+                'top_k': args.top_k, 'seed': args.seed}
     structured = {'ctx': grab(r'(?:-c|ctx-size)[ =]+(\d+)'),
                   'parallel': grab(r'(?:--?parallel|-n)[ =]+(\d+)', r'\bparallel[ =]+(\d+)'),
                   'max_tokens': args.max_tokens,
-                  'temperature': 0.0,
+                  'temperature': args.temperature, 'sampling': sampling,
                   'jinja': '--jinja' in cfg, 'cuda': 'cuda' in cfg.lower(),
                   'suite': str(args.suite)}
     started = time.monotonic()
     with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
-        answers = list(pool.map(lambda row: chat(args.port, row['prompt'], args.max_tokens), rows))
+        answers = list(pool.map(lambda row: chat(args.port, row['prompt'], args.max_tokens,
+                                                 sampling=sampling), rows))
     elapsed = time.monotonic() - started
     judge = WaveJudge()
     scored = []
@@ -198,7 +210,7 @@ def main(argv=None):
                'measured': measured,
                'completion_tokens_total': tokens,
                'serve_config': args.serve_config, 'serve_structured': structured, 'port': args.port,
-               'max_tokens': args.max_tokens, 'temperature': 0.0,
+               'max_tokens': args.max_tokens, 'temperature': args.temperature, 'sampling': sampling,
                'previewed': min(args.preview, len(scored)) if args.preview else 0,
                'seconds': round(elapsed, 1),
                'predictions': str(out_path),
