@@ -70,11 +70,25 @@ def grade_python(answer, tests, timeout=10, image='python:3.12-slim'):
         # Infrastructure errors must abort the evaluation, not damage a model's score.
         if run.returncode == 125:
             raise RuntimeError('Docker sandbox unavailable: ' + run.stderr[:500])
-        return {'passed': run.returncode == 0 and run.stdout == nonce, 'compiled': True, 'reason': run.stderr[-2000:] if run.returncode else ('ok' if run.stdout == nonce else 'missing test completion marker')}
+        result = {'passed': run.returncode == 0 and run.stdout == nonce, 'compiled': True, 'reason': run.stderr[-2000:] if run.returncode else ('ok' if run.stdout == nonce else 'missing test completion marker')}
     except subprocess.TimeoutExpired:
-        return {'passed': False, 'compiled': True, 'reason': 'sandbox_timeout'}
-    finally:
-        subprocess.run(['docker','rm','-f',name], capture_output=True, timeout=15)
+        result = {'passed': False, 'compiled': True, 'reason': 'sandbox_timeout'}
+    # `docker rm -f` blocking is an infrastructure stall, not a result. A TimeoutExpired
+    # escaping here once killed a 241-row retention screen after grading had already
+    # happened: the wave exited 1, the arm read as a capability failure, and nothing was
+    # wrong with the model. Cleanup trouble is recorded on the row and never raises.
+    # It stays out of `finally` on purpose — a return there would swallow the
+    # sandbox-unavailable abort above.
+    try:
+        cleanup = subprocess.run(['docker','rm','-f',name], capture_output=True, text=True, timeout=90)
+        if cleanup.returncode and result['passed']:
+            result['passed'] = False
+            result['reason'] = 'sandbox_cleanup_failed: ' + cleanup.stderr[-400:]
+    except (subprocess.TimeoutExpired, OSError) as e:
+        if result['passed']:
+            result['passed'] = False
+            result['reason'] = f'sandbox_cleanup_stalled ({type(e).__name__}), container {name} may be orphaned'
+    return result
 
 
 class DominatedTrial(Exception):
