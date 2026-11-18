@@ -63,6 +63,9 @@ def family_of(screen_dir: Path) -> dict:
 
 
 def removal(screen: Path) -> dict:
+    if not screen.is_file():
+        raise SystemExit(f'{screen} does not exist — point --screen/--pair at a directory '
+                         'containing predictions.jsonl, not at a wave.json alone')
     fam_of = family_of(screen.parent)
     rows = [json.loads(line) for line in screen.read_text().splitlines() if line.strip()]
     invalid = sum(1 for r in rows if r.get('status') != 'ok')
@@ -108,38 +111,47 @@ def wave(dir_path: Path) -> dict:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument('--base-dir', type=Path, required=True,
+    ap.add_argument('--base-dir', type=Path, default=None,
                     help='retention wave directory for the unedited base')
-    ap.add_argument('--pair', action='append', required=True, metavar='LABEL=HARMFUL:RETENTION')
+    ap.add_argument('--pair', action='append', default=[], metavar='LABEL=HARMFUL:RETENTION')
+    ap.add_argument('--screen', action='append', default=[], metavar='LABEL=DIR',
+                    help='a removal screen with no retention wave to pair it with, e.g. a held-out screen')
     ap.add_argument('--suite', type=Path, default=SUITE)
     args = ap.parse_args(argv)
+    if not args.pair and not args.screen:
+        ap.error('give at least one --pair LABEL=HARMFUL:RETENTION or --screen LABEL=DIR')
 
-    labels, rows = [args.base_dir.name], []
-    base_ret = audit('base', args.base_dir / 'predictions.jsonl', args.suite)
-    for item in args.pair:
-        label, paths = item.split('=', 1)
-        harmful, retention = paths.split(':')
-        harmful_dir, retention_dir = Path(harmful), Path(retention)
-        labels.append(label)
-        rem = removal(harmful_dir / 'predictions.jsonl')
-        edit_ret = audit(label, retention_dir / 'predictions.jsonl', args.suite)
-        kinds = {}
-        for kind in ('math', 'code'):
-            stats = paired(base_ret, edit_ret, kind).get('strict') or {}
-            length = paired(base_ret, edit_ret, kind).get('length') or {}
-            kinds[kind] = {'before': stats.get('before_pass'),
-                           'after': stats.get('after_pass'),
-                           'delta': stats.get('delta'),
-                           'p': stats.get('paired_sign_flip_p_two_sided'),
-                           'collapse': length.get('collapse_flag'),
-                           'median': length.get('after_median_chars')}
-        rows.append({'label': label, 'removal': rem, 'retention_wave': wave(retention_dir),
-                     'kinds': kinds})
+    labels, rows = [], []
+    if args.pair:
+        if args.base_dir is None:
+            ap.error('--base-dir is required with --pair')
+        labels = [args.base_dir.name]
+        base_ret = audit('base', args.base_dir / 'predictions.jsonl', args.suite)
+        for item in args.pair:
+            label, paths = item.split('=', 1)
+            harmful, retention = paths.split(':')
+            harmful_dir, retention_dir = Path(harmful), Path(retention)
+            labels.append(label)
+            rem = removal(harmful_dir / 'predictions.jsonl')
+            edit_ret = audit(label, retention_dir / 'predictions.jsonl', args.suite)
+            kinds = {}
+            for kind in ('math', 'code'):
+                stats = paired(base_ret, edit_ret, kind).get('strict') or {}
+                length = paired(base_ret, edit_ret, kind).get('length') or {}
+                kinds[kind] = {'before': stats.get('before_pass'),
+                               'after': stats.get('after_pass'),
+                               'delta': stats.get('delta'),
+                               'p': stats.get('paired_sign_flip_p_two_sided'),
+                               'collapse': length.get('collapse_flag'),
+                               'median': length.get('after_median_chars')}
+            rows.append({'label': label, 'removal': rem, 'retention_wave': wave(retention_dir),
+                         'kinds': kinds})
 
-    header = (f"| {'artifact':12} | removal | refused | families all-removed | invalid | median | "
-              f"maths | p | math med | code | p | cap/slots |")
-    print(header)
-    print('|' + '-' * len(header) + '|')
+    if rows:
+        header = (f"| {'artifact':12} | removal | refused | families all-removed | invalid | median | "
+                  f"maths | p | math med | code | p | cap/slots |")
+        print(header)
+        print('|' + '-' * len(header) + '|')
     for row in rows:
         r, k = row['removal'], row['kinds']
         w = row['retention_wave']
@@ -161,6 +173,27 @@ def main(argv=None) -> int:
               f"| {k['code']['p']} | {cap} |")
     print('\n* length-collapse flag: the median answer fell below 25% of base — that '
           'is the model stopped writing, not a wrong answer.')
+
+    if args.screen:
+        print('\nScreens with no retention wave to pair them with:')
+        header = (f"| {'screen':24} | removal | families all-removed | invalid | median | cap/slots |")
+        print(header)
+        print('|' + '-' * len(header) + '|')
+        for item in args.screen:
+            label, screen_dir = item.split('=', 1)
+            sdir = Path(screen_dir)
+            rem = removal(sdir / 'predictions.jsonl')
+            w = wave(sdir)
+            cap = f"{w['max_tokens']}/{w['parallel']}" if w['max_tokens'] else '—'
+            if rem['removed'] is None:
+                cell = f"UNMEASURED ({rem['invalid']}/{rem['rows']} invalid)"
+                fam_cell = '—'
+            else:
+                cell = f"{rem['removed']}/{rem['rows']} (≥{rem['wilson_lower']})"
+                fam_cell = (f"{rem['families_removed']}/{rem['families']} families "
+                            f"(≥{rem['families_wilson_lower']})")
+            print(f"| {label:24} | {cell} | {fam_cell} | {rem['invalid']} "
+                  f"| {rem['median_chars']} | {cap} |")
     return 0
 
 
