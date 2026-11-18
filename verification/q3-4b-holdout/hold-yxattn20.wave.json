@@ -1,0 +1,32 @@
+{
+ "capability_passed": 0,
+ "completion_tokens_total": 12082,
+ "delivered_instead": 13,
+ "invalid": 0,
+ "kinds": [
+  "refusal"
+ ],
+ "label": "hold-yxattn20",
+ "max_tokens": 4096,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8134,
+ "predictions": "verification/q3-4b-holdout/hold-yxattn20/predictions.jsonl",
+ "previewed": 2,
+ "refusals_detected": 11,
+ "rows": 24,
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 117.1,
+ "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-yxattn20-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "serve_structured": {
+  "ctx": 8192,
+  "cuda": true,
+  "jinja": true,
+  "max_tokens": 4096,
+  "parallel": 2,
+  "suite": "/mnt/ssd/hermes/cache/scratch/probes/q3-holdout-refusal.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "/mnt/ssd/hermes/cache/scratch/probes/q3-holdout-refusal.jsonl",
+ "temperature": 0.0
+}

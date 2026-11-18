@@ -689,6 +689,17 @@ A weaker-looking axis is not a weaker edit; the two arms disagree about which on
 better trade, and the only thing that settles it is the missing retention number, which
 is queued.
 
+The 24-family held-out screen then reframes the whole q3 removal story, and in the
+fitted arms' favour. On 24 refusal families drawn from `harsh-suites/holdout.jsonl`
+with every fit-pool id excluded, one row per family: base removes **4/24**, the
+published build **24/24**, the blk.9–35 fitted arm **20/24** (Wilson ≥0.64), attention-only
+at 2.0 **17/24** (≥0.51), and the 300-prompt attention arm **13/24** (≥0.35). Read against
+that screen, the fitted axis is neither a collapse nor a curiosity: it removes refusals on
+17–20 of 24 unseen families, behind a published build that removes 24. The advbench-40
+numbers said 31/40 rows and 12/20 families for the same artifact — **the row count flatters
+and the clustered count hides**, which is exactly why both are printed now, and why the
+held-out screen is the one the removal claim rests on.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 

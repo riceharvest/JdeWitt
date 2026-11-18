@@ -76,9 +76,12 @@ Currently checkable in a fresh clone:
   this one against us: on 241 authored capability rows the published
   build loses nothing measurable, while our fitted shared axis has no
   measured point on that frontier — the arms that remove every opener
-  do it by shrinking maths answers to 31 characters. The frontier table,
-  the 20-family reading, and the four instruments this run forced into
-  the tool are in `docs/non-heretic-methods.md`.
+  do it by shrinking maths answers to 31 characters. On the 24-family
+  held-out refusal screen the fitted arms do remove refusals on unseen
+  families (20/24 and 17/24 against the published build's 24/24 and the
+  base's 4/24), and the frontier table, the family reading, and the four
+  instruments this run forced into the tool are in
+  `docs/non-heretic-methods.md`.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
   three artifacts: base 98/241, a published third-party ablation 81/241,
   our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost
