@@ -54,13 +54,13 @@ for module, hf in (('attn_output', 'o_proj'), ('ffn_down', 'ffn_down')):
         delta = (v - w)
         if not np.abs(delta).any():
             continue
-        # gguf order is [in, out]; the removed axis is the torch row space
-        delta = delta.T
-        norms = np.linalg.norm(delta, axis=1)
+        # dequantize_tensor returns torch [out, in]; dW = -s u v^T, so the
+        # removed residual direction is a COLUMN of that matrix (rows are v).
+        norms = np.linalg.norm(delta, axis=0)
         j = int(np.argmax(norms))
         if norms[j] < 1e-6:
             continue
-        u_oracle = delta[j] / norms[j]
+        u_oracle = delta[:, j] / norms[j]
         u_mine = (axes if shared else axes[L]).numpy().astype(np.float32)
         u_mine = u_mine / np.linalg.norm(u_mine)
         cosines.append({'layer': L, 'cos': round(float(np.dot(u_oracle, u_mine)), 4),

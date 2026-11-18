@@ -116,7 +116,13 @@ def edit_tensors(path, out_path, deltas):
 
 
 def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None):
-    """Dequantize one tensor to float32, gguf dimension order, bounded RAM.
+    """Dequantize one tensor to float32 in torch [out, in] order, bounded RAM.
+
+    Despite the tensor metadata being (in, out) — GGUFReader.shape on qwen3-4b
+    blk.9.attn_output is (4096, 2560) and this returns (2560, 4096) — the returned
+    array is the torch layout. Anyone recovering a direction from a weight delta
+    has to take its columns, not its rows; a previous version of this docstring
+    said gguf dimension order and cost a debugging session.
 
     ``reader`` may be a prebuilt GGUFReader on the same file to skip header
     re-parsing when many tensors of one gguf are read (served_deltas).

@@ -44,9 +44,11 @@ HF_TO_LLAMA = (
 def gguf_weight_shapes(artifact):
     """name -> (in, out) in ggml/gguf dimension order for every 2D weight.
 
-    GGUF stores linear weights transposed from torch: GGUFReader .shape comes
-    back as [in, out], verified against blk.5.ffn_down = (10240, 2560) =
-    (ffn, hidden) for spark2_5. torch orientation is the reversed pair.
+    GGUF stores linear weights transposed from torch, so GGUFReader .shape is
+    [in, out]: blk.5.ffn_down = (10240, 2560) = (ffn, hidden) on spark2_5, and
+    qwen3-4b blk.9.attn_output = (4096, 2560) = (heads*head_dim, hidden). The
+    torch layout is the reversed pair, which is what ggufio.dequantize_tensor
+    hands back.
     """
     reader = GGUFReader(str(artifact))
     shapes = {}

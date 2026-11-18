@@ -44,8 +44,10 @@ for module, key in (('attn_output', 'attn'), ('ffn_down', 'ffn')):
         # the largest-norm column. Rows are multiples of v, the input-side factor -
         # mixing those two up is the same axis-space mistake this repo already has
         # one commit about.
-        b = dequantize_tensor(BASE, name, reader=reader_b).astype(np.float32).T
-        o = dequantize_tensor(ORACLE, name, reader=reader_o).astype(np.float32).T
+        # dequantize_tensor already returns torch [out, in] (measured:
+        # blk.9.attn_output GGUFReader.shape (4096, 2560), dequantize (2560, 4096)).
+        b = dequantize_tensor(BASE, name, reader=reader_b).astype(np.float32)
+        o = dequantize_tensor(ORACLE, name, reader=reader_o).astype(np.float32)
         delta = o - b
         del o
         fro = float(np.linalg.norm(delta))
