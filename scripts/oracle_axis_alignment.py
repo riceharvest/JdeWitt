@@ -10,7 +10,9 @@ SVD. Cosines of a fitted axis against that direction are per layer and per modul
 On Qwen3-4B-Instruct-2507 vs the published Heretic build (blk.9-35):
 shared/last-prompt-token mean|cos| 0.508 (spread 0.500-0.511), per-layer
 last-prompt-token 0.258, per-layer answer-end 0.048 - the locus that certified
-36/40 on MiniCPM-V is statistically orthogonal to what the oracle removes here.
+36/40 on MiniCPM-V is statistically orthogonal to what the oracle removes here (0.048).
+The full 2x2: shared/last-token 0.508, per-layer/last-token 0.258, shared/answer-end
+0.059, per-layer/answer-end 0.048 — the capture locus dominates the shape.
 """
 import json
 import sys

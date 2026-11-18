@@ -487,6 +487,24 @@ time on a 12 GiB card.
   part without ever reaching the rest. That is consistent with 0/10 at scale 1.0
   and 2.0 alike, and it is the reason the head-to-head cannot be called a strength
   problem.
+* The full 2×2 of shape against capture locus, same 27 layers and both modules:
+
+  | shape / locus          | mean \|cos\| to the oracle | spread |
+  |------------------------|----------------------------|--------|
+  | shared / last prompt token | 0.508 | 0.500–0.511 |
+  | per-layer / last prompt token | 0.258 | 0.003–0.529 |
+  | shared / answer end   | 0.059 | — |
+  | per-layer / answer end| 0.048 | 0.003–0.112 |
+
+  The **locus dominates the shape**. Measured at the prompt end, pooling across
+  layers buys back most of the direction (0.26 → 0.51); measured at the end of an
+  answer, both shapes sit at chance. So the answer-span per-layer fit — the shape
+  that certified 36/40 with held-out families on MiniCPM-V — is not a weaker
+  version of what this oracle does. It is measuring a different thing entirely,
+  and on qwen3-4B that thing does not remove refusal (0/10 at every strength).
+  Whether answer-span is a genuinely separate mechanism (as mc47 suggests) or an
+  artifact that happens to work on some bases is not settled here; what is settled
+  is that it is not this oracle's mechanism.
 * Control running: re-apply the oracle's **own** per-tensor delta to the base
   through our edit path (dequant-tile-apply-requant, identical block counts). If
   that refuses like the oracle, the converter, requantization and serve path are
