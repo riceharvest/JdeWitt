@@ -360,6 +360,8 @@ def main():
     claimadd.add_argument('--evidence',required=True,help='Which artifact or run backs the assertion')
     claimadd.add_argument('--verified-by',required=True,help='Which gate or human produced it')
     claimadd.add_argument('--expected-identity')
+    claimadd.add_argument('--successes',type=int,help='Numerator when the claim states a rate; without it the first n/m in the claim text is read and marked inferred')
+    claimadd.add_argument('--total',type=int,help='Denominator; give it with --successes')
     keygen=sub.add_parser('release-keygen',help='Create an Ed25519 release-signing key (openssl ed25519)')
     keygen.add_argument('key',type=Path)
     signr=sub.add_parser('release-sign',help='Sign a verified release reproduction index (repro.json payload)')
@@ -598,7 +600,7 @@ def main():
             result=evidence_summary(args.directory)
         elif args.command=='claim-add':
             from .release import add_claim
-            result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity)
+            result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity,args.successes,args.total)
         elif args.command=='release-keygen':
             from .release import keygen
             result=keygen(args.key)

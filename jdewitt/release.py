@@ -397,7 +397,36 @@ def read_evidence(directory):
     return chain
 
 
-def add_claim(directory, claim, evidence, verified_by, release_identity=None):
+def claim_rate(claim, successes=None, total=None):
+    """Attach uncertainty to a claim that states a rate.
+
+    A claim like 'removal 31/40' is only falsifiable with its denominator and its
+    interval: 31/40 and 31/310 mean different things and a reader has no way to tell.
+    An explicit pair wins; otherwise the first `n/m` in the claim text is used and the
+    interval is marked inferred, so nothing looks more measured than it is.
+    """
+    from .stats import wilson_interval
+    if successes is None or total is None:
+        match = re.search(r'(\d+)\s*/\s*(\d+)', str(claim))
+        if not match:
+            return None
+        successes, total = int(match.group(1)), int(match.group(2))
+        inferred = True
+    else:
+        successes, total = int(successes), int(total)
+        inferred = False
+    if total <= 0 or successes < 0 or successes > total:
+        raise ValueError(f'claim rate {successes}/{total} is not a valid fraction')
+    interval = wilson_interval(successes, total)
+    return {'successes': successes, 'total': total,
+            'rate': round(successes / total, 4),
+            'wilson_95_lower': round(interval['lower'], 4),
+            'wilson_95_upper': round(interval['upper'], 4),
+            'source': 'stated in the claim text' if inferred else 'given explicitly'}
+
+
+def add_claim(directory, claim, evidence, verified_by, release_identity=None,
+              successes=None, total=None):
     """Append an immutable claim to a release evidence ledger.
 
     Every entry records what is asserted, which artifact backs it, and which gate
@@ -422,6 +451,9 @@ def add_claim(directory, claim, evidence, verified_by, release_identity=None):
     entry = {'seq': len(chain['entries']) + 1, 'claim': str(claim), 'evidence': str(evidence),
              'verified_by': str(verified_by), 'at': _now_iso(),
              'previous_digest': chain['entries'][-1].get('digest', '') if chain['entries'] else ''}
+    rate = claim_rate(claim, successes, total)
+    if rate is not None:
+        entry['rate'] = rate
     entry['digest'] = digest(entry)
     chain['entries'].append(entry)
     chain['ledger_digest'] = compute_evidence_digest(chain['entries'])
