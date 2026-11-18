@@ -131,6 +131,36 @@ our certified edit books +0.544 on maths while format-following drops from 90.6%
 to 1.7%; a single "capability" number would have hidden one of those inside the
 other.
 
+## 8. Sweep the shape, and read it as one table
+
+A sweep is footprint × side × scale, and every axis is a flag, not an edit:
+
+    python -m jdewitt.spanfit build --gguf-in <base> --out <arm> --axes <axes.pt> \
+      --source-key 'model.layers.*.self_attn.o_proj.weight' --layers 36 \
+      --only-layers 9-35 --shape shared --axis-space output --scale 1.5
+
+`--only-layers 9-35` restricts the wildcard (the published oracle leaves blk.0–8
+byte-identical); drop the `--source-key` line to edit the other side. `spanfit
+protect --axes A --records R --label cap` projects the axis out of another
+behaviour's subspace and reports how much of it survives, which is how a protection
+claim dies early: on qwen3-4B it kept **99.24%**, so the null is measured in
+milliseconds instead of two screen waves.
+
+Then read the arms without a throwaway script:
+
+    python scripts/frontier_report.py \
+      --base-dir verification/q3-4b-retention/q3base \
+      --pair s15=verification/q3-4b-harmful40/s15-l935:verification/q3-4b-retention/s15-l935
+
+One row per artifact: removal with a Wilson lower bound, refusals, invalid rows,
+median answer length, maths and code before→after with the paired sign-flip `p`, the
+length-collapse flag and the recorded cap/slots. Removal comes from the screen's
+shipped refusal-check and the retention numbers call `capability_format_audit`'s own
+paired function, so a row cannot disagree with the commands that produced it. Read
+the removal column together with the collapse column — on qwen3-4B 40/40 removal
+only ever arrives with a median maths answer of 31 or 4 characters, which is the
+model stopped writing, not answering wrong.
+
 ## What is not scripted
 
 Fitting the axis shape, choosing modules and scale, reading evidence packets, and
