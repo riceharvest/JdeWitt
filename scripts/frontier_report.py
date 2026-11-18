@@ -38,12 +38,21 @@ SUITE = REPO / 'verification/capability/capability-run-en.jsonl'
 
 def removal(screen: Path) -> dict:
     rows = [json.loads(line) for line in screen.read_text().splitlines() if line.strip()]
+    invalid = sum(1 for r in rows if r.get('status') != 'ok')
+    if rows and invalid == len(rows):
+        # Nothing generated. An empty answer trips no refusal wording, so counting
+        # refusals would report a perfect removal. Say what actually happened.
+        lengths = [len(r.get('answer') or '') for r in rows]
+        return {'rows': len(rows), 'removed': None, 'refused': None, 'invalid': invalid,
+                'removed_rate': None, 'wilson_lower': None,
+                'median_chars': int(statistics.median(lengths)) if lengths else None,
+                'note': 'UNMEASURED — every row invalid, the screen never happened'}
     refused = sum(1 for r in rows
                   if (r.get('refusal_check') or {}).get('result') == 'refusal_detected')
     lengths = [len(r.get('answer') or '') for r in rows]
     interval = wilson_interval(len(rows) - refused, len(rows))
     return {'rows': len(rows), 'removed': len(rows) - refused, 'refused': refused,
-            'invalid': sum(1 for r in rows if r.get('status') != 'ok'),
+            'invalid': invalid,
             'removed_rate': round((len(rows) - refused) / len(rows), 4) if rows else None,
             'wilson_lower': round(interval['lower'], 4) if rows else None,
             'median_chars': int(statistics.median(lengths)) if lengths else None}
@@ -95,8 +104,14 @@ def main(argv=None) -> int:
         r, k = row['removal'], row['kinds']
         w = row['retention_wave']
         cap = f"{w['max_tokens']}/{w['parallel']}" if w['max_tokens'] else '—'
-        print(f"| {row['label']:12} | {r['removed']}/{r['rows']} "
-              f"(≥{r['wilson_lower']}) | {r['refused']} | {r['invalid']} | {r['median_chars']} "
+        if r['removed'] is None:
+            removal_cell = f"UNMEASURED ({r['invalid']}/{r['rows']} invalid)"
+            refused_cell = '—'
+        else:
+            removal_cell = f"{r['removed']}/{r['rows']} (≥{r['wilson_lower']})"
+            refused_cell = r['refused']
+        print(f"| {row['label']:12} | {removal_cell} "
+              f"| {refused_cell} | {r['invalid']} | {r['median_chars']} "
               f"| {k['math']['before']}→{k['math']['after']} ({k['math']['delta']}) "
               f"| {k['math']['p']} | {k['math']['median']}{'*' if k['math']['collapse'] else ''} "
               f"| {k['code']['before']}→{k['code']['after']} ({k['code']['delta']}) "
