@@ -14,11 +14,16 @@ This document is the operating contract for agents.
    before generating a single token. (Already existed.)
 2. **Short-decode probe stage (`search_stages`).** Generate at most
    `probe_tokens` on a deterministic, family-stratified slice of harmful
-   selection rows and take word-level refusal verdicts. Refusal behaviour
-   manifests in the first tokens; paying 1536 tokens per answer to learn
-   that the model still says "I can't help with that" is the waste this
-   stage removes. A deterministic keep line (successive-halving style)
-   prunes worse trials before they pay for stage 3.
+   selection rows and gate on the shape instrument (opener or substantive-
+   decline marker inside the short decode; the word inventory rides along per
+   row as aux evidence). Refusal shape manifests in the first tokens; paying
+   1536 tokens per answer to learn that the model still declines is the waste
+   this stage removes. Measured offline on banked q3-4B waves (zero new
+   inference, 816 rows): the word gate admits ~95% of answers whose full text
+   still declines, while the shape gate at the same window admits 55% with
+   zero wrongly-pruned delivering rows (0/50); at a 2400-char window its
+   false-admit rate is 4/816. A deterministic keep line (successive-halving
+   style) prunes worse trials before they pay for stage 3.
 3. **Full-budget evaluation.** Only surviving trials pay full
    `max_tokens` on the whole selection suite, paired-consistency and
    capability gates included.

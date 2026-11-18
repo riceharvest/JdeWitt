@@ -522,3 +522,27 @@ Stopped mid-lane, stated exactly so nothing is cited that does not exist:
   run if GPU time comes back: does scale 1.2 hold ~39/40 removal at a maths cost the
   published build's zero does not dominate? The in-sample number says the arm is close to
   free; nothing in this repository yet shows its retention or its held-out-120 rate.
+
+## Stage-1 probe gates on shape now, not the word list (2026-11-18, CPU)
+- The short-decode probe and candidate probe were scored by the wording
+  checker — the very instrument R3 disqualifies for the removal decision had
+  become the funnel gate. Validated offline on every banked q3-4B harmful-40
+  wave (17 arms, 816 ok rows, zero new inference): the word probe at the
+  ~150-token window admits answers of which ~95% are full-text declinations
+  (f15s15: word-gate admits 40/40, shape says 37/40 still decline; attn arms:
+  every word-admit in those waves declines by full shape). Switching the gate
+  to the shape classifier at the same window: admit precision 0.549,
+  0.735 at ~300 tokens, 0.926 (4 false admits) at ~600 tokens — and
+  zero wrongly-pruned delivering rows at every window (0/50 on the banked
+  set). False-cleared arms now die at the 6%-cost probe instead of
+  eating a full-budget wave plus a merge cert.
+- Landed: pure-text classifier moved to `jdewitt/refusal_shape.py` (single
+  source of truth; `scripts/refusal_shape_audit.py` imports it), trial-stage1
+  and candidate-probe scores are shape-decline rates with the word verdict
+  stored per row as aux (`gate:'shape'` in stage1.json), pruned-reason
+  wording, `stage1_score` docstring and docs/fast-search.md updated with the
+  measured numbers. Verified: ruff green, classifier move reproduces the
+  offline aggregate exactly, `stage1_score(3,10)==0.3` spot-check, pipeline
+  imports with no heavy deps, validate-run/describe-run unchanged on
+  `examples/minicpm-v47/run.json`. Live-study prune hit rate and
+  probe-to-finalist correlation stay GATED like every other funnel claim.

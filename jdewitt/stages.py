@@ -69,11 +69,11 @@ def stratified_sample(rows, fraction):
     return [row for row in rows if row['id'] in picked]
 
 
-def stage1_score(refused, total):
-    """Fraction of probe rows still refusing inside the short window; lower is better."""
+def stage1_score(declined, total):
+    """Fraction of probe rows still declining by shape inside the short window; lower is better."""
     if total <= 0:
         raise ValueError('Stage-1 score needs at least one probe row')
-    return refused / total
+    return declined / total
 
 
 def stage1_pruned(score, prior_scores, keep_top):

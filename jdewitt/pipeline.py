@@ -30,6 +30,7 @@ from .answers import AnswerStore, generate_answers, score_answers, completed_sco
 from .storage import save_checkpoint, load_checkpoint
 from .phases import ModelPhases, PhasedHF, PhasedJudge
 from .refusal_check import RefusalChecker
+from .refusal_shape import classify as shape_classify
 from .screening import validate_screening,margin_differential
 from .stages import validate_search_stages,stratified_sample,stage1_score,stage1_pruned,validate_candidate_probe
 from .errors import SearchRejected,UnsupportedMethod,HoldoutRejected
@@ -388,7 +389,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
             atomic_json(output/'search-stages.json',{'stages':stages,'probe_rows':[t['id'] for t in stage_rows],
                 'confirm_rows':[t['id'] for t in confirm_rows] if confirm_rows is not None else None,
                 'batch_policy':config.generation_batch,'refusal_floor':config.refusal_floor,
-                'note':'Stage-1 probe answers are heuristic wording verdicts on truncated short decodes; they never enter the answer store, the gates or any release report. The confirm rung evaluates a stratified selection subset at full budget and only prunes; all gates remain on the full-suite pass.'})
+                'note':'Stage-1 probe answers are heuristic shape verdicts (opener or substantive-decline marker inside the short decode; the word inventory rides along per row as aux evidence) on truncated short decodes; they never enter the answer store, the gates or any release report. The confirm rung evaluates a stratified selection subset at full budget and only prunes; all gates remain on the full-suite pass.'})
         if config.warm_starts:
             warm=json.loads(Path(config.warm_starts).read_text())
             for params in compatible_warm_starts(warm,fingerprint):
@@ -404,19 +405,20 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
             for flat in sample_probe_params(backend.editor.groups, config.strength_range,
                                             layer_profile, probe['samples'], config.seed):
                 # One model load for every probe: apply, short-decode the
-                # harmful slice, word-level verdicts, reset. No judge, no
+                # harmful slice, shape verdicts (word verdict aux), reset.
+                # No judge, no
                 # answer store, no KL/capability claim — see the artifact note.
                 backend.editor.apply(directions, unflatten_parameters(flat))
                 try:
                     responses = probe_decode()
-                    refused = 0
+                    declined = 0
                     for task, response in zip(stage_rows, responses):
                         answer = extract_answer(response['content'], response['finish_reason'], response['thinking_open'], response.get('final_marker'))
-                        if stage_checker.classify(task['prompt'], answer.text, task['language']).verdict in {'refusal', 'partial'}:
-                            refused += 1
+                        if shape_classify(answer.text)['declining']:
+                            declined += 1
                 finally:
                     backend.editor.reset()
-                scored.append({'parameters':flat,'score':stage1_score(refused,len(stage_rows))})
+                scored.append({'parameters':flat,'score':stage1_score(declined,len(stage_rows))})
             scored.sort(key=lambda c:(c['score'], json.dumps(c['parameters'],sort_keys=True)))
             atomic_json(output/'candidate-probe.json',{'probe':stages,'probe_of':probe,
                 'layer_profile':layer_profile,'probe_rows':[t['id'] for t in stage_rows],
@@ -471,15 +473,21 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                     stored = trial.user_attrs.get('stage1')
                     if stored is None:
                         responses = probe_decode()
-                        refused = 0
+                        declined = 0
+                        word_refused = 0
                         rows_report = []
                         for task, response in zip(stage_rows, responses):
                             answer = extract_answer(response['content'], response['finish_reason'], response['thinking_open'], response.get('final_marker'))
                             verdict = stage_checker.classify(task['prompt'], answer.text, task['language']).verdict
+                            shape = shape_classify(answer.text)
                             if verdict in {'refusal', 'partial'}:
-                                refused += 1
-                            rows_report.append({'id': task['id'], 'verdict': verdict, 'finish_reason': response['finish_reason']})
-                        stored = {'score': stage1_score(refused, len(stage_rows)), 'refused': refused,
+                                word_refused += 1
+                            if shape['declining']:
+                                declined += 1
+                            rows_report.append({'id': task['id'], 'verdict': verdict, 'shape': shape['shape'],
+                                                'finish_reason': response['finish_reason']})
+                        stored = {'score': stage1_score(declined, len(stage_rows)), 'declined': declined,
+                                  'word_refused': word_refused, 'gate': 'shape',
                                   'rows': len(stage_rows), 'probe_tokens': stages['probe_tokens']}
                         atomic_json(output / f'trial-{trial.number}' / 'stage1.json', dict(stored, rows=rows_report))
                         trial.set_user_attr('stage1', stored)
@@ -490,7 +498,7 @@ def _run(config,phases,*,selection_only=False,expected_winner=None):
                              if t.user_attrs.get('stage1') is not None
                              and (t.user_attrs.get('report') is not None or t.state == optuna.trial.TrialState.COMPLETE)]
                     if stage1_pruned(stored['score'], prior, stages['keep_top']):
-                        raise optuna.TrialPruned('Stage-1 probe refusal rate worse than the keep line; no full-budget answers were generated')
+                        raise optuna.TrialPruned('Stage-1 probe shape-decline rate worse than the keep line; no full-budget answers were generated')
                 incumbent=min([v for t in study.trials if t.state==optuna.trial.TrialState.COMPLETE and t.user_attrs.get('feasible') and (v:=t.values[0] if config.objectives else t.value) is not None],default=None)
                 if confirm_rows is not None:
                     cdir=output/f'trial-{trial.number}'/'confirm'
