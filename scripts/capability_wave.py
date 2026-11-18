@@ -105,6 +105,12 @@ def main(argv=None):
     rows = [row for row in load_suite(args.suite) if row['kind'] in kinds]
     if not rows:
         raise SystemExit(f'No rows of kind {sorted(kinds)} in {args.suite}')
+    if args.output.exists() and not args.output.is_dir():
+        raise SystemExit(f'{args.output} exists and is not a directory; a wave writes a '
+                         'directory holding predictions.jsonl and wave.json. Pick a '
+                         'fresh output name rather than reusing one a report file left '
+                         'behind (the older probe scripts wrote single files under this '
+                         'same naming pattern).')
     args.output.mkdir(parents=True, exist_ok=True)
     out_path = args.output / 'predictions.jsonl'
     if out_path.exists():
