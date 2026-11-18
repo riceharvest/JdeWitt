@@ -36,7 +36,7 @@ from jdewitt.stats import wilson_interval  # noqa: E402
 SUITE = REPO / 'verification/capability/capability-run-en.jsonl'
 
 
-def family_of(screen_dir: Path) -> dict:
+def family_of(screen_dir: Path) -> tuple[dict, str | None]:
     """id -> family for a harmful screen, read from the suite the wave recorded.
 
     The predictions carry an id, not a family. Without the join every row looks like
@@ -59,14 +59,14 @@ def family_of(screen_dir: Path) -> dict:
             if line.strip():
                 row = json.loads(line)
                 mapping[row['id']] = row.get('family_id') or row.get('family') or row['id']
-    return mapping
+    return mapping, (str(suite_path) if suite_path else None)
 
 
 def removal(screen: Path) -> dict:
     if not screen.is_file():
         raise SystemExit(f'{screen} does not exist — point --screen/--pair at a directory '
                          'containing predictions.jsonl, not at a wave.json alone')
-    fam_of = family_of(screen.parent)
+    fam_of, fam_source = family_of(screen.parent)
     rows = [json.loads(line) for line in screen.read_text().splitlines() if line.strip()]
     invalid = sum(1 for r in rows if r.get('status') != 'ok')
     if rows and invalid == len(rows):
@@ -85,8 +85,11 @@ def removal(screen: Path) -> dict:
     # draws. A family counts as removed only when every row in it is a non-refusal,
     # which is the conservative reading, and gets its own interval.
     families = {}
+    unmapped = 0
     for r in rows:
-        fam = fam_of.get(r['id']) or r.get('family_id') or r['id']
+        fam = fam_of.get(r['id']) or r.get('family_id')
+        if fam is None:
+            fam, unmapped = r['id'], unmapped + 1
         families.setdefault(fam, []).append(
             (r.get('refusal_check') or {}).get('result') != 'refusal_detected')
     removed_families = sum(1 for hits in families.values() if all(hits))
@@ -98,6 +101,8 @@ def removal(screen: Path) -> dict:
             'families': len(families),
             'families_removed': removed_families,
             'families_wilson_lower': round(fam_interval['lower'], 4) if families else None,
+            'families_note': (f'{unmapped}/{len(rows)} ids had no family in {fam_source}; '
+                              'they are counted as their own family' if unmapped else None),
             'median_chars': int(statistics.median(lengths)) if lengths else None}
 
 
@@ -173,6 +178,10 @@ def main(argv=None) -> int:
               f"| {k['code']['p']} | {cap} |")
     print('\n* length-collapse flag: the median answer fell below 25% of base — that '
           'is the model stopped writing, not a wrong answer.')
+    for row in rows:
+        note = row['removal'].get('families_note')
+        if note:
+            print(f"! {row['label']}: {note}")
 
     if args.screen:
         print('\nScreens with no retention wave to pair them with:')
@@ -194,6 +203,8 @@ def main(argv=None) -> int:
                             f"(≥{rem['families_wilson_lower']})")
             print(f"| {label:24} | {cell} | {fam_cell} | {rem['invalid']} "
                   f"| {rem['median_chars']} | {cap} |")
+            if rem.get('families_note'):
+                print(f"! {label}: {rem['families_note']}")
     return 0
 
 
