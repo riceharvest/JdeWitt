@@ -485,3 +485,40 @@ written into the item and stays GATED.
   competitor build on that base, no nl code slice, one code task per family so a
   per-family code rate is a single sample and the code deltas are under-powered at
   n=42, and maths difficulty is uncalibrated against any published benchmark.
+
+## 2026-11-18 (run stopped on request — state as of the stop)
+
+Closed, with evidence committed:
+- **The wording checker was lying.** `refusal_check.PATTERNS` matched first-person
+  constructions only, so answers opening "Absolutely not." graded as refusal removed:
+  86 of 120 rows on the 120-family held-out screen. Added `PATTERNS_WIDE`,
+  `RefusalChecker.check(wide=True)`, `scripts/screen_agreement.py` (both inventories +
+  the false-clean count + McNemar under the wide one), and waves now store
+  `refusal_check_wide` at write time. The "indistinguishable from the published build,
+  p = 1.0" claim for the 300-contrast arm is **retracted**: wider-inventory grading puts
+  it at 6/40, 11/24 and 34/120 where it printed 40/40, 23/24 and 120/120.
+- **The floor sweep found the real point.** Shared axis, o_proj + down_proj, scale 1.5:
+  blk.9-35 = 40/40 harmful but 97/120 held-out and maths 159→128; **blk.15-35 = 40/40
+  harmful under both inventories and 120/120 held-out against the published build's
+  120/120, zero discordant, McNemar p = 1.0, maths 159→148 (p 0.0078, collapse flag,
+  median 68 chars vs 175)** — `q3-4b-f15s15-l935`. blk.20-35@2.0 = 39/40 and maths
+  139; blk.15-35@2.0 = 37/40 with 3 invalid and maths 136.
+- Null-space protection tested and rejected on this model: rank-4 prevention subspace at
+  scale 1.5 kept removal identical and moved maths 128→130; at 2.0 it read maths 139→75
+  with a median answer of five characters.
+- Behaviour reads (METHODOLOGY R2, single reader): 24-family screen — published build
+  delivers on 4/24, 300-contrast arm on 5/24. 20-family sample of the 120-family screen —
+  published build 0/20, f15s15 0/20. Both refuse; the edit removes the sentence, not the
+  no. Retention is the axis the published edit still wins (maths 159→159, code 20→18).
+
+Stopped mid-lane, stated exactly so nothing is cited that does not exist:
+- `q3-4b-f15s12-l935` (blk.15-35, both targets, scale **1.2**) built fully (4,280,403,392
+  bytes) and its harmful-40 wave completed: **39/40 under both inventories**, 0 invalid,
+  measured, pinned config. **Its retention wave was never taken** — the lane was stopped
+  during that serve, and the empty `verification/q3-4b-retention/f15s12-l935/` directory
+  was removed rather than left to be mistaken for evidence.
+- `f15a20-l935` (blk.15-35, o_proj only, scale 2.0) was never built.
+- The open question that lane was meant to answer is still open and is the next thing to
+  run if GPU time comes back: does scale 1.2 hold ~39/40 removal at a maths cost the
+  published build's zero does not dominate? The in-sample number says the arm is close to
+  free; nothing in this repository yet shows its retention or its held-out-120 rate.
