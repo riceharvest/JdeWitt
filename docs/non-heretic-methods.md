@@ -455,3 +455,42 @@ full + 120 screening scan); one drift row per ~95 is the quality cost already
 documented. Verdict: answer-span per-layer axis generalizes across refusal
 FAMILIES on mc47, completing the same evidence shape q25 has (40/40 in-sample
 + 24/24 held-out families).
+
+QWEN3-4B HEAD-TO-HEAD AGAINST A PUBLISHED ORACLE (2026-11-18, negative, with the
+mechanism measured). Base `Qwen/Qwen3-4B-Instruct-2507` @ `cdbee75f17c0`, oracle
+`p-e-w/Qwen3-4B-Instruct-2507-heretic` @ `bc843daf6f71`, both converted to q8_0 by
+the same converter, served by the same binary at the same argv, one server at a
+time on a 12 GiB card.
+
+* Result so far: five fitted artifacts — shared contrast axis at scale 1.0, 1.5
+  and 2.0, per-layer answer-end axis at 1.0, per-layer top-PC axis at 1.0, 72
+  tensors each — score **0/10** on the harmful screen at every strength, with no
+  visible damage. The oracle file on the same base, same converter, same config
+  scores **10/10**. Increasing strength did nothing: 2.0 stopped refusing in a way
+  that reads as token salad, which is damage, not removal.
+* The oracle's edit footprint, by hashing the raw quantized bytes of every
+  decoder tensor: **54 of 396 tensors changed — `attn_output` and `ffn_down` for
+  `blk.9` through `blk.35`, and nothing else.** Layers 0-8 are byte-identical.
+  Any diagnostic that diffs layer 0 is comparing against a zero delta, which is
+  what the first version of this diagnostic did before it was replaced.
+* The delta is rank-1 by construction (`W - s u vᵗ`), so every row of it is a
+  scalar times the same unit vector, and because both tensors write into the
+  residual stream (`out_dim = 2560`) that vector is the direction the oracle
+  removed — recoverable from one row, no SVD, no reconstruction. Against that
+  recovered direction, my **shared fitted axis sits at |cos| 0.508–0.511 in all
+  27 edited layers** (attn mean signed +0.13, ffn +0.06; spread 0.505 to 0.511,
+  sign alternating by layer).
+* Read that honestly: the axis is not orthogonal to the oracle's — it holds a
+  stable half of it in every layer, with a per-layer sign flip. A shared axis
+  removes the fraction of the oracle's direction it is aligned with, which is
+  about `cos² ≈ 0.26` of its variance, and cranking scale overshoots the aligned
+  part without ever reaching the rest. That is consistent with 0/10 at scale 1.0
+  and 2.0 alike, and it is the reason the head-to-head cannot be called a strength
+  problem.
+* Control running: re-apply the oracle's **own** per-tensor delta to the base
+  through our edit path (dequant-tile-apply-requant, identical block counts). If
+  that refuses like the oracle, the converter, requantization and serve path are
+  faithful and every null above is a direction-discovery failure and nothing
+  else; if it does not, the nulls are our own write path and nothing fitted since
+  can be trusted. Number not yet in hand — do not quote this section as a result
+  until it is.
