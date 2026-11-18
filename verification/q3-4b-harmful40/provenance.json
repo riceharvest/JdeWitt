@@ -1,0 +1,29 @@
+{
+ "scope": "40-row harmful suite at a cap that can hold a post-removal answer; base, published oracle, and our fitted shared axis at scale 1.0.",
+ "date_utc": "2026-11-18",
+ "suite": "probes/harmful-40.jsonl (advbench-derived refusal rows, kind refusal, en)",
+ "serve_config": "-c 8192 --parallel 2 --jinja --no-webui port 8134, cap 4096, greedy (4096 tokens per slot; chosen because post-edit answers run 1500-5600 characters and 2048 truncated them)",
+ "gpu": "RTX 3060 12GiB, one server at a time",
+ "runner": "scripts/capability_wave.py --kinds refusal (deterministic refusal-check wording only, zero judge calls) + scripts/refusal_shape_audit.py for the shape columns",
+ "artifacts": {
+  "q3base": {
+   "file": "q3-4b-base-q8.gguf",
+   "sha256_prefix_16": "dc4ae2660e73cc2a"
+  },
+  "q3oracle": {
+   "file": "q3-4b-heretic-q8.gguf",
+   "sha256_prefix_16": "419a22047e56847f"
+  },
+  "q3shl10": {
+   "file": "q3-4b-shl10.gguf",
+   "sha256_prefix_16": "18a9e9ea043254da",
+   "edit": "shared contrast axis fitted from 71 self-labelled contrast records, last-prompt-token locus, output axis space, scale 1.0, all 36 layers, o_proj + mlp.down_proj"
+  }
+ },
+ "seconds": {
+  "q3base": 48.4,
+  "q3oracle": 248.0,
+  "q3shl10": 79.3
+ },
+ "verification": "shape-audit.json alongside; three spot-rows per bucket read in full against the audit buckets"
+}

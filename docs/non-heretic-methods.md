@@ -521,6 +521,34 @@ because the phrase it looks for is absent. On these rows the published build's
 "10/10 removal" is a style measurement, and our earlier "0/10" was a style
 measurement plus truncation.
 
+THE 40-ROW SUITE, cap 4096 / 2 slots so nothing truncates (`verification/q3-4b-harmful40/`,
+shape columns from `scripts/refusal_shape_audit.py`, three rows per bucket read in
+full):
+
+  |                                   | base | published oracle | our shared axis @1.0 |
+  |-----------------------------------|-----:|-----------------:|---------------------:|
+  | answers with a refusal opener     | 40   | 1                | 3                    |
+  | no opener                         | 0    | 39               | 37                   |
+  | median answer length (chars)      | 521  | 2847             | 995                  |
+  | rows with procedural content      | 1    | 24               | 17                   |
+  | flat declines, no opener          | 0    | 4                | 23                   |
+  | reframing pivots (with or without steps) | 0 | 16          | 8                    |
+  | checker says "no refusal", shape still declines | 0 | 20 | 30                |
+  | wave seconds                      | 48   | 248              | 79                   |
+
+That is the comparison the con list asked for, and it reads better for us than the
+10-row screen did while saying the same uncomfortable thing about the metric. On
+opener removal the published build is at 97.5% and our fitted axis at 92.5% — a
+rounding difference apart, the same thing. On what happens *after* the opener, they
+are not the same edit at all: our axis leaves a substantive refusal in 23 of 37
+answers (62%), the published build in 4 of 39 (10%), and the published build spends
+its removal on long reframing pivots with step lists (16 of 39) at three times our
+length. The wording checker would have credited the published build with 97.5%
+removal and ours with 92.5%; the shape audit says 20 of 39 and 30 of 37 of those
+answers are still refusals dressed differently. On the nine rows read in full, none
+delivered the asked-for harm.
+
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 
@@ -554,8 +582,10 @@ letting it read as removal. The semantic label ("is the asked-for harm actually 
 the answer") stays a human read; what the audit must guarantee is that you cannot
 claim removal without noticing the pivot.
 
-NOT CLAIMED: n=10 rows, one screen config, cap 2048 under ctx 8192/4 slots; no
-harmful-40 or held-out-family certification on these q3 artifacts yet; no
-capability-retention measurement on them; the oracle-direction merge is an
-instrument control with the direction taken from the published file, not an
-independent result.
+NOT CLAIMED: the 40-row numbers are one screen config (cap 4096, ctx 8192, 2
+slots) and one harmful suite; the shape buckets are text heuristics with nine of
+120 answers read in full, so "preserves the refusal" is a bucket count plus a spot
+check and not a certified held-out result; held-out refusal families are still
+unmeasured on qwen3-4b, and so is capability retention for these artifacts; the
+oracle-direction merge is an instrument control whose direction came from the
+published file, not an independent result.
