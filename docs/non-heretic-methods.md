@@ -775,3 +775,16 @@ drive is also what caught two bugs in that front end before anything was claimed
 the axes-file key was being dropped, and `--layers` was missing from the build line,
 which is failure mode (1) in a new costume.
 
+The last piece of that failure mode was not the lane: `build_merged` reports
+`tensors_edited` as the number of tensors it **visited**, so a merge that changed nothing
+returns `"tensors_edited": 36` with `changed_blocks: 0` on every one of them and exits 0.
+That is how a build can "succeed" with no edit for reasons that have nothing to do with
+the layer plan — scale 0.0 reproduces it exactly. `spanfit build` now reports
+`tensors_changed` and `changed_blocks_total`, refuses and deletes the output when no block
+changed, and the refusal names the operands that were in effect:
+
+```
+build moved 0 bytes across 36 visited tensors (scale=0.0, axis_space=output,
+shape=perlayer, axes=[36, 2560]): nothing was written.
+```
+

@@ -455,6 +455,23 @@ def main(argv=None):
                          "0 tensors still exits 0)")
     rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale,
                        axis_space=args.axis_space)
+    # `tensors_edited` counts tensors the merge visited, not tensors whose bytes moved:
+    # a scale-0.0 run reports 36 tensors edited with changed_blocks 0 in every one of
+    # them and exits 0. What a no-op actually looks like is zero changed blocks, so that
+    # is the number checked, and it is put in the report so nothing downstream has to
+    # infer it from the tensor list.
+    changed = sum(r['changed_blocks'] for r in rep['tensors'])
+    rep['tensors_changed'] = sum(1 for r in rep['tensors'] if r['changed_blocks'])
+    rep['changed_blocks_total'] = int(changed)
+    if rep['tensors_changed'] == 0:
+        if os.path.exists(args.out):
+            os.unlink(args.out)
+        raise SystemExit(
+            f"build moved 0 bytes across {len(rep['tensors'])} visited tensors "
+            f"(scale={args.scale}, axis_space={args.axis_space}, shape={args.shape}, "
+            f"axes={list(axes.shape)}): nothing was written. That is not a result to "
+            f"print — the axes file, the side, or the layer plan does not match this "
+            f"artifact.")
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
     if args.time_log:
         from .timing import record
