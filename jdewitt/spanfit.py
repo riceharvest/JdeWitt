@@ -187,6 +187,48 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
     return report
 
 
+def gguf_targets(gguf_in: str, max_probe_layers: int = 512) -> dict:
+    """Which output-side projections this artifact actually carries, and the exact
+    build flags that use them.
+
+    Reads tensor names straight off the GGUF; no model load, no GPU. The point is
+    that source_key is otherwise typed by hand from the architecture notes, and a
+    wrong or unmapped key is the class of mistake that merges successfully while
+    editing nothing. The wildcard keys and --layers this returns are verified
+    against the file itself, and the layer count is reported per suffix so a
+    patched or partial artifact shows up as a mismatch instead of a silent skip.
+    """
+    from .gguf_adapters import HF_TO_LLAMA, gguf_weight_shapes
+    shapes = gguf_weight_shapes(gguf_in)
+    found, suffixes = {}, {}
+    for candidate, suffix in HF_TO_LLAMA:
+        name = f"blk.0.{suffix}.weight"
+        if name not in shapes:
+            continue
+        count, dims = 0, shapes[name]
+        while f"blk.{count}.{suffix}.weight" in shapes:
+            count += 1
+        found[suffix] = {"layers": count,
+                         "gguf_name": f"blk.*.{suffix}.weight",
+                         "source_key": f"model.layers.*.{candidate}.weight",
+                         "gguf_dims": [int(d) for d in dims]}
+        suffixes[suffix] = count
+    if not found:
+        return {"gguf": gguf_in, "targets": {},
+                "error": "no output-side projection this tool knows how to edit "
+                         f"(looked for {', '.join(f'blk.N.{s}.weight' for _, s in HF_TO_LLAMA)})"}
+    layers = min(suffixes.values())
+    return {"gguf": gguf_in, "targets": found,
+            "source_key": [v["source_key"] for v in found.values()],
+            "layers": layers,
+            "build_line": " ".join(f"--source-key {found[s]['source_key']}"
+                                   for s in sorted(found)) + f" --layers {layers}",
+            "note": "layers is the smallest suffix count: if two suffixes differ the "
+                    "artifact is patched or mixed, so merge scope is decided here rather "
+                    "than silently. Axis length is checked against the resolved side at "
+                    "merge time (--axis-space); nothing is skipped quietly."}
+
+
 def target_source_keys(n_layers: int, out_key_suffixes: tuple[str, ...]) -> list[str]:
     """HF source keys for every output-side projection found under decoder layers."""
     keys = []
@@ -286,6 +328,8 @@ def main(argv=None):
     a.add_argument("--scale", type=float, default=1.0,
                    help="projection multiplier; 1.0 removes the axis completely, "
                         "1.5 is the certified q25 SAS scale (the curve is knife-edge, METHODOLOGY R8)")
+    g = sub.add_parser("targets", help="list the output-side projections an artifact has")
+    g.add_argument("--gguf-in", required=True)
     m = sub.add_parser("axes", help="fit axes and save the [L,W] tensor")
     m.add_argument("--records", required=True)
     m.add_argument("--out", required=True)
@@ -294,6 +338,10 @@ def main(argv=None):
     for p in (a, m):
         p.add_argument("--time-log", help="JSONL ledger; logs fit/merge phases")
     args = ap.parse_args(argv)
+
+    if args.cmd == "targets":
+        print(json.dumps(gguf_targets(args.gguf_in), indent=1))
+        return
 
     t0 = time.monotonic()
     recs = load_records(args.records)
@@ -320,6 +368,11 @@ def main(argv=None):
             keys += [k.replace("*", str(L)) for L in range(args.layers)]
         else:
             keys.append(k)
+    if not keys:
+        raise SystemExit("no target tensors: --source-key expanded to nothing; run "
+                         "`python -m jdewitt.spanfit targets --gguf-in <file>` to see "
+                         "the keys this artifact actually carries (a merge that edits "
+                         "0 tensors still exits 0)")
     rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale,
                        axis_space=args.axis_space)
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
