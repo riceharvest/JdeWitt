@@ -35,13 +35,27 @@ from jdewitt.evaluation import score_response  # noqa: E402
 from jdewitt.timing import record  # noqa: E402
 
 
-class SilentJudge:
-    """Only refusal rows consult the judge; capability rows never call it."""
+class WaveJudge:
+    """Deterministic only: refusal rows get the shipped RefusalChecker, capability
+    rows never consult anything, and no path here reaches an LLM judge.
 
-    scoring_mode = 'judge'
+    That is what lets a removal wave go through the same instrument as a
+    retention wave. Without it, refusal rows fail scoring here and removal numbers
+    get taken by hand-written probe scripts with no serve-config manifest, which is
+    exactly the confound METHODOLOGY R9 was written for.
+    """
 
-    def classify(self, prompt, answer, language):  # pragma: no cover - not used here
-        raise RuntimeError('capability_wave writes capability and harmless rows only')
+    scoring_mode = 'refusal-check'
+
+    def __init__(self):
+        from jdewitt.refusal_check import RefusalChecker
+        self._checker = RefusalChecker()
+
+    def check(self, answer, language):
+        return self._checker.check(answer, language)
+
+    def classify(self, prompt, answer, language):  # pragma: no cover - never called
+        raise RuntimeError('capability_wave never calls an LLM judge')
 
 
 def chat(port: int, prompt: str, max_tokens: int, timeout: int = 240) -> dict:
@@ -114,13 +128,15 @@ def main(argv=None):
     with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
         answers = list(pool.map(lambda row: chat(args.port, row['prompt'], args.max_tokens), rows))
     elapsed = time.monotonic() - started
-    judge = SilentJudge()
+    judge = WaveJudge()
     scored = []
     for row, response in zip(rows, answers):
         scored.append(score_response(row, response, judge))
     text = ''.join(json.dumps(row, sort_keys=True) + '\n' for row in scored)
     atomic_text(out_path, text)
     passed = sum(1 for row in scored if row['status'] == 'ok' and row.get('passed') is True)
+    refusals = sum(1 for row in scored if (row.get('refusal_check') or {}).get('result') == 'refusal_detected')
+    delivered = sum(1 for row in scored if (row.get('refusal_check') or {}).get('result') == 'no_explicit_refusal')
     if args.preview:
         print('first answers (a score cannot tell a refusal from false compliance, '
               'METHODOLOGY R6 — read these)', flush=True)
@@ -132,6 +148,7 @@ def main(argv=None):
                         'shipped deterministic scorers, no judge calls, no fitting.',
                'label': args.label, 'suite': str(args.suite), 'rows': len(scored),
                'kinds': sorted(kinds), 'capability_passed': passed,
+               'refusals_detected': refusals, 'delivered_instead': delivered,
                'invalid': sum(1 for row in scored if row['status'] != 'ok'),
                'completion_tokens_total': tokens,
                'serve_config': args.serve_config, 'serve_structured': structured, 'port': args.port,
@@ -140,7 +157,9 @@ def main(argv=None):
                'seconds': round(elapsed, 1),
                'predictions': str(out_path),
                'note': 'A wave is only comparable to another wave taken with the identical serve_config '
-                       '(METHODOLOGY R9). Rows whose status is not ok never count as a pass.'}
+                       'Rows whose status is not ok never count as a pass. Refusal rows are graded '
+                                              'by the shipped deterministic refusal-check; that is screening '
+                                              'evidence, not a removal claim (R6: read the shape).'}
     atomic_text(args.output / 'wave.json', json.dumps(summary, indent=1, sort_keys=True) + '\n')
     atomic_text(args.output.parent / f'{args.label}.wave.json',
                 json.dumps(summary, indent=1, sort_keys=True) + '\n')
