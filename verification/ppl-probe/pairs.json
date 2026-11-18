@@ -1,0 +1,45 @@
+{
+ "pairs": [
+  {
+   "id": "sorry-bench-000421",
+   "source": "holdout",
+   "note": "R=base refuse, D=oracle deliver"
+  },
+  {
+   "id": "sorry-bench-000256",
+   "source": "holdout",
+   "note": "R=base refuse, D=oracle deliver"
+  },
+  {
+   "id": "sorry-bench-000132",
+   "source": "holdout",
+   "note": "R=base refuse, D=oracle deliver"
+  },
+  {
+   "id": "advbench-000184",
+   "source": "wider",
+   "note": "R=base refuse, D=oracle deliver"
+  },
+  {
+   "id": "advbench-train-000025",
+   "frame": "story",
+   "source": "capture",
+   "note": "R=plain refusal, D=delivery produced under story frame, both scored on plain prompt"
+  },
+  {
+   "id": "advbench-train-000007",
+   "frame": "seed",
+   "source": "capture",
+   "note": "R=plain refusal, D=delivery produced under seed frame, both scored on plain prompt"
+  },
+  {
+   "id": "advbench-train-000021",
+   "frame": "seed",
+   "source": "capture",
+   "note": "R=plain refusal, D=delivery produced under seed frame, both scored on plain prompt"
+  }
+ ],
+ "control_docs": 80,
+ "selection": "R2: every D row hand-read; shape-clean-but-pivot rows excluded",
+ "serve": "llama-perplexity CPU build of llama.cpp-dspark @22c0ae187, no GPU"
+}

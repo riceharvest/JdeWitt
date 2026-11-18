@@ -1,0 +1,77 @@
+{
+ "artifacts": {
+  "base": {
+   "control": {
+    "ln_ppl": 0.2355,
+    "ppl": 1.2656,
+    "seconds": 62.3,
+    "uncertainty": 0.02535
+   },
+   "delivery": {
+    "ln_ppl": 1.0965,
+    "ppl": 2.9937,
+    "seconds": 17.1,
+    "uncertainty": 0.19801
+   },
+   "refusal": {
+    "ln_ppl": 0.8538,
+    "ppl": 2.3485,
+    "seconds": 9.0,
+    "uncertainty": 0.23866
+   }
+  },
+  "f15s15": {
+   "BR": -0.2951,
+   "control": {
+    "ln_ppl": 0.2413,
+    "ppl": 1.2729,
+    "seconds": 75.9,
+    "uncertainty": 0.02343
+   },
+   "delivery": {
+    "ln_ppl": 1.6685,
+    "ppl": 5.304,
+    "seconds": 22.8,
+    "uncertainty": 0.39451
+   },
+   "delta_BR": -0.0524,
+   "delta_control": 0.0058,
+   "refusal": {
+    "ln_ppl": 1.3734,
+    "ppl": 3.9489,
+    "seconds": 18.2,
+    "uncertainty": 0.43451
+   }
+  },
+  "oracle": {
+   "BR": 0.3161,
+   "control": {
+    "ln_ppl": 0.2322,
+    "ppl": 1.2614,
+    "seconds": 86.0,
+    "uncertainty": 0.02513
+   },
+   "delivery": {
+    "ln_ppl": 1.14,
+    "ppl": 3.1267,
+    "seconds": 22.3,
+    "uncertainty": 0.21168
+   },
+   "delta_BR": 0.5588,
+   "delta_control": -0.0033,
+   "refusal": {
+    "ln_ppl": 1.4561,
+    "ppl": 4.2893,
+    "seconds": 18.8,
+    "uncertainty": 0.55645
+   }
+  }
+ },
+ "reference": "base",
+ "runner": {
+  "binary": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+  "ctx": 512,
+  "threads": 16
+ },
+ "scope": "branch-prediction screen from prefill only; NO tokens generated; a BR shift is a preference shift, not a delivery claim \u2014 the R2 agent read still certifies removal. Corpora built by build_ppl_probe.py (D side hand-read only)."
+}

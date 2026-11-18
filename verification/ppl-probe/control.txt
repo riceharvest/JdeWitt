@@ -1,0 +1,951 @@
+Compute 7 times 3 plus 10 times 9. Answer with only the number.
+7 times 3 is 21, and 10 times 9 is 90. Adding them together: 21 + 90 = 111.  
+111
+
+Compute 14 times 17 plus 4 times 3. Answer with only the number.
+14 times 17 is 238.  
+4 times 3 is 12.  
+238 plus 12 is 250.  
+
+250
+
+Compute 18 times 25 plus 6 times 19. Answer with only the number.
+18 × 25 = 450  
+6 × 19 = 114  
+450 + 114 = 564  
+
+564
+
+Compute 7 times 12 plus 24 times 24. Answer with only the number.
+7 × 12 = 84  
+24 × 24 = 576  
+84 + 576 = 660  
+
+660
+
+Compute 22 times 10 plus 29 times 20. Answer with only the number.
+22 × 10 = 220  
+29 × 20 = 580  
+220 + 580 = 800  
+
+800
+
+Compute 25 times 24 plus 9 times 20. Answer with only the number.
+25 times 24 is 600.  
+9 times 20 is 180.  
+600 plus 180 is 780.  
+
+780
+
+Compute 5 times 5 plus 6 times 7. Answer with only the number.
+5 times 5 is 25, and 6 times 7 is 42. Adding them together: 25 + 42 = 67.  
+67
+
+Compute 12 times 25 plus 27 times 20. Answer with only the number.
+12 × 25 = 300  
+27 × 20 = 540  
+300 + 540 = 840  
+
+840
+
+Compute 7 times 11 plus 18 times 15. Answer with only the number.
+7 × 11 = 77  
+18 × 15 = 270  
+77 + 270 = 347  
+
+347
+
+Compute 22 times 19 plus 25 times 12. Answer with only the number.
+22 × 19 = 418  
+25 × 12 = 300  
+418 + 300 = 718  
+
+718
+
+Compute 21 times 3 plus 29 times 15. Answer with only the number.
+21 × 3 = 63  
+29 × 15 = 435  
+63 + 435 = 498  
+
+498
+
+Compute 11 times (13 plus 38). Answer with only the number.
+11 times (13 plus 38) = 11 × (13 + 38) = 11 × 51 = 561
+
+561
+
+Compute 6 times (34 plus 18). Answer with only the number.
+6 times (34 plus 18) = 6 × (34 + 18) = 6 × 52 = 312
+
+312
+
+Compute 13 times (5 plus 14). Answer with only the number.
+13 times (5 plus 14) = 13 × (5 + 14) = 13 × 19 = 247
+
+247
+
+Compute 12 times (34 plus 5). Answer with only the number.
+12 times (34 plus 5) = 12 × (34 + 5) = 12 × 39 = 468
+
+468
+
+Compute 9 times (33 plus 40). Answer with only the number.
+9 times (33 plus 40) = 9 × (33 + 40) = 9 × 73 = 657
+
+657
+
+Compute 13 times (27 plus 14). Answer with only the number.
+13 times (27 plus 14) = 13 × (27 + 14) = 13 × 41 = 533
+
+533
+
+Compute 3 times (11 plus 21). Answer with only the number.
+3 times (11 plus 21) = 3 × (11 + 21) = 3 × 32 = 96
+
+Compute 15 times (33 plus 29). Answer with only the number.
+15 times (33 plus 29) = 15 × (33 + 29) = 15 × 62 = 930
+
+930
+
+19 is 50% of which number? Answer with only the number.
+To find the number of which 19 is 50%, we can set up the equation:
+
+19 = 0.5 × x
+
+Now solve for x:
+
+x = 19 ÷ 0.5  
+x = 38
+
+38
+
+7 is 20% of which number? Answer with only the number.
+To find the number of which 7 is 20%, we can set up the equation:
+
+$$
+0.20 \times x = 7
+$$
+
+Divide both sides by 0.20:
+
+$$
+x = \frac{7}{0.20} = 35
+$$
+
+Answer: 35
+
+8 is 20% of which number? Answer with only the number.
+To find the number of which 8 is 20%, we can set up the equation:
+
+$$
+8 = 0.20 \times x
+$$
+
+Now solve for $ x $:
+
+$$
+x = \frac{8}{0.20} = 40
+$$
+
+Answer: 40
+
+11 is 20% of which number? Answer with only the number.
+To find the number of which 11 is 20%, we can set up the equation:
+
+$$
+0.20 \times x = 11
+$$
+
+Divide both sides by 0.20:
+
+$$
+x = \frac{11}{0.20} = 55
+$$
+
+Answer: 55
+
+10 is 25% of which number? Answer with only the number.
+To find the number of which 10 is 25%, set up the equation:
+
+25% of x = 10  
+0.25x = 10  
+x = 10 / 0.25  
+x = 40
+
+40
+
+4 is 10% of which number? Answer with only the number.
+To find the number of which 4 is 10%, we can set up the equation:
+
+10% of x = 4  
+0.10 × x = 4  
+x = 4 ÷ 0.10  
+x = 40
+
+Answer: 40
+
+10 is 40% of which number? Answer with only the number.
+To find the number of which 10 is 40%, set up the equation:
+
+$$
+10 = 0.40 \times x
+$$
+
+Divide both sides by 0.40:
+
+$$
+x = \frac{10}{0.40} = 25
+$$
+
+Answer: 25
+
+Solve for x: 9x + 55 = 325. Answer with only the number.
+9x + 55 = 325  
+9x = 325 - 55  
+9x = 270  
+x = 270 / 9  
+x = 30
+
+Solve for x: 9x + 47 = 317. Answer with only the number.
+9x + 47 = 317  
+9x = 317 - 47  
+9x = 270  
+x = 270 / 9  
+x = 30
+
+Solve for x: 4x + 36 = 104. Answer with only the number.
+4x + 36 = 104  
+4x = 104 - 36  
+4x = 68  
+x = 68 / 4  
+x = 17
+
+Solve for x: 15x + 60 = 405. Answer with only the number.
+15x + 60 = 405  
+15x = 405 - 60  
+15x = 345  
+x = 345 / 15  
+x = 23
+
+Solve for x: 16x + 52 = 500. Answer with only the number.
+16x + 52 = 500  
+16x = 500 - 52  
+16x = 448  
+x = 448 / 16  
+x = 28
+
+Solve for x: 5x + 22 = 57. Answer with only the number.
+5x + 22 = 57  
+5x = 57 - 22  
+5x = 35  
+x = 35 / 5  
+x = 7
+
+Solve for x: 15x + 26 = 251. Answer with only the number.
+15x + 26 = 251  
+15x = 251 - 26  
+15x = 225  
+x = 225 / 15  
+x = 15
+
+Solve for x: 4x + 47 = 131. Answer with only the number.
+4x + 47 = 131  
+4x = 131 - 47  
+4x = 84  
+x = 84 / 4  
+x = 21
+
+Solve for x: 7x + 19 = 117. Answer with only the number.
+7x + 19 = 117  
+7x = 117 - 19  
+7x = 98  
+x = 98 / 7  
+x = 14
+
+Solve for x: 14x + 7 = 63. Answer with only the number.
+14x + 7 = 63  
+14x = 63 - 7  
+14x = 56  
+x = 56 / 14  
+x = 4
+
+Solve for x: 4x + 53 = 121. Answer with only the number.
+4x + 53 = 121  
+4x = 121 - 53  
+4x = 68  
+x = 68 / 4  
+x = 17
+
+A rectangle is 6 by 44 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions are 6 by 44:
+
+$$
+P = 2 \times (6 + 44) = 2 \times 50 = 100
+$$
+
+100
+
+A rectangle is 45 by 43 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions are 45 by 43:
+
+$$
+P = 2 \times (45 + 43) = 2 \times 88 = 176
+$$
+
+176
+
+A rectangle is 33 by 11 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given length = 33 units and width = 11 units:
+
+$$
+P = 2 \times (33 + 11) = 2 \times 44 = 88
+$$
+
+88
+
+A rectangle is 38 by 19 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given:
+- Length = 38 units
+- Width = 19 units
+
+$$
+P = 2 \times (38 + 19) = 2 \times 57 = 114
+$$
+
+114
+
+A rectangle is 40 by 8 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions: 40 by 8 units.
+
+$$
+P = 2 \times (40 + 8) = 2 \times 48 = 96
+$$
+
+96
+
+A rectangle is 9 by 32 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions are 9 by 32:
+
+$$
+P = 2 \times (9 + 32) = 2 \times 41 = 82
+$$
+
+82
+
+A rectangle is 25 by 38 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given length = 38 units and width = 25 units:
+
+$$
+P = 2 \times (38 + 25) = 2 \times 63 = 126
+$$
+
+126
+
+A rectangle is 6 by 45 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions are 6 by 45:
+
+$$
+P = 2 \times (6 + 45) = 2 \times 51 = 102
+$$
+
+102
+
+A rectangle is 19 by 7 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given length = 19 units and width = 7 units:
+
+$$
+P = 2 \times (19 + 7) = 2 \times 26 = 52
+$$
+
+52
+
+A rectangle is 18 by 35 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given length = 35 units and width = 18 units:
+
+$$
+P = 2 \times (35 + 18) = 2 \times 53 = 106
+$$
+
+106
+
+A rectangle is 35 by 4 units. What is its perimeter? Answer with only the number.
+The perimeter of a rectangle is calculated using the formula:
+
+$$
+P = 2 \times (length + width)
+$$
+
+Given the dimensions: 35 by 4 units.
+
+$$
+P = 2 \times (35 + 4) = 2 \times 39 = 78
+$$
+
+Answer: 78
+
+A triangle has base 42 and height 23. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 42
+- Height = 23
+
+$$
+\text{Area} = \frac{1}{2} \times 42 \times 23 = 21 \times 23 = 483
+$$
+
+483
+
+A triangle has base 52 and height 9. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 52
+- Height = 9
+
+$$
+\text{Area} = \frac{1}{2} \times 52 \times 9 = 26 \times 9 = 234
+$$
+
+234
+
+A triangle has base 48 and height 16. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 48
+- Height = 16
+
+$$
+\text{Area} = \frac{1}{2} \times 48 \times 16 = 24 \times 16 = 384
+$$
+
+384
+
+A triangle has base 10 and height 21. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 10
+- Height = 21
+
+$$
+\text{Area} = \frac{1}{2} \times 10 \times 21 = 5 \times 21 = 105
+$$
+
+105
+
+A triangle has base 14 and height 37. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 14
+- Height = 37
+
+$$
+\text{Area} = \frac{1}{2} \times 14 \times 37 = 7 \times 37 = 259
+$$
+
+259
+
+A triangle has base 48 and height 22. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 48
+- Height = 22
+
+$$
+\text{Area} = \frac{1}{2} \times 48 \times 22 = 24 \times 22 = 528
+$$
+
+528
+
+A triangle has base 34 and height 25. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 34
+- Height = 25
+
+$$
+\text{Area} = \frac{1}{2} \times 34 \times 25 = 17 \times 25 = 425
+$$
+
+425
+
+A triangle has base 58 and height 27. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 58
+- Height = 27
+
+$$
+\text{Area} = \frac{1}{2} \times 58 \times 27 = 29 \times 27 = 783
+$$
+
+783
+
+A triangle has base 32 and height 7. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Substitute the given values:
+
+$$
+\text{Area} = \frac{1}{2} \times 32 \times 7 = 16 \times 7 = 112
+$$
+
+112
+
+A triangle has base 54 and height 29. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 54
+- Height = 29
+
+$$
+\text{Area} = \frac{1}{2} \times 54 \times 29 = 27 \times 29
+$$
+
+$$
+27 \times 29 = 783
+$$
+
+Answer: 783
+
+A triangle has base 58 and height 15. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 58
+- Height = 15
+
+$$
+\text{Area} = \frac{1}{2} \times 58 \times 15 = 29 \times 15 = 435
+$$
+
+435
+
+A triangle has base 8 and height 40. What is its area? Answer with only the number.
+The area of a triangle is given by the formula:
+
+$$
+\text{Area} = \frac{1}{2} \times \text{base} \times \text{height}
+$$
+
+Given:
+- Base = 8
+- Height = 40
+
+$$
+\text{Area} = \frac{1}{2} \times 8 \times 40 = 4 \times 40 = 160
+$$
+
+160
+
+The first term of an arithmetic sequence is 7 and the common difference is 3. What is term number 10? Answer with only the number.
+To find the 10th term of an arithmetic sequence:
+
+Formula:  
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:  
+- $a_1 = 7$ (first term)  
+- $d = 3$ (common difference)  
+- $n = 10$ (term number)
+
+$$
+a_{10} = 7 + (10 - 1) \times 3 = 7 + 9 \times 3 = 7 + 27 = 34
+$$
+
+Answer: 34
+
+The first term of an arithmetic sequence is 13 and the common difference is 9. What is term number 23? Answer with only the number.
+To find the 23rd term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 13$ (first term)
+- $d = 9$ (common difference)
+- $n = 23$
+
+$$
+a_{23} = 13 + (23 - 1) \times 9 = 13 + 22 \times 9 = 13 + 198 = 211
+$$
+
+Answer: 211
+
+The first term of an arithmetic sequence is 12 and the common difference is 10. What is term number 20? Answer with only the number.
+To find the 20th term of an arithmetic sequence:
+
+Formula:  
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:  
+- $a_1 = 12$ (first term)  
+- $d = 10$ (common difference)  
+- $n = 20$ (term number)
+
+$$
+a_{20} = 12 + (20 - 1) \times 10 = 12 + 19 \times 10 = 12 + 190 = 202
+$$
+
+Answer: 202
+
+The first term of an arithmetic sequence is 15 and the common difference is 11. What is term number 24? Answer with only the number.
+To find the 24th term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 15$ (first term)
+- $d = 11$ (common difference)
+- $n = 24$
+
+$$
+a_{24} = 15 + (24 - 1) \times 11 = 15 + 23 \times 11 = 15 + 253 = 268
+$$
+
+Answer: 268
+
+The first term of an arithmetic sequence is 16 and the common difference is 13. What is term number 22? Answer with only the number.
+To find the 22nd term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 16$ (first term)
+- $d = 13$ (common difference)
+- $n = 22$
+
+$$
+a_{22} = 16 + (22 - 1) \times 13 = 16 + 21 \times 13
+$$
+
+$$
+21 \times 13 = 273
+$$
+
+$$
+16 + 273 = 289
+$$
+
+Answer: 289
+
+The first term of an arithmetic sequence is 12 and the common difference is 7. What is term number 17? Answer with only the number.
+To find the 17th term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 12$ (first term)
+- $d = 7$ (common difference)
+- $n = 17$
+
+$$
+a_{17} = 12 + (17 - 1) \times 7 = 12 + 16 \times 7 = 12 + 112 = 124
+$$
+
+Answer: 124
+
+The first term of an arithmetic sequence is 9 and the common difference is 11. What is term number 13? Answer with only the number.
+To find the 13th term of an arithmetic sequence:
+
+The formula for the $ n $th term of an arithmetic sequence is:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $ a_1 = 9 $ (first term)
+- $ d = 11 $ (common difference)
+- $ n = 13 $
+
+Plug in the values:
+
+$$
+a_{13} = 9 + (13 - 1) \times 11 = 9 + 12 \times 11 = 9 + 132 = 141
+$$
+
+Answer: 141
+
+The first term of an arithmetic sequence is 2 and the common difference is 8. What is term number 22? Answer with only the number.
+The formula for the $ n $th term of an arithmetic sequence is:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $ a_1 = 2 $ (first term)
+- $ d = 8 $ (common difference)
+- $ n = 22 $
+
+Plug in the values:
+
+$$
+a_{22} = 2 + (22 - 1) \times 8 = 2 + 21 \times 8 = 2 + 168 = 170
+$$
+
+Answer: 170
+
+The first term of an arithmetic sequence is 13 and the common difference is 11. What is term number 18? Answer with only the number.
+To find the 18th term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 13$ (first term)
+- $d = 11$ (common difference)
+- $n = 18$
+
+$$
+a_{18} = 13 + (18 - 1) \times 11 = 13 + 17 \times 11 = 13 + 187 = 200
+$$
+
+Answer: 200
+
+The first term of an arithmetic sequence is 5 and the common difference is 10. What is term number 11? Answer with only the number.
+The formula for the $ n $th term of an arithmetic sequence is:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $ a_1 = 5 $ (first term)
+- $ d = 10 $ (common difference)
+- $ n = 11 $ (term number we want)
+
+$$
+a_{11} = 5 + (11 - 1) \times 10 = 5 + 10 \times 10 = 5 + 100 = 105
+$$
+
+Answer: 105
+
+The first term of an arithmetic sequence is 13 and the common difference is 12. What is term number 23? Answer with only the number.
+To find the 23rd term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 13$ (first term)
+- $d = 12$ (common difference)
+- $n = 23$
+
+$$
+a_{23} = 13 + (23 - 1) \times 12 = 13 + 22 \times 12 = 13 + 264 = 277
+$$
+
+Answer: 277
+
+The first term of an arithmetic sequence is 20 and the common difference is 13. What is term number 13? Answer with only the number.
+To find the 13th term of an arithmetic sequence, use the formula:
+
+$$
+a_n = a_1 + (n - 1)d
+$$
+
+Where:
+- $a_n$ is the nth term
+- $a_1 = 20$ (first term)
+- $d = 13$ (common difference)
+- $n = 13$
+
+$$
+a_{13} = 20 + (13 - 1) \times 13 = 20 + 12 \times 13 = 20 + 156 = 176
+$$
+
+Answer: 176
+
+What is the greatest common divisor of 69 and 76? Answer with only the number.
+The greatest common divisor of 69 and 76 is **1**.
+
+What is the greatest common divisor of 74 and 29? Answer with only the number.
+The greatest common divisor of 74 and 29 is **1**.
+
+What is the least common multiple of 40 and 77? Answer with only the number.
+To find the **least common multiple (LCM)** of 40 and 77, we start by finding their prime factorizations:
+
+- $ 40 = 2^3 \times 5 $
+- $ 77 = 7 \times 11 $
+
+Since they have no common prime factors, the LCM is simply the product of the two numbers:
+
+$$
+\text{LCM} = 40 \times 77 = 3080
+$$
+
+✅ Answer: **3080**
+
+What is the least common multiple of 38 and 13? Answer with only the number.
+The least common multiple (LCM) of 38 and 13 is **494**.
+
+What is the least common multiple of 39 and 43? Answer with only the number.
+The least common multiple (LCM) of 39 and 43 is **1677**.
+
+What is the least common multiple of 61 and 64? Answer with only the number.
+61 and 64 are both prime to each other (61 is prime, 64 is 2⁶, and 61 does not divide 2). So their least common multiple is simply their product.
+
+61 × 64 = 3904
+
+Answer: 3904
+
+What is the least common multiple of 9 and 74? Answer with only the number.
+The least common multiple (LCM) of 9 and 74 is **666**.
+
+What is the least common multiple of 60 and 22? Answer with only the number.
+To find the **least common multiple (LCM)** of 60 and 22, we can use the formula:
+
+$$
+\text{LCM}(a, b) = \frac{a \times b}{\text{GCD}(a, b)}
+$$
+
+### Step 1: Find GCD of 60 and 22
+
+Prime factorization:
+
+- 60 = 2² × 3 × 5  
+- 22 = 2 × 11
+
+Common prime factor: 2
+
+So, GCD = 2
+
+### Step 2: Compute LCM
+
+$$
+\text{LCM} = \frac{60 \times 22}{2} = \frac{1320}{2} = 660
+$$
+
+✅ Final answer: **660**

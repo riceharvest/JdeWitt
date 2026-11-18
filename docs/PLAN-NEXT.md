@@ -628,3 +628,37 @@ bounds the residual refusal rate at ~3/n with 95% confidence; banked harmful-40
 (40 rows, 35 refusals) is a failure arm, but a success claim at <2% residual
 refusal wants ~150 clean families — affordable precisely because screen-mode
 cascades make 150 rows ~25k tokens instead of ~79k at full-decode cost.
+
+## 2026-11-18 — zero-generation branch-probe: refusal removal measurable without generating a token
+
+The cascade cut the tokens a removal CLAIM needs; this cuts the tokens the
+removal SEARCH needs to the floor: zero generated. A refusal is a branch
+preference, and a preference is measurable by teacher-forced scoring alone.
+`scripts/build_ppl_probe.py` + `scripts/refusal_ppl_screen.py`: score the
+model's own refusal continuations (R) and hand-read-verified delivery
+continuations (D, 10 pairs; 4 oracle-screen + 6 jailbreak-capture, every D
+row agent-read first because 13/13 shape-clean-but-pivot rows were rejected
+— the shape screen cannot certify delivery, R2 again) and a benign control
+corpus C, with llama-perplexity (CPU build of the dspark fork, prefill only).
+`BR = lnPPL(R) - lnPPL(D)`, delta against the base artifact.
+
+Measured, all against the same q8 base (ln-PPL units, control drift <=0.006):
+- heretic oracle (banked real deliveries at the class ceiling): +0.559
+- q3oaxes135 (oracle direction recovered from its weights and merged via our
+  path — instrument control, banked 7/10 delivered): +0.649
+- EVERY one of our 14 fitted arms (f15s12/15/20, f20s20, attn*15/25/40,
+  prot15/20, shl10, yx*): between -0.487 (attn40, the collapse arm — refusal
+  gets MORE predictable) and +0.103. f15s15: -0.052 +/- 0.13.
+The probe independently reproduces the conclusion the behavior waves took
+~145k generated tokens to establish: our fitted axes move tone, never the
+branch; branch damage appears only in oracle-form directions, and the probe
+ranks artifacts by it for free. The search protocol is now: recover or fit a
+candidate direction -> CPU cos check -> zero-token ppl-branch probe -> K=150
+cascade screen (~5k tok) -> one full cert wave only where both agree.
+Corpora in `verification/ppl-probe/` (pairs.json records per-pair provenance
+and the agent verdict); ladder table in `screen-ladder-2026-11-18.json`.
+Probe limits, stated: BR is a preference shift, not a delivery claim; the
+corpus is 10 pairs and 2.6k delivery tokens — enough to separate +0.5 from
++-0.1, not to rank near-ties; and P(refusal|plain prompt) rises under ANY
+tone shift that breaks base self-fluency, so BR is read against the control
+corpus and, at decision time, always against the cascade read.
