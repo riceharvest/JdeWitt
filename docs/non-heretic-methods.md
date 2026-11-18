@@ -677,6 +677,18 @@ not in how many prompts it is averaged over; numbers and the exact comparison in
 `verification/q3-4b-fit-scaling.json`. Closing this con means changing the capture,
 which costs a serve lane, not another labelling run.
 
+The two arms that capture produced were then screened, and they are the honest
+counterpart of that null: **`q3y` attention-only at 2.0 removes almost nothing — 10/40
+rows, 1 of 20 families — while keeping capability intact** (161/180 maths, 21/61 code,
+median maths answer 161 chars, nothing flagged as collapse). **`q3y` both-sides at 1.0
+removes every opener on the harmful screen, 40/40 with a median 1561-character answer
+and no collapse**, and has no capability number yet: its 241-row retention wave died on
+a `docker rm -f` cleanup timeout after every row had already been generated and graded,
+so the arm is recorded as removal-measured / loss-unmeasured rather than as a success.
+A weaker-looking axis is not a weaker edit; the two arms disagree about which one is the
+better trade, and the only thing that settles it is the missing retention number, which
+is queued.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 
