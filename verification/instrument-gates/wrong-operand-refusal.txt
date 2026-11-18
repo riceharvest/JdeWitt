@@ -1,0 +1,1 @@
+port 8134 is serving /mnt/ssd/hermes/models/q3-4b-base-q8.gguf, not /mnt/ssd/hermes/models/q3-4b-attn-l935.gguf. Refusing to record a wave against an artifact the serve config does not name.
