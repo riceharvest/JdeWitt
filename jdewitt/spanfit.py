@@ -136,7 +136,8 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 
 
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
-                 source_keys: list[str], *, name_map=None, scale: float = 1.0) -> dict:
+                 source_keys: list[str], *, name_map=None, scale: float = 1.0,
+                 axis_space: str = "input") -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
     source_keys are HF-style names ('model.layers.<L>.<suffix>'); each must resolve
@@ -164,11 +165,22 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         layer = int([p for p in key.split(".") if p.isdigit()][0])
         w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
         axis = axes[layer]
-        if w.shape[0] != axis.shape[0]:
+        # dequantize_tensor hands back the torch layout [out, in]; gguf stores
+        # it reversed, which is why an 'in'-space axis has to be applied to w.T.
+        want = w.shape[0] if axis_space == 'output' else w.shape[1]
+        if want != axis.shape[0]:
             skipped.append(base)
             continue
-        deltas[base] = -scale * (axis.reshape(-1, 1).numpy() @
-                            (axis.reshape(1, -1).numpy() @ w)).astype(np.float32)
+        a = axis.reshape(-1, 1).numpy()
+        if axis_space == "output":
+            # axis lives in the space W writes into (the residual stream):
+            # dW = -s * u (u^T W). This is the form a residual-stream capture
+            # gives you, and the only one usable when the module's input dim
+            # differs from hidden (qwen3-4b o_proj: 4096 in, 2560 out).
+            deltas[base] = -(scale * (a @ (a.T @ w))).astype(np.float32)
+        else:
+            wt = w.T
+            deltas[base] = -(scale * (a @ (a.T @ wt))).T.astype(np.float32)
     report = edit_tensors(gguf_in, gguf_out, deltas)
     report["skipped"] = skipped
     report["elapsed_s"] = round(time.monotonic() - t0, 1)
@@ -267,6 +279,10 @@ def main(argv=None):
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
     a.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
+    a.add_argument("--axis-space", choices=("input", "output"), default="output",
+                   help="output (default): axis lives in the residual dim W writes "
+                        "into, dW = -s u (u^T W); input: axis lives on the module "
+                        "input dim and is applied transposed")
     a.add_argument("--scale", type=float, default=1.0,
                    help="projection multiplier; 1.0 removes the axis completely, "
                         "1.5 is the certified q25 SAS scale (the curve is knife-edge, METHODOLOGY R8)")
@@ -304,7 +320,8 @@ def main(argv=None):
             keys += [k.replace("*", str(L)) for L in range(args.layers)]
         else:
             keys.append(k)
-    rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale)
+    rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale,
+                       axis_space=args.axis_space)
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
     if args.time_log:
         from .timing import record
