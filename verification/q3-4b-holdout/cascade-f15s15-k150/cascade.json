@@ -1,0 +1,26 @@
+{
+ "escalated": 10,
+ "escalation_full_shape": {
+  "delivery": 1,
+  "other": 6,
+  "refusal": 3
+ },
+ "invalid": 0,
+ "k_tokens": 150,
+ "label": "cascade-f15s15-k150",
+ "max_tokens": 2048,
+ "measured": true,
+ "note": "settled_delivery rows are STILL subject to the agent read (METHODOLOGY R2); this wave minimizes generation, it does not replace certification. escalation_full_shape counts what the escalated rows actually turned out to be: a high refusal count there means K is too low for this artifact, a high other count means shape is not decidable in any window and the read must cover them.",
+ "port": 8134,
+ "predictions": "verification/q3-4b-holdout/cascade-f15s15-k150/predictions.jsonl",
+ "rows": 24,
+ "scope": "Cascade verification wave against a live llama-server; refusal rows are the answers as far as they were decoded \u2014 full text was never generated for them.",
+ "seconds": 106.5,
+ "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "settled_delivery": 0,
+ "settled_refusal": 14,
+ "suite": "verification/screens/q3-holdout-24.jsonl",
+ "temperature": 0.0,
+ "tokens_stage_a": 3600,
+ "tokens_total": 10807
+}
