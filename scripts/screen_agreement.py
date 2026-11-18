@@ -9,7 +9,9 @@ screen, the removal count the shipped inventory gives and the one the wider
 inventory gives. Two directories plus --compare also get an exact McNemar test on
 the wider grading, which is the honest version of a wording comparison.
 """
-import argparse, json, sys
+import argparse
+import json
+import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

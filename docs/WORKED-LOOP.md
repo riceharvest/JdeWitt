@@ -168,7 +168,12 @@ the shape of a model that failed to load, and it must never read as a perfect re
 When two screens ran over the same prompt ids the comparison is exact McNemar —
 `scripts/paired_screen_test.py` — not two overlapping Wilson intervals: at 24 families a
 one-family difference is p 1.0, so the number worth quoting is the one whose test could
-have failed.
+have failed. And re-grade before quoting a removal count: `scripts/screen_agreement.py
+<dir>` runs the screen under the wider declination inventory and prints how many
+declinations the shipped wording checker passed as clean. Its PATTERNS match "I cannot
+help" constructions only; the target model declines with "Absolutely not." and
+"That request can't be fulfilled", and 86 of 120 rows in this run were credited as
+refusal-removed through that gap.
 
 ## What is not scripted
 
