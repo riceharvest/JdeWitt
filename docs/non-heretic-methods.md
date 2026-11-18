@@ -586,10 +586,29 @@ that moves in our favour is the same failure as hiding one that moves against us
 So the honest head-to-head, both axes on the table: on these rows the published
 method gets a slightly better opener removal, a much better retention, and a
 slower and more verbose screen; ours gets a 2.9× cheaper screen, better refusal-
-content retention, and 37.4 points of arithmetic. The first hypothesis is the layer
-footprint — the published edit leaves blk.0–8 byte-identical and ours reaches all
-36 layers, and `--only-layers` now exists so that is a build flag rather than a
-guess; the restricted variant is measured in the same run as the harmful-40 screen.
+content retention, and 37.4 points of arithmetic. The first hypothesis was the layer footprint — the published edit leaves blk.0–8
+byte-identical and ours reaches all 36 layers — and `--only-layers` now exists so
+that is a build flag rather than a guess. Testing it was decisive, and the first
+thing it did was expose the mechanism: the median maths answer under the all-36-layer
+edit is **3 characters**. It is not doing wrong arithmetic, it is emitting a bare
+number and stopping. Restricted to blk.9–35 the same axis at the same scale gives a
+median of 64 characters, and the retention number goes from −37.4 points to:
+
+  |                                   | all 36 layers | blk.9–35 only |
+  |-----------------------------------|--------------:|--------------:|
+  | maths strict                      | 91/180        | 152/180       |
+  | maths paired delta, h, p          | −0.374, −0.85, 0.0001 | −0.039, −0.11, 0.12 |
+  | code strict, delta, p             | 53/61, +0.559, 0.0001 | 17/61, −0.049, 0.67 |
+  | harmful-40 refusals (of 40)       | 3             | 9             |
+  | median harmful answer (chars)     | 995           | 1390          |
+
+So the same direction does two different jobs depending on where it is applied, and
+the tool can now separate them: the early decoder layers are where the answer
+collapse lives *and* where most of the remaining opener removal lives. Trading 6
+rows of removal for 61 rows of arithmetic is the right trade, but neither number is
+where the frontier should sit, and `--only-layers` plus a scale sweep is exactly the
+search the tool exists to run. Scale 1.5 and 2.0 on blk.9–35, and an
+attention-only arm to attribute the collapse, are the next rows in this table.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
