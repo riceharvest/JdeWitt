@@ -1,0 +1,901 @@
+{
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "before": "verification/retention-q25-code61/base",
+  "after": "verification/retention-q25-code61/sas15",
+  "pass_on": "compliance",
+  "kind_filter": "math",
+  "shared_prompts": 180,
+  "before_summary": {
+    "passed": 53,
+    "total": 180,
+    "pass_rate_wilson": {
+      "point": 0.29444444444444445,
+      "lower": 0.232713697185308,
+      "upper": 0.3647655630713551,
+      "confidence": 0.95,
+      "method": "Wilson score interval"
+    }
+  },
+  "after_summary": {
+    "passed": 152,
+    "total": 180,
+    "pass_rate_wilson": {
+      "point": 0.8444444444444444,
+      "lower": 0.7843642828908609,
+      "upper": 0.8901299296520279,
+      "confidence": 0.95,
+      "method": "Wilson score interval"
+    }
+  },
+  "effect_size_cohens_h": 1.1836276912378172,
+  "per_kind": {
+    "math": {
+      "before": "53/180",
+      "after": "152/180",
+      "before_pass_rate": 0.29444444444444445,
+      "after_pass_rate": 0.8444444444444444,
+      "delta": 0.55,
+      "before_wilson": {
+        "point": 0.29444444444444445,
+        "lower": 0.232713697185308,
+        "upper": 0.3647655630713551,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "after_wilson": {
+        "point": 0.8444444444444444,
+        "lower": 0.7843642828908609,
+        "upper": 0.8901299296520279,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "effect_size_cohens_h": 1.1836276912378172
+    }
+  },
+  "wave_configs": {
+    "before": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024",
+    "after": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024 lora=q25-v4-dir000.gguf scale=1.5",
+    "mismatch": false
+  },
+  "unit_level": {
+    "unit": "authored family_id, falling back to prompt id when absent",
+    "improved": 11,
+    "regressed": 1,
+    "mixed": 2,
+    "sign_test": {
+      "improved": 11,
+      "regressed": 1,
+      "informative_units": 12,
+      "p_two_sided": 0.00634765625,
+      "method": "exact sign test on independent families"
+    }
+  },
+  "family_bootstrap": {
+    "before": {
+      "families": 15,
+      "resamples": 10000,
+      "seed": 0,
+      "mean": 0.29444444444444445,
+      "lower": 0.14444444444444443,
+      "upper": 0.46111111111111114,
+      "confidence": 0.95,
+      "method": "family-level nonparametric bootstrap"
+    },
+    "after": {
+      "families": 15,
+      "resamples": 10000,
+      "seed": 0,
+      "mean": 0.8444444444444444,
+      "lower": 0.7,
+      "upper": 0.9444444444444444,
+      "confidence": 0.95,
+      "method": "family-level nonparametric bootstrap"
+    }
+  },
+  "paired_permutation": {
+    "units": 180,
+    "observed_mean_difference": 0.55,
+    "p_two_sided": 0.0001,
+    "confidence": 0.95,
+    "method": "seeded sign-flip permutation (10000 resamples)"
+  },
+  "flips": [
+    {
+      "id": "cap-arith-distributed-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-distributed-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-arith-exact-division-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-exact-division-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-exact-division"
+    },
+    {
+      "id": "cap-arith-times-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-arith-times-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-arith-times"
+    },
+    {
+      "id": "cap-counting-combinations-en-00",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-07",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-10",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-fraction-sum-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-04",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-08",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-10",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-rectangle-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-rectangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-geometry-triangle-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-linear-solve-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-linear-solve-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-linear-solve"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-number-theory-lcm-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-number-theory-lcm"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-chain-cents"
+    },
+    {
+      "id": "cap-pct-forward-en-03",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-pct-forward"
+    },
+    {
+      "id": "cap-pct-reverse-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-pct-reverse"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-00",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-01",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-03",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-04",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-05",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-06",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-07",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-08",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-09",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-10",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    },
+    {
+      "id": "cap-sequence-arithmetic-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-sequence-arithmetic"
+    }
+  ],
+  "flip_count": 113,
+  "list_cap": 200,
+  "scoring_modes": [
+    "judge"
+  ],
+  "note": "Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance. The aggregate rate spans every kind in the shared set: quote per_kind for a capability (retention) number, or restrict with kind."
+}

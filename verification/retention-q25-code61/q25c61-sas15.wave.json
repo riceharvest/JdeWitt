@@ -1,0 +1,30 @@
+{
+ "capability_passed": 184,
+ "completion_tokens_total": 66774,
+ "invalid": 1,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "q25c61-sas15",
+ "max_tokens": 1024,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config (METHODOLOGY R9). Rows whose status is not ok never count as a pass.",
+ "port": 8134,
+ "predictions": "/mnt/ssd/dev workspace/JdeWitt/verification/retention-q25-code61/sas15/predictions.jsonl",
+ "previewed": 0,
+ "rows": 241,
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 495.0,
+ "serve_config": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024 lora=q25-v4-dir000.gguf scale=1.5",
+ "serve_structured": {
+  "ctx": 8192,
+  "cuda": true,
+  "jinja": true,
+  "max_tokens": 1024,
+  "parallel": 4,
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

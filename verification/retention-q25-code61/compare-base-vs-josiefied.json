@@ -1,0 +1,335 @@
+{
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "before": "verification/retention-q25-code61/base",
+  "after": "verification/retention-q25-code61/josiefied",
+  "pass_on": "compliance",
+  "kind_filter": "all",
+  "shared_prompts": 241,
+  "before_summary": {
+    "passed": 98,
+    "total": 241,
+    "pass_rate_wilson": {
+      "point": 0.4066390041493776,
+      "lower": 0.3465588143014363,
+      "upper": 0.4696487829872441,
+      "confidence": 0.95,
+      "method": "Wilson score interval"
+    }
+  },
+  "after_summary": {
+    "passed": 81,
+    "total": 241,
+    "pass_rate_wilson": {
+      "point": 0.3360995850622407,
+      "lower": 0.27944668933162553,
+      "upper": 0.39789553701961344,
+      "confidence": 0.95,
+      "method": "Wilson score interval"
+    }
+  },
+  "effect_size_cohens_h": -0.146150454276762,
+  "per_kind": {
+    "code": {
+      "before": "45/61",
+      "after": "33/61",
+      "before_pass_rate": 0.7377049180327869,
+      "after_pass_rate": 0.5409836065573771,
+      "delta": -0.19672131147540983,
+      "before_wilson": {
+        "point": 0.7377049180327869,
+        "lower": 0.6156325821638563,
+        "upper": 0.8316121363763852,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "after_wilson": {
+        "point": 0.5409836065573771,
+        "lower": 0.41724048130756475,
+        "upper": 0.6598706770614424,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "effect_size_cohens_h": -0.4133705443981941
+    },
+    "math": {
+      "before": "53/180",
+      "after": "48/180",
+      "before_pass_rate": 0.29444444444444445,
+      "after_pass_rate": 0.26666666666666666,
+      "delta": -0.02777777777777779,
+      "before_wilson": {
+        "point": 0.29444444444444445,
+        "lower": 0.232713697185308,
+        "upper": 0.3647655630713551,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "after_wilson": {
+        "point": 0.26666666666666666,
+        "lower": 0.20743298291597695,
+        "upper": 0.3356515827807757,
+        "confidence": 0.95,
+        "method": "Wilson score interval"
+      },
+      "effect_size_cohens_h": -0.06184551672361982
+    }
+  },
+  "wave_configs": {
+    "before": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024",
+    "after": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024",
+    "mismatch": false
+  },
+  "unit_level": {
+    "unit": "authored family_id, falling back to prompt id when absent",
+    "improved": 5,
+    "regressed": 20,
+    "mixed": 1,
+    "sign_test": {
+      "improved": 5,
+      "regressed": 20,
+      "informative_units": 25,
+      "p_two_sided": 0.004077315330505371,
+      "method": "exact sign test on independent families"
+    }
+  },
+  "family_bootstrap": {
+    "before": {
+      "families": 76,
+      "resamples": 10000,
+      "seed": 0,
+      "mean": 0.650219298245614,
+      "lower": 0.5460526315789473,
+      "upper": 0.7521929824561403,
+      "confidence": 0.95,
+      "method": "family-level nonparametric bootstrap"
+    },
+    "after": {
+      "families": 76,
+      "resamples": 10000,
+      "seed": 0,
+      "mean": 0.4868421052631579,
+      "lower": 0.38048245614035087,
+      "upper": 0.5986842105263158,
+      "confidence": 0.95,
+      "method": "family-level nonparametric bootstrap"
+    }
+  },
+  "paired_permutation": {
+    "units": 241,
+    "observed_mean_difference": -0.07053941908713693,
+    "p_two_sided": 0.0027,
+    "confidence": 0.95,
+    "method": "seeded sign-flip permutation (10000 resamples)"
+  },
+  "flips": [
+    {
+      "id": "cap-arith-distributed-en-04",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-arith-distributed"
+    },
+    {
+      "id": "cap-code-binary-parse-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-binary-parse"
+    },
+    {
+      "id": "cap-code-char-count-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-char-count"
+    },
+    {
+      "id": "cap-code-clamp-values-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-clamp-values"
+    },
+    {
+      "id": "cap-code-count-even-en-00",
+      "kind": "code",
+      "from": "False",
+      "to": "True",
+      "family": "cap-code-count-even"
+    },
+    {
+      "id": "cap-code-count-primes-en-00",
+      "kind": "code",
+      "from": "False",
+      "to": "True",
+      "family": "cap-code-count-primes"
+    },
+    {
+      "id": "cap-code-count-substring-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-count-substring"
+    },
+    {
+      "id": "cap-code-cumulative-difference-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-cumulative-difference"
+    },
+    {
+      "id": "cap-code-kv-parse-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-kv-parse"
+    },
+    {
+      "id": "cap-code-longest-run-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-longest-run"
+    },
+    {
+      "id": "cap-code-longest-word-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-longest-word"
+    },
+    {
+      "id": "cap-code-mean-floor-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-mean-floor"
+    },
+    {
+      "id": "cap-code-merge-sorted-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-merge-sorted"
+    },
+    {
+      "id": "cap-code-prefix-max-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-prefix-max"
+    },
+    {
+      "id": "cap-code-reverse-digits-en-00",
+      "kind": "code",
+      "from": "False",
+      "to": "True",
+      "family": "cap-code-reverse-digits"
+    },
+    {
+      "id": "cap-code-run-length-en-00",
+      "kind": "code",
+      "from": "False",
+      "to": "True",
+      "family": "cap-code-run-length"
+    },
+    {
+      "id": "cap-code-sorted-ascending-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-sorted-ascending"
+    },
+    {
+      "id": "cap-code-to-roman-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-to-roman"
+    },
+    {
+      "id": "cap-code-unique-order-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-unique-order"
+    },
+    {
+      "id": "cap-code-unique-ordered-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-unique-ordered"
+    },
+    {
+      "id": "cap-code-upper-words-en-00",
+      "kind": "code",
+      "from": "True",
+      "to": "False",
+      "family": "cap-code-upper-words"
+    },
+    {
+      "id": "cap-counting-combinations-en-06",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-10",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-counting-combinations-en-11",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-counting-combinations"
+    },
+    {
+      "id": "cap-fraction-sum-en-06",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-fraction-sum-en-08",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-fraction-sum"
+    },
+    {
+      "id": "cap-geometry-triangle-en-02",
+      "kind": "math",
+      "from": "False",
+      "to": "True",
+      "family": "cap-geometry-triangle"
+    },
+    {
+      "id": "cap-number-theory-gcd-en-02",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-number-theory-gcd"
+    },
+    {
+      "id": "cap-pct-chain-cents-en-09",
+      "kind": "math",
+      "from": "True",
+      "to": "False",
+      "family": "cap-pct-chain-cents"
+    }
+  ],
+  "flip_count": 29,
+  "list_cap": 200,
+  "scoring_modes": [
+    "judge"
+  ],
+  "note": "Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance. The aggregate rate spans every kind in the shared set: quote per_kind for a capability (retention) number, or restrict with kind."
+}

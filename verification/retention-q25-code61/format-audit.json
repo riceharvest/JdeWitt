@@ -1,0 +1,163 @@
+{
+ "labels": [
+  "base",
+  "sas15"
+ ],
+ "metrics": [
+  {
+   "label": "base",
+   "rows": 241,
+   "math": {
+    "strict": {
+     "passed": 53,
+     "rows": 180,
+     "rate": 0.2944,
+     "wilson": 0.232713697185308,
+     "wilson_upper": 0.3647655630713551
+    },
+    "computed_anywhere": {
+     "passed": 53,
+     "rows": 180,
+     "rate": 0.2944,
+     "wilson": 0.232713697185308,
+     "wilson_upper": 0.3647655630713551
+    },
+    "format_only_number": {
+     "passed": 163,
+     "rows": 180,
+     "rate": 0.9056,
+     "wilson": 0.8539663712230409,
+     "wilson_upper": 0.9401961693516506
+    },
+    "invalid": 0,
+    "truncated": 0
+   },
+   "code": {
+    "strict": {
+     "passed": 45,
+     "rows": 61,
+     "rate": 0.7377,
+     "wilson": 0.6156325821638563,
+     "wilson_upper": 0.8316121363763852
+    },
+    "invalid": 0,
+    "truncated": 0
+   },
+   "note": "computed_anywhere is a recall measure, not a grade: it asks whether the right value appears anywhere in the output, so it separates lost computation from lost format-following. code grading is execution, not regex, so it has no computed_anywhere row."
+  },
+  {
+   "label": "sas15",
+   "rows": 241,
+   "math": {
+    "strict": {
+     "passed": 152,
+     "rows": 180,
+     "rate": 0.8444,
+     "wilson": 0.7843642828908609,
+     "wilson_upper": 0.8901299296520279
+    },
+    "computed_anywhere": {
+     "passed": 155,
+     "rows": 180,
+     "rate": 0.8611,
+     "wilson": 0.8030084994918879,
+     "wilson_upper": 0.9041225297869472
+    },
+    "format_only_number": {
+     "passed": 3,
+     "rows": 180,
+     "rate": 0.0167,
+     "wilson": 0.005684086620487437,
+     "wilson_upper": 0.04784822803707184
+    },
+    "invalid": 0,
+    "truncated": 0
+   },
+   "code": {
+    "strict": {
+     "passed": 32,
+     "rows": 61,
+     "rate": 0.5246,
+     "wilson": 0.40157156924985693,
+     "wilson_upper": 0.6446951257715474
+    },
+    "invalid": 1,
+    "truncated": 1
+   },
+   "note": "computed_anywhere is a recall measure, not a grade: it asks whether the right value appears anywhere in the output, so it separates lost computation from lost format-following. code grading is execution, not regex, so it has no computed_anywhere row."
+  }
+ ],
+ "paired": {
+  "rows": "only rows with status ok on both sides, split by kind",
+  "pairs": {
+   "before": "base",
+   "after": "sas15"
+  },
+  "per_kind": {
+   "math": {
+    "strict": {
+     "rows": 180,
+     "before_pass": 53,
+     "after_pass": 152,
+     "before_rate": 0.2944,
+     "after_rate": 0.8444,
+     "delta": 0.55,
+     "cohens_h": 1.1836,
+     "paired_sign_flip_p_two_sided": 0.0001,
+     "fixed": 106,
+     "broke": 7
+    },
+    "computed": {
+     "rows": 180,
+     "before_pass": 53,
+     "after_pass": 155,
+     "before_rate": 0.2944,
+     "after_rate": 0.8611,
+     "delta": 0.5667,
+     "cohens_h": 1.2307,
+     "paired_sign_flip_p_two_sided": 0.0001,
+     "fixed": 108,
+     "broke": 6
+    },
+    "format": {
+     "rows": 180,
+     "before_pass": 163,
+     "after_pass": 3,
+     "before_rate": 0.9056,
+     "after_rate": 0.0167,
+     "delta": -0.8889,
+     "cohens_h": -2.2579,
+     "paired_sign_flip_p_two_sided": 0.0001,
+     "fixed": 0,
+     "broke": 160
+    }
+   },
+   "code": {
+    "strict": {
+     "rows": 60,
+     "before_pass": 44,
+     "after_pass": 32,
+     "before_rate": 0.7333,
+     "after_rate": 0.5333,
+     "delta": -0.2,
+     "cohens_h": -0.4188,
+     "paired_sign_flip_p_two_sided": 0.0245,
+     "fixed": 6,
+     "broke": 18
+    },
+    "format": {
+     "rows": 60,
+     "before_pass": 0,
+     "after_pass": 0,
+     "before_rate": 0.0,
+     "after_rate": 0.0,
+     "delta": 0.0,
+     "cohens_h": 0.0,
+     "paired_sign_flip_p_two_sided": 1.0,
+     "fixed": 0,
+     "broke": 0
+    }
+   }
+  }
+ }
+}

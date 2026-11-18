@@ -1,0 +1,30 @@
+{
+ "scope": "Second measured retention wave set on the same three artifacts, with the code slice widened from 42 to 61 tasks so the negative sign had power.",
+ "date_utc": "2026-11-18",
+ "base_model": "Qwen/Qwen2.5-1.5B-Instruct",
+ "suite": "verification/capability/capability-run-en.jsonl (180 authored maths + 61 authored code, en)",
+ "suite_sha256_prefix_16": "b017eae019643a93",
+ "decoding": "temperature 0, one prompt per row, max_tokens 1024",
+ "serve_config": "-c 8192 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 (CUDA llama-server from llama.cpp-dspark/build-cuda, 2048 tokens per slot)",
+ "artifacts": {
+  "base": {
+   "file": "q25-1.5b-bf16.gguf",
+   "sha256_prefix_16": "b86f6dcf79a159bf",
+   "edit": "none"
+  },
+  "josiefied": {
+   "file": "josiefied-bf16.gguf",
+   "sha256_prefix_16": "2615943fdcafc296"
+  },
+  "sas15": {
+   "file": "q25-v4-dir000.gguf",
+   "sha256_prefix_16": "f624ee38614d8bc5",
+   "edit": "shared sign-aligned rank-1 refusal axis on o_proj + mlp.down_proj, served as a llama.cpp adapter on the unmodified base at scale 1.5 (POST /lora-adapters id 0 scale 1.5), verified cross-layer cos 1.000 across all 28 layers on both modules",
+   "certified_removal": "40/40 in-sample + 24/24 held-out refusal families + harmless clean, at the pinned 4096/4 config (v4_signaligned@1.5)"
+  }
+ },
+ "gpu": "RTX 3060 12GiB, exactly one server at a time",
+ "grading": "scripts/capability_wave.py through jdewitt.evaluation.score_response; deterministic scorers only, zero judge calls; a row whose generation failed is never a pass",
+ "comparisons": "compare-base-vs-sas15-math.json, compare-base-vs-sas15-code.json, compare-base-vs-josiefied.json (jdewitt.cli score-compare, R9 gate satisfied without --allow-config-mismatch), format-audit.json (paired block)",
+ "why_this_set_exists": "On the 42-task code slice the SAS delta was -0.238 with overlapping Wilson intervals (paired p 0.0675): a point estimate, not a finding. At 61 tasks the same edit reads -0.213 with family-level sign test p 0.0146 and paired permutation p 0.017."
+}

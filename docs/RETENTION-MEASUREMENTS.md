@@ -79,3 +79,33 @@ in the edit):
   before/after pair, so it is deliberately not compared. Each wave writes its
   own `wave.json`; the three directories here carry theirs, so this table is
   self-describing and the gate proves it passes.
+
+## Second measurement, widened code slice (2026-11-18)
+
+The table above measured code on 42 tasks and said the SAS delta was a point
+estimate rather than a finding: −0.238 with overlapping Wilson intervals and
+paired p 0.0675. The slice is now 61 single-function tasks with deliberate
+mutants behind every expectation, and the same three artifacts were re-served at
+the same pinned config. Suite: 180 maths + 61 code, sha256 prefix
+`b017eae019643a93`; evidence in `verification/retention-q25-code61/` with its own
+`provenance.json`. Raw passes over 241 rows: base 98, published ablation 81,
+ours 184 (one invalid row).
+
+Maths, ours against base: 53/180 → 152/180, delta +0.550, Cohen's h +1.184,
+paired sign-flip permutation p 0.0001; at family level 11 families improved
+against 1 regressed, exact sign test p 0.0063. The gain reproduces.
+
+Code, ours against base: 45/61 → 32/61, delta −0.213, Cohen's h −0.446, paired
+sign-flip p **0.017**, and at family level 19 families regressed against 6
+improved, sign test p 0.0146. With the slice this size the cost is no longer
+noise: on this base this edit reliably trades code for maths, and the honest
+headline is the trade, not either half of it.
+
+The audit still splits the maths gain the way it did — strict 0.294 → 0.844
+(paired p 0.0001), computed-anywhere 0.294 → 0.861, format-following
+0.906 → 0.017 (p 0.0001), so the value is genuinely computed while the answer
+contract is abandoned — and code strict moves 0.733 → 0.533 with paired p 0.0245.
+
+These numbers and the 42-task table above are not comparable across suites; the
+42-task run stays committed as the measurement it was, with the suite revision
+recorded in its own provenance file.
