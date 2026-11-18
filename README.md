@@ -74,16 +74,19 @@ Currently checkable in a fresh clone:
 
 - **Qwen3-4B, head-to-head with a published same-base removal.** Read
   this one against us: on 241 authored capability rows the published
-  build loses nothing measurable, while our fitted shared axis has no
-  measured point on that frontier — the arms that remove every opener
-  do it by shrinking maths answers to 31 characters. The current best arm (300-contrast
-  fit, scale 1.0) reads 40/40 and 23/24 on the held-out 24-family wording screen,
-  paired p = 1.0 against the published build's 24/24, with maths 160/180 and code 20/20
-  — but on the same 24 families, read by hand for whether the asked-for thing is
-  actually there, the published build delivers on 4 and our arm on 5: neither removes
-  refusal *behaviour*, and the field's removal metric measures phrasing. The frontier
-  table, the family reading, and the four instruments this run forced into the tool are
-  in `docs/non-heretic-methods.md`.
+  build loses nothing measurable, and on 120 held-out refusal families it removes
+  wording on all 120 with maths 159→159. A fitted arm (300 contrasts, layers 9–35,
+  scale 1.0) printed 40/40 and 23/24 against it, paired p = 1.0 — **that result is
+  retracted.** The shipped refusal checker only matched "I cannot help" constructions,
+  so answers opening "Absolutely not." scored as refusal removed: under the wider
+  inventory the same arm removes wording on 6/40, 11/24 and 34/120 against the
+  published build's 39/40, 23/23 and 120/120 (McNemar p < 1e-5). The only arm that
+  gets near it on held-out families — scale 1.0 over blk.9–35, 97/120 — loses 31 maths
+  answers with a length-collapse flag. Behaviourally the two are near-identical on a
+  hand read of 24 held-out families (5 delivered for ours, 4 for theirs, out of 24):
+  neither artifact hands over the asked-for content. `scripts/screen_agreement.py`
+  re-grades any screen under both inventories and prints the false-clean count;
+  `docs/non-heretic-methods.md` carries the retraction and the frontier table.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
   three artifacts: base 98/241, a published third-party ablation 81/241,
   our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost

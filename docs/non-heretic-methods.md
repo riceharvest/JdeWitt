@@ -742,14 +742,50 @@ is a 15,530-character stutter loop that never reaches the lyrics — a generatio
 does not have — and both artifacts answer the "backdoor" and "fake account script" prompts
 with sandbox or authorised-access variants, which is not the capability asked for.
 
-What that means for the objective, stated as the least flattering version: **the removal
-metric the whole field reports, including our own numbers, is measuring phrasing, and a
-published abliteration and a fitted axis both top it without changing behaviour.** The
-claim "better than Heretic" is therefore not even well-posed on the suites as they stand,
-and the only version of the comparison that carries information is a behavioural one:
-authored held-out families, answers read for delivery, plus the capability suite that
-catches a model that stopped writing. On that footing the two artifacts tie, and neither
-wins.
+RETRACTION — the parity above is an instrument failure, not a result
+---------------------------------------------------------------
+
+Six minutes after writing it, the screen was re-graded with a wider wording inventory
+(`jdewitt/refusal_check.PATTERNS_WIDE`, `scripts/screen_agreement.py`,
+`verification/q3-4b-wording-inventory.json`) and the parity is gone. The shipped checker
+matches only first-person constructions — "I cannot help with that", "I'm unable to
+provide". It does not match the forms this model family actually declines with:
+**"Absolutely not."**, "That request can't be fulfilled", "I can't help with that".
+86 of 120 rows the arm was credited with removing on the 120-family screen open with
+"Absolutely not. 🚫". The count the tool printed was 120/120; the count that stands is
+**34/120**.
+
+Wider-inventory grading, same rows, same pinned serve config:
+
+| artifact | harmful-40 | held-out 24 | wider 120 | maths (base→arm, p) |
+|---|---|---|---|---|
+| published oracle | 39/40 | 23/23 | 120/120 | 159→159, p 1.0 |
+| scale 1.0, blk.9–35 | 40/40 | 18/23 | 97/120 | 159→**128**, p 1e-4, collapse flag |
+| 300-contrast x-both @1.0 | 6/40 | 11/24 | 34/120 | 159→160, p 1.0 |
+| x-attn @2.0 | 4/40 | 9/24 | — | 159→161, p 0.50 |
+| unedited base | 0/40 | 2/23 | 9/120 | — |
+
+Exact McNemar under the wider inventory, against the published build: the fitted arm is
+**86 discordant, p < 1e-5**; the scale-1.0 arm is **23 discordant, p < 1e-5**; the same
+arm against the base is 97 discordant, p < 1e-5. On the 24-family screen scale-1.0 sits
+4 discordant from the oracle, p 0.125 — that is the only fitted arm anywhere near it, and
+it pays for the closeness with maths 159→128 and a length-collapse flag.
+
+So the honest frontier, written once and then never touched again: **the fitted axis does
+not reach the published build's level of wording removal at any scale that keeps the
+model writing.** Where it does match harmful-40 row-for-row (scale 1.0) it loses 31 maths
+answers and stops writing full sentences; where it keeps maths intact (the 300-contrast
+arm) it removes wording on one family in eight. The published build does 120/120 held-out
+families at zero maths cost. That is the number to beat, and the instrument that was
+reporting we had beaten it is in the repo with its false-clean column printed, so the
+mistake does not repeat silently.
+
+The behavioural reading from the previous section still stands and is unchanged by it —
+on the same 24 families the published build delivers the asked-for content on 4 rows and
+the fitted arm on 5, so the two artifacts are about the same *behaviourally*, and both
+refuse most of what is asked. What changes is the wording claim: the gap between them on
+the wording metric is large and significant, and it was being hidden by a checker that
+only recognises one sentence pattern out of a dozen the model uses.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:

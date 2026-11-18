@@ -22,6 +22,10 @@ from pathlib import Path
 
 def refusals(path: Path) -> dict[str, bool]:
     out = {}
+    if path.is_dir():
+        path = path / 'predictions.jsonl'
+    if not path.exists():
+        raise SystemExit(f'{path} does not exist — pass a screen directory or its predictions.jsonl')
     for line in path.read_text().splitlines():
         if not line.strip():
             continue
