@@ -618,21 +618,36 @@ THE FRONTIER, all arms on blk.9–35, both axes, one serve config per axis
   | scale 1.5                              | 40/40   | 128/180, −0.172, p 0.0001    | **31**             | yes      | 20/61, +0.017, p 1.00 |
   | scale 2.0                              | 40/40   | 60/180, −0.486, p 0.0001     | **4**              | yes      | 12/61, +0.071, p 0.76 |
   | attention side only, scale 2.0         | 29/40   | 161/180, +0.011, p 0.63      | 123                | no       | 9/61, −0.180, p 0.012 |
+  | attention side only, scale 3.0         | 15/40   | 161/180, +0.011, p 0.76      | 95                 | no       | 11/61, −0.148, p 0.09 |
+  | ffn side only, scale 1.0               | 2/40    | 126/180, −0.183, p 0.0001    | 48                 | no       | 41/61, +0.344, p 0.0005 |
+  | ffn side only, scale 1.5               | 5/40    | 54/180, −0.561, p 0.0001     | **31**             | yes      | 50/61, +0.500, p 0.0001 |
 
-Read the last two columns together, because that is the whole lesson of the sweep:
-every arm that reaches total opener removal does it by collapsing the maths answers
-to 31 and then 4 characters — the length instrument fires on both, and the scale-2.0
-screen additionally lost 15 harmful rows to the cap. Take the attention side alone
-and maths is untouched (161/180, marginally *above* base) but removal falls to 29/40
-and code pays 11 rows. So on this base our fitted shared direction does not have a
-point on the published oracle's frontier: the oracle sits at 39/40 removal with
-159/180 maths intact. The axis is only 0.508 aligned with the direction recovered
-from its weights, and the cheap CPU check rules out the easy excuse — its per-layer
-signs wander against ours (signed mean 0.13, mean \|cos\| 0.51), but a rank-1 removal
-`dW = −s·u(uᵗW)` is sign-invariant, so what separates us is *which subspace*, not
-which sign. The next arm is therefore the one the tool already has a path for: fit
-the prevention subspace from matched safe controls, project the axis out of it, and
-re-run the scale ladder.
+Split the edit by tensor side and the sweep stops being a mystery: **the removal
+lives in `o_proj`, the maths damage lives in `mlp.down_proj`.** The FFN half of the
+standard both-sides edit removes 2 to 5 openers of 40 and costs 18 to 56 points of
+arithmetic (`h` −0.46 and −1.24, both `p` 0.0001), while attention alone at scale 2.0
+removes 29 with maths untouched. Push attention to scale 3.0 and removal *falls* to
+15/40 with maths still untouched — so strength is not monotone in removal and a scale
+ladder cannot assume it, which is METHODOLOGY R8's knife-edge warning now measured on
+a second lineage. The `code` column moves +0.34/+0.50 with `p` ≤ 0.0005 on the FFN
+arms; that is the same register-shift signature as before and stays uncredited.
+
+What this means for the shipped edit: on this base the default
+`o_proj` + `mlp.down_proj` footprint pays FFN damage for essentially no removal
+gain — attention-only is strictly the better shape here (29/40 with maths intact
+versus 31/40 for both sides at scale 1.0 at a third of the maths cost) — and the
+certified q25 SAS recipe used both sides, so this is a per-lineage shape decision
+(R7), not a global change. Still no arm reaches the published build's frontier
+(39/40 removal, 159/180 maths intact), and the axis remains only 0.508 aligned with
+the direction recovered from its weights. The cheap CPU check rules out the sign
+excuse: its per-layer signs wander against ours (signed mean 0.13, mean \|cos\|
+0.51), but rank-1 removal is sign-invariant, so the gap is which subspace.
+`spanfit protect` then tested the obvious repair and returned a null worth its own
+paragraph: projecting the axis out of the rank-8 subspace of answer-end activity on
+180 authored capability rows keeps **99.24%** of it (99.49% at rank 4, zero layers
+zeroed), so the collapse is not the edit passing through arithmetic activity, and
+null-space protection is not the fix — the same verdict as mc47's prevention
+subspace, now measured on two lineages.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:

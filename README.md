@@ -79,6 +79,13 @@ certified rows:
   both documented, both informative.
 - **Spark-X2.6-1.7B and LFM3-1.7B.** Refusal openers gone 40/40 on
   both, harmless clean, style drifts recorded where they occur.
+- **Qwen3-4B, head-to-head with a published same-base removal.** Read
+  this one against us: on 241 authored capability rows the published
+  build loses nothing measurable, while our fitted shared axis has no
+  measured point on that frontier — the arms that remove every opener
+  do it by shrinking maths answers to 31 characters. The frontier table
+  and the four instruments this run forced into the tool are in
+  `docs/non-heretic-methods.md`.
 
 What has *not* been established stays unstated: universal architecture
 support, zero capability loss, beating every competitor. Say the word
