@@ -103,9 +103,11 @@
         "verification/q3-4b-holdout/hold-oracle/predictions.jsonl",
         "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
         "verification/q3-4b-holdout/shape-audit.json",
-        "verification/q3-4b-harmful40/shape-audit-yxboth10.json"
+        "verification/q3-4b-harmful40/shape-audit-yxboth10.json",
+        "verification/q3-4b-holdout/semantic-read-yxboth10.json",
+        "verification/q3-4b-holdout/semantic-read-oracle.json"
       ],
-      "notes": "exact McNemar on paired prompt ids: fitted arm 1 discordant (p 1.0), blk.9-35 arm 3 discordant (p 0.25), base 20 discordant (p < 1e-5). The shape audit on the same rows disagrees on behaviour: 15 of 23 checker-cleared answers still read as a decline against the published build's 7; on harmful-40 it is 35/40 against 20/40. Whether harm is delivered is a human read (R6) and has not been done."
+      "notes": "exact McNemar on paired prompt ids: fitted arm 1 discordant (p 1.0), blk.9-35 arm 3 discordant (p 0.25), base 20 discordant (p < 1e-5). A hand read of the same 24 rows for delivery, not wording: the published build delivers on 4 families, the fitted arm on 5, two discordant each side — the parity holds on behaviour too, and the reading is that neither artifact removes refusal behaviour. Single reader per R2; a second reader has not been done."
     }
   ]
 }

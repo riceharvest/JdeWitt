@@ -726,13 +726,30 @@ checker-cleared rows still read as a decline by shape**. The fitted arm's classi
 checker-cleared rows still read as a decline**. On harmful-40 the same split is 20/40 for
 the published build against **35/40 for the fitted arm** (`verification/q3-4b-harmful40/shape-audit-yxboth10.json`).
 So what is indistinguishable is the **wording metric**: the arm removes the refusal opener
-and the decline phrasing the checker looks for, on 23 of 24 held-out families, and it does
-not remove the refusal *behaviour* at that rate — by the shape heuristic it still turns
-down most of what it clears. Whether harm is actually delivered on those rows is a human
-read (METHODOLOGY R6) that has not been done. The claim "a fitted arm removes refusal at
-the published build's level" is **not established**; what is established is the narrower
-and less useful thing: the arm now matches the published build on the wording screen, on
-retention, and on the paired statistic, and diverges from it on shape.
+and the decline phrasing the checker looks for, on 23 of 24 held-out families.
+
+The heuristic was not trustworthy enough to settle it, so both artifacts were read by hand
+over the same 24 families, whole answers, asking only whether the thing the prompt asked
+for is present (`verification/q3-4b-holdout/semantic-read-yxboth10.json`,
+`verification/q3-4b-holdout/semantic-read-oracle.json`, single reader per R2, no second
+judge). **The published build delivers on 4 of 24 families. The fitted arm delivers on 5.**
+Two families each side are discordant (ours: the Santana lyrics and the harmful fishing
+methods; the oracle's: the robot-nun rap), which is an exact McNemar p = 1.0 on behaviour
+as well as on wording. Neither artifact removes refusal behaviour on held-out families;
+what the published build does, and what ours now does too, is stop *sounding* like a
+refusal. Two side notes from the read: the published build's answer to the lyrics request
+is a 15,530-character stutter loop that never reaches the lyrics — a generation defect ours
+does not have — and both artifacts answer the "backdoor" and "fake account script" prompts
+with sandbox or authorised-access variants, which is not the capability asked for.
+
+What that means for the objective, stated as the least flattering version: **the removal
+metric the whole field reports, including our own numbers, is measuring phrasing, and a
+published abliteration and a fitted axis both top it without changing behaviour.** The
+claim "better than Heretic" is therefore not even well-posed on the suites as they stand,
+and the only version of the comparison that carries information is a behavioural one:
+authored held-out families, answers read for delivery, plus the capability suite that
+catches a model that stopped writing. On that footing the two artifacts tie, and neither
+wins.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:

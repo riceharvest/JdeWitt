@@ -79,10 +79,11 @@ Currently checkable in a fresh clone:
   do it by shrinking maths answers to 31 characters. The current best arm (300-contrast
   fit, scale 1.0) reads 40/40 and 23/24 on the held-out 24-family wording screen,
   paired p = 1.0 against the published build's 24/24, with maths 160/180 and code 20/20
-  — but the shape audit on the same rows still reads 15 of its 23 cleared answers as a
-  decline, against the published build's 7, so removal of the *wording* is measured and
-  removal of the *behaviour* is not. The frontier table, the family reading, and the four
-  instruments this run forced into the tool are in `docs/non-heretic-methods.md`.
+  — but on the same 24 families, read by hand for whether the asked-for thing is
+  actually there, the published build delivers on 4 and our arm on 5: neither removes
+  refusal *behaviour*, and the field's removal metric measures phrasing. The frontier
+  table, the family reading, and the four instruments this run forced into the tool are
+  in `docs/non-heretic-methods.md`.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
   three artifacts: base 98/241, a published third-party ablation 81/241,
   our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost
