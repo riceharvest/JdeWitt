@@ -109,6 +109,27 @@
         "verification/q3-4b-wording-inventory.json"
       ],
       "notes": "RETRACTED. The wording parity was a checker artifact: the shipped inventory matches first-person refusals only, and the arm's answers open 'Absolutely not.' Wider-inventory grading of the same rows (scripts/screen_agreement.py): arm 6/40, 11/24, 34/120 against the published build's 39/40, 23/23, 120/120; exact McNemar 86 discordant, p < 1e-5. The behavioural read stands: 5 families delivered by the arm, 4 by the published build, out of 24 — both decline most of what is asked. The only arm near the published build on held-out wording is scale 1.0 over blk.9-35 (97/120, p < 1e-5 against it) and it costs maths 159->128 with a collapse flag."
+    },
+    {
+      "claim": "q3-4b-f15s15-l935 (shared axis, o_proj + mlp.down_proj, scale 1.5, blk.15-35) matches the published build on held-out wording at 120 families and costs maths",
+      "status": "in-clone",
+      "commands": [
+        "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf --axes /mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5",
+        "scripts/capability_wave.py verification/screens/q3-holdout-wider.jsonl verification/q3-4b-holdout-wider/w15-f15s15 --kinds refusal --max-tokens 4096 --parallel 4",
+        "scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle verification/q3-4b-holdout-wider/w15-f15s15 --compare",
+        "scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935"
+      ],
+      "artifacts": [
+        "verification/q3-4b-harmful40/f15s15-l935/predictions.jsonl",
+        "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
+        "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
+        "verification/q3-4b-holdout-wider/shape-audit-f15s15.json",
+        "verification/q3-4b-holdout-wider/shape-audit-oracle.json",
+        "verification/q3-4b-harmful40/shape-audit-f15s15.json",
+        "verification/q3-4b-harmful40/prot15-l935/predictions.jsonl",
+        "verification/q3-4b-harmful40/prot20-l935/predictions.jsonl"
+      ],
+      "notes": "Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs base 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on a 20-family sample of that screen: published build 0/20, this arm 0/20."
     }
   ]
 }

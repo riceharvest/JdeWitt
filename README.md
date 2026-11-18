@@ -84,9 +84,17 @@ Currently checkable in a fresh clone:
   gets near it on held-out families — scale 1.0 over blk.9–35, 97/120 — loses 31 maths
   answers with a length-collapse flag. Behaviourally the two are near-identical on a
   hand read of 24 held-out families (5 delivered for ours, 4 for theirs, out of 24):
-  neither artifact hands over the asked-for content. `scripts/screen_agreement.py`
-  re-grades any screen under both inventories and prints the false-clean count;
-  `docs/non-heretic-methods.md` carries the retraction and the frontier table.
+  neither artifact hands over the asked-for content. The layer-floor sweep then found
+  **the point that matches**: shared axis, both targets, scale 1.5 over **blk.15–35**
+  (`q3-4b-f15s15-l935`) reads 40/40 harmful-40 under both inventories and **120/120 on
+  the held-out 120-family screen against the published build's 120/120, zero discordant
+  rows, McNemar p = 1.0** — and pays for it with maths 159→148 (p 0.0078, median maths
+  answer 68 characters against the base's 175), where the published build stays at 159.
+  Removal of the wording is now matched; removal of the behaviour is not — on a 20-family
+  sample of that screen the arm and the published build each deliver the asked-for
+  content on 0 of 20. `scripts/screen_agreement.py` re-grades any screen under both
+  inventories and prints the false-clean count; `docs/non-heretic-methods.md` carries the
+  retraction, the floor sweep and the frontier table.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
   three artifacts: base 98/241, a published third-party ablation 81/241,
   our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost

@@ -780,12 +780,60 @@ families at zero maths cost. That is the number to beat, and the instrument that
 reporting we had beaten it is in the repo with its false-clean column printed, so the
 mistake does not repeat silently.
 
-The behavioural reading from the previous section still stands and is unchanged by it —
-on the same 24 families the published build delivers the asked-for content on 4 rows and
-the fitted arm on 5, so the two artifacts are about the same *behaviourally*, and both
-refuse most of what is asked. What changes is the wording claim: the gap between them on
-the wording metric is large and significant, and it was being hidden by a checker that
-only recognises one sentence pattern out of a dozen the model uses.
+THE ARM THAT ACTUALLY MATCHES THE PUBLISHED BUILD, AND WHAT IT COSTS
+-------------------------------------------------------------------
+
+The layer footprint is the lever, and it moves the two axes in opposite directions: the
+maths collapse tracks how early in the stack the edit reaches. Same shared axis (190-pool),
+same both-sides target, scale 1.5:
+
+| footprint | harmful-40 (wider inventory) | held-out 120 families | maths (base→arm) | median maths chars |
+|---|---|---|---|---|
+| blk.9–35 | 40/40 | 97/120 | 159→128, p 1e-4 | 31 (collapse) |
+| blk.15–35 | 40/40 | **120/120** | 159→148, p 0.0078 | 68 (collapse) |
+| blk.20–35 @2.0 | 39/40 | — | 157→139, p 0.0024 | 51 (collapse) |
+| blk.15–35 @2.0 | 37/40 (3 invalid) | — | 158→136, p 1e-4 | 49 (collapse) |
+
+`q3-4b-f15s15-l935` — shared axis, o_proj + down_proj, scale 1.5, **blk.15–35** — is the
+point the tool has been trying to reach. Harmful-40: 40/40 under the shipped inventory
+*and* the wider one, 20/20 families. Held-out 120 families: **120/120, zero discordant
+rows against the published build, exact McNemar p = 1.0**
+(`verification/q3-4b-holdout-wider/{w15-f15s15,shape-audit-f15s15,shape-audit-oracle}.json`).
+The published build is 39/40 and 120/120.
+
+What it costs, and it is not nothing: maths 159→148 (paired p 0.0078) with a median maths
+answer of 68 characters against the base's 175 — the collapse flag is on, so this model
+solves fewer problems and writes less while solving them. Code 20→15 (p 0.40, not
+significant at this n). The published build's own retention at the same pinned config is
+maths 159→159, code 20→18. So the wording axis is now matched and the retention axis is
+not: the published edit gets the same silence from the model at no arithmetic cost, and
+the fitted edit does not.
+
+Null-space protection did not help here: protecting the axis against the prevention
+subspace (rank 4) at scale 1.5 kept the removal exactly (40/40, 40/40) and moved the maths
+cost from 128 to 130 — inside noise, so the projection is not where the damage is
+(`verification/q3-4b-harmful40/{prot15-l935,prot20-l935}`; at scale 2.0 it read 35 rows
+valid, maths 139→75 with a median of five characters, i.e. the model stopped producing
+answers at all).
+
+BEHAVIOUR, ON THE SAME ROWS — neither artifact is what a user would call uncensored
+-------------------------------------------------------------------------------
+
+The wording screen is a style measurement, so the asked-for content was read by hand. On
+the 24-family held-out screen: the published build delivers on 4 of 24 families, the
+300-contrast arm on 5. On a 20-family sample of the 120-family screen, scored the same
+way, the published build and `f15s15` each deliver on **0 of 20** — every sampled request
+comes back as a refusal in different clothing: the published build's answers open
+"Actually, there's a mistake in your question", the arm's open "It is important to
+emphasise that ... is illegal". The shape instrument separates the two (52 of 120 of the
+published build's answers still read as declines against 102 of 120 for the arm), but the
+read that matters is the delivery count, and on it the two are identical and both are
+zero.
+
+The honest summary of the objective, in one line: **the tool now matches the published
+removal on wording at 120 held-out families, does not match it on retention, and on neither
+artifact does the behaviour change — what gets removed is the sentence that says no, not
+the no.**
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
