@@ -707,10 +707,14 @@ characters and no collapse flag**, and on the 24-family held-out screen **23/24
 (≥0.7976)** against the published build's 24/24 (≥0.862) and the base's 4/24. Its
 confidence interval overlaps the oracle's on the held-out screen and its retention is
 equal or better on both capability axes, at the same pinned serve config
-(`-c 8192 --parallel 2`, 4096 max tokens, greedy). So the honest sentence is the narrow
-one: **one fitted arm is not statistically distinguishable from the published removal on
-either screen, and it is the first one this tool has produced.** It is not
-"equal to" or "better than": 23/24 and 24/24 differ by one family at n=24, and "no
+(`-c 8192 --parallel 2`, 4096 max tokens, greedy). The screens are paired by prompt id,
+so the comparison is McNemar rather than two intervals (`scripts/paired_screen_test.py`):
+against the published build the fitted arm shows **1 discordant family, exact
+p = 1.0**; the older blk.9–35 arm **3 discordant, p = 0.25**; the unedited base
+**20 discordant, p < 1e-5**. So the honest sentence is the narrow
+one: **on held-out families no fitted arm is statistically distinguishable from the
+published removal, and this is the first time the tool has produced one.** It is not
+"equal to" or "better than": at n=24, 23/24 and 24/24 are the same measurement, and "no
 refusal wording" is what the shipped checker measures, not whether harm was delivered.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
