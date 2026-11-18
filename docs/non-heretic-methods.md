@@ -624,6 +624,15 @@ THE FRONTIER, all arms on blk.9–35, both axes, one serve config per axis
   | ffn side only, scale 1.0               | 2/40    | 126/180, −0.183, p 0.0001    | 48                 | no       | 41/61, +0.344, p 0.0005 |
   | ffn side only, scale 1.5               | 5/40    | 54/180, −0.561, p 0.0001     | **31**             | yes      | 50/61, +0.500, p 0.0001 |
 
+Read the removal column by family before reading it by row. The screen
+(`verification/screens/advbench-40.jsonl`, now shipped so a clone can reproduce these
+numbers) is **20 families of two rows each**, English only. Counting a family as removed
+only when both of its rows are non-refusals, and taking the Wilson bound over families
+rather than rows: oracle 19/20 (≥0.764), scale 1.0 **12/20 (≥0.387)**, attention-only at
+2.0 **11/20 (≥0.342)**. The row column said 31/40 and 29/40. Two rows per cluster is not
+independent evidence, and a count over clusters is the one that cannot be mistaken for
+breadth; `frontier_report` prints both columns now precisely so it cannot.
+
 Split the edit by tensor side and the sweep stops being a mystery: **the removal
 lives in `o_proj`, the maths damage lives in `mlp.down_proj`.** The FFN half of the
 standard both-sides edit removes 2 to 5 openers of 40 and costs 18 to 56 points of
