@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-18",
+  "question": "Can the per-prompt dR probe (zero generated tokens, refusal-only R800 corpus) replace two-sided BR as the search screen for the 800-row check?",
+  "verdict": "NO - measured negative",
+  "method": "lnPPL(R800-sub128) vs base, control corpus skipped (see confound 2)",
+  "scores": {
+    "base": 0.0,
+    "oracle": 0.2243,
+    "oaxes135": 0.2708,
+    "f15s15-l935": 0.5015
+  },
+  "why_it_fails": [
+    "ordering inverted vs known branch damage (oracle must top a branch meter; our tone-only arm tops instead)",
+    "R800 continuations include base pivot/lecture prose: dR tracks style-distance from base answer form, not refusal-branch damage",
+    "control corpus does not cancel this: the confound is corpus-STYLE-specific, not global drift (banked control drift <=0.006)"
+  ],
+  "incidental": "12 of 16 arms errored 'no PPL line' because the ladder invoked stale q3-4b-*-q8.gguf paths; the fitted arms on disk are the -l935 variants. Bookkeeping error, not a probe fault; the four that ran suffice to falsify the single-sided screen.",
+  "what_stands": "two-sided BR on the hand-read delivery-pair corpus (oracle +0.559, oaxes135 +0.649, all fitted arms ~0) remains the only validated zero-generated-token screen; refusal800.txt survives as the amortized refusal-reference for style/collapse checks only (negative dR = branch strengthened still reads correctly there).",
+  "artifacts": {
+    "corpus": "verification/ppl-probe/refusal800.txt + refusal800-128.txt",
+    "ladder_json": "verification/ppl-probe/screen-r800-2026-11-18.json",
+    "corpus_source_wave": "verification/q3-4b-harmful800/base-800 (111,826 tok one-time)"
+  }
+}

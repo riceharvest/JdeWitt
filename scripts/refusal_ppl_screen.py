@@ -62,9 +62,10 @@ def main(argv=None):
                     help='override a corpus file, e.g. --corpus refusal=verification/'
                          'ppl-probe/refusal800-250.txt')
     ap.add_argument('--one-sided', action='store_true',
-                    help='skip the delivery corpus; report dR = lnPPL(refusal) - '
-                         'lnPPL_base(refusal) only (a refusal-reference corpus built '
-                         'from a single wave is one-sided by construction)')
+                    help='DEPRECATED by measurement 2026-11-18: on a refusal-only corpus '
+                         '(refusal800) dR ranks f15s15-l935 (+0.50) ABOVE oracle (+0.22) — '
+                         'it is a style-distance meter, not a branch meter; two-sided BR '
+                         'on the hand-read D corpus is the validated screen')
     ap.add_argument('--out', type=Path)
     args = ap.parse_args(argv)
 

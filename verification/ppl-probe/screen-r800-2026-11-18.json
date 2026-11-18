@@ -1,0 +1,130 @@
+{
+ "artifacts": {
+  "attn": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "el\n0.00.001.715 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-attn-q8.gguf' (No such file or directory)\n0.00.001.719 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-attn-q8.gguf\n0.00.001.719 E llama_model_load_from_file_impl: failed to load model\n0.00.001.720 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-attn-q8.gguf'\n0.00.001.722 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "attn15": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.762 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-attn15-q8.gguf' (No such file or directory)\n0.00.001.765 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-attn15-q8.gguf\n0.00.001.765 E llama_model_load_from_file_impl: failed to load model\n0.00.001.767 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-attn15-q8.gguf'\n0.00.001.771 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "attn25": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.576 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-attn25-q8.gguf' (No such file or directory)\n0.00.001.580 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-attn25-q8.gguf\n0.00.001.580 E llama_model_load_from_file_impl: failed to load model\n0.00.001.581 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-attn25-q8.gguf'\n0.00.001.583 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "attn40": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.740 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-attn40-q8.gguf' (No such file or directory)\n0.00.001.745 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-attn40-q8.gguf\n0.00.001.745 E llama_model_load_from_file_impl: failed to load model\n0.00.001.746 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-attn40-q8.gguf'\n0.00.001.748 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "base": {
+   "refusal": {
+    "ln_ppl": 1.1047,
+    "ppl": 3.0183,
+    "seconds": 253.0,
+    "uncertainty": 0.07713
+   }
+  },
+  "f15s12": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.006.172 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-f15s12-q8.gguf' (No such file or directory)\n0.00.006.177 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-f15s12-q8.gguf\n0.00.006.179 E llama_model_load_from_file_impl: failed to load model\n0.00.006.181 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-f15s12-q8.gguf'\n0.00.006.184 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "f15s15": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.769 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-f15s15-q8.gguf' (No such file or directory)\n0.00.001.772 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-f15s15-q8.gguf\n0.00.001.773 E llama_model_load_from_file_impl: failed to load model\n0.00.001.773 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-f15s15-q8.gguf'\n0.00.001.775 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "f15s15-l935": {
+   "delta_R": 0.5015,
+   "refusal": {
+    "ln_ppl": 1.6062,
+    "ppl": 4.9839,
+    "seconds": 183.9,
+    "uncertainty": 0.13679
+   }
+  },
+  "f15s20": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.732 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-f15s20-q8.gguf' (No such file or directory)\n0.00.001.735 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-f15s20-q8.gguf\n0.00.001.735 E llama_model_load_from_file_impl: failed to load model\n0.00.001.736 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-f15s20-q8.gguf'\n0.00.001.738 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "f20s20": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.661 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-f20s20-q8.gguf' (No such file or directory)\n0.00.001.665 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-f20s20-q8.gguf\n0.00.001.665 E llama_model_load_from_file_impl: failed to load model\n0.00.001.666 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-f20s20-q8.gguf'\n0.00.001.668 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "oaxes135": {
+   "delta_R": 0.2708,
+   "refusal": {
+    "ln_ppl": 1.3755,
+    "ppl": 3.9572,
+    "seconds": 175.2,
+    "uncertainty": 0.10787
+   }
+  },
+  "oracle": {
+   "delta_R": 0.2243,
+   "refusal": {
+    "ln_ppl": 1.329,
+    "ppl": 3.7773,
+    "seconds": 190.2,
+    "uncertainty": 0.10214
+   }
+  },
+  "prot15": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.621 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-prot15-q8.gguf' (No such file or directory)\n0.00.001.624 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-prot15-q8.gguf\n0.00.001.626 E llama_model_load_from_file_impl: failed to load model\n0.00.001.626 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-prot15-q8.gguf'\n0.00.001.628 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "prot20": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.001.657 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-prot20-q8.gguf' (No such file or directory)\n0.00.001.661 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-prot20-q8.gguf\n0.00.001.661 E llama_model_load_from_file_impl: failed to load model\n0.00.001.662 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-prot20-q8.gguf'\n0.00.001.664 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "shl10": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "0.00.001.624 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-shl10-q8.gguf' (No such file or directory)\n0.00.001.628 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-shl10-q8.gguf\n0.00.001.628 E llama_model_load_from_file_impl: failed to load model\n0.00.001.629 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-shl10-q8.gguf'\n0.00.001.630 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "yxattn20": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "653 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-yxattn20-q8.gguf' (No such file or directory)\n0.00.001.656 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-yxattn20-q8.gguf\n0.00.001.656 E llama_model_load_from_file_impl: failed to load model\n0.00.001.657 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-yxattn20-q8.gguf'\n0.00.001.658 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "yxattn30": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "652 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-yxattn30-q8.gguf' (No such file or directory)\n0.00.001.655 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-yxattn30-q8.gguf\n0.00.001.655 E llama_model_load_from_file_impl: failed to load model\n0.00.001.656 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-yxattn30-q8.gguf'\n0.00.001.658 E llama_perplexity: unable to load model\n"
+   }
+  },
+  "yxboth10": {
+   "refusal": {
+    "error": "no PPL line",
+    "tail": "619 E gguf_init_from_file: failed to open GGUF file '/mnt/ssd/hermes/models/q3-4b-yxboth10-q8.gguf' (No such file or directory)\n0.00.001.624 E llama_model_load: error loading model: llama_model_loader: failed to load model from /mnt/ssd/hermes/models/q3-4b-yxboth10-q8.gguf\n0.00.001.624 E llama_model_load_from_file_impl: failed to load model\n0.00.001.625 E cmn  common_init_: failed to load model '/mnt/ssd/hermes/models/q3-4b-yxboth10-q8.gguf'\n0.00.001.626 E llama_perplexity: unable to load model\n"
+   }
+  }
+ },
+ "reference": "base",
+ "runner": {
+  "binary": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+  "ctx": 512,
+  "threads": 16
+ },
+ "scope": "branch-prediction screen from prefill only; NO tokens generated; a BR shift is a preference shift, not a delivery claim \u2014 the R2 agent read still certifies removal. Corpora built by build_ppl_probe.py (D side hand-read only)."
+}

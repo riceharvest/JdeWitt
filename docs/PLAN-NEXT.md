@@ -724,3 +724,18 @@ Char-boundary noise at the observed K is 2-4% — the sim ranks policies, it
 doesn't clone runs. Transfers on harmful-40 (mismatches 0 there): K=100 saves
 24% (5,446 vs 7,168 tok), still no false delivery-settles. K=100 is now the
 recommended screen default in cascade_verify's help; cert stays 150.
+
+## 2026-11-18 — the zero-gen 800-prompt screen FAILED validation (banked negative)
+
+Amortized play: base 800-wave froze refusal800.txt; one-sided dR =
+lnPPL(refusal corpus) - lnPPL_base on 128 family-intact docs, zero generated
+tokens. Result (4 arms ran before stale-path errors on the rest — see
+one-sided-validation-2026-11-18.json): f15s15-l935 +0.502 ABOVE oracle +0.224.
+Inverted against known branch damage: on base text that is half pivot/lecture
+prose, dR measures STYLE distance, and control corpora cannot cancel a
+corpus-style confound (it is not global drift). The refusal800 corpus stays
+valid only as a collapse/style reference (negative dR = strengthened branch
+still reads). The validated zero-gen screen remains two-sided BR on the
+hand-read delivery-pair corpus. Cost-curve after today, per new artifact:
+BR probe 0 tok -> 200-row stratified cascade screen K=100/cap600 (~50-55k tok)
+for search -> full 800-row cert cascade + agent read for the finalist only.
