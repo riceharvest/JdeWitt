@@ -371,7 +371,16 @@ def main(argv=None):
     m.add_argument("--out", required=True)
     m.add_argument("--cos-to", help="report max cosine distance vs another axes tensor")
     m.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
-    for p in (a, m):
+    r = sub.add_parser("protect", help="project fitted axes out of a protection subspace")
+    r.add_argument("--axes", required=True, help="axes file to protect")
+    r.add_argument("--axes-key", default="axes")
+    r.add_argument("--records", required=True, help="capture records with a task label")
+    r.add_argument("--label", required=True, help="label of the behavior to protect")
+    r.add_argument("--k", type=int, default=8, help="protection subspace rank per layer")
+    r.add_argument("--min-norm", type=float, default=0.15,
+                   help="zero a layer's axis if less than this fraction survives")
+    r.add_argument("--out", required=True)
+    for p in (a, m, r):
         p.add_argument("--time-log", help="JSONL ledger; logs fit/merge phases")
     args = ap.parse_args(argv)
 
@@ -380,8 +389,8 @@ def main(argv=None):
         return
 
     t0 = time.monotonic()
-    if args.cmd == "build" and args.axes:
-        if args.records:
+    if args.cmd in ("build", "protect") and args.axes:
+        if args.cmd == "build" and args.records:
             raise SystemExit("--axes and --records are alternatives; pick one")
         payload = torch.load(args.axes, map_location="cpu", weights_only=False)
         if args.axes_key not in payload:
@@ -397,6 +406,25 @@ def main(argv=None):
         from .timing import record
         record(args.time_log, lineage=os.path.basename(args.records or args.axes),
                phase='fit', seconds=time.monotonic() - t0, kind='cpu')
+    if args.cmd == "protect":
+        recs = load_records(args.records)
+        space = protection_subspace(recs, args.label, args.k)
+        if axes.dim() == 1:
+            axes = axes.unsqueeze(0).repeat(space.shape[0], 1)
+        protected, kept = protect_axes(axes, space, args.min_norm)
+        torch.save({"axes": protected, "kept": kept, "subspace_rank": args.k,
+                    "protected_label": args.label}, args.out)
+        print(json.dumps({
+            "axes": list(protected.shape), "protected_label": args.label,
+            "subspace_rank": args.k,
+            "kept_mean": round(float(kept.mean()), 4),
+            "kept_min": round(float(kept.min()), 4),
+            "layers_zeroed": int((kept < args.min_norm).sum()),
+            "note": "kept fraction is how much of the axis survives outside the "
+                    "protected subspace; a layer that drops below min-norm is zeroed "
+                    "rather than edited along a mostly-protected direction"}))
+        return
+
     if args.cmd == "axes":
         torch.save({"axes": axes}, args.out)
         rep = {"axes": list(axes.shape), "elapsed_s": round(time.monotonic() - t0, 1)}
