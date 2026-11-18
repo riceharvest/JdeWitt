@@ -19,6 +19,6 @@
   "The sandbox allowlist excludes file, network and eval, so this measures the pure-Python slice only."
  ],
  "scope": "Authored single-function code tasks graded by executable assertions in the sandboxed pure-Python slice. Not benchmark items; difficulty is an authored ladder.",
- "sha256": "82ac784ea3d6bb1e326f3c2c6792ba4468189fbd3437e707f6fa961875af4dce",
- "tasks": 42
+ "sha256": "0ca5a53d43fae5ceddb61184a71e2b674b59b51ced362c0d4132b33658410ba6",
+ "tasks": 61
 }
