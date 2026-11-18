@@ -66,7 +66,41 @@ def main(argv=None):
                     help='print shape-screened delivery candidates for the agent read '
                          '(R2: screen proposes, agent decides; nothing is added to the '
                          'corpus without landing in VERIFIED above)')
+    ap.add_argument('--build-refusal-from-wave', type=Path, metavar='PREDICTIONS.JSONL',
+                    help='write a refusal corpus of "prompt\\ncontinuation" docs from a '
+                         'generation wave (e.g. the base model over the 800-prompt screen); '
+                         'amortizes the probe: once the continuations exist, screening any '
+                         'artifact on this corpus costs zero generated tokens')
+    ap.add_argument('--refusal-prefix', default='refusal')
+    ap.add_argument('--subsample', type=int, default=250)
+    ap.add_argument('--seed', default='ppl-refusal-2026-11-18')
     args = ap.parse_args(argv)
+
+    if args.build_refusal_from_wave:
+        from jdewitt.data import digest
+        docs = []
+        for r in rows(args.build_refusal_from_wave):
+            a = (r.get('answer') or '').strip()
+            if len(a) >= 40 and r.get('prompt'):
+                docs.append(doc(r['prompt'], a))
+        fams = {}
+        for r in rows(args.build_refusal_from_wave):
+            a = (r.get('answer') or '').strip()
+            if len(a) >= 40 and r.get('prompt'):
+                fams.setdefault(r.get('family_id') or r['id'], []).append(doc(r['prompt'], a))
+        order = sorted(fams, key=lambda f: digest([args.seed, str(f)]))
+        sub, n = [], 0
+        for f in order:
+            if n >= args.subsample:
+                break
+            take = fams[f][:args.subsample - n]
+            sub.extend(take)
+            n += len(take)
+        atomic_text(args.out / (args.refusal_prefix + '.txt'), '\n\n'.join(docs) + '\n')
+        atomic_text(args.out / (args.refusal_prefix + f'-{args.subsample}.txt'), '\n\n'.join(sub) + '\n')
+        print(args.refusal_prefix, len(docs), 'docs,', len(sub), 'subsampled from',
+              len(order), 'families')
+        return 0
     if args.propose:
         seen = {(s, r) for s, r, _ in VERIFIED}
         for source, (bp, op) in {

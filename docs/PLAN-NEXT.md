@@ -693,3 +693,19 @@ onsets measured to saturate <=600; live A/B not yet run), always 8 slots at
 for a new arm. Time to check 800 harmful prompts today: ~20 min GPU and ~280
 generated tokens/row; the read that certifies lives on the 33-85% candidate
 pool, not on 800.
+
+## 2026-11-18 — amortized verification: the 800-row check becomes one-time-cost
+
+- Escalation-cap 450 tested OFFLINE on the 800-row records (zero new inference):
+  loses 17/22 (ours) and 89 (oracle) delivery candidates that only form between
+  450-600 tokens, and 34 refusal settles — for 11% of escalation tokens. REJECTED;
+  cap stays 600. The 'onsets saturate by 600' note was a harmful-40 greedy artifact.
+- Amortization play: one base wave over the 800-prompt screen (111,826 tok,
+  verification/q3-4b-harmful800/base-800/) freezes a per-prompt REFUSAL corpus
+  (refusal800.txt, 799 docs + family-intact 128-doc subsample). Screening any
+  future artifact on this corpus costs ZERO generated tokens — ~4-9 min CPU —
+  and the score is per-prompt (dR vs base), not just corpus-global.
+  Protocol becomes: base refusal corpus (built once) -> per-artifact dR probe
+  (0 tok) -> cascade screen only if dR looks alive -> agent reads the pool.
+- Ladder rerun on the 800-row refusal corpus in flight (16 artifacts,
+  zero-generation); validates per-prompt dR against the BR findings.

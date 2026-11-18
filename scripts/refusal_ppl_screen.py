@@ -58,34 +58,50 @@ def main(argv=None):
     ap.add_argument('--no-control', action='store_true',
                     help='skip the benign control corpus (control drift is already '
                          'measured at the endpoints of a ladder; use only for screening)')
+    ap.add_argument('--corpus', action='append', metavar='NAME=PATH',
+                    help='override a corpus file, e.g. --corpus refusal=verification/'
+                         'ppl-probe/refusal800-250.txt')
+    ap.add_argument('--one-sided', action='store_true',
+                    help='skip the delivery corpus; report dR = lnPPL(refusal) - '
+                         'lnPPL_base(refusal) only (a refusal-reference corpus built '
+                         'from a single wave is one-sided by construction)')
     ap.add_argument('--out', type=Path)
     args = ap.parse_args(argv)
 
     corpus_dir = Path(args.corpus_dir)
+    corpora = {'refusal': corpus_dir / 'refusal.txt',
+               'delivery': corpus_dir / 'delivery.txt',
+               'control': corpus_dir / 'control.txt'}
+    for kv in args.corpus or []:
+        k, v = kv.split('=', 1)
+        corpora[k] = Path(v)
+    names = ['refusal'] + ([] if args.one_sided else ['delivery']) + ([] if args.no_control else ['control'])
     arts = [tuple(a.split('=', 1)) for a in args.artifact]
     results = {}
     for name, path in arts:
         row = {}
-        corpora = ['refusal', 'delivery'] + ([] if args.no_control else ['control'])
-        for corpus in corpora:
-            f = corpus_dir / (corpus + '.txt')
-            r = ppl(args.binary, Path(path), f, args.ctx, args.threads)
+        for corpus in names:
+            r = ppl(args.binary, Path(path), corpora[corpus], args.ctx, args.threads)
             if 'ppl' in r:
                 r['ln_ppl'] = round(math.log(r['ppl']), 4)
             row[corpus] = r
             print(f'{name} {corpus}: {r}', flush=True)
         results[name] = row
-        if results.get(arts[0][0], {}).get('refusal', {}).get('ln_ppl') is not None \
-                and row.get('refusal', {}).get('ln_ppl') is not None and name != arts[0][0]:
-            base = results[arts[0][0]]
-            br_here = row['refusal']['ln_ppl'] - row['delivery']['ln_ppl']
-            br_base = base['refusal']['ln_ppl'] - base['delivery']['ln_ppl']
-            row['BR'] = round(br_here, 4)
-            row['delta_BR'] = round(br_here - br_base, 4)
-            if 'control' in row and 'control' in base:
+        base = results.get(arts[0][0])
+        if base is not None and name != arts[0][0] \
+                and base.get('refusal', {}).get('ln_ppl') is not None \
+                and row.get('refusal', {}).get('ln_ppl') is not None:
+            out = f'{name}: dR={row["refusal"]["ln_ppl"] - base["refusal"]["ln_ppl"]:+.4f}'
+            row['delta_R'] = round(row['refusal']['ln_ppl'] - base['refusal']['ln_ppl'], 4)
+            if not args.one_sided and row.get('delivery', {}).get('ln_ppl') is not None \
+                    and base.get('delivery', {}).get('ln_ppl') is not None:
+                br_here = row['refusal']['ln_ppl'] - row['delivery']['ln_ppl']
+                br_base = base['refusal']['ln_ppl'] - base['delivery']['ln_ppl']
+                row['BR'] = round(br_here, 4)
+                row['delta_BR'] = round(br_here - br_base, 4)
+                out += f' BR={row["BR"]} delta_BR={row["delta_BR"]}'
+            if 'control' in row and 'control' in base and row['control'].get('ln_ppl') is not None and base['control'].get('ln_ppl') is not None:
                 row['delta_control'] = round(row['control']['ln_ppl'] - base['control']['ln_ppl'], 4)
-            out = f'{name}: BR={row["BR"]} delta_BR={row["delta_BR"]}'
-            if 'delta_control' in row:
                 out += f' delta_control={row["delta_control"]}'
             print(out, flush=True)
     report = {
