@@ -489,12 +489,21 @@ time on a 12 GiB card.
   problem.
 * The full 2×2 of shape against capture locus, same 27 layers and both modules:
 
-  | shape / locus          | mean \|cos\| to the oracle | spread |
-  |------------------------|----------------------------|--------|
-  | shared / last prompt token | 0.508 | 0.500–0.511 |
+  | shape / locus               | mean \|cos\| to the oracle | spread |
+  |-----------------------------|----------------------------|--------|
+  | shared / last prompt token  | 0.508 | 0.500–0.511 |
   | per-layer / last prompt token | 0.258 | 0.003–0.529 |
-  | shared / answer end   | 0.059 | — |
-  | per-layer / answer end| 0.048 | 0.003–0.112 |
+  | shared / refusal prefix (8 tokens) | 0.140 | — |
+  | per-layer / refusal prefix  | 0.135 | — |
+  | shared / answer end         | 0.059 | — |
+  | per-layer / answer end      | 0.048 | 0.003–0.112 |
+
+  The refusal-prefix hypothesis is dead on arrival and recorded as measured: 70
+  matched-pair records captured eight tokens into the model's *own* refusal opener
+  (and eight into the compliant answer, same window either way) fit to 0.140 shared
+  and 0.135 per-layer — barely better than answering at random, and far below the
+  prompt-end fit. If the mechanism were "kill the opener", the opener's own state
+  should be the best place to measure it. It is not.
 
   The **locus dominates the shape**. Measured at the prompt end, pooling across
   layers buys back most of the direction (0.26 → 0.51); measured at the end of an
