@@ -33,6 +33,7 @@ REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
 from jdewitt.data import load_suite  # noqa: E402
+from jdewitt.stats import cohens_h, paired_permutation_test, wilson_interval  # noqa: E402
 
 NUMBER = re.compile(r'(?<![\w./])-?\d+(?:\.\d+)?(?:/\d+)?(?!\w|[\w/]\d|/)')
 ONLY_NUMBER = re.compile(r'^\s*[-+]?\d+(?:[.,]\d+)?(?:/\d+)?\s*[.:\n]*$')
@@ -60,6 +61,7 @@ def audit(label: str, predictions: Path, suite: Path) -> dict:
     tasks = {row['id']: row for row in load_suite(suite)}
     counters = Counter()
     kinds = Counter()
+    flags = {}
     rows = 0
     for line in predictions.read_text().splitlines():
         row = json.loads(line)
@@ -74,6 +76,9 @@ def audit(label: str, predictions: Path, suite: Path) -> dict:
         text = row.get('answer') or ''
         raw = row.get('raw') or text
         body = row.get('answer') or ''
+        flags[row['id']] = {'strict': row.get('passed') is True,
+                        'computed': False, 'format': False, 'ok': row['status'] == 'ok',
+                        'kind': kind}
         if row['status'] != 'ok':
             counters[f'{kind}_invalid'] += 1
             if row['status'] in ('truncated_or_error', 'timeout'):
@@ -85,28 +90,65 @@ def audit(label: str, predictions: Path, suite: Path) -> dict:
                 expected = task.get('expected')
                 if expected is not None and _matches(expected, _values(raw)):
                     counters[f'{kind}_computed'] += 1
+                    flags[row['id']]['computed'] = True
                 if ONLY_NUMBER.match(body):
                     counters[f'{kind}_format'] += 1
+                    flags[row['id']]['format'] = True
             else:
                 counters[f'{kind}_code_unchecked'] += 1
     def rate(num: int, den: int) -> float | None:
         return round(num / den, 4) if den else None
+    def measure(num: int, den: int) -> dict:
+        interval = wilson_interval(num, den) if den else None
+        return {'passed': num, 'rows': den, 'rate': rate(num, den),
+                'wilson': interval['lower'] if interval else None,
+                'wilson_upper': interval['upper'] if interval else None}
     math_rows = counters['math_rows']
     return {'label': label, 'rows': rows,
-            'math': {'rows': math_rows,
-                     'strict': rate(counters['math_strict'], math_rows),
-                     'computed_anywhere': rate(counters['math_computed'], math_rows),
-                     'format_only_number': rate(counters['math_format'], math_rows),
+            'math': {'strict': measure(counters['math_strict'], math_rows),
+                     'computed_anywhere': measure(counters['math_computed'], math_rows),
+                     'format_only_number': measure(counters['math_format'], math_rows),
                      'invalid': counters['math_invalid'],
                      'truncated': counters['math_truncated']},
-            'code': {'rows': counters['code_rows'],
-                     'strict': rate(counters['code_strict'], counters['code_rows']),
+            'code': {'strict': measure(counters['code_strict'], counters['code_rows']),
                      'invalid': counters['code_invalid'],
                      'truncated': counters['code_truncated']},
+            'flags': flags,
             'note': 'computed_anywhere is a recall measure, not a grade: it asks whether the '
                     'right value appears anywhere in the output, so it separates lost computation '
                     'from lost format-following. code grading is execution, not regex, so it has '
                     'no computed_anywhere row.'}
+
+
+def paired(before: dict, after: dict, kind: str) -> dict:
+    """Paired per-row comparison of every audited rate, on rows both sides generated.
+
+    A sign-flip permutation on the paired 0/1 labels is the honest test here: the
+    rows are the same prompts, so the pairing carries the difficulty, and a metric
+    that only moved because a different row got sampled cannot survive it.
+    """
+    shared = sorted(set(before['flags']) & set(after['flags']))
+    ids = [pid for pid in shared
+           if before['flags'][pid]['ok'] and after['flags'][pid]['ok']
+           and before['flags'][pid]['kind'] == kind and after['flags'][pid]['kind'] == kind]
+    out = {}
+    for metric in ('strict', 'computed', 'format'):
+        if metric == 'computed' and kind != 'math':
+            continue
+        a = [1 if before['flags'][pid][metric] else 0 for pid in ids]
+        b = [1 if after['flags'][pid][metric] else 0 for pid in ids]
+        if not ids:
+            continue
+        permutation = paired_permutation_test([bb - aa for aa, bb in zip(a, b)])
+        out[metric] = {
+            'rows': len(ids), 'before_pass': sum(a), 'after_pass': sum(b),
+            'before_rate': round(sum(a) / len(ids), 4), 'after_rate': round(sum(b) / len(ids), 4),
+            'delta': round((sum(b) - sum(a)) / len(ids), 4),
+            'cohens_h': round(cohens_h(sum(a), len(ids), sum(b), len(ids)), 4),
+            'paired_sign_flip_p_two_sided': permutation.get('p_two_sided'),
+            'fixed': sum(1 for aa, bb in zip(a, b) if bb and not aa),
+            'broke': sum(1 for aa, bb in zip(a, b) if aa and not bb)}
+    return out
 
 
 def main(argv=None):
@@ -116,8 +158,16 @@ def main(argv=None):
                         default=REPO / 'verification/capability/capability-run-en.jsonl')
     parser.add_argument('--out', type=Path)
     args = parser.parse_args(argv)
-    report = [audit(item.split('=', 1)[0], Path(item.split('=', 1)[1]), args.suite)
+    audits = [audit(item.split('=', 1)[0], Path(item.split('=', 1)[1]), args.suite)
               for item in args.pairs]
+    report = {'labels': [item['label'] for item in audits],
+              'metrics': [{key: value for key, value in item.items() if key != 'flags'}
+                          for item in audits]}
+    if len(audits) == 2:
+        report['paired'] = {'rows': 'only rows with status ok on both sides, split by kind',
+                            'pairs': {'before': audits[0]['label'], 'after': audits[1]['label']},
+                            'per_kind': {kind: paired(audits[0], audits[1], kind)
+                                         for kind in ('math', 'code')}}
     text = json.dumps(report, indent=1)
     print(text)
     if args.out:
