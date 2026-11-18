@@ -146,7 +146,10 @@ jdewitt run-status OUTPUT   # trial state — no model load, no migration
 
 Method and rules: `docs/METHODOLOGY.md`. The fast loop:
 `docs/fast-search.md`. The commands that actually produced the committed
-numbers, start to finish: `docs/WORKED-LOOP.md`. First measured retention
+numbers, start to finish: `docs/WORKED-LOOP.md`.
+A terminal front end for the flow — pick a GGUF on disk, pick a recipe, watch the
+real command run — lives in `tui/` (`cargo build --release`;
+`tui/README.md` states exactly what it does and does not compute). First measured retention
 numbers and the two confounds they exposed: `docs/RETENTION-MEASUREMENTS.md`.
 Measured methods beyond the usual playbook,
 including the answer-span fits above: `docs/non-heretic-methods.md`.

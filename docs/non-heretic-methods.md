@@ -695,3 +695,49 @@ check and not a certified held-out result; held-out refusal families are still
 unmeasured on qwen3-4b, and so is capability retention for these artifacts; the
 oracle-direction merge is an instrument control whose direction came from the
 published file, not an independent result.
+
+### The instrument failures of the 2026-11-18 night, and the gates that close them
+
+Three failures in a row, all the same shape: a step that silently did not happen,
+followed by a measurement that read as if it had.
+
+1. **A fit that never ran, then a screen that read as perfect.** The wider
+   contrast pool (300 harmful candidates over 190 families) was labelled by serving
+   the base model, and labelling died on a connection error because port 8134 was
+   already held by another server — the lane polled `/health`, which the stranger
+   answered. So `q3y/q3x-axes.pt` was never written; `spanfit build` failed, its
+   error text was swallowed by a `| python3 -c 'json.load(stdin)'` in the lane
+   script; no GGUF existed; the lane then started a server on the missing file, which
+   loaded nothing, returned empty answers on all 40 harmful rows, and an empty answer
+   trips no refusal wording. The report printed `40/40 removal (≥0.91)`.
+   `verification/q3-4b-harmful40/xattn20-l935/` and `xboth10-l935/` are kept as
+   evidence of that failure, with `invalid: 40`, not as results.
+2. **A screen that could not be measured, read as a score.** `max_tokens=64` on the
+   code rows invalidates every row. The wave used to summarize that as
+   `capability_passed: 0 of 61`, which reads as a capability collapse on the unedited
+   base model.
+3. **A port that was not yours.** Two lanes on 8134 means one of them measured a
+   model it did not name.
+
+Gates now in the shipped tools, each proven by running it
+(`verification/instrument-gates/NOTES.md` carries the exact commands and outputs):
+
+* `capability_wave` reads `/props` before the first request and refuses when
+  `model_path` is not the `-m` path in `--serve-config`; it also refuses when that
+  file does not exist, before sending anything.
+* a wave where every row is invalid writes `"measured": false` and exits 1, and
+  `frontier_report` prints `UNMEASURED (n/n invalid)` instead of a removal count and
+  a Wilson lower bound.
+* the lanes are rewritten to verify `/props` rather than `/health`, to abort on a
+  build that wrote no file or edited 0 tensors, and to retry a dropped row instead of
+  discarding the pool.
+
+The same night produced one clean result worth the space: the `tui/` front end, driven
+headless through a pty, built `q3-4b-base-q8.gguf` with `q3-shared-axes.pt` at scale
+1.0 into 4,280,403,392 bytes, sha256
+`18a9e9ea043254da3a0774ef713e6e4464c64190cf7e42c9f12d91f6a2890f36` — identical to the
+CLI artifact `q3-4b-shl10.gguf`. Same operands, same edit, different door. The pty
+drive is also what caught two bugs in that front end before anything was claimed:
+the axes-file key was being dropped, and `--layers` was missing from the build line,
+which is failure mode (1) in a new costume.
+
