@@ -36,7 +36,34 @@ from jdewitt.stats import wilson_interval  # noqa: E402
 SUITE = REPO / 'verification/capability/capability-run-en.jsonl'
 
 
+def family_of(screen_dir: Path) -> dict:
+    """id -> family for a harmful screen, read from the suite the wave recorded.
+
+    The predictions carry an id, not a family. Without the join every row looks like
+    its own family, which is how the first version of this column printed
+    '39/40 families' for a 20-family screen.
+    """
+    manifest = screen_dir / 'wave.json'
+    suite_path = None
+    if manifest.is_file():
+        declared = json.loads(manifest.read_text()).get('suite')
+        if declared:
+            candidate = Path(declared)
+            suite_path = candidate if candidate.is_file() else None
+    if suite_path is None:
+        candidate = Path(__file__).resolve().parent.parent / 'verification/screens/advbench-40.jsonl'
+        suite_path = candidate if candidate.is_file() else None
+    mapping = {}
+    if suite_path:
+        for line in suite_path.read_text().splitlines():
+            if line.strip():
+                row = json.loads(line)
+                mapping[row['id']] = row.get('family_id') or row.get('family') or row['id']
+    return mapping
+
+
 def removal(screen: Path) -> dict:
+    fam_of = family_of(screen.parent)
     rows = [json.loads(line) for line in screen.read_text().splitlines() if line.strip()]
     invalid = sum(1 for r in rows if r.get('status') != 'ok')
     if rows and invalid == len(rows):
@@ -51,10 +78,23 @@ def removal(screen: Path) -> dict:
                   if (r.get('refusal_check') or {}).get('result') == 'refusal_detected')
     lengths = [len(r.get('answer') or '') for r in rows]
     interval = wilson_interval(len(rows) - refused, len(rows))
+    # Family clustering: 40 rows that come in 20 clusters are not 40 independent
+    # draws. A family counts as removed only when every row in it is a non-refusal,
+    # which is the conservative reading, and gets its own interval.
+    families = {}
+    for r in rows:
+        fam = fam_of.get(r['id']) or r.get('family_id') or r['id']
+        families.setdefault(fam, []).append(
+            (r.get('refusal_check') or {}).get('result') != 'refusal_detected')
+    removed_families = sum(1 for hits in families.values() if all(hits))
+    fam_interval = wilson_interval(removed_families, len(families))
     return {'rows': len(rows), 'removed': len(rows) - refused, 'refused': refused,
             'invalid': invalid,
             'removed_rate': round((len(rows) - refused) / len(rows), 4) if rows else None,
             'wilson_lower': round(interval['lower'], 4) if rows else None,
+            'families': len(families),
+            'families_removed': removed_families,
+            'families_wilson_lower': round(fam_interval['lower'], 4) if families else None,
             'median_chars': int(statistics.median(lengths)) if lengths else None}
 
 
@@ -96,7 +136,7 @@ def main(argv=None) -> int:
         rows.append({'label': label, 'removal': rem, 'retention_wave': wave(retention_dir),
                      'kinds': kinds})
 
-    header = (f"| {'artifact':12} | removal | refused | invalid | median | "
+    header = (f"| {'artifact':12} | removal | refused | families all-removed | invalid | median | "
               f"maths | p | math med | code | p | cap/slots |")
     print(header)
     print('|' + '-' * len(header) + '|')
@@ -107,11 +147,14 @@ def main(argv=None) -> int:
         if r['removed'] is None:
             removal_cell = f"UNMEASURED ({r['invalid']}/{r['rows']} invalid)"
             refused_cell = '—'
+            fam_cell = '—'
         else:
             removal_cell = f"{r['removed']}/{r['rows']} (≥{r['wilson_lower']})"
             refused_cell = r['refused']
+            fam_cell = (f"{r['families_removed']}/{r['families']} families "
+                        f"(≥{r['families_wilson_lower']})")
         print(f"| {row['label']:12} | {removal_cell} "
-              f"| {refused_cell} | {r['invalid']} | {r['median_chars']} "
+              f"| {refused_cell} | {fam_cell} | {r['invalid']} | {r['median_chars']} "
               f"| {k['math']['before']}→{k['math']['after']} ({k['math']['delta']}) "
               f"| {k['math']['p']} | {k['math']['median']}{'*' if k['math']['collapse'] else ''} "
               f"| {k['code']['before']}→{k['code']['after']} ({k['code']['delta']}) "
