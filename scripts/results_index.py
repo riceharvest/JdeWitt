@@ -72,8 +72,8 @@ def main(argv=None) -> int:
             except (json.JSONDecodeError, UnicodeDecodeError):
                 line = 'unreadable json'
         else:
-            lines = [l for l in path.read_text(errors='ignore').splitlines() if l.strip()]
-            line = f'rows={len(lines)}'
+            kept = [line for line in path.read_text(errors='ignore').splitlines() if line.strip()]
+            line = f'rows={len(kept)}'
         print(f'| `{relative}` | {size} | `{sha16(path)}` | {line or "—"} |')
     return 0
 
