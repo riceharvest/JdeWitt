@@ -1,0 +1,281 @@
+{
+ "artifacts": {
+  "attn": {
+   "BR": -0.3951,
+   "delivery": {
+    "ln_ppl": 1.404,
+    "ppl": 4.0713,
+    "seconds": 22.6,
+    "uncertainty": 0.28185
+   },
+   "delta_BR": -0.1524,
+   "refusal": {
+    "ln_ppl": 1.0089,
+    "ppl": 2.7425,
+    "seconds": 20.8,
+    "uncertainty": 0.2764
+   }
+  },
+  "attn15": {
+   "BR": -0.3382,
+   "delivery": {
+    "ln_ppl": 1.2865,
+    "ppl": 3.62,
+    "seconds": 23.3,
+    "uncertainty": 0.24307
+   },
+   "delta_BR": -0.0955,
+   "refusal": {
+    "ln_ppl": 0.9483,
+    "ppl": 2.5812,
+    "seconds": 20.5,
+    "uncertainty": 0.25929
+   }
+  },
+  "attn25": {
+   "BR": -0.4649,
+   "delivery": {
+    "ln_ppl": 1.549,
+    "ppl": 4.7066,
+    "seconds": 24.1,
+    "uncertainty": 0.33935
+   },
+   "delta_BR": -0.2222,
+   "refusal": {
+    "ln_ppl": 1.0841,
+    "ppl": 2.9568,
+    "seconds": 20.9,
+    "uncertainty": 0.30269
+   }
+  },
+  "attn40": {
+   "BR": -0.7296,
+   "delivery": {
+    "ln_ppl": 2.1397,
+    "ppl": 8.4968,
+    "seconds": 23.8,
+    "uncertainty": 0.74246
+   },
+   "delta_BR": -0.4869,
+   "refusal": {
+    "ln_ppl": 1.4101,
+    "ppl": 4.0965,
+    "seconds": 20.6,
+    "uncertainty": 0.46289
+   }
+  },
+  "base": {
+   "delivery": {
+    "ln_ppl": 1.0965,
+    "ppl": 2.9937,
+    "seconds": 30.6,
+    "uncertainty": 0.19801
+   },
+   "refusal": {
+    "ln_ppl": 0.8538,
+    "ppl": 2.3485,
+    "seconds": 25.8,
+    "uncertainty": 0.23866
+   }
+  },
+  "f15s12": {
+   "BR": -0.2971,
+   "delivery": {
+    "ln_ppl": 1.476,
+    "ppl": 4.3752,
+    "seconds": 17.7,
+    "uncertainty": 0.30817
+   },
+   "delta_BR": -0.0544,
+   "refusal": {
+    "ln_ppl": 1.1789,
+    "ppl": 3.2508,
+    "seconds": 16.9,
+    "uncertainty": 0.33886
+   }
+  },
+  "f15s15": {
+   "BR": -0.2951,
+   "delivery": {
+    "ln_ppl": 1.6685,
+    "ppl": 5.304,
+    "seconds": 21.8,
+    "uncertainty": 0.39451
+   },
+   "delta_BR": -0.0524,
+   "refusal": {
+    "ln_ppl": 1.3734,
+    "ppl": 3.9489,
+    "seconds": 20.6,
+    "uncertainty": 0.43451
+   }
+  },
+  "f15s20": {
+   "BR": -0.3023,
+   "delivery": {
+    "ln_ppl": 2.0555,
+    "ppl": 7.8107,
+    "seconds": 17.5,
+    "uncertainty": 0.64766
+   },
+   "delta_BR": -0.0596,
+   "refusal": {
+    "ln_ppl": 1.7532,
+    "ppl": 5.7729,
+    "seconds": 16.5,
+    "uncertainty": 0.69848
+   }
+  },
+  "f20s20": {
+   "BR": -0.2203,
+   "delivery": {
+    "ln_ppl": 1.7452,
+    "ppl": 5.7271,
+    "seconds": 24.2,
+    "uncertainty": 0.43279
+   },
+   "delta_BR": 0.0224,
+   "refusal": {
+    "ln_ppl": 1.5249,
+    "ppl": 4.5947,
+    "seconds": 18.7,
+    "uncertainty": 0.53356
+   }
+  },
+  "oaxes135": {
+   "BR": 0.4061,
+   "delivery": {
+    "ln_ppl": 1.1716,
+    "ppl": 3.227,
+    "seconds": 20.4,
+    "uncertainty": 0.2207
+   },
+   "delta_BR": 0.6488,
+   "refusal": {
+    "ln_ppl": 1.5777,
+    "ppl": 4.844,
+    "seconds": 13.9,
+    "uncertainty": 0.64424
+   }
+  },
+  "oracle": {
+   "BR": 0.3161,
+   "delivery": {
+    "ln_ppl": 1.14,
+    "ppl": 3.1267,
+    "seconds": 20.5,
+    "uncertainty": 0.21168
+   },
+   "delta_BR": 0.5588,
+   "refusal": {
+    "ln_ppl": 1.4561,
+    "ppl": 4.2893,
+    "seconds": 20.4,
+    "uncertainty": 0.55645
+   }
+  },
+  "prot15": {
+   "BR": -0.3005,
+   "delivery": {
+    "ln_ppl": 1.7564,
+    "ppl": 5.7916,
+    "seconds": 23.7,
+    "uncertainty": 0.444
+   },
+   "delta_BR": -0.0578,
+   "refusal": {
+    "ln_ppl": 1.4559,
+    "ppl": 4.2884,
+    "seconds": 20.7,
+    "uncertainty": 0.47971
+   }
+  },
+  "prot20": {
+   "BR": -0.3875,
+   "delivery": {
+    "ln_ppl": 2.5477,
+    "ppl": 12.7771,
+    "seconds": 23.6,
+    "uncertainty": 1.20398
+   },
+   "delta_BR": -0.1448,
+   "refusal": {
+    "ln_ppl": 2.1602,
+    "ppl": 8.6732,
+    "seconds": 20.6,
+    "uncertainty": 1.15787
+   }
+  },
+  "shl10l935": {
+   "BR": -0.303,
+   "delivery": {
+    "ln_ppl": 1.4239,
+    "ppl": 4.1534,
+    "seconds": 24.0,
+    "uncertainty": 0.28876
+   },
+   "delta_BR": -0.0603,
+   "refusal": {
+    "ln_ppl": 1.1209,
+    "ppl": 3.0675,
+    "seconds": 18.9,
+    "uncertainty": 0.31411
+   }
+  },
+  "yxattn20": {
+   "BR": -0.244,
+   "delivery": {
+    "ln_ppl": 1.2064,
+    "ppl": 3.3414,
+    "seconds": 23.4,
+    "uncertainty": 0.22571
+   },
+   "delta_BR": -0.0013,
+   "refusal": {
+    "ln_ppl": 0.9624,
+    "ppl": 2.6179,
+    "seconds": 20.7,
+    "uncertainty": 0.27117
+   }
+  },
+  "yxattn30": {
+   "BR": -0.2992,
+   "delivery": {
+    "ln_ppl": 1.3475,
+    "ppl": 3.8479,
+    "seconds": 23.4,
+    "uncertainty": 0.27262
+   },
+   "delta_BR": -0.0565,
+   "refusal": {
+    "ln_ppl": 1.0483,
+    "ppl": 2.8529,
+    "seconds": 20.3,
+    "uncertainty": 0.30083
+   }
+  },
+  "yxboth10": {
+   "BR": -0.1398,
+   "delivery": {
+    "ln_ppl": 1.1715,
+    "ppl": 3.2267,
+    "seconds": 20.0,
+    "uncertainty": 0.21687
+   },
+   "delta_BR": 0.1029,
+   "refusal": {
+    "ln_ppl": 1.0317,
+    "ppl": 2.8057,
+    "seconds": 21.2,
+    "uncertainty": 0.29149
+   }
+  }
+ },
+ "reference": "base",
+ "runner": {
+  "binary": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+  "ctx": 512,
+  "threads": 16
+ },
+ "scope": "branch-prediction screen from prefill only; NO tokens generated; a BR shift is a preference shift, not a delivery claim \u2014 the R2 agent read still certifies removal. Corpora built by build_ppl_probe.py (D side hand-read only)."
+}
