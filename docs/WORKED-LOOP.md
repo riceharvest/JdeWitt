@@ -165,6 +165,10 @@ rows are non-refusals, and `≥` there is the honest floor — 12/20 (≥0.387) 
 row column said 31/40. A screen where every row came back invalid prints `UNMEASURED`
 and exits non-zero: an empty answer trips no refusal wording, so "all rows empty" is
 the shape of a model that failed to load, and it must never read as a perfect removal.
+When two screens ran over the same prompt ids the comparison is exact McNemar —
+`scripts/paired_screen_test.py` — not two overlapping Wilson intervals: at 24 families a
+one-family difference is p 1.0, so the number worth quoting is the one whose test could
+have failed.
 
 ## What is not scripted
 
