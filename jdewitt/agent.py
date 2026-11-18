@@ -352,8 +352,19 @@ def wave_mismatch(before, after):
         return None
     left, right = before.get('serve_structured') or {}, after.get('serve_structured') or {}
     fields = ('ctx', 'parallel', 'max_tokens', 'temperature', 'jinja', 'cuda', 'suite')
+
+    def canonical(field, value):
+        # The suite is identified by the file it points at, not by how the caller
+        # typed it: an absolute and a relative path to the same suite are the same
+        # operand, and a gate that fires on spelling trains people to pass
+        # --allow-config-mismatch, which defeats the gate entirely.
+        if field == 'suite' and isinstance(value, str):
+            return str(Path(value).expanduser().resolve())
+        return value
+
     diff = {field: (left.get(field), right.get(field)) for field in fields
-            if field in left and field in right and left[field] != right[field]}
+            if field in left and field in right
+            and canonical(field, left[field]) != canonical(field, right[field])}
     return diff or None
 
 

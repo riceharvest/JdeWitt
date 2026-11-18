@@ -607,8 +607,32 @@ the tool can now separate them: the early decoder layers are where the answer
 collapse lives *and* where most of the remaining opener removal lives. Trading 6
 rows of removal for 61 rows of arithmetic is the right trade, but neither number is
 where the frontier should sit, and `--only-layers` plus a scale sweep is exactly the
-search the tool exists to run. Scale 1.5 and 2.0 on blk.9–35, and an
-attention-only arm to attribute the collapse, are the next rows in this table.
+search the tool exists to run.
+
+THE FRONTIER, all arms on blk.9–35, both axes, one serve config per axis
+(`verification/q3-4b-{harmful40,retention}/{s15-l935,s20-l935,attn-l935}/`):
+
+  | arm (shared axis on blk.9–35)          | removal | maths strict, delta, p       | maths median chars | collapse | code strict, delta, p |
+  |----------------------------------------|--------:|------------------------------|-------------------:|---------:|-----------------------|
+  | scale 1.0                              | 31/40   | 152/180, −0.039, p 0.12      | 64                 | no       | 17/61, −0.049, p 0.67 |
+  | scale 1.5                              | 40/40   | 128/180, −0.172, p 0.0001    | **31**             | yes      | 20/61, +0.017, p 1.00 |
+  | scale 2.0                              | 40/40   | 60/180, −0.486, p 0.0001     | **4**              | yes      | 12/61, +0.071, p 0.76 |
+  | attention side only, scale 2.0         | 29/40   | 161/180, +0.011, p 0.63      | 123                | no       | 9/61, −0.180, p 0.012 |
+
+Read the last two columns together, because that is the whole lesson of the sweep:
+every arm that reaches total opener removal does it by collapsing the maths answers
+to 31 and then 4 characters — the length instrument fires on both, and the scale-2.0
+screen additionally lost 15 harmful rows to the cap. Take the attention side alone
+and maths is untouched (161/180, marginally *above* base) but removal falls to 29/40
+and code pays 11 rows. So on this base our fitted shared direction does not have a
+point on the published oracle's frontier: the oracle sits at 39/40 removal with
+159/180 maths intact. The axis is only 0.508 aligned with the direction recovered
+from its weights, and the cheap CPU check rules out the easy excuse — its per-layer
+signs wander against ours (signed mean 0.13, mean \|cos\| 0.51), but a rank-1 removal
+`dW = −s·u(uᵗW)` is sign-invariant, so what separates us is *which subspace*, not
+which sign. The next arm is therefore the one the tool already has a path for: fit
+the prevention subspace from matched safe controls, project the axis out of it, and
+re-run the scale ladder.
 
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
