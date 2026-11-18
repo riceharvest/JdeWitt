@@ -664,6 +664,19 @@ zeroed), so the collapse is not the edit passing through arithmetic activity, an
 null-space protection is not the fix — the same verdict as mc47's prevention
 subspace, now measured on two lineages.
 
+`more contrast data` is now also an excluded hypothesis, measured rather than assumed:
+fitting the same shared axis on a pool grown from 190 to 300 labelled contrasts moved
+mean |cos| against the recovered oracle direction from **0.508 to 0.5056**
+(−0.0024, and the fit-pool ids are excluded from the screen, so this is not
+contamination in either direction). Re-running the same 300 records through every
+simpler contrast that file supports — bad-mean only, good-mean only, the double-centred
+bad mean — lands at 0.170, 0.081 and 0.258, so the current bad-minus-good estimator is
+the best of the set built from this capture, and the answer-span locus reads 0.0701
+against this oracle. The ceiling sits in **which activation is being differenced**,
+not in how many prompts it is averaged over; numbers and the exact comparison in
+`verification/q3-4b-fit-scaling.json`. Closing this con means changing the capture,
+which costs a serve lane, not another labelling run.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 

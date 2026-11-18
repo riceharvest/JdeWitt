@@ -1,0 +1,15 @@
+{
+  "question": "does a bigger labelled contrast pool move the fitted shared axis toward the published oracle direction?",
+  "pool_190": {"contrasts": 190, "mean_abs_cos_to_oracle": 0.508},
+  "pool_300": {"contrasts": 300, "mean_abs_cos_to_oracle": 0.5056},
+  "delta": -0.0024,
+  "loci_tested": {"prompt-last-token": 0.5056, "answer-span": 0.0701},
+  "estimator_test": {
+    "method": "mean_abs_cos over blk.9..35 x {axes_attn, axes_ffn} against q3-oracle-axes.pt, layers normalised",
+    "bad_minus_good_current_fit": 0.5056,
+    "bad_mean_only": 0.1704,
+    "good_mean_only": 0.081,
+    "bad_mean_double_centered": 0.2575
+  },
+  "reading": "50% more prompts changed alignment by -0.0024, inside noise; the answer-span locus is ~7x worse than the prompt-last locus; and the current bad-minus-good contrast beats every simpler contrast built from the same records. The ceiling is in the estimator and the locus, not the sample count. Fitted q3-4B arms remain below the published oracle point; 'more data' is now an excluded hypothesis, not an open con."
+}
