@@ -83,6 +83,8 @@ def main(argv=None):
     parser.add_argument('--kinds', default='math,code')
     parser.add_argument('--serve-config', required=True,
                         help='The full llama-server argv this wave was taken against (R9)')
+    parser.add_argument('--preview', type=int, default=0,
+                        help='print the first N answers so the shape gets read, not just scored')
     parser.add_argument('--ledger', type=Path, default=None)
     args = parser.parse_args(argv)
     kinds = {kind.strip() for kind in args.kinds.split(',') if kind.strip()}
@@ -119,6 +121,12 @@ def main(argv=None):
     text = ''.join(json.dumps(row, sort_keys=True) + '\n' for row in scored)
     atomic_text(out_path, text)
     passed = sum(1 for row in scored if row['status'] == 'ok' and row.get('passed') is True)
+    if args.preview:
+        print('first answers (a score cannot tell a refusal from false compliance, '
+              'METHODOLOGY R6 — read these)', flush=True)
+        for row in scored[:args.preview]:
+            body = re.sub(r'\s+', ' ', row.get('answer') or row.get('response') or '')
+            print(f"[{row.get('passed')}] {row['id']}: {body[:160]}", flush=True)
     tokens = sum(row.get('completion_tokens') or 0 for row in scored)
     summary = {'scope': 'Generation wave against a live llama-server; capability rows graded by the '
                         'shipped deterministic scorers, no judge calls, no fitting.',
@@ -128,6 +136,7 @@ def main(argv=None):
                'completion_tokens_total': tokens,
                'serve_config': args.serve_config, 'serve_structured': structured, 'port': args.port,
                'max_tokens': args.max_tokens, 'temperature': 0.0,
+               'previewed': min(args.preview, len(scored)) if args.preview else 0,
                'seconds': round(elapsed, 1),
                'predictions': str(out_path),
                'note': 'A wave is only comparable to another wave taken with the identical serve_config '
