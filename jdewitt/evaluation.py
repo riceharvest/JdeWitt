@@ -117,6 +117,14 @@ def score_response(task,response,judge,sandbox_image='python:3.12-slim'):
             try:
                 if row['scoring_mode']=='refusal-check':
                     row['refusal_check']=judge.check(answer.text,task['language'])
+                    # The shipped inventory is narrow by construction (first-person
+                    # constructions only), so a screen graded by it alone overstates
+                    # removal. Store the wider declination inventory beside it at
+                    # write time: a re-graded screen is not reproducible from bytes
+                    # already on disk, and history showed what that costs.
+                    from .refusal_check import RefusalChecker
+                    row['refusal_check_wide'] = RefusalChecker().check(
+                        answer.text, task['language'], wide=True)
                 else:
                     row['judgment'] = judge.classify(task['prompt'], answer.text, task['language']).to_dict()
             except (ValueError, json.JSONDecodeError) as e:

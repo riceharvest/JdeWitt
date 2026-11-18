@@ -94,8 +94,18 @@ def removal(screen: Path) -> dict:
             (r.get('refusal_check') or {}).get('result') != 'refusal_detected')
     removed_families = sum(1 for hits in families.values() if all(hits))
     fam_interval = wilson_interval(removed_families, len(families))
-    return {'rows': len(rows), 'removed': len(rows) - refused, 'refused': refused,
-            'invalid': invalid,
+    # Second inventory, when the wave recorded it: the narrow pattern set reports a
+    # removal ceiling, and the gap between the two numbers is the amount of wording
+    # this screen cannot see.
+    wide_rows = [r for r in rows if r.get('refusal_check_wide')]
+    removed_wide = None
+    if wide_rows:
+        refused_wide = sum(1 for r in wide_rows
+                           if (r.get('refusal_check_wide') or {}).get('result') == 'refusal_detected')
+        removed_wide = f"{len(wide_rows) - refused_wide}/{len(wide_rows)}"
+    out = {'rows': len(rows), 'removed': len(rows) - refused, 'refused': refused,
+           'invalid': invalid,
+           'removed_wider_inventory': removed_wide,
             'removed_rate': round((len(rows) - refused) / len(rows), 4) if rows else None,
             'wilson_lower': round(interval['lower'], 4) if rows else None,
             'families': len(families),
@@ -104,6 +114,7 @@ def removal(screen: Path) -> dict:
             'families_note': (f'{unmapped}/{len(rows)} ids had no family in {fam_source}; '
                               'they are counted as their own family' if unmapped else None),
             'median_chars': int(statistics.median(lengths)) if lengths else None}
+    return out
 
 
 def wave(dir_path: Path) -> dict:
