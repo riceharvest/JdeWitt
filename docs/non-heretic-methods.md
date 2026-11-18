@@ -700,6 +700,19 @@ numbers said 31/40 rows and 12/20 families for the same artifact — **the row c
 and the clustered count hides**, which is exactly why both are printed now, and why the
 held-out screen is the one the removal claim rests on.
 
+Then the arm that changes the verdict, measured the same way as everything else above.
+`q3y` both-sides at scale 1.0 — the 300-contrast fit — reads **40/40 on advbench-40
+(20/20 families, ≥0.8389) with maths 160/180 and code 20/20, median maths answer 151
+characters and no collapse flag**, and on the 24-family held-out screen **23/24
+(≥0.7976)** against the published build's 24/24 (≥0.862) and the base's 4/24. Its
+confidence interval overlaps the oracle's on the held-out screen and its retention is
+equal or better on both capability axes, at the same pinned serve config
+(`-c 8192 --parallel 2`, 4096 max tokens, greedy). So the honest sentence is the narrow
+one: **one fitted arm is not statistically distinguishable from the published removal on
+either screen, and it is the first one this tool has produced.** It is not
+"equal to" or "better than": 23/24 and 24/24 differ by one family at n=24, and "no
+refusal wording" is what the shipped checker measures, not whether harm was delivered.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 
