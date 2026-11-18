@@ -314,9 +314,12 @@ def main(argv=None):
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     a = sub.add_parser("build", help="fit axes from records, write merged gguf")
-    a.add_argument("--records", required=True)
+    a.add_argument("--records", help="residual records to fit from (omit with --axes)")
     a.add_argument("--gguf-in", required=True)
     a.add_argument("--out", required=True)
+    a.add_argument("--axes", help="precomputed axes [D] or [L,D] (torch.save {'axes': ...}) "
+                                  "instead of fitting from records — how an externally "
+                                  "recovered direction gets merged")
     a.add_argument("--source-key", action="append", required=True,
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
@@ -344,12 +347,19 @@ def main(argv=None):
         return
 
     t0 = time.monotonic()
-    recs = load_records(args.records)
-    axes = (shared_axis(recs)[0] if args.shape == "shared"
-            else per_layer_axes(recs))
+    if args.cmd == "build" and args.axes:
+        if args.records:
+            raise SystemExit("--axes and --records are alternatives; pick one")
+        axes = torch.load(args.axes, map_location="cpu", weights_only=False)["axes"]
+    else:
+        if not args.records:
+            raise SystemExit("build needs --records or --axes")
+        recs = load_records(args.records)
+        axes = (shared_axis(recs)[0] if args.shape == "shared"
+                else per_layer_axes(recs))
     if args.time_log:
         from .timing import record
-        record(args.time_log, lineage=os.path.basename(args.records),
+        record(args.time_log, lineage=os.path.basename(args.records or args.axes),
                phase='fit', seconds=time.monotonic() - t0, kind='cpu')
     if args.cmd == "axes":
         torch.save({"axes": axes}, args.out)
