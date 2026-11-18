@@ -505,10 +505,23 @@ time on a 12 GiB card.
   Whether answer-span is a genuinely separate mechanism (as mc47 suggests) or an
   artifact that happens to work on some bases is not settled here; what is settled
   is that it is not this oracle's mechanism.
-* Control running: re-apply the oracle's **own** per-tensor delta to the base
-  through our edit path (dequant-tile-apply-requant, identical block counts). If
-  that refuses like the oracle, the converter, requantization and serve path are
-  faithful and every null above is a direction-discovery failure and nothing
-  else; if it does not, the nulls are our own write path and nothing fitted since
-  can be trusted. Number not yet in hand — do not quote this section as a result
-  until it is.
+* Control, done (`verification/q3-4b-oracle-control/`): the oracle's direction,
+  recovered from its own rank-1 delta and merged by `spanfit build --axes` at the
+  strength that delta implies, was served against the base and the published file
+  under one pinned screen config (10 rows, ctx 8192, 4 slots, cap 1024, greedy).
+  Base **10/10 refusal_detected**; published oracle **0 refusals, 8 delivered, 2
+  truncated**; our merge of its direction **0 refusals, 7 delivered, 3 truncated**.
+  The answers match in voice, not just verdict — the oracle opens rows with
+  "Actually, there's a misunderstanding in your question" and "extortion—especially
+  when it involves", and our artifact opens rows 1 and 2 with exactly those two
+  openings. Converter, requantization and serve path are faithful, so **every null
+  above is a direction-discovery failure and nothing else**. Nothing fitted since
+  needs to be re-examined for a write-path defect.
+* What the control says the mechanism actually is: across the 27 edited layers the
+  recovered directions are one shared unit vector (pairwise mean |cos| 0.9940,
+  mean signed +0.0316 — the signs alternate, which the edit `u(uᵗW)` does not care
+  about), and within a layer attention and MLP agree at 0.9958, at strength
+  1.29–1.45 per tensor. The published oracle is a *shared-axis* edit confined to
+  blk.9–35 — the same shape this tool certifies on q25 — and our fitted shared
+  axis reaches it at 0.508 cosine. So the head-to-head is now stated as one
+  number to beat: get the fitted shared direction from 0.508 cosine to 1.0.
