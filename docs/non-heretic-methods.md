@@ -617,7 +617,9 @@ THE FRONTIER, all arms on blk.9–35, both axes, one serve config per axis
   | scale 1.0                              | 31/40   | 152/180, −0.039, p 0.12      | 64                 | no       | 17/61, −0.049, p 0.67 |
   | scale 1.5                              | 40/40   | 128/180, −0.172, p 0.0001    | **31**             | yes      | 20/61, +0.017, p 1.00 |
   | scale 2.0                              | 40/40   | 60/180, −0.486, p 0.0001     | **4**              | yes      | 12/61, +0.071, p 0.76 |
+  | attention side only, scale 1.5         | 21/40   | 162/180, +0.017, p 0.25      | 99                 | no       | 9/61, −0.180, p 0.012 |
   | attention side only, scale 2.0         | 29/40   | 161/180, +0.011, p 0.63      | 123                | no       | 9/61, −0.180, p 0.012 |
+  | attention side only, scale 2.5         | 23/40   | 159/180, 0.000, p 1.00       | 112                | no       | 6/61, −0.230, p 0.003 |
   | attention side only, scale 3.0         | 15/40   | 161/180, +0.011, p 0.76      | 95                 | no       | 11/61, −0.148, p 0.09 |
   | ffn side only, scale 1.0               | 2/40    | 126/180, −0.183, p 0.0001    | 48                 | no       | 41/61, +0.344, p 0.0005 |
   | ffn side only, scale 1.5               | 5/40    | 54/180, −0.561, p 0.0001     | **31**             | yes      | 50/61, +0.500, p 0.0001 |
@@ -634,10 +636,14 @@ arms; that is the same register-shift signature as before and stays uncredited.
 
 What this means for the shipped edit: on this base the default
 `o_proj` + `mlp.down_proj` footprint pays FFN damage for essentially no removal
-gain — attention-only is strictly the better shape here (29/40 with maths intact
-versus 31/40 for both sides at scale 1.0 at a third of the maths cost) — and the
-certified q25 SAS recipe used both sides, so this is a per-lineage shape decision
-(R7), not a global change. Still no arm reaches the published build's frontier
+gain — attention-only removes 29/40 with maths untouched against 31/40 for both
+sides at scale 1.0 — but read the ladder honestly, because the trade is not free
+either way: maths is flat to slightly up across every attention arm (p 0.25 to 1.00)
+and **code pays −0.18 to −0.23 (p 0.012 to 0.003) on all of them**, whereas both
+sides at 1.0 lose only −0.049 (p 0.67). Attention-only moves the damage from
+arithmetic to code; it does not remove it, and no arm measured tonight matches the
+published build, which lost nothing on either axis. The certified q25 SAS recipe used
+both sides, so the shape remains a per-lineage decision (R7), not a global change. Still no arm reaches the published build's frontier
 (39/40 removal, 159/180 maths intact), and the axis remains only 0.508 aligned with
 the direction recovered from its weights. The cheap CPU check rules out the sign
 excuse: its per-layer signs wander against ours (signed mean 0.13, mean \|cos\|

@@ -1,0 +1,85 @@
+{
+ "base": {
+  "file": "q3-4b-base-q8.gguf",
+  "sha256_prefix_16": "dc4ae2660e73cc2a"
+ },
+ "axis": {
+  "file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt",
+  "fit": "shared sign-aligned axis, last-prompt-token residual locus, 71 self-labelled contrast records (41 refuse / 30 obey), Qwen/Qwen3-4B-Instruct-2507 @ cdbee75f17c0"
+ },
+ "arms": {
+  "s15-l935": {
+   "file": "q3-4b-s15-l935.gguf",
+   "sha256_prefix_16": "01a3f3904c135eed",
+   "sides": [
+    "o_proj",
+    "mlp.down_proj"
+   ],
+   "layers": "9-35",
+   "scale": 1.5,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "s20-l935": {
+   "file": "q3-4b-s20-l935.gguf",
+   "sha256_prefix_16": "89cd5170fcc5b261",
+   "sides": [
+    "o_proj",
+    "mlp.down_proj"
+   ],
+   "layers": "9-35",
+   "scale": 2.0,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "attn-l935": {
+   "file": "q3-4b-attn-l935.gguf",
+   "sha256_prefix_16": "f338125c4b6de55f",
+   "sides": [
+    "o_proj"
+   ],
+   "layers": "9-35",
+   "scale": 2.0,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "attn15-l935": {
+   "file": "q3-4b-attn15-l935.gguf",
+   "sha256_prefix_16": "46ec6b7534601e0c",
+   "sides": [
+    "o_proj"
+   ],
+   "layers": "9-35",
+   "scale": 1.5,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "attn30-l935": {
+   "file": "q3-4b-attn30-l935.gguf",
+   "sha256_prefix_16": "2eaf7e073b69aae8",
+   "sides": [
+    "o_proj"
+   ],
+   "layers": "9-35",
+   "scale": 3.0,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "ffn10-l935": {
+   "file": "q3-4b-ffn10-l935.gguf",
+   "sha256_prefix_16": "53823a8bb86813e2",
+   "sides": [
+    "mlp.down_proj"
+   ],
+   "layers": "9-35",
+   "scale": 1.0,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  },
+  "ffn15-l935": {
+   "file": "q3-4b-ffn15-l935.gguf",
+   "sha256_prefix_16": "eb80e83d7c2610aa",
+   "sides": [
+    "mlp.down_proj"
+   ],
+   "layers": "9-35",
+   "scale": 1.5,
+   "axes_file": "/mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt"
+  }
+ },
+ "note": "every arm is the same axis with a different footprint/scale; layers outside the footprint are byte-identical to the base (spanfit reports all_other_bytes_verbatim)"
+}
