@@ -1,0 +1,29 @@
+{
+ "capability_passed": 73,
+ "completion_tokens_total": 19259,
+ "invalid": 0,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "q25b1k-josiefied",
+ "max_tokens": 1024,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config (METHODOLOGY R9). Rows whose status is not ok never count as a pass.",
+ "port": 8134,
+ "predictions": "/mnt/ssd/hermes/cache/scratch/probes/capq25b1k/josiefied/predictions.jsonl",
+ "rows": 222,
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 131.0,
+ "serve_config": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024",
+ "serve_structured": {
+  "ctx": 8192,
+  "cuda": true,
+  "jinja": true,
+  "max_tokens": 1024,
+  "parallel": 4,
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

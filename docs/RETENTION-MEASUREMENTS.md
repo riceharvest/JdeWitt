@@ -71,3 +71,11 @@ in the edit):
   why `capability_format_audit.py` exists: strict, computed-anywhere,
   format-following and truncation are four different numbers and only the first
   one used to be reported.
+* `score-compare` and `suites-compare` now refuse to pair two prediction
+  directories whose recorded wave manifests disagree on context split, slot
+  count, generation cap, temperature, chat templating or suite, and print the
+  two configs plus a mismatch flag when `--allow-config-mismatch` overrides it.
+  The artifact changing (adapter, merged gguf, scale) is the point of a
+  before/after pair, so it is deliberately not compared. Each wave writes its
+  own `wave.json`; the three directories here carry theirs, so this table is
+  self-describing and the gate proves it passes.

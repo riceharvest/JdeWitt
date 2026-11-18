@@ -277,12 +277,16 @@ def main():
     pprune.add_argument('registry',type=Path)
     pprune.add_argument('--execute',action='store_true')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
+    compare.add_argument('--allow-config-mismatch',action='store_true',
+        help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
     compare.add_argument('suite',type=Path)
     compare.add_argument('before',type=Path)
     compare.add_argument('after',type=Path)
     compare.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     compare.add_argument('--kind',choices=['all','refusal','math','code','harmless'],default='all',help='Restrict the paired set to one prompt kind; math/code is the retention axis')
     scmp2=sub.add_parser('suites-compare',help='Several score-compare families with Holm-adjusted sign-test p-values so a lucky suite cannot hide the family-wise cost; no models')
+    scmp2.add_argument('--allow-config-mismatch',action='store_true',
+        help='pass through to each score_compare (R9: mismatched serve configs are not comparable)')
     scmp2.add_argument('families',type=Path,nargs='+',metavar='SUITE BEFORE AFTER ...')
     scmp2.add_argument('--pass-on',choices=['compliance','compliance+partial'],default='compliance')
     scmp2.add_argument('--kind',choices=['all','refusal','math','code','harmless'],default='all',help='Restrict every family to one prompt kind; math/code is the retention axis')
@@ -448,10 +452,10 @@ def main():
             result=score_sensitivity(args.directory,args.min_confidences or (0.5,0.7,0.9))
         elif args.command=='score-compare':
             from .agent import score_compare
-            result=score_compare(args.suite,args.before,args.after,args.pass_on,args.kind)
+            result=score_compare(args.suite,args.before,args.after,args.pass_on,args.kind,args.allow_config_mismatch)
         elif args.command=='suites-compare':
             from .agent import suites_compare
-            result=suites_compare(args.families,args.pass_on,args.kind)
+            result=suites_compare(args.families,args.pass_on,args.kind,args.allow_config_mismatch)
         elif args.command=='gguf-inspect':
             from .agent import gguf_inspect
             result=gguf_inspect(args.file,args.other)

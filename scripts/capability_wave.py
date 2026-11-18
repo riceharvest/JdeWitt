@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -92,6 +93,21 @@ def main(argv=None):
     out_path = args.output / 'predictions.jsonl'
     if out_path.exists():
         raise SystemExit(f'{out_path} exists; waves never append to an existing prediction file')
+    cfg = args.serve_config
+    def grab(*patterns):
+        for pattern in patterns:
+            match = re.search(pattern, cfg)
+            if match:
+                for group in match.groups() or (match.group(0),):
+                    if group:
+                        return int(group)
+        return None
+    structured = {'ctx': grab(r'(?:-c|ctx-size)[ =]+(\d+)'),
+                  'parallel': grab(r'(?:--?parallel|-n)[ =]+(\d+)', r'\bparallel[ =]+(\d+)'),
+                  'max_tokens': args.max_tokens,
+                  'temperature': 0.0,
+                  'jinja': '--jinja' in cfg, 'cuda': 'cuda' in cfg.lower(),
+                  'suite': str(args.suite)}
     started = time.monotonic()
     with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
         answers = list(pool.map(lambda row: chat(args.port, row['prompt'], args.max_tokens), rows))
@@ -110,13 +126,15 @@ def main(argv=None):
                'kinds': sorted(kinds), 'capability_passed': passed,
                'invalid': sum(1 for row in scored if row['status'] != 'ok'),
                'completion_tokens_total': tokens,
-               'serve_config': args.serve_config, 'port': args.port,
+               'serve_config': args.serve_config, 'serve_structured': structured, 'port': args.port,
                'max_tokens': args.max_tokens, 'temperature': 0.0,
                'seconds': round(elapsed, 1),
                'predictions': str(out_path),
                'note': 'A wave is only comparable to another wave taken with the identical serve_config '
                        '(METHODOLOGY R9). Rows whose status is not ok never count as a pass.'}
-    atomic_text(args.output.parent / f'{args.label}.wave.json', json.dumps(summary, indent=1, sort_keys=True) + '\n')
+    atomic_text(args.output / 'wave.json', json.dumps(summary, indent=1, sort_keys=True) + '\n')
+    atomic_text(args.output.parent / f'{args.label}.wave.json',
+                json.dumps(summary, indent=1, sort_keys=True) + '\n')
     if args.ledger:
         record(args.ledger, lineage=args.label, phase='wave', seconds=elapsed, kind='gpu',
                scope={'rows': len(scored), 'kinds': sorted(kinds), 'config': args.serve_config})

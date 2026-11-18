@@ -321,7 +321,43 @@ def row_label(row):
     return str((row.get('judgment') or {}).get('verdict'))
 
 
-def score_compare(suite,before,after,pass_on='compliance',kind='all'):
+def read_wave(directory):
+    """The serve manifest a wave wrote beside its predictions, if any.
+
+    A wave is only comparable to another wave taken at the identical serve_config
+    (METHODOLOGY R9). The tool refuses to mix them silently: the same bytes scored
+    differently at two contexts and a generation cap shorter than a model's
+    verbosity scores truncation as capability loss.
+    """
+    path = Path(directory) / 'wave.json'
+    if not path.is_file():
+        return None
+    try:
+        value = json.loads(path.read_text())
+    except json.JSONDecodeError:
+        raise ValueError(f'{path} is not valid JSON')
+    return value
+
+
+def wave_mismatch(before, after):
+    """Decoding and batching fields that make two waves incomparable.
+
+    The artifact differing (an adapter, a merged gguf, a scale) is the point of a
+    before/after pair, so the free-form serve_config string is never compared.
+    What must match is everything that can change a greedy row's answer: context
+    split across slots, slot count, the generation cap, temperature, chat
+    templating and the suite itself.
+    """
+    if not before or not after:
+        return None
+    left, right = before.get('serve_structured') or {}, after.get('serve_structured') or {}
+    fields = ('ctx', 'parallel', 'max_tokens', 'temperature', 'jinja', 'cuda', 'suite')
+    diff = {field: (left.get(field), right.get(field)) for field in fields
+            if field in left and field in right and left[field] != right[field]}
+    return diff or None
+
+
+def score_compare(suite,before,after,pass_on='compliance',kind='all',allow_config_mismatch=False):
     """Paired offline comparison of two saved scoring directories over one suite. No models run.
 
     ``kind`` restricts the paired set to one prompt kind so a capability (retention)
@@ -349,6 +385,12 @@ def score_compare(suite,before,after,pass_on='compliance',kind='all'):
         return row_label(row)
 
     a,b=scoring(before),scoring(after)
+    wave_before,wave_after=read_wave(before),read_wave(after)
+    mismatch=wave_mismatch(wave_before,wave_after)
+    if mismatch and not allow_config_mismatch:
+        raise ValueError('waves were taken at different serve configs (METHODOLOGY R9): '
+                         + '; '.join(f'{key} {left!r} vs {right!r}' for key,(left,right) in mismatch.items())
+                         + ' — pass --allow-config-mismatch to compare them anyway')
     shared=sorted(pid for pid in set(a)&set(b) if kind=='all' or a[pid].get('kind')==kind)
     if not shared:
         raise ValueError(f'The two scoring directories share no prompt ids{" of kind "+kind if kind!="all" else ""}')
@@ -404,11 +446,16 @@ def score_compare(suite,before,after,pass_on='compliance',kind='all'):
                'after_wilson':wilson_interval(ap,at) if at else None,
                'effect_size_cohens_h':cohens_h(bp,bt,ap,at) if bt and at else None}
         per_kind[name]=entry
-    return {'suite':str(suite),'before':str(before),'after':str(after),'pass_on':pass_on,
+    report={'suite':str(suite),'before':str(before),'after':str(after),'pass_on':pass_on,
             'kind_filter':kind,'shared_prompts':len(shared),
             'before_summary':before_summary,'after_summary':after_summary,
             'effect_size_cohens_h':effect,
             'per_kind':per_kind,
+            'wave_configs':{'before':(wave_before or {}).get('serve_config'),
+                            'after':(wave_after or {}).get('serve_config'),
+                            'mismatch':bool(mismatch),
+                            **({'note':'different serve configs; numbers are not comparable '
+                                      'as a before/after pair (R9)'} if mismatch else {})},
             'unit_level':{'unit':'authored family_id, falling back to prompt id when absent',
                           'improved':improved,'regressed':regressed,'mixed':mixed,
                           'sign_test':family_sign_test(improved,regressed)},
@@ -416,9 +463,10 @@ def score_compare(suite,before,after,pass_on='compliance',kind='all'):
             'flips':flips[:200],'flip_count':len(flips),'list_cap':200,
             'scoring_modes':sorted(modes),
             'note':'Comparison of saved verdict files only; no inference was run. Wording-only refusal-check is not semantic compliance. The aggregate rate spans every kind in the shared set: quote per_kind for a capability (retention) number, or restrict with kind.'}
+    return report
 
 
-def suites_compare(families, pass_on='compliance', kind='all'):
+def suites_compare(families, pass_on='compliance', kind='all', allow_config_mismatch=False):
     """Paired comparisons across several (suite, before, after) families with
     Holm-Bonferroni adjusted sign-test p-values.
 
@@ -435,7 +483,8 @@ def suites_compare(families, pass_on='compliance', kind='all'):
     per_family = []
     for index in range(0, len(families), 3):
         suite, before, after = families[index:index + 3]
-        result = score_compare(suite, before, after, pass_on, kind)
+        result = score_compare(suite, before, after, pass_on, kind,
+                               allow_config_mismatch=allow_config_mismatch)
         per_family.append({
             'suite': str(suite), 'before': str(before), 'after': str(after),
             'shared_prompts': result['shared_prompts'],
