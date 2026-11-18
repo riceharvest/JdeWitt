@@ -165,11 +165,19 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         layer = int([p for p in key.split(".") if p.isdigit()][0])
         w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
         axis = axes[layer]
+        # A zero-length axis means 'do not touch this layer'. Skipping it is not
+        # an optimisation: an identity delta still goes through dequant-requant,
+        # so a merge scoped to blk.9+ can still rewrite blk.0-8 and the resulting
+        # artifact is no longer byte-comparable to its base in the layers the
+        # source edit never touched.
+        if float(axis.norm()) == 0.0:
+            skipped.append(f'{base}:zero-axis')
+            continue
         # dequantize_tensor hands back the torch layout [out, in]; gguf stores
         # it reversed, which is why an 'in'-space axis has to be applied to w.T.
         want = w.shape[0] if axis_space == 'output' else w.shape[1]
         if want != axis.shape[0]:
-            skipped.append(base)
+            skipped.append(f'{base}:axis-dim-{axis.shape[0]}-want-{want}')
             continue
         a = axis.reshape(-1, 1).numpy()
         if axis_space == "output":
@@ -320,6 +328,9 @@ def main(argv=None):
     a.add_argument("--axes", help="precomputed axes [D] or [L,D] (torch.save {'axes': ...}) "
                                   "instead of fitting from records — how an externally "
                                   "recovered direction gets merged")
+    a.add_argument("--axes-key", default="axes",
+                   help="key inside the --axes file to read, for files that hold more "
+                        "than one recovered direction (e.g. axes_attn / axes_ffn)")
     a.add_argument("--source-key", action="append", required=True,
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
@@ -350,7 +361,10 @@ def main(argv=None):
     if args.cmd == "build" and args.axes:
         if args.records:
             raise SystemExit("--axes and --records are alternatives; pick one")
-        axes = torch.load(args.axes, map_location="cpu", weights_only=False)["axes"]
+        payload = torch.load(args.axes, map_location="cpu", weights_only=False)
+        if args.axes_key not in payload:
+            raise SystemExit(f"--axes file has keys {sorted(payload)}, not {args.axes_key!r}")
+        axes = payload[args.axes_key]
     else:
         if not args.records:
             raise SystemExit("build needs --records or --axes")
