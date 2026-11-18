@@ -1,0 +1,31 @@
+{
+ "scope": "authored capability retention on the three q3 head-to-head artifacts (180 en maths + 61 code, shipped deterministic scorers, zero judge calls)",
+ "date_utc": "2026-11-18",
+ "suite": "verification/capability/capability-run-en.jsonl (241 rows)",
+ "serve_config": "-c 8192 --parallel 4 --jinja --no-webui port 8134, cap 1024, greedy (2048 tokens per slot)",
+ "gpu": "RTX 3060 12GiB, one server at a time",
+ "runner": "scripts/capability_wave.py then python -m jdewitt.cli score-compare --kind math / --kind code; paired stats from scripts/capability_format_audit.py",
+ "artifacts": {
+  "q3base": {
+   "sha256_prefix_16": "dc4ae2660e73cc2a"
+  },
+  "q3oracle": {
+   "sha256_prefix_16": "419a22047e56847f"
+  },
+  "q3shl10": {
+   "sha256_prefix_16": "18a9e9ea043254da",
+   "edit": "shared contrast axis, last-prompt-token locus, output axis space, scale 1.0, all 36 layers"
+  }
+ },
+ "seconds": {
+  "q3base": 216.4,
+  "q3oracle": 220.6,
+  "q3shl10": 126.7
+ },
+ "invalid_rows": {
+  "q3base": 0,
+  "q3oracle": 0,
+  "q3shl10": 3
+ },
+ "spot_read": "three maths rows the edit broke, read in full against the base answer"
+}

@@ -237,6 +237,23 @@ def gguf_targets(gguf_in: str, max_probe_layers: int = 512) -> dict:
                     "merge time (--axis-space); nothing is skipped quietly."}
 
 
+def parse_layer_ids(spec: str) -> list[int]:
+    """'9-35' -> [9..35], '9-20,30' -> [9..20, 30]; used by --only-layers."""
+    ids = []
+    for part in spec.split(','):
+        part = part.strip()
+        if not part:
+            continue
+        if '-' in part:
+            start, end = part.split('-', 1)
+            ids += list(range(int(start), int(end) + 1))
+        else:
+            ids.append(int(part))
+    if not ids:
+        raise SystemExit(f"--only-layers {spec!r} names no layers")
+    return sorted(set(ids))
+
+
 def target_source_keys(n_layers: int, out_key_suffixes: tuple[str, ...]) -> list[str]:
     """HF source keys for every output-side projection found under decoder layers."""
     keys = []
@@ -334,6 +351,11 @@ def main(argv=None):
     a.add_argument("--source-key", action="append", required=True,
                    help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
+    a.add_argument("--only-layers",
+                   help="restrict the '*' expansion to these layers: '9-35' or "
+                        "'9-20,30'. The published oracle leaves blk.0-8 untouched; "
+                        "whether the layers below an edit matter is a build flag, not "
+                        "a guess, and this makes it testable")
     a.add_argument("--shape", choices=("perlayer", "shared"), default="perlayer")
     a.add_argument("--axis-space", choices=("input", "output"), default="output",
                    help="output (default): axis lives in the residual dim W writes "
@@ -386,10 +408,16 @@ def main(argv=None):
         print(json.dumps(rep))
         return
 
+    if args.only_layers:
+        ids = parse_layer_ids(args.only_layers)
+        if ids and any(i >= args.layers for i in ids):
+            raise SystemExit(f"--only-layers {ids} reaches past --layers {args.layers}")
+    else:
+        ids = list(range(args.layers))
     keys = []
     for k in args.source_key:
         if "*" in k:
-            keys += [k.replace("*", str(L)) for L in range(args.layers)]
+            keys += [k.replace("*", str(L)) for L in ids]
         else:
             keys.append(k)
     if not keys:

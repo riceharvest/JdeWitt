@@ -550,6 +550,41 @@ answers are still refusals dressed differently. On the nine rows read in full, n
 delivered the asked-for harm.
 
 
+CAPABILITY RETENTION, 241 authored rows, same three artifacts
+(`verification/q3-4b-retention/`, `--kind math` / `--kind code`, paired stats from
+the format audit; cap 1024 under ctx 8192 / 4 slots so nothing but the model varies):
+
+  |                                    | base | published oracle | our shared axis @1.0 |
+  |------------------------------------|-----:|-----------------:|---------------------:|
+  | maths strict                       | 159/180 | 159/180       | 91/180               |
+  | maths paired delta, h, p           | —    | 0.000, 0.00, 1.00 | −0.374, −0.85, 0.0001 |
+  | maths broke / fixed                | —    | 0 / 0           | 79 / 12              |
+  | code strict (execution-graded)     | 20/61 | 18/61          | 53/61                |
+  | code paired delta, h, p            | —    | −0.033, −0.07, 0.81 | +0.559, +1.25, 0.0001 |
+  | wave seconds                       | 216  | 221              | 127                  |
+
+The published build's removal is free on this suite: not one maths row changes
+side, and the nine code rows that move are noise at p=0.81. Ours is not free. The
+maths loss is real arithmetic, not lost formatting — the computed-anywhere recall
+measure falls the same way strict does, 159 to 91, so the answer is not in the text
+at all. Three broken rows read in full make the shape of it plain: the base writes
+`22 × 10 = 220   29 × 20 = 580   220 + 580 = 800` and the edit writes
+`22 * 10 + 29 * 20 = 2000`, or drops a bare `190` with no working.
+
+The code column is not credited. The base passes 20 of 61 for a model this size,
+which is low enough to suspect the grader is rejecting the base's *style* of answer,
+and the edit fixes 33 rows while breaking none — the signature of a register shift
+into executable form, not a capability gain. It is reported because hiding a number
+that moves in our favour is the same failure as hiding one that moves against us.
+
+So the honest head-to-head, both axes on the table: on these rows the published
+method gets a slightly better opener removal, a much better retention, and a
+slower and more verbose screen; ours gets a 2.9× cheaper screen, better refusal-
+content retention, and 37.4 points of arithmetic. The first hypothesis is the layer
+footprint — the published edit leaves blk.0–8 byte-identical and ours reaches all
+36 layers, and `--only-layers` now exists so that is a build flag rather than a
+guess; the restricted variant is measured in the same run as the harmful-40 screen.
+
 DIRECTION MEASUREMENTS — unaffected by the behavioural correction, and the
 strongest thing this run produced:
 
