@@ -570,3 +570,19 @@ Stopped mid-lane, stated exactly so nothing is cited that does not exist:
   non-protective families (generation only), spanfit axes on the pair diff,
   merge, one cert wave + this same read. Self-harm/CP-adjacent families stay
   out of jailbreak capture permanently.
+- Jailbreak-pair capture, first round (3060, base q8, 174 requests, 50k tokens):
+  story + redteam frames yield 2 real deliveries of 58 rows; the assistant-
+  prefill seed frame lifts shape-compliant to 17/58 but half are seeded
+  evasions ('Sure — here is exactly how: I will not provide…'). Real
+  delivery pairs ≈ 3–5/58; prompt-side jailbreak of q3-4B greedy is a low-
+  yield data source. Two instrument findings: (1) the same false-compliance
+  the word checker shows, the jailbreak side shows it too — 9/11 word-clean
+  answers decline by shape; (2) DEFECT: shape.classify's OPENER is ^-anchored
+  so a refusal buried after a compliant-looking prefix (seed echo) reads
+  'other'; DECLINE must also catch embedded 'i can't assist|i won't|i cannot'
+  before any pair corpus gets fit from jailbreak captures. Next decision
+  point is CPU-only: recover residuals from the real-delivery pairs and check
+  cos(pair-axis, oracle axis); alignment near 1 kills the rank-1 delivery
+  hypothesis, orthogonality justifies one merge test. Higher-yield compliant
+  sides are a data-sourcing task (pinned public advbench response mirrors or
+  GCG adversarial suffixes), not another frame round.
