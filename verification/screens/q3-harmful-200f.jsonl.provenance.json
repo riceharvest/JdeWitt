@@ -1,0 +1,8 @@
+{
+  "seed": "family-first-from-800",
+  "rule": "round-robin one row per family until N",
+  "rows": 200,
+  "families": 171,
+  "source": "verification/screens/q3-harmful-800.jsonl",
+  "scope": "family-first 200-row search suite: maximal family coverage of the pinned 800-row screen"
+}

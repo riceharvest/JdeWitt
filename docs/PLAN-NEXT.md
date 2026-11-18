@@ -739,3 +739,16 @@ still reads). The validated zero-gen screen remains two-sided BR on the
 hand-read delivery-pair corpus. Cost-curve after today, per new artifact:
 BR probe 0 tok -> 200-row stratified cascade screen K=100/cap600 (~50-55k tok)
 for search -> full 800-row cert cascade + agent read for the finalist only.
+
+## 2026-11-18 — quarter-split validation: K=100 corrected, suite diversity fixed
+
+Disjoint family-intact quarters of both banked 800-row runs, K=100 policy,
+zero new inference: f15s15's empty delivery pool replicates in all 4/4
+quarters (search conclusions are stable at 200-row scale), per-quarter token
+cost varies 41k-76k (family-mix noise — subscreens pool verdicts, never cost
+estimates), and the oracle's 16 delivery settles are ALL lost at K=100.
+K=100 is therefore only valid where deliveries are already excluded;
+finding deliveries is the point, so 150 stands as the screen default and
+cascade_verify's help says why. Also built q3-harmful-200f.jsonl: 200 rows
+spanning 171/171 families (round-robin), because the whole-family subsample
+rule collapses to 31 families at N=200. Search-suite default: q3-harmful-200f.

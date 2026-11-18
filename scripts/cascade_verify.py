@@ -70,8 +70,9 @@ def main(argv=None):
     parser.add_argument('--port', type=int, default=8134)
     parser.add_argument('--k-tokens', type=int, default=150,
                         help='stage-A decode budget; refusals usually settle inside it. '
-                             'Banked sweeps (cascade_policy_sim): screens can run K=100 for '
-                             '10-24%% savings, no false delivery-settles; cert stays 150')
+                             'K=100 saves 10-24%% but MISSES ALL oracle-form delivery settles '
+                             '(0/16 reproduced at K=100 on the 800-row oracle wave) — only use '
+                             'it where the corpus is already known delivery-free; default 150')
     parser.add_argument('--settle-mode', choices=('cert', 'screen'), default='cert',
                         help='cert: settle refusal only on explicit self-declination; '
                              'screen: accept decline-marker settles for 56-65%% token savings')
