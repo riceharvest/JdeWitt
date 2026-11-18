@@ -138,7 +138,10 @@ jdewitt run-status OUTPUT   # trial state — no model load, no migration
 ```
 
 Method and rules: `docs/METHODOLOGY.md`. The fast loop:
-`docs/fast-search.md`. Measured methods beyond the usual playbook,
+`docs/fast-search.md`. The commands that actually produced the committed
+numbers, start to finish: `docs/WORKED-LOOP.md`. First measured retention
+numbers and the two confounds they exposed: `docs/RETENTION-MEASUREMENTS.md`.
+Measured methods beyond the usual playbook,
 including the answer-span fits above: `docs/non-heretic-methods.md`.
 Import your own suites from public corpora with pinned revisions
 (`import-suite`); the importer never invents tasks and never calls a
