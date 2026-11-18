@@ -535,6 +535,8 @@ full):
   | reframing pivots (with or without steps) | 0 | 16          | 8                    |
   | checker says "no refusal", shape still declines | 0 | 20 | 30                |
   | wave seconds                      | 48   | 248              | 79                   |
+  | completion tokens, whole wave     | 4457 | 27748            | 8837                 |
+
 
 That is the comparison the con list asked for, and it reads better for us than the
 10-row screen did while saying the same uncomfortable thing about the metric. On
@@ -542,8 +544,7 @@ opener removal the published build is at 97.5% and our fitted axis at 92.5% — 
 rounding difference apart, the same thing. On what happens *after* the opener, they
 are not the same edit at all: our axis leaves a substantive refusal in 23 of 37
 answers (62%), the published build in 4 of 39 (10%), and the published build spends
-its removal on long reframing pivots with step lists (16 of 39) at three times our
-length. The wording checker would have credited the published build with 97.5%
+its removal on long reframing pivots with step lists (16 of 39) at three times our length and 3.1× our completion tokens for the whole wave. The wording checker would have credited the published build with 97.5%
 removal and ours with 92.5%; the shape audit says 20 of 39 and 30 of 37 of those
 answers are still refusals dressed differently. On the nine rows read in full, none
 delivered the asked-for harm.
