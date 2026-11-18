@@ -65,27 +65,37 @@ filter on top of the model; it is an excision from inside it.
 ## IV. The Evidence
 
 Measured, pinned serve configs, merged artifacts — not slides. The full
-honesty discipline lives in `docs/METHODOLOGY.md`; these are the
-certified rows:
+honesty discipline lives in `docs/METHODOLOGY.md`, and `scripts/evidence_map.py`
+turns the mapping between a sentence and the file that produced it into an exit
+code, so a number cannot outlive its artifact silently (`--check` fails the build
+if an in-clone claim names a file that isn't there).
 
-- **Qwen2.5-1.5B-Instruct.** Shared-axis fit: 40/40 on the harmful-40
-  suite, 24/24 on *held-out* refusal families the fit never saw,
-  harmless suite clean. The same fit reproduced a published oracle
-  removal on an untouched base model — without the oracle.
-- **MiniCPM-V 4.7.** Per-layer answer-span fit: 36/40, reproducing a
-  published oracle's own ceiling from label-only tool data, with the
-  leftovers named honestly. Null-space-protected and shape-interpolated
-  variants measured against the same ceiling: both null on removal,
-  both documented, both informative.
-- **Spark-X2.6-1.7B and LFM3-1.7B.** Refusal openers gone 40/40 on
-  both, harmless clean, style drifts recorded where they occur.
+Currently checkable in a fresh clone:
+
 - **Qwen3-4B, head-to-head with a published same-base removal.** Read
   this one against us: on 241 authored capability rows the published
   build loses nothing measurable, while our fitted shared axis has no
   measured point on that frontier — the arms that remove every opener
-  do it by shrinking maths answers to 31 characters. The frontier table
-  and the four instruments this run forced into the tool are in
-  `docs/non-heretic-methods.md`.
+  do it by shrinking maths answers to 31 characters. The frontier table,
+  the 20-family reading, and the four instruments this run forced into
+  the tool are in `docs/non-heretic-methods.md`.
+- **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
+  three artifacts: base 98/241, a published third-party ablation 81/241,
+  our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost
+  significant only on the widened slice. Raw generations are in
+  `verification/retention-q25-code61/`.
+- **The two instrument gates.** A wave refuses to run against a port
+  serving a different file than it names, and a screen where nothing
+  generated exits non-zero as `UNMEASURED` instead of reporting a
+  removal count. Refusal text and the dead screen are committed under
+  `verification/instrument-gates/`.
+
+Held for honesty, not as evidence: the **Qwen2.5-1.5B 40/40 + 24/24
+held-out**, the **MiniCPM-V 4.7 36/40**, and the **Spark-X2.6-1.7B /
+LFM3-1.7B** rows were taken before the 2026-11-17 row-kind scoring fix, and
+their raw harmful-suite answer rows are not in this clone — for the Spark and
+LFM pair there is no committed artifact at all. They stay named because they
+happened on this machine, and they stay out of any claim the tool makes.
 
 What has *not* been established stays unstated: universal architecture
 support, zero capability loss, beating every competitor. Say the word

@@ -1,0 +1,19 @@
+# Evidence map
+
+Every sentence in README section IV that states a number, mapped to the artifact that produced it. 'in-clone' means a fresh clone can reproduce or at least inspect the raw rows; anything else is labelled by why it is not.
+
+| status | claim | artifacts named | command |
+|--------------------------------------------------------------------------------------------------------|
+| in-clone | Qwen3-4B fitted arms do not reach the published same-base removal | `verification/screens/advbench-40.jsonl`, `verification/q3-4b-harmful40/q3oracle/predictions.jsonl`, `verification/q3-4b-harmful40/q3shl10l935/predictions.jsonl`, `verification/q3-4b-retention/q3base/predictions.jsonl`, `verification/q3-4b-retention/q3shl10l935/predictions.jsonl`, `verification/q3-4b-oracle-control/shape-audit.json`, `verification/q3-4b-fit-scaling.json` | `.venv/bin/python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair "oracle=verification/q3-4b-harmful40/q3oracle:verification/q3-4b-retention/q3oracle" --pair "l935=verification/q3-4b-harmful40/q3shl10l935:verification/q3-4b-retention/q3shl10l935"` |
+| in-clone | the oracle edit is a shared rank-1 axis confined to blk.9-35, and the fitted axis only reaches 0.5056 of it | `verification/q3-4b-fit-scaling.json`, `verification/q3-4b-oracle-control/shape-audit.json` |  |
+| | ↳ the axes tensors themselves are 90 MB captures in scratch, not in the clone; the recovered direction is reproducible from the published GGUF with gguf-tensor-diff. | | |
+| in-clone | Qwen2.5-1.5B capability retention: base 98/241, published third-party ablation 81/241, SAS@1.5 184/241 | `verification/retention-q25-code61/base/predictions.jsonl`, `verification/retention-q25-code61/sas15/predictions.jsonl`, `verification/retention-q25-code61/josiefied/predictions.jsonl`, `verification/retention-q25-code61/format-audit.json`, `verification/retention-q25-code61/provenance.json` | `.venv/bin/python scripts/capability_format_audit.py --base-dir verification/retention-q25-code61/base --edit-dir verification/retention-q25-code61/sas15 --suite verification/capability/capability-run-en.jsonl` |
+| in-clone | a wave cannot report a number for an artifact the port is not serving, and an empty screen is not a result | `verification/instrument-gates/NOTES.md`, `verification/instrument-gates/wrong-operand-refusal.txt`, `verification/instrument-gates/unmeasured-because-cap64.wave.json` | `.venv/bin/python scripts/capability_wave.py --help` |
+| pre-2026-11-17-scoring-fix | Qwen2.5-1.5B shared-axis fit: 40/40 on the harmful-40 suite, 24/24 on held-out refusal families, harmless clean | *(none)* |  |
+| | ↳ Taken before the row-kind scoring fix, and the raw harmful/holdout answer rows are not in this clone. The certification is void as a number; the retained artifact is the capability-retention wave above, which measures what happened to maths and code, not whether refusals left. | | |
+| pre-2026-11-17-scoring-fix | MiniCPM-V 4.7 per-layer answer-span fit: 36/40, plus null-space-protected and shape-interpolated variants | `verification/minicpm-v47/summary.json` |  |
+| | ↳ The committed MiniCPM directory contains serving checks, GGUF digests and a baseline refusal screen only. The removal screens behind 36/40 predate the fix and are not in the clone, so the number is quoted in history, not as current evidence. | | |
+| no-artifact-in-clone | Spark-X2.6-1.7B and LFM3-1.7B refusal openers gone 40/40, harmless clean, style drift recorded | *(none)* |  |
+| | ↳ No wave, screen or provenance file for either model is in this repository or on the lab disk. Treat as unevidenced until re-run; it is a candidate result, not a certified one. | | |
+
+7 claims: 4 in-clone, 2 pre-fix, 1 with no artifact.
