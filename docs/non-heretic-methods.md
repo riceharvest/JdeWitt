@@ -571,6 +571,12 @@ at all. Three broken rows read in full make the shape of it plain: the base writ
 `22 × 10 = 220   29 × 20 = 580   220 + 580 = 800` and the edit writes
 `22 * 10 + 29 * 20 = 2000`, or drops a bare `190` with no working.
 
+The whole wave also spent 21993 completion tokens against the base's 41297 and the
+published build's 43057 — a 47% cut in generated text, which is the same fact the
+broken maths rows show: the edit does not lose the arithmetic, it stops short of
+showing it and then misadds in one line. A direction that keeps the multi-step
+chain would be the obvious next experiment.
+
 The code column is not credited. The base passes 20 of 61 for a model this size,
 which is low enough to suspect the grader is rejecting the base's *style* of answer,
 and the edit fixes 33 rows while breaking none — the signature of a register shift
