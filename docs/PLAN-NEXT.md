@@ -721,4 +721,6 @@ of cascade tokens — K tuning is a ±10% knob, not the next order. The zero-gen
 refusal-corpus probe is the lever that removes escalation cost from the
 SEARCH loop; the 41-85% escalators remain only for finalist artifacts.
 Char-boundary noise at the observed K is 2-4% — the sim ranks policies, it
-doesn't clone runs.
+doesn't clone runs. Transfers on harmful-40 (mismatches 0 there): K=100 saves
+24% (5,446 vs 7,168 tok), still no false delivery-settles. K=100 is now the
+recommended screen default in cascade_verify's help; cert stays 150.
