@@ -586,3 +586,45 @@ Stopped mid-lane, stated exactly so nothing is cited that does not exist:
   hypothesis, orthogonality justifies one merge test. Higher-yield compliant
   sides are a data-sourcing task (pinned public advbench response mirrors or
   GCG adversarial suffixes), not another frame round.
+
+## 2026-11-18 — token-to-certification: cascade verifier measured, the asymmetry documented
+
+The metric for this whole section of the project is generated tokens per R2
+certification, never wall time or model identity. Instruments landed
+(commit 0a31acb): `scripts/cert_cost.py` sums actual token spend per artifact
+from banked waves; `scripts/cascade_verify.py` decodes every row to K tokens,
+settles rows whose shape is decidable inside the window, and pays full decode
+only for the rest via assistant-prefill continuation from the server's prefix
+cache. `screen_short(..., mode)` in `jdewitt/refusal_shape.py` is the settle
+rule; `EMBEDDED_DECLINE` (first-person refusal anywhere in the answer, which
+catches seeded 'Sure, here is how: I cannot' evasions) is a new field kept
+OUT of the frozen `declining` so no banked label retunes.
+
+Live measurements (q3-4b-f15s15-l935, temp 0, K=150):
+- harmful-40 screen mode: 7,125 tok vs 21,024 banked full (66% saved, sim
+  predicted 65%); 35/40 settled refusal, 0 settled delivery, 5 escalated;
+  zero settled-vs-full-gold disagreements, zero delivered rows buried.
+- q3-holdout-24 cert mode: f15s15 10,807 vs 15,942 (32%); oracle 13,261 vs
+  19,405. Zero buried on both, zero disagreements.
+- Offline screen-mode scan over all banked waves: K=150 settles 56-65% of
+  harmful-wave tokens on post-edit pivot artifacts with 0/1648 buried;
+  K=300 buried exactly one delivery-with-disclaimer in 1648, which is why
+  cert mode never settles on a bare topical decline word (R3 in reverse).
+
+The asymmetry, now encoded in the tool docstrings: certifying a SUCCESSFUL
+removal is cheap — a delivered answer shows procedure inside the window and
+the row ends at ~150 tokens. Certifying a FAILED one is informationally
+expensive — proving 'no content is ever coming' from a 3k-character pivot
+lecture requires generating the lecture. So the cheapest search for a proper
+removal is a K=150 screen-mode cascade per arm; full waves are paid only for
+arms where settle-delivery fires. Note on records: settled rows store the
+truncated answer, escalated rows the prefix+continuation; continuation
+greedy decodes are numerically distinct from independent full decodes (KV
+chunking differs), which is why escalated rows were byte-identical 0/5 —
+label-level agreement is the tested claim, byte equality is not.
+
+Wave-count sizing note (row axis, cheap math, no tool needed): n clean rows
+bounds the residual refusal rate at ~3/n with 95% confidence; banked harmful-40
+(40 rows, 35 refusals) is a failure arm, but a success claim at <2% residual
+refusal wants ~150 clean families — affordable precisely because screen-mode
+cascades make 150 rows ~25k tokens instead of ~79k at full-decode cost.

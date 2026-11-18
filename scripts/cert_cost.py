@@ -35,7 +35,7 @@ def cost_of(d: Path) -> dict | None:
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or '').splitlines()[0])
     parser.add_argument('dirs', nargs='+', type=Path)
     parser.add_argument('--json', type=Path)
     args = parser.parse_args(argv)
