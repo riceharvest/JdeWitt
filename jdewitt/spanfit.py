@@ -137,15 +137,20 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None, scale: float = 1.0,
-                 axis_space: str = "input") -> dict:
+                 axis_space: str = "input", in_place: bool = False) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
-    source_keys are HF-style names ('model.layers.<L>.<suffix>'); each must resolve
-    to a gguf tensor whose input dim matches axes.shape[1]. Layout follows the
-    ggufio convention: file order = reversed logical dims, i.e. ggml [in,out].
+    source_keys are HF-style names ('model.layers.<L>.<suffix>') or, through
+    `name_map`, the artifact's own tensor names; each must resolve to a gguf
+    tensor whose input dim matches axes.shape[1]. Layout follows the ggufio
+    convention: file order = reversed logical dims, i.e. ggml [in,out].
+
+    in_place patches `gguf_in`'s own bytes (no copy) and leaves a revert sidecar
+    beside it; that is the path an agent should use on a model it already serves,
+    because the artifact is quantized in place and never re-quantized as a whole.
     """
     from .gguf_adapters import gguf_weight_shapes, resolve_gguf_names
-    from .ggufio import dequantize_tensor, edit_tensors
+    from .ggufio import dequantize_tensor, edit_tensors, edit_tensors_inplace
 
     t0 = time.monotonic()
     shapes = gguf_weight_shapes(gguf_in)
@@ -189,7 +194,13 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         else:
             wt = w.T
             deltas[base] = -(scale * (a @ (a.T @ wt))).T.astype(np.float32)
-    report = edit_tensors(gguf_in, gguf_out, deltas)
+    if in_place:
+        # One file, byte-level: the artifact keeps its quantization, its size and
+        # every offset it had; only the changed tiles move, and the sidecar keeps
+        # the pre-patch bytes so this is reversible.
+        report = edit_tensors_inplace(gguf_in, deltas, revert_path=str(gguf_in) + '.revert.npz')
+    else:
+        report = edit_tensors(gguf_in, gguf_out, deltas)
     report["skipped"] = skipped
     report["elapsed_s"] = round(time.monotonic() - t0, 1)
     return report
@@ -206,8 +217,21 @@ def gguf_targets(gguf_in: str, max_probe_layers: int = 512) -> dict:
     against the file itself, and the layer count is reported per suffix so a
     patched or partial artifact shows up as a mismatch instead of a silent skip.
     """
-    from .gguf_adapters import HF_TO_LLAMA, gguf_weight_shapes
+    from .gguf_adapters import HF_TO_LLAMA, WRITEBACK_TENSOR, discover_writeback_targets, gguf_weight_shapes
     shapes = gguf_weight_shapes(gguf_in)
+    # The generic view: which residual-write projections this artifact carries at
+    # its own hidden width. This is what `build --gguf-targets auto` uses, so an
+    # agent can look before it merges instead of reading architecture notes.
+    widths = {}
+    for name, dims in shapes.items():
+        suffix = name.rsplit('.', 2)[-2] if name.endswith('.weight') else ''
+        if len(dims) == 2 and WRITEBACK_TENSOR.match(suffix):
+            widths[int(dims[1])] = widths.get(int(dims[1]), 0) + 1
+    hidden = max(widths.items(), key=lambda item: item[1])[0] if widths else None
+    auto = discover_writeback_targets(shapes, hidden) if hidden else {'targets': {}, 'unmapped_writeback_width': []}
+    auto_view = {'hidden': hidden, 'layers': len(auto['targets']),
+                 'targets_per_layer': [len(names) for _, names in sorted(auto['targets'].items())][:4],
+                 'unmapped_width_tensors': auto['unmapped_writeback_width'][:8]}
     found, suffixes = {}, {}
     for candidate, suffix in HF_TO_LLAMA:
         name = f"blk.0.{suffix}.weight"
@@ -222,11 +246,11 @@ def gguf_targets(gguf_in: str, max_probe_layers: int = 512) -> dict:
                          "gguf_dims": [int(d) for d in dims]}
         suffixes[suffix] = count
     if not found:
-        return {"gguf": gguf_in, "targets": {},
+        return {"gguf": gguf_in, "targets": {}, "auto": auto_view,
                 "error": "no output-side projection this tool knows how to edit "
                          f"(looked for {', '.join(f'blk.N.{s}.weight' for _, s in HF_TO_LLAMA)})"}
     layers = min(suffixes.values())
-    return {"gguf": gguf_in, "targets": found,
+    return {"gguf": gguf_in, "targets": found, "auto": auto_view,
             "source_key": [v["source_key"] for v in found.values()],
             "layers": layers,
             "build_line": " ".join(f"--source-key {found[s]['source_key']}"
@@ -341,15 +365,25 @@ def main(argv=None):
     a = sub.add_parser("build", help="fit axes from records, write merged gguf")
     a.add_argument("--records", help="residual records to fit from (omit with --axes)")
     a.add_argument("--gguf-in", required=True)
-    a.add_argument("--out", required=True)
+    a.add_argument("--out", help="output gguf; omit with --in-place to patch --gguf-in itself")
+    a.add_argument("--in-place", action="store_true",
+                   help="patch --gguf-in's own bytes instead of writing a copy: the artifact you "
+                        "already serve is the artifact that changes, no new file, no requantization "
+                        "of the model. A .revert.npz sidecar records the pre-patch bytes of every "
+                        "tile written, and `gguf-revert` restores them")
+    a.add_argument("--gguf-targets", choices=("auto",), default=None,
+                   help="discover this artifact's residual-write projections from its own tensor "
+                        "names and hidden width; replaces --source-key (no per-model table, no "
+                        "hand-typed glob, works on architectures this repo has never seen)")
     a.add_argument("--axes", help="precomputed axes [D] or [L,D] (torch.save {'axes': ...}) "
                                   "instead of fitting from records — how an externally "
                                   "recovered direction gets merged")
     a.add_argument("--axes-key", default="axes",
                    help="key inside the --axes file to read, for files that hold more "
                         "than one recovered direction (e.g. axes_attn / axes_ffn)")
-    a.add_argument("--source-key", action="append", required=True,
-                   help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight)")
+    a.add_argument("--source-key", action="append", default=[],
+                   help="repeatable; '*' expands 0..NL-1 (e.g. model.layers.*.self_attn.o_proj.weight). "
+                        "Omit with --gguf-targets auto")
     a.add_argument("--layers", type=int, default=0, help="NL for '*' expansion")
     a.add_argument("--only-layers",
                    help="restrict the '*' expansion to these layers: '9-35' or "
@@ -387,6 +421,17 @@ def main(argv=None):
     if args.cmd == "targets":
         print(json.dumps(gguf_targets(args.gguf_in), indent=1))
         return
+
+    if args.cmd == "build":
+        if args.gguf_targets and args.source_key:
+            raise SystemExit("--gguf-targets auto replaces --source-key; pass one of them")
+        if not args.gguf_targets and not args.source_key:
+            raise SystemExit("build needs --gguf-targets auto or at least one --source-key; "
+                             "`python -m jdewitt.spanfit targets --gguf-in <file>` lists what an "
+                             "artifact carries")
+        if not args.in_place and not args.out:
+            raise SystemExit("build writes a new file: pass --out PATH, or --in-place to patch "
+                             "--gguf-in itself")
 
     t0 = time.monotonic()
     if args.cmd in ("build", "protect") and args.axes:
@@ -436,25 +481,49 @@ def main(argv=None):
         print(json.dumps(rep))
         return
 
+    layer_count = args.layers or (int(axes.shape[0]) if args.gguf_targets else args.layers)
     if args.only_layers:
         ids = parse_layer_ids(args.only_layers)
-        if ids and any(i >= args.layers for i in ids):
-            raise SystemExit(f"--only-layers {ids} reaches past --layers {args.layers}")
+        if ids and any(i >= layer_count for i in ids):
+            raise SystemExit(f"--only-layers {ids} reaches past --layers {layer_count}")
     else:
-        ids = list(range(args.layers))
-    keys = []
-    for k in args.source_key:
-        if "*" in k:
-            keys += [k.replace("*", str(L)) for L in ids]
-        else:
-            keys.append(k)
+        ids = list(range(layer_count))
+    name_map = None
+    if args.gguf_targets == "auto":
+        # Discovery, not a table: the artifact reports which residual-write
+        # projections it carries at this width. A layer with no target is a
+        # capture/artifact mismatch (wrong checkpoint, converted with a different
+        # hidden size, sharded file), and a merge that silently edits the layers
+        # it happens to find is a partial edit reported as a complete one.
+        from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes
+        found = discover_writeback_targets(gguf_weight_shapes(args.gguf_in), int(axes.shape[-1]))
+        targets = {L: names for L, names in found['targets'].items() if L in set(ids)}
+        missing = sorted(set(ids) - set(targets))
+        if missing:
+            raise SystemExit(
+                f"--gguf-targets auto: this artifact has no residual-write projection at width "
+                f"{int(axes.shape[-1])} for layers {missing[:12]}"
+                f"{'...' if len(missing) > 12 else ''}; found layers {sorted(targets)}. The axes "
+                f"and the artifact disagree, so a merge here would edit part of the model and "
+                f"look complete. Width-matching tensors it would not edit: "
+                f"{found['unmapped_writeback_width'][:6]}")
+        keys = sorted(name for names in targets.values() for name in names)
+        name_map = {name: name for name in keys}
+    else:
+        keys = []
+        for k in args.source_key:
+            if "*" in k:
+                keys += [k.replace("*", str(L)) for L in ids]
+            else:
+                keys.append(k)
     if not keys:
         raise SystemExit("no target tensors: --source-key expanded to nothing; run "
                          "`python -m jdewitt.spanfit targets --gguf-in <file>` to see "
                          "the keys this artifact actually carries (a merge that edits "
                          "0 tensors still exits 0)")
-    rep = build_merged(args.gguf_in, args.out, axes, keys, scale=args.scale,
-                       axis_space=args.axis_space)
+    out_path = args.gguf_in if args.in_place else args.out
+    rep = build_merged(args.gguf_in, out_path, axes, keys, name_map=name_map,
+                       scale=args.scale, axis_space=args.axis_space, in_place=args.in_place)
     # `tensors_edited` counts tensors the merge visited, not tensors whose bytes moved:
     # a scale-0.0 run reports 36 tensors edited with changed_blocks 0 in every one of
     # them and exits 0. What a no-op actually looks like is zero changed blocks, so that
@@ -464,7 +533,9 @@ def main(argv=None):
     rep['tensors_changed'] = sum(1 for r in rep['tensors'] if r['changed_blocks'])
     rep['changed_blocks_total'] = int(changed)
     if rep['tensors_changed'] == 0:
-        if os.path.exists(args.out):
+        if rep.get('revert_sidecar'):
+            os.unlink(rep['revert_sidecar'])
+        elif args.out and os.path.exists(args.out):
             os.unlink(args.out)
         raise SystemExit(
             f"build moved 0 bytes across {len(rep['tensors'])} visited tensors "
@@ -475,7 +546,7 @@ def main(argv=None):
     rep["elapsed_s"] = rep.get("elapsed_s", round(time.monotonic() - t0, 1))
     if args.time_log:
         from .timing import record
-        record(args.time_log, lineage=os.path.basename(args.out),
+        record(args.time_log, lineage=os.path.basename(out_path),
                phase='merge', seconds=rep['elapsed_s'], kind='cpu')
     print(json.dumps(rep))
 

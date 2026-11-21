@@ -29,6 +29,7 @@ weights: A = d @ W and the served W is quantized, so write adapters computed
 against dequantized served weights (serve_factors), never against the
 full-precision originals.
 """
+import re
 import torch
 from pathlib import Path
 from gguf import GGUFReader, GGUFWriter
@@ -40,6 +41,41 @@ HF_TO_LLAMA = (
     ('self_attn.o_proj', 'attn_output'),
     ('mlp.down_proj', 'ffn_down'),
 )
+
+# Canonical residual-write suffixes llama.cpp uses across architectures. Every
+# one of these is a projection whose OUTPUT is the residual stream: attention
+# output, SSM out on hybrid/recurrent blocks, FFN down. Discovery is by name
+# because two projections can share the hidden width (q_proj on MHA models) and
+# an axis captured in residual space is meaningless in query space, so a pure
+# dimension rule would edit the wrong matrix while passing every shape check.
+WRITEBACK_TENSOR = re.compile(
+    r'^(attn_output|attn_out|ssm_out|ffn_down|w2|o_proj|down_proj)$')
+
+
+def discover_writeback_targets(shapes, width):
+    """{layer: [gguf tensor names]} discovered from the artifact itself.
+
+    ``shapes`` is gguf_weight_shapes() output: name -> (in, out), so a tensor
+    writes the residual stream when shape[1] == hidden width. This replaces the
+    per-model source-key table: the artifact says which writeback projections it
+    carries and where they live, on any architecture, with nothing typed by
+    hand. Names that write a hidden-wide vector but are not residual-write
+    projections are reported separately rather than edited.
+    """
+    by_layer, unmapped = {}, []
+    for name, dims in shapes.items():
+        match = re.match(r'^blk\.(\d+)\.(.+)\.weight$', name)
+        if match is None or len(dims) != 2:
+            continue
+        layer, suffix = int(match.group(1)), match.group(2).split('.')[-1]
+        if int(dims[1]) != int(width):
+            continue
+        if not WRITEBACK_TENSOR.match(suffix):
+            unmapped.append(name)
+            continue
+        by_layer.setdefault(layer, []).append(name)
+    return {'targets': {layer: sorted(names) for layer, names in sorted(by_layer.items())},
+            'unmapped_writeback_width': sorted(unmapped)}
 
 def gguf_weight_shapes(artifact):
     """name -> (in, out) in ggml/gguf dimension order for every 2D weight.

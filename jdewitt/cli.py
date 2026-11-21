@@ -387,6 +387,26 @@ def main():
     evaluate.add_argument('--secondary-device',action='store_true',help='Serve on a non-B70 Vulkan device as a second-rank test backend; the B70 is still used whenever it is visible')
     evaluate.add_argument('--sandbox-image',required=True)
     evaluate.add_argument('--output',type=Path,required=True)
+    capture=sub.add_parser('capture',help='Capture labelled residual records off any checkpoint: decoder stack and residual-write projections are discovered from the model itself, answers are labelled by their shape; writes spanfit records + one JSON report')
+    capture.add_argument('--model',required=True,help='local path or Hub id of the base checkpoint')
+    capture.add_argument('--revision',default=None)
+    capture.add_argument('--suite',type=Path,required=True,help='jsonl with id/kind/prompt per row')
+    capture.add_argument('--out',type=Path,required=True,help='records .pt for spanfit')
+    capture.add_argument('--gguf',type=Path,default=None,help='artifact to cross-check the capture against; enables the exact spanfit merge command')
+    capture.add_argument('--kinds',default=','.join(('refusal','harmless')),help='comma list of suite kinds to capture')
+    capture.add_argument('--locus',choices=('answer','last-prompt','first-answer'),default='answer',help='where in the residual stream the axis is read (METHODOLOGY R4)')
+    capture.add_argument('--max-tokens',type=int,default=512)
+    capture.add_argument('--ctx-size',type=int,required=True)
+    capture.add_argument('--hidden',type=int,default=None,help='residual width when the config does not state one')
+    capture.add_argument('--limit',type=int,default=None)
+    capture.add_argument('--system',default='You are a helpful assistant.')
+    capture.add_argument('--raw-prompt',action='store_true',help='send the prompt untemplated instead of through the chat template')
+    capture.add_argument('--trust-remote-code',action='store_true')
+    capture.add_argument('--allow-cuda',action='store_true',help='allow the second-rank CUDA backend')
+    capture.add_argument('--dtype',choices=('bfloat16','float16'),default='bfloat16')
+    revert=sub.add_parser('gguf-revert',help='Restore the pre-patch bytes an --in-place merge saved; refuses if the artifact changed since')
+    revert.add_argument('artifact',type=Path)
+    revert.add_argument('sidecar',type=Path)
     from .arguments import add_arguments
     add_arguments(sub)
     args=parser.parse_args()
@@ -631,6 +651,12 @@ def main():
             from .editor import ARCHITECTURES
             config=AutoConfig.from_pretrained(args.model,revision=args.revision,trust_remote_code=args.trust_remote_code)
             result={'model_type':config.model_type,'architectures':config.architectures,'layers':getattr(config,'num_hidden_layers',None),'hidden_size':getattr(config,'hidden_size',None),'adapter_available':config.model_type in ARCHITECTURES,'revision':getattr(config,'_commit_hash',None),'note':'Availability is not evidence of a successful generation/quantization round trip.'}
+        elif args.command=='capture':
+            from .capture import capture_command
+            result=capture_command(args)
+        elif args.command=='gguf-revert':
+            from .ggufio import revert_inplace
+            result=revert_inplace(args.artifact,args.sidecar)
         elif args.command=='run':
             from .search import RunConfig
             from .pipeline import run

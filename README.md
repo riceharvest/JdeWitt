@@ -143,6 +143,16 @@ phase-timing ledger (`python -m jdewitt.timing summarize`) tells you, in
 percent, what you are paying for, and pivots fire from the ledger, not
 from vibes.
 
+Two commands make that true on a model this repo has never seen. `capture`
+finds the decoder stack and the residual-write projections from the model's own
+module tree, generates every row with the model being edited, and labels each
+answer by its shape — no architecture table, no per-model hook script, no
+hand-typed tensor name. `spanfit build --in-place` then edits the quantized GGUF
+you already serve: same file, same size, same offsets, only the changed tiles
+written, pre-patch bytes kept in a sidecar so `gguf-revert` puts the model back
+exactly. Nothing is re-quantized to get an edit, because the artifact was
+already the artifact.
+
 Search inside, train inside, judge inside: `auto` selects the best
 measured candidate under one explicit trial budget; `train` runs local
 low-rank SFT/DPO with merged exports honestly marked

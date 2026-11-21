@@ -4,6 +4,14 @@ North star: the tool whose abliterated releases you can trust more than
 anyone else's, because every claim is gated, falsified or labelled. The
 moat is method breadth plus verifiable honesty; everyone else overclaims.
 
+Ordering rule (2026-11-21, `docs/AGENT-FIRST.md`): the user is an AI agent
+working on a model it did not choose. Work is judged first by whether an agent
+can drive it without writing code (one command per step, one JSON, next command
+included), whether it works by discovery on an architecture this repo has never
+seen (no tables, no hand-typed tensor names), and whether it edits the artifact
+in place instead of re-quantizing the model. Research that fails those three is a
+measurement, not a feature.
+
 Work is tagged:
 - CODE — CPU-verifiable, no model, no B70. Ship by running the command.
 - GATED — needs real B70 / real checkpoints before any claim changes.

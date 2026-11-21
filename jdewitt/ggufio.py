@@ -10,10 +10,28 @@ llama.cpp with no flags. No model, no device — numpy only.
 import shutil
 import mmap
 import math
+import os
+import hashlib
 import struct
 import numpy as np
 from pathlib import Path
 from .quants import CODECS
+
+
+def _plan(reader, deltas):
+    """Validated per-tensor edit plans, shared by the copy and in-place paths."""
+    plans = []
+    for name, delta in deltas.items():
+        tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+        delta = np.asarray(delta, dtype=np.float32)
+        if delta.shape != shape:
+            raise ValueError(f'delta for {name} has shape {delta.shape}, tensor shape is {shape}')
+        if not np.isfinite(delta).all():
+            raise ValueError(f'delta for {name} contains NaN/Inf')
+        if n != int(np.prod(shape)):
+            raise ValueError(f'tensor {name}: {n} values for shape {shape}')
+        plans.append((name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta.reshape(-1)))
+    return plans
 
 
 def _tensor_info(reader, name):
@@ -50,17 +68,8 @@ def edit_tensors(path, out_path, deltas):
     if not path.is_file():
         raise ValueError(f'{path} does not exist')
     if path.resolve() == out_path.resolve():
-        raise ValueError('out_path must differ from in_path (edits are written to a new file)')
-    reader = GGUFReader(str(path))
-    plans = []
-    for name, delta in deltas.items():
-        tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
-        delta = np.asarray(delta, dtype=np.float32)
-        if delta.shape != shape:
-            raise ValueError(f'delta for {name} has shape {delta.shape}, tensor shape is {shape}')
-        if not np.isfinite(delta).all():
-            raise ValueError(f'delta for {name} contains NaN/Inf')
-        plans.append((name, tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta))
+        raise ValueError('out_path must differ from in_path; edit_tensors_inplace patches the artifact itself')
+    plans = _plan(GGUFReader(str(path)), deltas)
     with open(path, 'rb') as f:
         mm = mmap.mmap(f.fileno(), 0, access=mmap.MAP_SHARED)
         try:
@@ -113,6 +122,128 @@ def edit_tensors(path, out_path, deltas):
                         'rms_delta': rms, 'relative_rms_delta': rel, 'bytes_written': int(new_raw.size)})
     return {'input': str(path), 'output': str(out_path), 'tensors_edited': len(reports),
            'tensors': reports, 'all_other_bytes_verbatim': True}
+
+
+def _sha256(path):
+    digest = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 22), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def edit_tensors_inplace(path, deltas, revert_path=None):
+    """Patch the artifact's own bytes: one file, no copy, no requantization.
+
+    A requantized block keeps its byte width, so every tensor offset and the
+    file size stay put and only changed tiles are written. What makes this safe
+    is the sidecar: the pre-patch bytes of every tile written plus the patched
+    file's digest, so `revert_inplace` restores the artifact exactly and refuses
+    to touch a file that changed after the patch. revert_path=None skips the
+    sidecar, and a crash mid-patch then leaves a partly edited artifact with no
+    way back.
+    """
+    from gguf import GGUFReader
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError(f'{path} does not exist')
+    plans = _plan(GGUFReader(str(path)), deltas)
+    size_before = path.stat().st_size
+    reports, originals, proofs = [], [], []
+    with open(path, 'r+b') as f:
+        for name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta in plans:
+            nb = n // els
+            blocks_per_tile = max(1, (1 << 24) // els)
+            changed_blocks, delta_sq, sum_sq, count, first = 0, 0.0, 0.0, 0, None
+            for start in range(0, nb, blocks_per_tile):
+                tile = min(blocks_per_tile, nb - start)
+                byte0, byte1 = start * bs, (start + tile) * bs
+                f.seek(offset + byte0)
+                raw = f.read(byte1 - byte0)
+                if len(raw) != byte1 - byte0:
+                    raise ValueError(f'{name}: short read at byte {offset + byte0} (truncated artifact?)')
+                values = dequantize(np.frombuffer(raw, dtype=np.uint8), tile * els).reshape(-1)
+                piece_delta = delta[start * els:(start + tile) * els]
+                edited = values + piece_delta
+                if not np.isfinite(edited).all():
+                    raise ValueError(f'edited tensor {name} contains NaN/Inf')
+                piece = quantize(np.ascontiguousarray(edited))
+                if piece.size != byte1 - byte0:
+                    raise ValueError(f'requantized {name}: block produced {piece.size} bytes, '
+                                     f'expected {byte1 - byte0}')
+                mask = np.any(piece.reshape(tile, bs) != np.frombuffer(raw, np.uint8).reshape(tile, bs), axis=-1)
+                if mask.any():
+                    originals.append((offset + byte0, np.frombuffer(raw, np.uint8).copy()))
+                    f.seek(offset + byte0)
+                    f.write(piece.tobytes())
+                    changed_blocks += int(mask.sum())
+                    if first is None:
+                        first = (offset + byte0, piece.tobytes())
+                delta_sq += float((piece_delta ** 2).sum())
+                sum_sq += float((values ** 2).sum())
+                count += tile * els
+            if first is not None:
+                proofs.append((name, first))
+            rms = float(math.sqrt(delta_sq / count)) if count else 0.0
+            mean_sq = float(sum_sq / count) if count else 0.0
+            reports.append({'tensor': name, 'dtype': dtype, 'blocks': int(nb),
+                            'changed_blocks': changed_blocks, 'rms_delta': rms,
+                            'relative_rms_delta': rms / mean_sq if mean_sq else 0.0})
+        f.flush()
+        os.fsync(f.fileno())
+    if path.stat().st_size != size_before:
+        raise RuntimeError(f'{path} changed size during an in-place patch ({size_before} -> '
+                           f'{path.stat().st_size}); the edit is not value-preserving here')
+    # A written byte is not a proven byte: read every touched tensor's first
+    # tile back before calling the patch done.
+    with open(path, 'rb') as f:
+        for name, (at, expected) in proofs:
+            f.seek(at)
+            if f.read(len(expected)) != expected:
+                raise RuntimeError(f'in-place patch for {name} did not land at byte {at}')
+    patched_sha256 = _sha256(path)
+    result = {'input': str(path), 'output': str(path), 'in_place': True,
+              'tensors_edited': len(reports), 'tensors': reports,
+              'tensors_changed': sum(1 for r in reports if r['changed_blocks']),
+              'changed_blocks_total': int(sum(r['changed_blocks'] for r in reports)),
+              'all_other_bytes_verbatim': True, 'bytes_added': 0,
+              'patched_sha256': patched_sha256}
+    if revert_path is not None and originals:
+        offsets = np.array([at for at, _ in originals], dtype=np.int64)
+        lengths = np.array([len(raw) for _, raw in originals], dtype=np.int64)
+        data = np.concatenate([raw for _, raw in originals]).astype(np.uint8)
+        np.savez_compressed(revert_path, offsets=offsets, lengths=lengths, data=data,
+                            sha256=np.array(patched_sha256))
+        result['revert_sidecar'] = str(revert_path)
+        result['revert_sidecar_bytes'] = int(Path(revert_path).stat().st_size)
+    return result
+
+
+def revert_inplace(path, sidecar):
+    """Write an in-place patch's saved pre-patch bytes back, then drop the sidecar."""
+    path, sidecar = Path(path), Path(sidecar)
+    for candidate in (path, sidecar):
+        if not candidate.is_file():
+            raise ValueError(f'{candidate} does not exist')
+    payload = np.load(sidecar)
+    offsets, lengths, data = payload['offsets'], payload['lengths'], payload['data']
+    if 'sha256' in payload:
+        recorded = str(payload['sha256'])
+        current = _sha256(path)
+        if current != recorded:
+            raise ValueError(f'{path} changed since the patch (sha256 {current[:16]} != recorded '
+                             f'{recorded[:16]}); refusing to write pre-patch bytes over a different file')
+    restored, position = 0, 0
+    with open(path, 'r+b') as f:
+        for at, length in zip(offsets.tolist(), lengths.tolist()):
+            f.seek(int(at))
+            f.write(data[position:position + int(length)].tobytes())
+            position += int(length)
+            restored += 1
+        f.flush()
+        os.fsync(f.fileno())
+    sidecar.unlink()
+    return {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored}
 
 
 def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None):
