@@ -111,11 +111,16 @@ def tensor_nbytes(dims, qtype):
     return count // block_els * block_bytes
 
 
-def write_container(path, header, payloads, qtypes=None):
+def write_container(path, header, payloads, qtypes=None, extra_kv=None):
     """Write `path` from a parsed container.
 
     ``payloads`` maps a tensor name to the bytes to store (or None to copy the source
     slice verbatim) and ``qtypes`` overrides the stored type for edited tensors.
+
+    ``extra_kv`` appends string metadata WITHOUT reparsing the section: GGUF key/value
+    pairs are a flat sequence, so one new pair at the end plus an incremented count is
+    the whole change — and it is what lets a file carry its own edit fingerprint, which
+    is the only way `verify` can check a release's claim instead of guessing it.
     """
     path = Path(path)
     alignment = header['alignment']
@@ -145,8 +150,17 @@ def write_container(path, header, payloads, qtypes=None):
         out.write(GGUF_MAGIC)
         out.write(struct.pack('<I', header['version']))
         out.write(struct.pack('<Q', len(entries)))
-        out.write(struct.pack('<Q', header['kv_count']))
-        out.write(header['kv_bytes'])
+        kv_bytes = header['kv_bytes']
+        kv_count = int(header['kv_count'])
+        for key, value in (extra_kv or []):
+            key_bytes = str(key).encode('utf-8')
+            value_bytes = str(value).encode('utf-8')
+            kv_bytes += struct.pack('<Q', len(key_bytes)) + key_bytes
+            kv_bytes += struct.pack('<I', 8)  # GGUFValueType.STRING
+            kv_bytes += struct.pack('<Q', len(value_bytes)) + value_bytes
+            kv_count += 1
+        out.write(struct.pack('<Q', kv_count))
+        out.write(kv_bytes)
         for entry in entries:
             name = entry['name'].encode('utf-8')
             out.write(struct.pack('<Q', len(name)))

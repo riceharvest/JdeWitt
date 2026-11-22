@@ -226,7 +226,13 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                    'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
                    'scale': scale, 'axis_space': axis_space, 'edit_type': target.name,
                    'repair': repair_block}
-    written = write_container(out, header, payloads, qtypes)
+    # The fingerprint travels WITH the artifact: a claim nobody can check is marketing,
+    # and `verify --claim` can only compare fields it can find in the file.
+    import json as _json
+
+    written = write_container(out, header, payloads, qtypes,
+                              extra_kv=[('jdewitt.fingerprint',
+                                         _json.dumps(fingerprint, sort_keys=True))])
     by_name = {entry['name']: entry for entry in written['entries']}
     report = {
         'source': str(src), 'output': str(out), 'edit_type': target.name,

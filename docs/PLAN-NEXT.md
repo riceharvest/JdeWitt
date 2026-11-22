@@ -1115,3 +1115,14 @@ Measured end to end on a freshly quantized IQ4_NL artifact (1,062,681,120 bytes;
 IQ4_NL + 31 Q5_K + 1 Q6_K + 57 F32 tensors): editing blk.20-21 read the IQ4_NL rows
 through the gguf-py fallback, wrote Q8_0 for exactly the 4 touched tensors and left the
 other 222 byte-identical — delivered cos 0.980-0.986, SNR 4.9-6.0, 47.7 s on CPU.
+
+#### The fingerprint travels inside the artifact (2026-11-22)
+
+`verify` could not check a release's claim because the claim lived only in our JSON
+report. The writer now appends one STRING key/value (`jdewitt.fingerprint`) to the GGUF
+metadata — key/value pairs are a flat sequence, so one pair at the end plus an
+incremented count is the whole edit — and `verify` reads it back: verdict `recomputes`,
+claim_source `metadata:jdewitt.fingerprint`, 4 of 9 claimed fields recomputed and
+matching, with `edit_sha256`, `axis_norm_by_layer`, `scale` and `axis_space` reported as
+not recomputable (the file stores the re-encoded delta, not the fitted axis). gguf-py
+parses the edited container cleanly, so the extra key costs nothing in compatibility.
