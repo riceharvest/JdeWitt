@@ -23,3 +23,27 @@ Every sentence in README section IV that states a number, mapped to the artifact
 | | ↳ Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs base 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on a 20-family sample of that screen: published build 0/20, this arm 0/20. | | |
 
 10 claims: 7 in-clone, 2 pre-fix, 1 with no artifact.
+
+## Standing README sync (board card `readme-evidence-sync`)
+
+Section IV of `README.md` and this map are one artifact: a sentence in IV that no
+claim row resolves is a bug. The standing audit runs the same procedure after any
+roadmap phase lands a number:
+
+1. `.venv/bin/python scripts/evidence_map.py --check` must exit 0. On a missing
+   artifact, put it in the clone or move the sentence to "Held for honesty, not as
+   evidence" with the reason; never leave the number.
+2. One new claim row per landed arm: status, the section-IV sentence, every artifact
+   path (must exist), the one command that recomputes the number, and notes for a
+   retraction, a collapse flag or a p-value.
+3. No artifact in the clone -> no number in section IV. An adapter delta is never
+   quoted as the merged effect. A competitor's table is never copied, including ours.
+4. The "Held for honesty" block stays: the pre-2026-11-17-scoring-fix rows and the
+   Spark/LFM pair stay named and out of any claim.
+5. Nothing landed -> re-check only; do not edit prose to keep busy.
+
+The deciding row stays visible in both files: q3-4b-f15s15-l935 removes wording on
+120/120 held-out families (0 discordant, McNemar p 1.0 against the published
+same-base build) and costs maths 159 -> 148; the published build holds 159 -> 159.
+Equal removal at less capability loss is not established until a row reaches 159/241
+at equal removal, and section IV must say so.
