@@ -540,6 +540,8 @@ def report(args) -> int:
     final = comparisons.get(final_label)
     if final is None:
         raise SystemExit(f'--final {final_label!r} is not one of {sorted(comparisons)}')
+    off_run_path = Path(args.off) / 'run.json'
+    off_run = json.loads(off_run_path.read_text()) if off_run_path.exists() else None
     document = {
         'schema': REPORT_SCHEMA,
         'scope': ('Retention falsifier: the authored 241-row capability suite decoded through the documented '
@@ -547,8 +549,8 @@ def report(args) -> int:
                   'The off arm carries no logit_bias. Paired by row id; the arms are never averaged.'),
         'suite': off_meta['suite'], 'artifact': off_meta['artifact'], 'cap': off_meta['config']['max_tokens'],
         'off': {'directory': _portable(Path(args.off)), 'table': off_meta['table'],
-                'scores': (json.loads((Path(args.off) / 'run.json').read_text())['scores']
-                           if (Path(args.off) / 'run.json').exists() else None)},
+                'scores': off_run['scores'] if off_run else None,
+                'run': off_run},
         'arms': comparisons,
         'final_arm': final_label,
         'verdict': final['verdict'],
