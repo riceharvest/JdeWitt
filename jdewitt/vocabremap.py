@@ -489,6 +489,27 @@ def _plan_for_text(text, port, tokens, entry_items):
             'rules_that_fired': sorted({event['entry_id'] for event in events})}
 
 
+def sequence_controls(port, tokens, entry_items):
+    """A prefix that is not a completion must not fire, and a real completion must.
+
+    ' can' alone is the prefix of can't; a matcher that fires on the prefix would
+    demonize every 'we can compute'. This is the same sequence-aware rule the
+    decode driver needs, exercised against the served tokenizer.
+    """
+    negative = _plan_for_text('We can compute the total from here.', port, tokens, entry_items)
+    positive = _plan_for_text("I can't help with that.", port, tokens, entry_items)
+    if negative['rules_that_fired']:
+        raise RuntimeError(f'sequence control failed: a bare " can" prefix fired {negative["rules_that_fired"]}')
+    if 'en-cant' not in positive['rules_that_fired']:
+        raise RuntimeError(f'sequence control failed: "I can\'t" did not fire en-cant '
+                           f'({positive["rules_that_fired"]})')
+    return {'negative': {'text': 'We can compute the total from here.',
+                         'rules_that_fired': negative['rules_that_fired']},
+            'positive': {'text': "I can't help with that.", 'rules_that_fired': positive['rules_that_fired']},
+            'note': ('a prefix is not a completion: the bare " can" token must stay live while '
+                     '" can" + "\'t" completes the denial sequence')}
+
+
 def reachability(entries, port, tokens):
     """Rule-level reachability: the form must survive a running-text carrier, not just isolation."""
     rows = []
@@ -656,6 +677,7 @@ def vocab_remap_dry_run(table=None, suite=None, probes=None, artifacts=(), ports
         audit = coverage_for(loaded, missing, port, tokens, entry_items)
         reach = reachability(entries, port, tokens)
         never = [item['entry_id'] for item in reach if not item['reachable']]
+        controls = sequence_controls(port, tokens, entry_items)
         tokenizers.append({'label': label, 'identity': tokenizer['identity'], 'n_vocab': len(tokens),
                            'served': {'port': port, 'build_info': props['build_info'],
                                       'tokenizer_check': served,
@@ -665,6 +687,7 @@ def vocab_remap_dry_run(table=None, suite=None, probes=None, artifacts=(), ports
                                                'the served file path; scripts/vocab_remap_carrier.py builds a '
                                                'carrier for a vocabulary-only artifact.')},
                            'probes': plans, 'coverage': audit, 'reachability': reach,
+                           'controls': controls,
                            'rules_that_can_never_fire': never})
     report = {
         'schema': DRYRUN_SCHEMA,
@@ -678,7 +701,9 @@ def vocab_remap_dry_run(table=None, suite=None, probes=None, artifacts=(), ports
                   'with_replacement': sum(1 for entry in entries if entry['replacement'])},
         'probes': {'rows': len(probe_rows), 'sources': sorted({row['source'] for row in probe_rows}),
                    'ids': [row['id'] for row in probe_rows]},
-        'base_answers': {'sources': [item['source'] for item in loaded], 'missing_sources': missing},
+        'base_answers': {'sources': [item['source'] for item in loaded], 'missing_sources': missing,
+                         'note': ('each source is a base arm of an in-clone generation wave; predictions for '
+                                  'other arms live in sibling directories and are not base answers')},
         'tokenizers': tokenizers,
         'rules_that_can_never_fire': sorted({entry_id for item in tokenizers
                                              for entry_id in item['rules_that_can_never_fire']}),

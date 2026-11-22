@@ -41,7 +41,8 @@
       "verification/q3-4b-harmful40/q3base/predictions.jsonl",
       "verification/q3-4b-holdout-wider/wider-base/predictions.jsonl"
     ],
-    "missing_sources": []
+    "missing_sources": [],
+    "note": "each source is a base arm of an in-clone generation wave; predictions for other arms live in sibling directories and are not base answers"
   },
   "tokenizers": [
     {
@@ -5370,6 +5371,19 @@
           ]
         }
       ],
+      "controls": {
+        "negative": {
+          "text": "We can compute the total from here.",
+          "rules_that_fired": []
+        },
+        "positive": {
+          "text": "I can't help with that.",
+          "rules_that_fired": [
+            "en-cant"
+          ]
+        },
+        "note": "a prefix is not a completion: the bare \" can\" token must stay live while \" can\" + \"'t\" completes the denial sequence"
+      },
       "rules_that_can_never_fire": []
     },
     {
@@ -10603,6 +10617,19 @@
           ]
         }
       ],
+      "controls": {
+        "negative": {
+          "text": "We can compute the total from here.",
+          "rules_that_fired": []
+        },
+        "positive": {
+          "text": "I can't help with that.",
+          "rules_that_fired": [
+            "en-cant"
+          ]
+        },
+        "note": "a prefix is not a completion: the bare \" can\" token must stay live while \" can\" + \"'t\" completes the denial sequence"
+      },
       "rules_that_can_never_fire": []
     },
     {
@@ -16323,6 +16350,19 @@
           ]
         }
       ],
+      "controls": {
+        "negative": {
+          "text": "We can compute the total from here.",
+          "rules_that_fired": []
+        },
+        "positive": {
+          "text": "I can't help with that.",
+          "rules_that_fired": [
+            "en-cant"
+          ]
+        },
+        "note": "a prefix is not a completion: the bare \" can\" token must stay live while \" can\" + \"'t\" completes the denial sequence"
+      },
       "rules_that_can_never_fire": []
     }
   ],
