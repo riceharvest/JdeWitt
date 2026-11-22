@@ -252,10 +252,13 @@ it is a tone result and is reported as one.
 - Adapter release as a first-class artifact: rank-1 files apply exactly on any
   quantized runtime, with the honest label that the adapter curve is not the
   merged bytes (R8), plus the codec-realized numbers for the merged twin.
-- Plan cards: `plan-bundle` already produces a digest-pinned signed plan. Make
-  the card the unit of distribution — a stranger reproduces the edit on THEIR
-  quant in one command, without our search, and `release-diff` tells them
-  whether our claims still hold.
+- Plan cards: `plan-bundle` already produces a digest-pinned signed plan and
+  `plan-apply --bundle CARD --gguf THEIR.gguf --out EDITED` consumes it: the card
+  is verified into a throwaway registry, the target tensors are discovered in the
+  artifact itself, only those are re-encoded, untouched tensors stay byte-identical
+  and the delivered codec cos is printed. That makes the card the unit of
+  distribution — a stranger reproduces the edit on THEIR quant in one command,
+  without our search — and `release-diff` tells them whether our claims still hold.
 - Non-GGUF export for vLLM/SGLang users stays open until a fitted plan can be
   served and round-tripped through that runtime; until then it is a roadmap
   line, not a promise. No pre-quantized model releases.

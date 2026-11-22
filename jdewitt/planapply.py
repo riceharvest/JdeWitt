@@ -260,6 +260,17 @@ def plan_apply(bundle, gguf, out, strength=1.0, edit_type='auto', min_cos=0.95,
                 f'{gguf} exposes no residual-write projection at that width '
                 f'(layers with targets: {sorted(targets)[:4]}'
                 f'{"..." if len(targets) > 4 else ""}); nothing written')
+        missing = [layer for layer in range(plan_layers) if layer not in targets]
+        if missing:
+            # A card is applied whole or not at all: editing a subset of the layers
+            # the fit searched would ship an artifact whose edit differs from the
+            # card's, which is the one thing this command exists to rule out.
+            raise PlanApplyRefused(
+                'TARGET_COVERAGE_INCOMPLETE',
+                f'plan {key} covers layers 0..{plan_layers - 1} at width {plan_hidden}, but '
+                f'{gguf} exposes no residual-write projection for layers '
+                f'{missing[:8]}{"..." if len(missing) > 8 else ""} '
+                f'({len(missing)} of {plan_layers}); refusing a partial edit, nothing written')
         edits = {}
         for layer in covered:
             for name in targets[layer]:
@@ -271,10 +282,9 @@ def plan_apply(bundle, gguf, out, strength=1.0, edit_type='auto', min_cos=0.95,
                     probes.append(name)
         probes = probes[:4]
 
-        selection = _select_edit_type(gguf, edits, probes, strength, edit_type, min_cos)
-        chosen = selection['chosen']
-
         # --- already applied? the artifact carries its own edit fingerprint --------
+        # Checked BEFORE the type probe: re-applying a card the file already holds
+        # is a no-op, so paying a full codec probe to choose a type would be waste.
         fingerprint = axis_fingerprint(edits)
         stored = _stored_fingerprint(gguf)
         already = False
@@ -301,8 +311,11 @@ def plan_apply(bundle, gguf, out, strength=1.0, edit_type='auto', min_cos=0.95,
                 'artifact': _artifact_block(gguf, out, geometry),
                 'plan_geometry': plan_geometry, 'artifact_geometry': geometry,
                 'strength': strength, 'axis_space': axis_space,
-                'edit_type': stored.get('edit_type'),
-                'edit_type_by_tensor': {}, 'edit_type_selection': selection,
+                'edit_type': (stored or {}).get('edit_type'),
+                'edit_type_by_tensor': {},
+                'edit_type_selection': {'mode': 'skipped', 'chosen': (stored or {}).get('edit_type'),
+                                        'reason': 'the artifact already carries this edit '
+                                                  '(jdewitt.fingerprint); no probe was run'},
                 'targets': _targets_block(discovered, covered, edits),
                 'edited': {'count': 0, 'tensors': []},
                 'untouched': {'count': geometry['tensors'], 'verified': True,
@@ -321,6 +334,8 @@ def plan_apply(bundle, gguf, out, strength=1.0, edit_type='auto', min_cos=0.95,
             }
 
         # --- write minimal surgery, then measure what shipped ----------------------
+        selection = _select_edit_type(gguf, edits, probes, strength, edit_type, min_cos)
+        chosen = selection['chosen']
         temp_path = out.with_name(f'{out.name}.partial-{os.getpid()}')
         try:
             rewrite = rewrite_with_edits(str(gguf), str(temp_path), edits, scale=strength,
