@@ -1064,3 +1064,26 @@ gguf-py fallback (cos 0.9915 both ways on blk.20.attn_output), and a Q3_K_S arti
 `rewrite_with_edits` now also emits an edit fingerprint (edit sha over the axes, edited
 and untouched tensor counts, per-layer axis norms, scale, axis space, write type), so a
 release can claim "N matrices changed, M tensors untouched" and anyone can recompute it.
+
+### Rank-k subspace removal (2026-11-22)
+
+`spanfit.per_layer_subspace(records, k)` gives orthonormal per-layer directions (top-k
+right singular vectors of the bad-minus-good contrast, each sign-aligned to the layer's
+mean difference; direction 1 sits at cos 0.999 to the rank-1 axis). One helper
+(`ggufio.axis_delta`) applies a 1-D direction or a k-row subspace everywhere — adapter
+build, in-place merge, preview, rewrite — so rank-1 and rank-k cannot drift apart.
+
+Measured on Spark 1.7B Q4_K_M, footprint 10-27, Q8_0 edited tensors:
+  rank-1 @1.0: 4/4 rows cleared, answers on the requested content, 0 refusals
+  rank-3 @1.0: 3 refusals + 1 hedge ("# Important Note on Safety ... I can't actually
+               make this"), with visibly degraded text ("I'm sorry, butI can't ...")
+
+So rank is NOT free: three directions at rank-1's strength is an over-edit that costs
+coherence and re-introduces hedging. Rank needs its own strength search, which is why
+`tune --rank` now builds subspace arms and the ladder scores them at several strengths;
+the codec gate keeps measuring whether the file can store the larger delta.
+
+Also: `--rank` is wired into `edit-quantized` (delivered cos 0.990-0.993 at F16-grade
+Q8_0), and the two places that flattened an axis with `.reshape(-1)` (compare_edit,
+preview, rewrite) are fixed — flattening a (k, W) subspace turned it into a 6144-vector
+and crashed the fidelity check with a matmul mismatch.

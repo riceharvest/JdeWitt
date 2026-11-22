@@ -59,6 +59,20 @@ def _tensor_info(reader, name):
     return tensor, dtype, block_bytes, block_els, n, quantize, dequantize, offset, n_bytes, shape
 
 
+def axis_delta(axis, matrix, scale=1.0, space='output'):
+    """delta for a 1-D direction or a k-direction subspace (rows orthonormal).
+
+    A subspace removal is `W - D^T D W`, i.e. the sum of its rank-1 projections, so one
+    helper serves rank-1 and rank-k and the two can never drift apart.
+    """
+    a = np.asarray(axis, dtype=np.float32)
+    if a.ndim == 1:
+        a = a.reshape(1, -1)
+    if space == 'output':
+        return -scale * (a.T @ (a @ matrix))
+    return -scale * ((a.T @ (a @ matrix.T)).T)
+
+
 def decode_values(raw, qtype_name, n_values=None):
     """Dequantize one tensor from ANY gguf quant type this build can read.
 
@@ -139,12 +153,9 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         edit = edits[name]
         if isinstance(edit, tuple):
             axis, space = edit
-            axis = np.asarray(axis, dtype=np.float32).reshape(-1)
+            axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
             matrix = base.reshape(shape)
-            if space == 'output':
-                delta = -scale * (axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix))
-            else:
-                delta = -scale * ((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix.T)).T)
+            delta = axis_delta(axis, matrix, scale, space)
             if renormalize:
                 edited = matrix + delta
                 before = np.linalg.norm(matrix, axis=1, keepdims=True)
@@ -243,11 +254,8 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
             rows.append({'name': name, 'error': f'shape changed: {base.shape} -> {final.shape}'})
             continue
         axis, space = edits[name]
-        axis = np.asarray(axis, dtype=np.float32).reshape(-1)
-        if space == 'output':
-            intended = -(axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ base))
-        else:
-            intended = -((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ base.T)).T)
+        axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
+        intended = axis_delta(axis, base, 1.0, space)
         if renormalize:
             edited_base = base + intended
             before = np.linalg.norm(base, axis=1, keepdims=True)
@@ -390,7 +398,7 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0):
         tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
         if isinstance(edit, tuple):
             axis, space = edit
-            axis = np.asarray(axis, dtype=np.float32).reshape(-1)
+            axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
             want = shape[0] if space == 'output' else shape[1]
             if axis.shape[0] != want:
                 raise ValueError(f'axis for {name} is {axis.shape[0]}-wide, {space} space needs {want}')

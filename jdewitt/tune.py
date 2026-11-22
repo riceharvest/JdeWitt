@@ -356,7 +356,7 @@ def blast_server(server, rows, adapter_id, k, reset):
 def tune_command(args):
     import torch
 
-    from .spanfit import load_records, per_layer_axes, shared_axis
+    from .spanfit import load_records, per_layer_axes, per_layer_subspace, shared_axis
     from .gguf_adapters import (discover_writeback_targets, gguf_weight_shapes,
                                 serve_factors, write_adapter)
     from .ggufio import dequantize_tensor, preview_edit, revert_inplace
@@ -390,15 +390,21 @@ def tune_command(args):
     axes_by_shape = {}
     for shape in shapes_requested:
         try:
-            axes_by_shape[shape] = (shared_axis(records)[0] if shape == 'shared'
-                                    else per_layer_axes(records))
+            if args.rank > 1:
+                # rank-k: the top-k per-layer contrast subspace. Every extra direction
+                # is another thing the artifact has to store, which the codec gate
+                # measures, so rank is a searched dimension and not a preference.
+                axes_by_shape[shape] = per_layer_subspace(records, args.rank)
+            else:
+                axes_by_shape[shape] = (shared_axis(records)[0] if shape == 'shared'
+                                        else per_layer_axes(records))
         except SystemExit as error:
             raise ValueError(
                 f'{args.records} cannot produce a bad-minus-good axis ({error}). A ladder over '
                 f'records with one label is not a measurement: re-run capture with a suite that '
                 f'makes this model both decline harmful rows and comply with harmless ones '
                 f'(`fit_usable` in capture\'s report says whether it does).') from error
-    width = int(next(iter(axes_by_shape.values())).shape[1])
+    width = int(next(iter(axes_by_shape.values())).shape[-1])
 
     artifact_shapes = gguf_weight_shapes(args.gguf)
     discovered = discover_writeback_targets(artifact_shapes, width)
@@ -468,7 +474,8 @@ def tune_command(args):
                     axis = axes_by_shape[family['shape']][layer]
                     if float(axis.norm()) == 0.0:
                         continue
-                    a, b = serve_factors(axis.reshape(1, -1), weight, 1.0)
+                    direction = axis if axis.dim() == 2 else axis.reshape(1, -1)
+                    a, b = serve_factors(direction, weight, 1.0)
                     pairs[family['key']].append((name, a, b))
                 del weight
         for family in families:

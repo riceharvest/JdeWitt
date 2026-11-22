@@ -418,6 +418,7 @@ def main():
     tune.add_argument('--corpus-chars',type=int,default=1500,help='characters per derived corpus: this is what keeps one reading at a few seconds, so the loop iterates in about a minute')
     tune.add_argument('--shapes',default='perlayer,shared')
     tune.add_argument('--footprints',default='all',help="layer footprints to search, 'all' or a-b ranges (e.g. 'all,10-27,16-27'): the footprint is the strongest damage lever and costs ZERO generated tokens to test")
+    tune.add_argument('--rank',type=int,default=1,help='directions per layer in the ladder: rank>1 searches the top-k contrast subspace instead of a single direction')
     tune.add_argument('--scales',default='1.0,1.5')
     tune.add_argument('--drift-budget',type=float,default=0.02,help='max |control ln-PPL drift| an arm may cost')
     tune.add_argument('--min-edit-cos',type=float,default=0.9,help='reject an arm whose edit does not survive the artifact codec: cos(realized, intended) floor, measured by a real requant round-trip on sampled tensors (0 disables)')
@@ -465,6 +466,7 @@ def main():
     editq.add_argument('--out',type=Path,required=True)
     editq.add_argument('--records',type=Path,required=True)
     editq.add_argument('--shape',choices=('perlayer','shared'),default='perlayer')
+    editq.add_argument('--rank',type=int,default=1,help='directions per layer: rank-k removes the layer top-k contrast subspace (each extra direction is one more thing the file must store)')
     editq.add_argument('--scale',type=float,default=1.0)
     editq.add_argument('--layers',default=None,help="footprint 'a-b' (default: every discovered layer)")
     editq.add_argument('--edit-type',default='auto',help='type the edited tensors are re-encoded at: auto picks the smallest type whose delivered cos clears --min-cos (q6_k -> q8_0 -> f16), or name one')
@@ -723,13 +725,16 @@ def main():
             from .capture import capture_command
             result=capture_command(args)
         elif args.command=='edit-quantized':
-            from .spanfit import load_records,parse_layer_ids,per_layer_axes,shared_axis
+            from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
             from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes
             from .ggufio import compare_edit
             from .rewrite import rewrite_with_edits
             records=load_records(args.records)
-            axes=(shared_axis(records)[0] if args.shape=='shared' else per_layer_axes(records))
-            width=int(axes.shape[1])
+            if args.rank > 1:
+                axes=per_layer_subspace(records,args.rank)
+            else:
+                axes=(shared_axis(records)[0] if args.shape=='shared' else per_layer_axes(records))
+            width=int(axes.shape[-1])
             discovered=discover_writeback_targets(gguf_weight_shapes(str(args.gguf)),width)
             layers=sorted(discovered['targets'])
             if not layers:

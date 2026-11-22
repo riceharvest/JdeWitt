@@ -91,7 +91,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
 
     from .ggufwrite import parse_container, tensor_nbytes, write_container
     from .quantize import canonical_type
-    from .ggufio import decode_values
+    from .ggufio import axis_delta, decode_values
     from .quants import CODECS as QUANT_CODECS
 
     src, out = Path(src), Path(out)
@@ -128,11 +128,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             edit = edits[name]
             if isinstance(edit, tuple):
                 axis, space = edit
-                axis = np.asarray(axis, dtype=np.float32).reshape(-1)
-                if space == 'output':
-                    delta = -scale * (axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix))
-                else:
-                    delta = -scale * ((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix.T)).T)
+                delta = axis_delta(axis, matrix, scale, space)
             else:
                 delta = np.asarray(edit, dtype=np.float32).reshape(logical)
             edited = matrix + delta
@@ -161,11 +157,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     for name in sorted(payloads):
         entry = edits[name]
         if isinstance(entry, tuple):
-            axis = np.asarray(entry[0], dtype=np.float32).reshape(-1)
+            axis = np.asarray(entry[0], dtype=np.float32)
+            axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
             digest.update(name.encode())
             digest.update(np.round(axis, 6).tobytes())
             layer = int(name.split('.')[1])
-            layer_norms[layer] = round(float(np.linalg.norm(axis)), 4)
+            layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
     fingerprint = {'edit_sha256': digest.hexdigest()[:32],
                    'edited': len(payloads), 'untouched': len(header['tensors']) - len(payloads),
                    'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,

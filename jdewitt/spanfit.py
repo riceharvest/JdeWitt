@@ -107,6 +107,37 @@ def shared_axis(records: list[tuple], label_bad: str = "bad",
     return (a.unsqueeze(0).expand(M.shape[0], D).float().contiguous(), a.float())
 
 
+def per_layer_subspace(records: list[tuple], rank: int = 2,
+                       label_bad: str = "bad", label_good: str = "good") -> torch.Tensor:
+    """[L, rank, W] orthonormal directions per layer, best first.
+
+    Rank-1 removal leaves a residual: refusal is not one vector on every model, and a
+    second direction can carry what the first left behind. The subspace is the top-k
+    right singular vectors of the bad-minus-good contrast matrix, each sign-aligned to
+    the layer's mean difference so the direction keeps its meaning (removing it must
+    reduce the refusal side). Rows are orthonormal, so projection out of the subspace
+    is `W - D^T D W` and k stacked rank-1 removals equal that exactly.
+    """
+    bad = group_means(records, label_bad)                  # [N_bad, L, W]
+    good = group_means(records, label_good)                # [N_good, L, W]
+    layers = bad.shape[1]
+    width = bad.shape[2]
+    rank = max(1, min(int(rank), int(bad.shape[0]), width))
+    out = torch.zeros(layers, rank, width)
+    for layer in range(layers):
+        matrix = (bad[:, layer, :] - good[:, layer, :].mean(0)).float()
+        _u, _s, vh = torch.linalg.svd(matrix, full_matrices=False)
+        basis = vh[:rank].clone()
+        mean = matrix.mean(0)
+        for index in range(basis.shape[0]):
+            if float(basis[index] @ mean) < 0:
+                basis[index] = -basis[index]
+        if float(basis.norm(dim=1).min()) < 1e-8:
+            raise ValueError(f'layer {layer} has a degenerate contrast subspace')
+        out[layer] = basis / basis.norm(dim=1, keepdim=True)
+    return out.contiguous()
+
+
 def protection_subspace(records: list[tuple], label: str, k: int = 8) -> torch.Tensor:
     """Top-k principal directions [L, k, D] of mean-centered answer-span
     activations for rows with the given label - the directions "good behavior"
