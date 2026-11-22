@@ -290,10 +290,11 @@ DRYRUN_METHOD = (
     'is reachable only when at least one context both round-trips through the artifact vocabulary and occurs in '
     'a carrier sentence; a form that matches only in isolation cannot fire in running text and fails the run. '
     'Coverage tokenizes every declining base answer and asks whether any table context occurs in that answer; '
-    'opener coverage restricts the occurrence to start before step %d. The prompt plan runs the same matcher '
+    'opener coverage restricts the occurrence to start before step %d. An opener_window entry only fires before '
+    'step %d; an any-scope entry fires anywhere in the path. The prompt plan runs the same matcher '
     'over the prompt token path; those positions are descriptive because prompt tokens are not generated, and the '
     'reference plan (an authored declining continuation on each probe) is the decode-step schedule the driver '
-    'would follow if the model emitted that text.' % OPENER_WINDOW_TOKENS)
+    'would follow if the model emitted that text.' % (OPENER_WINDOW_TOKENS, OPENER_WINDOW_TOKENS))
 
 
 def _server_json(port, path, payload=None, timeout=60):
@@ -416,6 +417,11 @@ def _occurrences(path, sequence):
     return [index for index in range(len(path) - len(sequence) + 1) if path[index:index + len(sequence)] == sequence]
 
 
+def _scope_allows(entry, start_step):
+    """opener_window rules may only fire before the window closes; 'any' rules fire anywhere."""
+    return entry['scope'] == 'any' or start_step < OPENER_WINDOW_TOKENS
+
+
 def entry_sequences(entries, port, tokens):
     """Per entry: tokenized bare/spaced contexts and the tokenized replacement prefix."""
     result = []
@@ -445,6 +451,8 @@ def _schedule(ids, tokens, entry_items):
         for context_item in item['contexts']:
             sequence = context_item['ids']
             for start in _occurrences(ids, sequence):
+                if not _scope_allows(entry, start):
+                    continue
                 end = start + len(sequence) - 1
                 key = (entry['id'], start, end)
                 if key in seen:
@@ -452,8 +460,8 @@ def _schedule(ids, tokens, entry_items):
                 seen.add(key)
                 replacement = item['replacement']
                 events.append({'entry_id': entry['id'], 'context': context_item['context'],
-                               'start_step': start, 'end_step': end, 'window': [start, end],
-                               'suppress_at_step': end, 'suppressed_id': sequence[-1],
+                               'scope': entry['scope'], 'start_step': start, 'end_step': end,
+                               'window': [start, end], 'suppress_at_step': end, 'suppressed_id': sequence[-1],
                                'suppressed_piece': piece_text(sequence[-1], tokens), 'bias': -100,
                                'replacement': entry['replacement'],
                                'replacement_ids': replacement['ids'] if replacement else None,
@@ -530,7 +538,8 @@ def reachability(entries, port, tokens):
                 raise RuntimeError(f'{entry["id"]} ({name}): served tokenizer failed: {error}') from error
             contexts.append({'context': name, 'ids': ids,
                              'roundtrips': bool(ids) and detokenize(ids, tokens) == text,
-                             'occurs_in_carrier': bool(_occurrences(carrier_ids, ids))})
+                             'occurs_in_carrier': any(_scope_allows(entry, start)
+                                                      for start in _occurrences(carrier_ids, ids))})
         reachable = any(item['ids'] and item['roundtrips'] and item['occurs_in_carrier'] for item in contexts)
         rows.append({'entry_id': entry['id'], 'reachable': reachable, 'contexts': contexts})
     return rows
@@ -591,7 +600,8 @@ def coverage_for(loaded, missing, port, tokens, entry_items):
             opener_hit = False
             for entry_item in entry_items:
                 for context_item in entry_item['contexts']:
-                    starts = _occurrences(ids, context_item['ids'])
+                    starts = [start for start in _occurrences(ids, context_item['ids'])
+                              if _scope_allows(entry_item['entry'], start)]
                     if starts:
                         hits.add(entry_item['entry']['id'])
                         if any(start < OPENER_WINDOW_TOKENS for start in starts):
