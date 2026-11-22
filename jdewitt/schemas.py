@@ -154,6 +154,27 @@ SCHEMAS = {
                        'per_dtype': {'type': 'object'}, 'decode_only_dtypes': {'type': 'object'},
                        'port_decode_only_dtypes': {'type': 'object'},
                        'unsupported_dtypes': {'type': 'object'}, 'note': {'type': 'string'}}},
+    'export-smoke.command.json': {
+        'description': 'export-smoke output contract: one artifact, the recorded serve argv, '
+                       'what the runtime returned and the serve verdict.',
+        'type': 'object',
+        'required': ['artifact', 'argv', 'props_identity', 'completion', 'verdict', 'cost_seconds'],
+        'properties': {
+            'artifact': {'type': 'object',
+                         'required': ['path', 'sha256', 'bytes', 'architecture', 'tensors', 'dtypes'],
+                         'properties': {'path': {'type': 'string'},
+                                        'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                        'bytes': {'type': 'integer'},
+                                        'architecture': {'type': 'string'},
+                                        # Unreadable headers (truncated files) are a
+                                        # legitimate verdict, so these stay untyped.
+                                        'tensors': {}, 'dtypes': {'type': 'object'}}},
+            'argv': {'type': 'array', 'items': {'type': 'string'}},
+            'props_identity': {'type': 'object'},
+            'completion': {'type': 'object'},
+            'verdict': {'type': 'object', 'required': ['servable', 'reason'],
+                        'properties': {'servable': {}, 'reason': {'type': 'string'}}},
+            'cost_seconds': {'type': 'number'}}},
     'verdict-audit.command.json': {
         'description': 'verdict-audit output contract.',
         'type': 'object',
@@ -349,6 +370,7 @@ EMIT_SCHEMAS = {
     'suites-compare': 'suites-compare.command.json',
     'studies-compare': 'studies-compare.command.json',
     'quants-audit': 'quants-audit.command.json',
+    'export-smoke': 'export-smoke.command.json',
     'suite-stats': 'suite-stats.command.json',
     'suite-diff': 'suite-diff.command.json',
     'study-metrics': 'study-metrics.command.json',

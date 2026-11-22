@@ -33,6 +33,7 @@ import time
 from pathlib import Path
 
 from .answers import atomic_json
+from .errors import NoVerifiedAdapter
 from .profiles import (build_profile, is_flat, layer_axis, profile_name, profiled_axes,
                        self_check)
 from .ppl import ladder, ln, perplexity
@@ -464,8 +465,16 @@ def tune_command(args):
     artifact_shapes = gguf_weight_shapes(args.gguf)
     discovered = discover_writeback_targets(artifact_shapes, width)
     if not discovered['targets']:
-        raise ValueError(f'{args.gguf} carries no residual-write projection at width {width}; '
-                         f'the records and the artifact do not belong to the same model')
+        from .gguf_adapters import artifact_adapter_view
+        view = artifact_adapter_view(artifact_shapes)
+        raise NoVerifiedAdapter(
+            f'{args.gguf} carries no residual-write projection at width {width}; the records and '
+            f'the artifact do not belong to the same model. Its own writeback names put the hidden '
+            f'width at {view["hidden_width"]} and width-matching tensors it would not edit are '
+            f'{view["unmapped_writeback_width"][:8] or "none"}. List what the file carries with '
+            f'`python -m jdewitt.spanfit targets --gguf-in {args.gguf}`; do not rename a tensor to '
+            f'make the widths agree',
+            width=width, artifact=str(args.gguf), **view)
     layers = sorted(discovered['targets'])
     covered = layers[: int(axes_by_shape[shapes_requested[0]].shape[0])]
     arch = _read_arch(args.gguf)
@@ -637,8 +646,20 @@ def tune_command(args):
     # which reads as a flat, confident "no effect" table -- a fake measurement.
     for family in families:
         if family['key'] not in adapters:
-            raise ValueError(f"no adapter was built for {family['key']}: the axes and the "
-                             f"artifact disagree on that footprint")
+            without = [f['key'] for f in families if f['key'] not in adapters]
+            unmapped = discovered['unmapped_writeback_width'][:8]
+            raise NoVerifiedAdapter(
+                f"no adapter was built for {family['key']}: the axes and the artifact disagree on "
+                f"that footprint. Families without an adapter: {without[:8]}"
+                f"{'...' if len(without) > 8 else ''}; the artifact carries residual-write "
+                f"projections at width {width} for layers "
+                f"{sorted(discovered['targets'])[:8]}, the ladder footprint covers layers "
+                f"{first_layer}-{last_layer}, and width-matching tensors it would not edit are "
+                f"{unmapped or 'none'}. Widening the footprint would turn this into a ladder over "
+                f"a partial edit, so it refuses; re-capture against this artifact instead",
+                family=family['key'], families_without_adapter=without[:8], width=width,
+                discovered_layers=sorted(discovered['targets']), coverage=[first_layer, last_layer],
+                unmapped_writeback_width=discovered['unmapped_writeback_width'], basis=basis)
         blast = cache.get(f"blast|{family['key']}") or {}
         if 'ppl' not in blast:
             raise ValueError(f"adapter blast test failed for {family['key']}: {blast}")

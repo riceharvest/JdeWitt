@@ -32,8 +32,8 @@ def completion_script(parser, shell):
         raise ValueError('parser has no subcommands')
     commands = []
     per_command_opts = {}
-    for subaction in subactions._get_subactions():
-        child = subactions.choices[subaction.dest]
+    helped = {subaction.dest: subaction.help for subaction in subactions._get_subactions()}
+    for name, child in subactions.choices.items():
         opts = []
         for argument in child._actions:
             if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
@@ -41,9 +41,9 @@ def completion_script(parser, shell):
             opts.extend(argument.option_strings or [])
             if argument.metavar and not argument.option_strings:
                 opts.append('<' + argument.metavar.rstrip(']') + '>')
-        per_command_opts[subaction.dest] = ' '.join(sorted(set(opts)))
-        help_text = (subaction.help or child.description or '').replace(':', '-')
-        commands.append((subaction.dest, help_text))
+        per_command_opts[name] = ' '.join(sorted(set(opts)))
+        help_text = (helped.get(name) or child.description or '').replace(':', '-')
+        commands.append((name, help_text))
     command_names = ' '.join(sorted(name for name, _help in commands))
     if shell == 'bash':
         lines = [f'_{safe_prog}_completion() {{',
@@ -94,8 +94,8 @@ def command_manifest(parser):
     for action in parser._actions:
         if not isinstance(action, _argparse._SubParsersAction):
             continue
-        for subaction in action._get_subactions():
-            child = action.choices[subaction.dest]
+        helped = {subaction.dest: subaction.help for subaction in action._get_subactions()}
+        for name, child in action.choices.items():
             arguments = []
             for argument in child._actions:
                 if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
@@ -104,8 +104,8 @@ def command_manifest(parser):
                 arguments.append({'flags': list(argument.option_strings or [argument.dest]),
                                   'dest': argument.dest, 'required': bool(argument.required),
                                   'choices': [str(choice) for choice in choices] if choices else None})
-            commands.append({'command': subaction.dest, 'help': subaction.help or child.description,
-                             'arguments': arguments, 'schema_enforced': subaction.dest in EMIT_SCHEMAS})
+            commands.append({'command': name, 'help': helped.get(name) or child.description,
+                             'arguments': arguments, 'schema_enforced': name in EMIT_SCHEMAS})
     commands.sort(key=lambda item: item['command'])
     return {'scope': 'Self-description of the installed CLI; anything marked schema_enforced fails its own command if the writer drifts.',
             'commands': commands,
@@ -114,7 +114,13 @@ def command_manifest(parser):
             'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
 
 
-def main():
+def build_parser():
+    """Construct the full argparse tree without importing any command's runtime.
+
+    Kept separate from main() so auditing tools can walk the same parser the
+    installed CLI uses; building it must stay model-free (see
+    scripts/help_audit.py and tests/test_agent_interface.py).
+    """
     parser=AgentParser(description='B70-only ablation with real answer and quantized release gates')
     from . import __version__
     parser.add_argument('--version',action='version',version=f'jdewitt {__version__}')
@@ -170,6 +176,14 @@ def main():
     qaudit=sub.add_parser('quants-audit',help='Dequant/requant falsifier for the GGML codec ports over a real GGUF: byte identity + worst drift on bounded block samples; no model')
     qaudit.add_argument('file',type=Path)
     qaudit.add_argument('--blocks',type=int,default=4096,help='block samples per dtype')
+    esmoke=sub.add_parser('export-smoke',help='Serve one exported GGUF with a real llama-server on a free port: header identity, /health, /props path check, one greedy completion, one JSON; exit 0 iff served (-ngl 0, CPU)')
+    esmoke.add_argument('--gguf',type=Path,required=True)
+    esmoke.add_argument('--server',type=Path,help='llama-server binary; required unless --no-server')
+    esmoke.add_argument('--ctx',type=int,default=4096)
+    esmoke.add_argument('--max-tokens',type=int,default=16)
+    esmoke.add_argument('--out',type=Path,default=Path('export-smoke.json'),help='JSON report path; the server log is written beside it')
+    esmoke.add_argument('--server-arg',action='append',default=[],metavar='ARG',help='Extra llama-server argv token, passed in order and recorded; use --server-arg=--flag for dash-leading values (repeatable)')
+    esmoke.add_argument('--no-server',action='store_true',help='Header half only: servable is "unmeasured", never true')
     editm.add_argument('input',type=Path)
     editm.add_argument('output',type=Path)
     editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
@@ -522,8 +536,14 @@ def main():
     revert.add_argument('sidecar',type=Path)
     from .arguments import add_arguments
     add_arguments(sub)
+    return parser
+
+
+def main():
+    parser=build_parser()
     args=parser.parse_args()
     try:
+        exit_code=None
         if args.command=='tree-ranker-data':
             from .tree_behavior_data import prepare_ranker_data
             result=prepare_ranker_data(args.config)
@@ -611,6 +631,10 @@ def main():
         elif args.command=='quants-audit':
             from .agent import quants_audit
             result=quants_audit(args.file,args.blocks)
+        elif args.command=='export-smoke':
+            from .export_smoke import export_smoke_command
+            result=export_smoke_command(args)
+            exit_code=0 if result['verdict']['servable'] is True else 1
         elif args.command=='verify':
             from .verify import verify_files
             result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)
@@ -784,7 +808,8 @@ def main():
             result=capture_command(args)
         elif args.command=='edit-quantized':
             from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
-            from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes
+            from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes,inferred_hidden_width
+            from .errors import NoVerifiedAdapter
             from .ggufio import compare_edit
             from .rewrite import rewrite_with_edits
             records=load_records(args.records)
@@ -793,10 +818,20 @@ def main():
             else:
                 axes=(shared_axis(records)[0] if args.shape=='shared' else per_layer_axes(records))
             width=int(axes.shape[-1])
-            discovered=discover_writeback_targets(gguf_weight_shapes(str(args.gguf)),width)
+            shapes=gguf_weight_shapes(str(args.gguf))
+            discovered=discover_writeback_targets(shapes,width)
             layers=sorted(discovered['targets'])
             if not layers:
-                raise ValueError(f'{args.gguf} carries no residual-write projection at width {width}')
+                raise NoVerifiedAdapter(f'{args.gguf} carries no residual-write projection at width {width}: '
+                                        f'its own writeback names put the hidden width at {inferred_hidden_width(shapes)}, '
+                                        f'and width-matching tensors it would not edit are '
+                                        f'{discovered["unmapped_writeback_width"][:8] or "none"}. The records and the '
+                                        f'artifact have to belong to the same model; list what the file carries with '
+                                        f'`python -m jdewitt.spanfit targets --gguf-in {args.gguf}`',
+                                        width=width, records_width=width,
+                                        artifact_hidden_width=inferred_hidden_width(shapes),
+                                        unmapped_writeback_width=discovered['unmapped_writeback_width'],
+                                        artifact=str(args.gguf))
             if args.layers:
                 wanted=set(parse_layer_ids(args.layers))
                 layers=[layer for layer in layers if layer in wanted]
@@ -805,7 +840,14 @@ def main():
                 for name in discovered['targets'][layer]:
                     edits[name]=(axes[layer].numpy(),args.axis_space)
             if not edits:
-                raise ValueError('the footprint selects no tensor this artifact carries')
+                raise NoVerifiedAdapter(f'the footprint selects no tensor this artifact carries: {len(layers)} '
+                                        f'discovered layer(s) survive the --layers filter, so the axes '
+                                        f'({int(axes.shape[0])} layer rows) and the footprint do not cover the same '
+                                        f'layers. Discovered layers: {sorted(discovered["targets"])[:8]}; pass a '
+                                        f'--layers range the artifact actually has, do not edit a partial model and '
+                                        f'call it done',
+                                        discovered_layers=sorted(discovered['targets']), width=width,
+                                        artifact=str(args.gguf))
             sample=list(edits)[:1]+list(edits)[-1:]
             probe={name:edits[name] for name in sample}
             attempts=['q6_k','q8_0','f16'] if args.edit_type=='auto' else [args.edit_type]
@@ -899,6 +941,8 @@ def main():
         if args.command in EMIT_SCHEMAS:
             enforce(args.command,result)
         print(json.dumps(result,indent=2,allow_nan=False))
+        if exit_code is not None:
+            raise SystemExit(exit_code)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
         print(json.dumps({'error':{'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)
