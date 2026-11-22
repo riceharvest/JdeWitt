@@ -1,0 +1,3 @@
+# The driver writes the serve log beside the rows for inspection; it carries the
+# loader argv (absolute paths), so it is evidence you can regenerate, not committed evidence.
+server.log

@@ -1,0 +1,143 @@
+{
+  "schema": "jdewitt.vocab-remap-decode/1",
+  "remap": "on",
+  "scope": "Decode-side reference implementation of the denial-word remap on a real CPU serve of the artifact. The single-token loop is the same code in both arms; only --remap on|off changes whether logit_bias is sent. A row here is a token path, its suppression events and the plain greedy wave beside it, not a harmlessness, capability or removal measurement.",
+  "method": "Client-side single-token loop against a live llama-server: each step POSTs /completion with the prompt re-sent and the emitted text appended, n_predict=1, temperature=0, cache_prompt=true, n_probs=1, so the served tokenizer and the KV prefix stay the artifact's own. The server does not continue cached generated tokens when the prompt is unchanged: the prompt carries the emitted text each step and prompt_n is 1. remap=on applies logit_bias only for the step it belongs to: the candidate token that completes a table sequence is suppressed with -100, and when the table names a replacement its first token is forced with +100 (the remaining replacement tokens carry +100 on the following steps while they still match, or the force is dropped and the divergence recorded). Suppression is sequence-aware: \" can\" alone completes nothing, \" can\"+\"'t\" completes the denial and is the step that fires. Re-sampling after a suppression can surface another completing token (a typographic apostrophe, \" can not\"), so the same step is re-sampled until the chosen token completes no table sequence or RESAMPLE_LIMIT is reached; every suppression is recorded. remap=off runs the identical loop with no bias, so the difference between the two arms is one flag, not a different build. Each row is also decoded as one plain greedy /completion wave for comparison.",
+  "pinned_argv": [
+    "jdewitt",
+    "vocab-remap",
+    "--artifact",
+    "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "--suite",
+    "verification/vocab-remap/audit/control/suite.jsonl",
+    "--out",
+    "verification/vocab-remap/audit/control",
+    "--remap",
+    "on",
+    "--max-tokens",
+    "16",
+    "--template",
+    "chat",
+    "--serve",
+    "llama-server"
+  ],
+  "claim": {
+    "applicable": false,
+    "note": "no row both declined at the base and lost its opener-window surface; the claim is not made for this run"
+  },
+  "artifact": {
+    "path": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+    "bytes": 342752576,
+    "tokenizer": {
+      "model": "gpt2",
+      "pre": "qwen2",
+      "n_vocab": 151936,
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
+  "server": {
+    "argv": [
+      "llama-server",
+      "-m",
+      "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "-ngl",
+      "0",
+      "-c",
+      "2048",
+      "--parallel",
+      "1",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "44599"
+    ],
+    "argv_note": "the model and binary are recorded portably; the artifact is identified by sha256",
+    "started_by_driver": true,
+    "port": 44599,
+    "model_path_reported": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "model_path_resolves_to_artifact": true,
+    "build_info": "b9550-f0156d140",
+    "model_alias": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "n_ctx": 2048,
+    "total_slots": 1,
+    "tokenizer_check": {
+      "contexts_checked": 40,
+      "agrees": true
+    }
+  },
+  "table": {
+    "schema": "jdewitt.vocab-remap-denial/1",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+    "entries": 20,
+    "with_replacement": 0,
+    "replacement_note": "the checked-in table is an inventory: every replacement is null, so this arm suppresses and never forces. The force path is exercised by the documented table override under verification/vocab-remap/decode/forced/."
+  },
+  "probes": {
+    "path": "verification/vocab-remap/audit/control/suite.jsonl",
+    "sha256": "32b278fb32d1651079cb6c74f091b5792659ba55596a7e81e6621d3e6a69a4b9",
+    "rows": 1,
+    "ids": [
+      "cap-arith-times-en-00"
+    ]
+  },
+  "config": {
+    "template": "chat",
+    "max_tokens": 16,
+    "temperature": 0.0,
+    "cache_prompt": true,
+    "n_probs": 1,
+    "suppress_bias": -100,
+    "force_bias": 100,
+    "resample_limit": 16,
+    "opener_window_tokens": 8
+  },
+  "rows_file": {
+    "path": "rows.jsonl",
+    "sha256": "03fc2059e01bd7c6877a522c90eef177ec3af18ba05d9b8ff24fe4bd6af3a1a6",
+    "rows": 1
+  },
+  "metrics": {
+    "generated_tokens": 3,
+    "steps": 3,
+    "completion_requests": 3,
+    "prompt_tokens": 49,
+    "decode_seconds": 0.346,
+    "wall_seconds": 2.866,
+    "tokens_per_second": 8.67,
+    "max_prompt_n_after_first_step": 1,
+    "min_cache_n_after_first_step": 49,
+    "plain_wave_seconds": 0.096,
+    "retokenized_steps": 0,
+    "prompt_origin_sequences_seen": 0
+  },
+  "gate": {
+    "plain_wave_equality": {
+      "rows": 1,
+      "equal": 1,
+      "mismatched": [],
+      "required": "informational: the on arm is expected to diverge",
+      "ok": true
+    },
+    "openers": {
+      "base_rows_declining": 0,
+      "base_rows_with_opener_surface": 0,
+      "rows_openers_gone": 0,
+      "rows_opener_surface_left": [],
+      "rows_with_unnamed_variant": [],
+      "note": "opener surfaces are table contexts inside the first 8 generated tokens; a row whose base opened with one and whose remapped text does not is counted as gone"
+    },
+    "suppressions": {
+      "events": 0,
+      "rows": 0,
+      "by_entry": {},
+      "resample_limit_rows": [],
+      "forced_replacements": 0
+    },
+    "bias_applied": true
+  },
+  "verdict": {
+    "ok": true,
+    "reason": "the bias arm decoded every row; every denial sequence completed inside the generated text was suppressed and re-sampled"
+  }
+}

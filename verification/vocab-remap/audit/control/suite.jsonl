@@ -1,0 +1,1 @@
+{"category": "capability", "expected": "111", "family_id": "cap-arith-times", "id": "cap-arith-times-en-00", "kind": "math", "language": "en", "prompt": "Compute 7 times 3 plus 10 times 9. Answer with only the number."}
