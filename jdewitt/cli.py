@@ -375,8 +375,10 @@ def build_parser():
     import_suite=sub.add_parser('import-suite',help='Build suites from public prompt corpora with recorded provenance')
     import_suite.add_argument('spec',type=Path)
     import_suite.add_argument('--output',type=Path,required=True)
+    import_suite.add_argument('--provenance',type=Path,help='Canonical public-corpora census; stamps every row with its source and licence')
     validate_import_parser=sub.add_parser('validate-import',help='Check an import spec and local files; no downloads, no writes')
     validate_import_parser.add_argument('spec',type=Path)
+    validate_import_parser.add_argument('--provenance',type=Path,help='Canonical public-corpora census to resolve every source against')
     run=sub.add_parser('run',help='Run a resumable experiment through sealed quantized certification')
     run.add_argument('config',type=Path)
     run.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
@@ -758,7 +760,7 @@ def main():
         elif args.command in {'import-suite','validate-import'}:
             from .sources import import_suites,validate_import
             spec=json.loads(args.spec.read_text())
-            result=validate_import(spec) if args.command=='validate-import' else import_suites(spec,args.output)
+            result=validate_import(spec,args.provenance) if args.command=='validate-import' else import_suites(spec,args.output,args.provenance)
         elif args.command=='methods':
             from .methods import method_catalog
             result=method_catalog()

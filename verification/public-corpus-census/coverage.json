@@ -1,0 +1,137 @@
+{
+  "method": "lexical keyword screen over the authored harsh-suite family vocabulary; a hit is a coverage lead, not a family claim",
+  "families": {
+    "chemical-biological": {
+      "multilingual-harmless-harmful": 1,
+      "semantic-harmful": 2
+    },
+    "copyright": {
+      "multilingual-harmless-harmful": 7,
+      "semantic-harmful": 2,
+      "semantic-harmless": 8,
+      "strongreject": 2,
+      "xstest": 2
+    },
+    "cybercrime-intrusion": {
+      "multilingual-harmless-harmful": 115,
+      "semantic-harmful": 80,
+      "semantic-harmless": 7,
+      "strongreject": 10
+    },
+    "harassment-bullying": {
+      "multilingual-harmless-harmful": 1,
+      "semantic-harmful": 15,
+      "semantic-harmless": 7,
+      "strongreject": 10
+    },
+    "illegal": {
+      "multilingual-harmless-harmful": 16,
+      "semantic-harmful": 31,
+      "semantic-harmless": 2,
+      "strongreject": 31,
+      "xstest": 10
+    },
+    "misinformation-disinformation": {
+      "multilingual-harmless-harmful": 6,
+      "semantic-harmful": 27,
+      "semantic-harmless": 6,
+      "strongreject": 4
+    },
+    "harmful": {
+      "deccp": 2,
+      "multilingual-harmless-harmful": 1,
+      "semantic-harmful": 34,
+      "semantic-harmless": 8,
+      "strongreject": 18,
+      "xstest": 38
+    },
+    "violence": {
+      "deccp": 1,
+      "multilingual-harmless-harmful": 55,
+      "semantic-harmful": 35,
+      "semantic-harmless": 1,
+      "strongreject": 11,
+      "xstest": 11
+    },
+    "sexual-content": {
+      "multilingual-harmless-harmful": 11,
+      "semantic-harmful": 5,
+      "semantic-harmless": 1,
+      "strongreject": 33,
+      "xstest": 4
+    },
+    "privacy": {
+      "multilingual-harmless-harmful": 3,
+      "semantic-harmful": 4,
+      "semantic-harmless": 4,
+      "strongreject": 10,
+      "xstest": 12
+    },
+    "fraud-deception": {
+      "multilingual-harmless-harmful": 39,
+      "semantic-harmful": 55,
+      "semantic-harmless": 24,
+      "strongreject": 29,
+      "xstest": 5
+    },
+    "non-violent-crimes": {
+      "semantic-harmful": 60,
+      "semantic-harmless": 3,
+      "strongreject": 12,
+      "xstest": 10
+    },
+    "illegal-goods-and-services": {
+      "semantic-harmful": 7,
+      "semantic-harmless": 1,
+      "strongreject": 11,
+      "xstest": 3
+    },
+    "expert-advice": {
+      "semantic-harmful": 1,
+      "strongreject": 3
+    },
+    "government-decision-making": {
+      "deccp": 11,
+      "multilingual-harmless-harmful": 3,
+      "semantic-harmful": 23,
+      "semantic-harmless": 11,
+      "strongreject": 11,
+      "xstest": 11
+    },
+    "economic-harm": {
+      "multilingual-harmless-harmful": 27,
+      "semantic-harmful": 20,
+      "semantic-harmless": 15,
+      "strongreject": 10,
+      "xstest": 1
+    },
+    "physical-harm": {
+      "multilingual-harmless-harmful": 7,
+      "semantic-harmful": 6,
+      "strongreject": 6,
+      "xstest": 4
+    },
+    "hate-harassment-and-discrimination": {
+      "semantic-harmful": 5,
+      "semantic-harmless": 2,
+      "strongreject": 14,
+      "xstest": 8
+    },
+    "malware-hacking": {
+      "multilingual-harmless-harmful": 87,
+      "semantic-harmful": 31,
+      "semantic-harmless": 18,
+      "strongreject": 7
+    },
+    "disinformation-and-deception": {
+      "multilingual-harmless-harmful": 4,
+      "semantic-harmful": 27,
+      "strongreject": 5
+    }
+  },
+  "not_checked": [
+    "that a keyword hit is the same topic family as ours",
+    "that a source covers a family it does not mention lexically",
+    "harmfulness of any prompt to a particular model"
+  ]
+}
