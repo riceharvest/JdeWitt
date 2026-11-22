@@ -67,44 +67,48 @@ def discover_vocab_tensors(artifact):
     """The token-embedding/output-head tensors, read off the artifact itself.
 
     Both roles are token-row matrices: a 2-D tensor whose logical row count is the
-    tokenizer's vocabulary size. The name decides which role it plays (a table of
-    per-model tensor names is what this avoids — the header says what the file
-    carries). A tied model (Qwen2.5-0.5B) carries no ``output.weight``: the
-    embedding matrix is the output head, and the edit then lands on it once.
+    tokenizer's vocabulary size. Shapes come from the repo's existing header-driven
+    discovery (``gguf_adapters.gguf_weight_shapes``: name -> dims from the file's own
+    tensor records) and the role from the artifact name, so there is no per-model
+    table of tensor names. A tied model (Qwen2.5-0.5B) carries no ``output.weight``:
+    the embedding matrix is the output head, and the edit then lands on it once.
     A vocabulary-wide tensor with no recognised role is reported, never edited.
     """
+    from .gguf_adapters import gguf_weight_shapes
     from .ggufio import header_reader
 
     tokenizer = read_tokenizer(artifact)
     n_vocab = len(tokenizer['tokens'])
     reader = header_reader(artifact)
+    shapes = gguf_weight_shapes(artifact, reader=reader)
+    records = {tensor.name: tensor for tensor in reader.tensors}
     tensors, unmapped, vocab_wide = {}, [], []
-    for tensor in reader.tensors:
-        if len(tensor.shape) != 2:
+    for name, dims in shapes.items():
+        if len(dims) != 2 or int(dims[1]) != n_vocab:
             continue
-        dims = tuple(int(x) for x in tensor.shape)  # ggml order (in, out)
-        if dims[1] != n_vocab:
-            continue
-        record = {'name': tensor.name, 'qtype': tensor.tensor_type.name,
+        tensor = records[name]
+        record = {'name': name, 'qtype': tensor.tensor_type.name,
                   'rows': int(dims[1]), 'row_width': int(dims[0]),
                   'offset': int(tensor.data_offset), 'bytes': int(tensor.n_bytes)}
-        vocab_wide.append(tensor.name)
-        role = _vocab_role(tensor.name)
+        vocab_wide.append(name)
+        role = _vocab_role(name)
         if role is None:
             unmapped.append(record)
             continue
         if role in tensors:
             raise ValueError(
                 f'{artifact}: two tensors claim the {role} role ({tensors[role]["name"]!r} and '
-                f'{tensor.name!r}); this refuses to guess which one the vocabulary uses')
+                f'{name!r}); this refuses to guess which one the vocabulary uses')
         tensors[role] = record
     if 'embedding' not in tensors:
         raise ValueError(
-            f'{artifact}: no token-embedding matrix for a {n_vocab}-token «redacted-secret» 2-D tensors at that width: '
+            f'{artifact}: no token-embedding matrix for a {n_vocab}-token vocabulary. 2-D tensors at that width: '
             f'{vocab_wide or "none"}; recognised role names: {sorted(VOCAB_ROLE_ALIASES)}')
     return {'n_vocab': n_vocab, 'tokenizer': tokenizer, 'tensors': tensors,
             'tied': 'output_head' not in tensors,
-            'vocab_wide': vocab_wide, 'unmapped': unmapped}
+            'vocab_wide': vocab_wide, 'unmapped': unmapped,
+            'tensor_count': len(reader.tensors),
+            'tensor_bytes': int(sum(int(item.n_bytes) for item in reader.tensors))}
 
 
 def denial_rows(document, tokenizer):
@@ -427,6 +431,12 @@ def vocab_remap_weights(weights, table=None, out=None, apply=False, strength=1.0
                                             for plan in plans},
                  'row_detail': {plan['record']['name']: plan['edited']['rows'] for plan in plans}},
         'tensors': tensor_payloads,
+        'untouched': {'tensors': discovery['tensor_count'] - len(plans),
+                      'tensor_data_bytes': discovery['tensor_bytes'] - sum(plan['record']['bytes']
+                                                                           for plan in plans),
+                      'guarantee': 'edit_tensors copies the input and rewrites only the edited tensors; --apply '
+                                   'measures it (no differing byte outside the edited ranges), and '
+                                   'gguf-tensor-diff on the two files is the independent check'},
         'strength_sensitivity': sensitivity,
         'dry_run_measurement': {'sample': 'the block-aligned spans holding the covered rows only',
                                 'tensors': dry['tensors'], 'min_cos': dry['min_cos']},

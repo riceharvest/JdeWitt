@@ -79,16 +79,16 @@ def discover_writeback_targets(shapes, width):
     return {'targets': {layer: sorted(names) for layer, names in sorted(by_layer.items())},
             'unmapped_writeback_width': sorted(unmapped)}
 
-def gguf_weight_shapes(artifact):
+def gguf_weight_shapes(artifact, reader=None):
     """name -> (in, out) in ggml/gguf dimension order for every 2D weight.
 
     GGUF stores linear weights transposed from torch, so GGUFReader .shape is
     [in, out]: blk.5.ffn_down = (10240, 2560) = (ffn, hidden) on spark2_5, and
     qwen3-4b blk.9.attn_output = (4096, 2560) = (heads*head_dim, hidden). The
     torch layout is the reversed pair, which is what ggufio.dequantize_tensor
-    hands back.
+    hands back. ``reader`` lets a caller that already parsed the header share it.
     """
-    reader = GGUFReader(str(artifact))
+    reader = reader or GGUFReader(str(artifact))
     shapes = {}
     for t in reader.tensors:
         if len(t.shape) == 2:

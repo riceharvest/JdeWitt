@@ -1667,6 +1667,11 @@
       }
     }
   ],
+  "untouched": {
+    "tensors": 289,
+    "tensor_data_bytes": 192161024,
+    "guarantee": "edit_tensors copies the input and rewrites only the edited tensors; --apply measures it (no differing byte outside the edited ranges), and gguf-tensor-diff on the two files is the independent check"
+  },
   "strength_sensitivity": [
     {
       "strength": 0.9,
@@ -2358,6 +2363,6 @@
       "restores_bytes": 44422,
       "format": "npz: offsets, lengths, pre-edit data, patched sha256, original sha256"
     },
-    "seconds": 17.1
+    "seconds": 14.4
   }
 }
