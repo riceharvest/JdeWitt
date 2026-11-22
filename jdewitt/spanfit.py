@@ -18,11 +18,45 @@ import hashlib
 import json
 import os
 import time
-
-import numpy as np
-import torch
+from typing import TYPE_CHECKING, Any
 
 from .errors import NoVerifiedAdapter
+
+
+class _LazyModule:
+    """Module proxy that imports on first attribute access.
+
+    `python -m jdewitt.spanfit build --help` must answer on a machine where the
+    numeric stack is not installed -- same reason scripts/merge_bench.py keeps
+    `import torch` inside its functions. Every real code path touches a tensor
+    immediately, so the first `np.x`/`torch.x` loads the module once and the
+    proxy costs nothing after that. Annotations stay strings (`from __future__
+    import annotations`), so importing this module needs only the stdlib.
+    """
+
+    __slots__ = ("_name", "_module")
+
+    def __init__(self, name: str):
+        self._name = name
+        self._module: Any = None
+
+    def __getattr__(self, attr: str) -> Any:
+        module = self._module
+        if module is None:
+            import importlib
+            module = self._module = importlib.import_module(self._name)
+        return getattr(module, attr)
+
+    def __repr__(self) -> str:
+        return f"<lazy module {self._name!r}>"
+
+
+if TYPE_CHECKING:  # annotation-only imports; the runtime objects below are lazy
+    import numpy as np
+    import torch
+else:
+    np = _LazyModule("numpy")
+    torch = _LazyModule("torch")
 
 
 # ---------- fit ----------
