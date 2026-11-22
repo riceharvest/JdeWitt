@@ -187,7 +187,7 @@ def read_ppl(binary, model, corpus, ctx, threads, ngl, device, lora=None, scale=
             'seconds': round(time.monotonic() - started, 1), 'argv': argv}
 
 
-def derive_corpora(records, suite, out_dir, chars=1500):
+def derive_corpora(records, suite, out_dir, chars=4000):
     pieces = {'refusal': [], 'delivery': [], 'control': []}
     suite_prompts = {}
     for line in Path(suite).read_text().splitlines():
@@ -316,6 +316,15 @@ def serve_arm(artifact, serve, device, ctx, ngl, k, rows, adapter=None, adapter_
             'rendered_sha256': rendered_sha256}
 
 
+def counts_by_verdict(rows, arm):
+    counts = {}
+    for row in rows:
+        verdict = ((row.get(arm) or {}).get('agent_read') or {}).get('verdict')
+        if verdict:
+            counts[verdict] = counts.get(verdict, 0) + 1
+    return counts
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--artifact', default=DEFAULT_ARTIFACT)
@@ -335,7 +344,7 @@ def parse_args(argv=None):
     parser.add_argument('--ngl', type=int, default=999)
     parser.add_argument('--device', default='Vulkan1')
     parser.add_argument('--threads', type=int, default=16)
-    parser.add_argument('--ppl-ctx', type=int, default=512)
+    parser.add_argument('--ppl-ctx', type=int, default=256)
     parser.add_argument('--agent-verdicts', default=None,
                         help='JSON {row_id: {verdict, note}} authored by the agent after reading the '
                              'generations; embeds them and computes the agreement field')
@@ -352,10 +361,16 @@ def main(argv=None):
     work = Path(args.workdir)
     work.mkdir(parents=True, exist_ok=True)
     base_sha = sha256_file(args.artifact)
+    raw_records = torch.load(args.records, map_location='cpu', weights_only=False)
+    capture = raw_records.get('capture', {}) if isinstance(raw_records, dict) else {}
     records = load_records(args.records)
     records_sha = sha256_file(args.records)
-    rows = probe_rows(records, args.suite, args.families)
     suite_sha = sha256_file(args.suite)
+    recorded_suite_sha = capture.get('suite_sha256')
+    if recorded_suite_sha and recorded_suite_sha != suite_sha:
+        raise SystemExit(f'{args.suite} has sha256 {suite_sha}, but the capture recorded '
+                         f'suite_sha256 {recorded_suite_sha}: the rows are not the captured rows')
+    rows = probe_rows(records, args.suite, args.families)
 
     shapes = gguf_weight_shapes(args.artifact)
     width = inferred_hidden_width(shapes)
@@ -368,7 +383,9 @@ def main(argv=None):
     names = [name for layer in layers for name in names_by_layer[layer]]
 
     from gguf import GGUFReader
-    arch = str(GGUFReader(str(args.artifact)).fields['general.architecture'].contents())
+    reader = GGUFReader(str(args.artifact))
+    arch = str(reader.fields['general.architecture'].contents())
+    tensor_count = len(reader.tensors)
     cache = DequantBases(work / 'dequant')
 
     plan = {'shape': 'perlayer', 'footprint': f'{args.layer_first}-{args.layer_last}',
@@ -449,6 +466,9 @@ def main(argv=None):
         atomic_json(ppl_cache, {'identity': ppl_identity, 'readings': readings})
 
     def branch(readings_arm):
+        for name in ('refusal', 'delivery'):
+            if 'ppl' not in readings_arm[name]:
+                raise SystemExit(f'perplexity reading {name} failed: {readings_arm[name]}')
         return ln(readings_arm['refusal']['ppl']) - ln(readings_arm['delivery']['ppl'])
 
     base_br = branch(readings['base'])
@@ -514,6 +534,10 @@ def main(argv=None):
         'generated_by': 'scripts/p6_runtime_equivalence.py',
         'task': 't_beb272db',
         'generated_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        'capture': capture,
+        'rows_source': {'records': str(args.records), 'records_sha256': records_sha,
+                        'suite': str(args.suite), 'suite_sha256': suite_sha,
+                        'suite_matches_capture': bool(recorded_suite_sha == suite_sha)},
         'claim': ('rank-1 GGUF LoRA adapter and merged twin built from ONE fitted plan on the same base '
                   'bytes, served at ONE pinned config on the B70; adapter curve is a screening number '
                   '(R8), the merged twin is the shipped shape'),
@@ -522,7 +546,8 @@ def main(argv=None):
                         'No non-GGUF runtime (vLLM/SGLang) is claimed.'),
         'base': {'path': str(args.artifact), 'sha256': base_sha,
                  'bytes': Path(args.artifact).stat().st_size,
-                 'arch': arch, 'tensor_count': len(shapes)},
+                 'arch': arch, 'tensor_count': tensor_count,
+                 'two_dimensional_tensors': len(shapes)},
         'plan': plan,
         'adapter': {**adapter_report, 'sha256': adapter_sha, 'rank': 1, 'scale': args.scale,
                     'base_artifact_sha256': base_sha,
@@ -573,6 +598,13 @@ def main(argv=None):
         'rows': per_row,
         'agent_read': agent,
         'agreement': ({'adapter_merged_agree_on_probe_rows': agree,
+                       'rows': len(per_row),
+                       'rows_agreeing': sum(1 for row in per_row
+                                            if row.get('adapter_merged_agent_read_agree')),
+                       'rows_disagreeing': sum(1 for row in per_row
+                                               if row.get('adapter_merged_agent_read_agree') is False),
+                       'verdict_counts': {arm: counts_by_verdict(per_row, arm)
+                                          for arm in ('base', 'adapter', 'merged')},
                        'statement': ('adapter-on-quant and merged twin agree on every probe row'
                                      if agree else
                                      'adapter-on-quant and merged twin disagree on at least one probe row; '
