@@ -264,7 +264,8 @@ def verify_foreign_artifact(directory):
     return {
         'directory': str(directory.resolve()),
         'mode': 'foreign',
-        'valid': True,
+        # Deliberately no "valid": a foreign directory is not certified by being
+        # readable, and certified_claims is 0 precisely because it cannot be.
         'verifiable': verifiable,
         'not_verifiable': _not_verifiable(),
         'certified_claims': 0,

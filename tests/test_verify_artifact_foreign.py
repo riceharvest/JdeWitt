@@ -54,7 +54,7 @@ def test_foreign_fixture_reports_what_the_bytes_support(tmp_path):
     directory = _fixture(tmp_path)
     result = verify_foreign_artifact(directory)
     assert result['mode'] == 'foreign'
-    assert result['valid'] is True
+    assert 'valid' not in result  # readable is not the same as certified
     assert result['certified_claims'] == 0
     verifiable = result['verifiable']
     assert verifiable['file_count'] == 3

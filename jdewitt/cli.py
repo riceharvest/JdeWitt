@@ -962,7 +962,7 @@ def main():
         # verify-artifact is a check, so an invalid artifact is a failing check, not
         # a report: scripts and release gates must see a non-zero exit. The body is
         # still printed first (valid:false + the named problems).
-        if args.command=='verify-artifact' and not result.get('valid'):
+        if args.command=='verify-artifact' and result.get('valid') is False:
             raise SystemExit(1)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
