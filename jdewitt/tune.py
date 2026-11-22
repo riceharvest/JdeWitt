@@ -649,6 +649,7 @@ def tune_command(args):
                 f"the adapter, so a ladder over it would be a fake measurement")
 
     screen_rows = []
+    screen_uncovered = []
     served = Path(args.serve or DEFAULT_SERVE) if args.token_budget > 0 else None
     adapter_ids = {}
     if args.token_budget > 0:
@@ -662,6 +663,13 @@ def tune_command(args):
             raise ValueError(f'llama-server not found at {served}; pass --serve PATH or use '
                              f'--token-budget 0 to leave the ladder prefill-only')
         screen_rows = rows_to_screen(records, limit=args.screen_rows)
+        # Coverage, said out loud: with a small --screen-rows the interleave drops
+        # whole families, and a screen that never showed the stubborn family must not
+        # read as a removal on it. The report names what the panel covered.
+        recorded = {meta.get('family_id') for meta, _ in records
+                    if meta.get('kind') == 'refusal' and meta.get('label') != 'deliver'
+                    and meta.get('family_id')}
+        screen_uncovered = sorted(recorded - {row.get('family_id') for row in screen_rows})
         if not screen_rows:
             raise ValueError(f'{args.records} carries no harmful (bad/ambiguous) rows with a '
                              f'rendered prompt to screen; capture with --kinds refusal first')
@@ -1090,6 +1098,8 @@ def tune_command(args):
                               'merge_scale_floor': args.min_edit_cos}
                              if winner is not None else None),
         'corpora': corpora,
+        'screen_families': sorted({row.get('family_id') or 'unknown' for row in screen_rows}),
+        'screen_uncovered_families': screen_uncovered,
         'corpora_source': corpora_source,
         'base': {label: {'ppl': base[label]['ppl'],
                          'uncertainty': base[label].get('uncertainty'),
@@ -1150,6 +1160,10 @@ def tune_command(args):
             'the merge ships.',
         ],
     }
+    if screen_uncovered:
+        report['notes'].append(
+            'the screen panel does NOT cover ' + ', '.join(screen_uncovered) +
+            ': a clean screen (or a best-effort pick) is not evidence on those families.')
     state = screen_read(winner) if winner else None
     if winner is not None and state is not None and not state['clean']:
         if winner.get('best_effort'):
