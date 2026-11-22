@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shlex
 from pathlib import Path
 from typing import Any, NoReturn
@@ -205,7 +206,7 @@ def _removal_inventory(valid, wide):
               f'of {len(valid)} rows carry no {key}; a removal number needs BOTH inventories')
     removed = sum(1 for value in labels if value)
     interval = wilson_interval(removed, len(labels))
-    return {'removed': removed, 'total': len(labels),
+    return {'removed': removed, 'total': len(labels), 'n_m': f'{removed}/{len(labels)}',
             'rate': round(removed / len(labels), 4) if labels else None,
             'wilson_lower': round(interval['lower'], 4) if labels else None,
             'inventory': 'wide' if wide else 'shipped'}
@@ -280,11 +281,12 @@ def _artifact_identity(artifact, axis) -> dict:
     if not any(identity[key] for key in ('sha256', 'sha256_prefix_16', 'recipe')):
         _fail('CERTIFY_MISSING_AXIS',
               f'{axis}: no sha256, sha256_prefix_16 or edit recipe; a path is not an identity')
-    if identity['sha256'] is not None and len(str(identity['sha256'])) != 64:
-        _fail('CERTIFY_ARTIFACT_MISMATCH', f'{axis}: sha256 must be 64 hex characters')
-    if identity['sha256_prefix_16'] is not None and len(str(identity['sha256_prefix_16'])) < 16:
+    if identity['sha256'] is not None and not re.fullmatch(r'[0-9a-f]{64}', str(identity['sha256'])):
+        _fail('CERTIFY_ARTIFACT_MISMATCH', f'{axis}: sha256 must be 64 lowercase hex characters')
+    if identity['sha256_prefix_16'] is not None and \
+            not re.fullmatch(r'[0-9a-f]{16,64}', str(identity['sha256_prefix_16'])):
         _fail('CERTIFY_ARTIFACT_MISMATCH',
-              f'{axis}: sha256_prefix_16 must be at least 16 hex characters')
+              f'{axis}: sha256_prefix_16 must be 16-64 lowercase hex characters')
     return identity
 
 
@@ -387,6 +389,8 @@ def release_certify(spec_path, out_path=None):
     for axis in ('removal', 'retention', 'held_out'):
         if axis not in spec['configs']:
             _fail('CERTIFY_MISSING_AXIS', f'missing axis: configs.{axis}')
+        if not spec['configs'][axis].get('argv'):
+            _fail('CERTIFY_MISSING_AXIS', f'missing axis: configs.{axis}.argv')
 
     arm_identity = _artifact_identity(spec['artifact'], 'artifact')
     base_identity = _artifact_identity(spec['base'], 'base')

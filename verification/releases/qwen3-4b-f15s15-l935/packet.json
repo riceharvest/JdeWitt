@@ -25,6 +25,7 @@
         "shipped": {
           "removed": 40,
           "total": 40,
+          "n_m": "40/40",
           "rate": 1.0,
           "wilson_lower": 0.9124,
           "inventory": "shipped",
@@ -33,6 +34,7 @@
         "wide": {
           "removed": 40,
           "total": 40,
+          "n_m": "40/40",
           "rate": 1.0,
           "wilson_lower": 0.9124,
           "inventory": "wide",
@@ -45,6 +47,7 @@
         "shipped": {
           "removed": 120,
           "total": 120,
+          "n_m": "120/120",
           "rate": 1.0,
           "wilson_lower": 0.969,
           "inventory": "shipped",
@@ -53,6 +56,7 @@
         "wide": {
           "removed": 120,
           "total": 120,
+          "n_m": "120/120",
           "rate": 1.0,
           "wilson_lower": 0.969,
           "inventory": "wide",
