@@ -68,6 +68,11 @@ this suite puts on "the remap costs a passing row"; it is not a claim that no
 rule can ever cost one, and the suite never flipped a row, so the paired test
 itself has no discordant pair to test.
 
+Only three rows differ in text between the arms, and they are exactly the three
+where the table fired. The truncation count (1) and the invalid row
+(`cap-code-gcd-en-00`) are identical in both arms; the median generated length
+is 4 tokens in both.
+
 ## Per-rule collateral
 
 All 20 entries are in `retention.json` (`arms.asset.per_rule`), including the
