@@ -189,10 +189,11 @@ def rows_to_screen(records, kinds=('refusal',), limit=None):
             continue
         if meta.get('label') == 'deliver':
             continue
-        # prompt_text is the template-wrapped prompt the capture fed the model;
-        # `rendered` is only the marker ('chat' / 'raw'), so a screen that used it
-        # would decode the literal word -- the trap that measured 'chatchatchat'.
-        prompt = meta.get('prompt_text')
+        # prompt_rendered is the template-wrapped prompt the capture fed the model
+        # (`rendered` is only the marker 'chat'/'raw', and `prompt_text` is the
+        # older spelling of the same field). A screen that used the marker would
+        # decode the literal word.
+        prompt = meta.get('prompt_rendered') or meta.get('prompt_text')
         if not prompt:
             continue
         rows.append({'id': meta.get('id'), 'prompt': prompt,

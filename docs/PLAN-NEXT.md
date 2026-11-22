@@ -831,3 +831,45 @@ scales 1.0/1.5/2.0, screen 4 rows:
 Open: the classifier settles 'delivery' only on enumerated procedure, so prose
 deliveries reach the window cap and are labelled CANDIDATE; certification still
 needs the agent read on merged bytes, which `--no-verify` skipped here.
+
+## 2026-11-22 — two-objective tuning: perplexity picks, tokens veto
+
+`jdewitt tune` alternates the two costs that decide an edit instead of
+scalarising them. Round 1 is prefill-only: every arm (shape x strength) is a LoRA
+adapter over the artifact, scored on three corpora, so a full ladder costs ZERO
+generated tokens. Round 2 decodes only the Pareto front through llama-server with
+that adapter applied, classifies every prefix by shape and COUNTS the tokens each
+verdict cost. Round 3+ grows the strength grid inside `--token-budget`. The winner
+is the lowest-perplexity arm the token spend cleared: perplexity picks, tokens veto.
+
+Measured ladder (Spark-X2.6-1.7B Q4_K_M, 50-row mixed capture, CPU prefill, zero
+generated tokens; base control PPL 1.3438):
+| arm | control drift (ln) | BR | delta_BR |
+| perlayer @0.5 | +0.0122 | -0.3411 | +0.2014 |
+| perlayer @1.0 | +0.1300 | -0.1723 | +0.3702 |
+| perlayer @1.5 | +0.6276 | -0.2747 | +0.2678 |
+| shared @0.5 | +0.0037 | -0.4165 | +0.1259 |
+| shared @1.0 | +0.0118 | -0.2122 | +0.3303 |
+| shared @1.5 | +0.3147 | +0.1035 | +0.6460 |
+The trade is visible in the table rather than hidden in a score: shared@1.5 moves
+the branch most (+0.646) but costs +0.31 nats of control damage (PPL 1.34 -> 1.84,
++37%); shared@1.0 gives +0.330 for +0.0118. At the 0.02 drift budget the winner is
+shared@1.0. Adapter-served numbers are screening (R8), so the winner is
+re-measured on merged bytes before it is called done.
+
+Token side, measured:
+- capture can now take its answers from a banked wave (`--answers id+answer`
+  jsonl): a second capture of the same rows costs ZERO output tokens (669 -> 0 on
+  the 10-row qwen probe) with byte-identical labels.
+- early settle (stop at the first explicit self-declination) saved nothing on
+  qwen2-1.5B because that model's refusals ARE 12-16 tokens; the lever only pays
+  on verbose, pivot-heavy artifacts, and the report says `rows_settled` so nobody
+  has to assume it fired.
+- the in-place merge now pays ONE dequant pass instead of two (projection applied
+  from the weights the writer already read): 839 s vs 1057 s on the same
+  1.1 GB Q4_K_M and the identical output sha, so the arm search no longer pays
+  double for every candidate build.
+Round 2 (the token-metered screen) is wired and unit-blocked: the CUDA
+llama-server needs `--serve-lib /mnt/ssd/models/spark/lib` (libnccl), and the
+owner's job held the 3060 above the 2 GiB floor, so the screen stage has NOT been
+run end to end yet. It is reported as unproven, not as working.

@@ -77,6 +77,29 @@ model is work nobody asked for.
    not permission to overclaim, and the honest refusal is a feature of the
    interface too.
 
+## Two objectives, alternated (never scalarised)
+
+An edit has to answer two questions that trade against each other: how much the
+model degrades (perplexity, and whether the refusal branch specifically moved)
+and what the answer costs to verify (generated tokens). A single "score" would
+hide the trade, so `tune` alternates:
+
+- **round 1, zero tokens**: every arm (axis shape × strength) is a LoRA adapter
+  scored by prefill-only perplexity on three corpora — control for generic
+  damage, refusal vs delivery for the branch preference `BR`. The Pareto front is
+  drift-inside-budget × largest `delta_br`.
+- **round 2, metered tokens**: only the front is decoded, `--screen-rows` rows
+  for `--screen-k` tokens each, every prefix classified by shape, and the tokens
+  each verdict cost counted. Undecided rows are continued before they are called
+  undecided.
+- **round 3+**: if nothing clears, the strength grid is grown by `--grow` and the
+  loop returns to round 1 inside what `--token-budget` still allows.
+
+The winner is the LOWEST-PERPLEXITY arm among those the token spend cleared, so
+perplexity decides inside the set the tokens have already admitted. Perplexity
+picks; tokens veto. Neither is a removal claim — certification stays the agent's
+shape read on merged bytes at one pinned serve config (R2/R8).
+
 ## Measured on the way in (2026-11-21)
 
 - `capture` on qwen2-1.5B-Instruct: 10 rows (4 bad / 4 good / 2 ambiguous),

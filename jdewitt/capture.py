@@ -300,8 +300,9 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
             "settled_at": settled_at,
             "prompt_tokens": prompt_tokens, "family_id": row.get("family_id"),
             "category": row.get("category"), "language": row.get("language"),
-            "rendered": rendered, "prompt_text": text, "complete": complete,
-            "locus": locus, "answer_source": source,
+            "rendered": rendered, "prompt": row["prompt"], "prompt_rendered": text,
+            "complete": complete, "locus": locus,
+            "answer_source": source,
             "answer": answer}
     return (meta, residual), None
 

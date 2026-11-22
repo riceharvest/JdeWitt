@@ -69,7 +69,7 @@ def derive_corpora(args, records, out_dir):
     pieces = {'refusal': [], 'delivery': [], 'control': []}
     for meta, _residual in records:
         answer = (meta.get('answer') or '').strip()
-        prompt = (meta.get('prompt_text') or '').strip()
+        prompt = (meta.get('prompt') or meta.get('prompt_text') or meta.get('prompt_rendered') or '').strip()
         if prompt and len(prompt) < 4000:
             pieces['control'].append(prompt)
         if not answer:
