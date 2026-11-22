@@ -1,7 +1,7 @@
 0.00.318.773 I srv  llama_server: initializing ...
 0.00.318.797 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
 0.00.320.576 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
-0.00.323.300 I srv    load_model: loading model '/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf'
+0.00.323.300 I srv    load_model: loading model '<repo>/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf'
 0.01.387.748 I cmn          init: llama threadpool init, n_threads = 16
 0.01.560.862 I srv    load_model: initializing, n_slots = 4, n_ctx_slot = 4096, kv_unified = 'true'
 0.01.563.503 I srv  server_run_i: model loaded

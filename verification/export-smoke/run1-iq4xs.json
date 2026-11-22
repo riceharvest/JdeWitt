@@ -1,6 +1,6 @@
 {
   "artifact": {
-    "path": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+    "path": "<repo>/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
     "sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1",
     "bytes": 349402688,
     "architecture": "qwen2",
@@ -33,9 +33,9 @@
     "metadata_entries": 38
   },
   "argv": [
-    "/mnt/ssd/ctxprune-v2/llama-b12602/llama-b12602/llama-server",
+    "<local>/",
     "--model",
-    "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+    "<repo>/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
     "-ngl",
     "0",
     "--ctx-size",
@@ -47,9 +47,9 @@
   ],
   "props_identity": {
     "server_log": "verification/export-smoke/run1-iq4xs.server.log",
-    "model_path": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+    "model_path": "<repo>/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
     "model_path_resolves_to_artifact": true,
-    "model_alias": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+    "model_alias": "<repo>/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
     "model_ftype": "IQ4_XS - 4.25 bpw",
     "build_info": "b12602-418fe97b5",
     "n_ctx": 4096,

@@ -29,9 +29,9 @@ a cost argument. THE DELIVERABLE IS AN EDIT ON THE ARTIFACT THE USER ALREADY
 SERVES: their quant, their calibration, no requant of the model, no download
 from us.
 
-Sequencing lives on board `jdewitt`: each phase heading below names the goal card
-that owns it, and `t_b341ba68` is the spine while `readme-evidence-sync` is the
-standing audit that keeps README section IV and `verification/evidence-map.json`
+Sequencing lives on the project's work board: each phase heading below names the
+goal card that owns it, with one spine card for ordering and a standing audit card
+that keeps README section IV and `verification/evidence-map.json`
 true as phases land. Every card any of those phases creates carries the same three
 rules: it closes the deciding row or makes it cheaper to measure; it is drivable
 with one command and one JSON, next command included; and it edits the artifact
@@ -141,7 +141,7 @@ noise. A probe-only pass is not a pass. An all-invalid screen is UNMEASURED.
 Any arm that clears by narrowing the suite, raising the scale past the grid or
 grading at a smaller cap is a bug in the measurement, not a result.
 
-## Phase 1 — Make the edit survive the codec (CODE, highest payoff) — card `t_76dd28f6`
+## Phase 1 — Make the edit survive the codec (CODE, highest payoff)
 
 The root cause of both the R8 disagreement and the false refusal on merged
 bytes. Three parts, in this order:
@@ -165,7 +165,7 @@ cos at the strength that clears a one-row probe, control drift inside noise,
 untouched bytes identical, revert exact, and one recorded case where the
 codec-aware delta beats plain scale-up on removal at equal-or-lower drift.
 
-## Phase 2 — Merged bytes as the decision stage, at ladder cost (CODE) — card `t_772b4b4b`
+## Phase 2 — Merged bytes as the decision stage, at ladder cost (CODE)
 
 The adapter curve ranks; the merged artifact ships. Make the shipping verdict
 cheap instead of rare:
@@ -184,7 +184,7 @@ Done gate: four merged arms screened in under 3 minutes on a 1.1 GB Q4_K_M
 artifact, zero generated tokens, exact revert verified, and one documented
 disagreement where the merged verdict overturned the adapter ranking.
 
-## Phase 3 — Put the kernel and the rank in the cheap loop (CODE) — card `t_b1b61821`
+## Phase 3 — Put the kernel and the rank in the cheap loop (CODE)
 
 Phase 2 makes merged ranking affordable; this makes the space worth ranking.
 
@@ -215,7 +215,7 @@ Done gate (GATED, q3-4B): an arm with removal equal to the published build
 retention at or above 159/241 at the same pinned config. That row is the
 objective; a loss must be reported as a loss.
 
-## Phase 4 — Zero-generation selection (CODE, then GATED verification) — card `t_e5b7e0d8`
+## Phase 4 — Zero-generation selection (CODE, then GATED verification)
 
 Stop choosing axes and layers by contrast mean alone.
 
@@ -236,7 +236,7 @@ contrast-mean arm on the same lineage, selected reproducibly from saved records
 with no extra generation.
 
 ## Phase 5 — The delivery axis (GATED; the only thing that would make this class
-of tool new) — card `t_13c4401c`
+of tool new)
 
 Measured starting point: 0/24 delivered (ours), 4/24 hand-read (published
 build), 1/24 (unedited base), sampling does not unlock it. Tone is solved;
@@ -256,7 +256,7 @@ Done gate: content-rate delivery on the hand-read 24-family set at >= 3x the
 base's rate, with retention inside the same gate as every other arm. Below that
 it is a tone result and is reported as one.
 
-## Phase 6 — Delivery formats that do not fight the codec (CODE, GATED for claims) — card `t_378ed31f`
+## Phase 6 — Delivery formats that do not fight the codec (CODE, GATED for claims)
 
 - Adapter release as a first-class artifact: rank-1 files apply exactly on any
   quantized runtime, with the honest label that the adapter curve is not the
@@ -269,7 +269,7 @@ it is a tone result and is reported as one.
   served and round-tripped through that runtime; until then it is a roadmap
   line, not a promise. No pre-quantized model releases.
 
-## Phase 7 — Evidence volume and reproducibility (CODE + GATED runs) — card `t_f3f01181`
+## Phase 7 — Evidence volume and reproducibility (CODE + GATED runs)
 
 Heretic's real moat is that thousands of builds exist and a manifest recreates
 any of them. Ours must be fewer artifacts with claims nobody can argue with:
@@ -288,7 +288,7 @@ any of them. Ours must be fewer artifacts with claims nobody can argue with:
 Done gate: five lineages certified, one third-party reproduction of a plan card
 on different hardware, every README number resolving through `evidence_map`.
 
-## Phase 8 — Steady-state rhythm (not a phase) — card `t_73669702`
+## Phase 8 — Steady-state rhythm (not a phase)
 
 - Quarterly `hub-census` -> adapter worklist, ordered by downloads; the human
   gap list stays in the same JSON. The dated artifact and its triage table live

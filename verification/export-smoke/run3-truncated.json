@@ -1,6 +1,6 @@
 {
   "artifact": {
-    "path": "/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf",
+    "path": "~/",
     "sha256": "fc43333d38767199993e97343786c3b2aba49a607e8e0fc97a7ed72999ae5ddb",
     "bytes": 1000000,
     "architecture": "unknown",
@@ -9,9 +9,9 @@
     "header_error": "ValueError: declared GGUF read of 13 bytes exceeds the 10 bytes remaining in the file"
   },
   "argv": [
-    "/mnt/ssd/ctxprune-v2/llama-b12602/llama-b12602/llama-server",
+    "<local>/",
     "--model",
-    "/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf",
+    "~/",
     "-ngl",
     "0",
     "--ctx-size",
@@ -32,7 +32,7 @@
   },
   "verdict": {
     "servable": false,
-    "reason": "llama-server exited 1 before /health: gguf_init_from_reader: failed to read key-value pairs; srv    load_model: failed to load model, '/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf'; srv  server_run_i: exiting due to model loading error"
+    "reason": "llama-server exited 1 before /health: gguf_init_from_reader: failed to read key-value pairs; srv    load_model: failed to load model, '~/'; srv  server_run_i: exiting due to model loading error"
   },
   "cost_seconds": 1.026
 }

@@ -1,6 +1,6 @@
 {
   "artifact": {
-    "path": "/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+    "path": "<repo>/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
     "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
     "bytes": 672004000,
     "architecture": "qwen35",
@@ -25,9 +25,9 @@
     "metadata_entries": 43
   },
   "argv": [
-    "/mnt/ssd/ctxprune-v2/llama-b12602/llama-b12602/llama-server",
+    "<local>/",
     "--model",
-    "/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+    "<repo>/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
     "-ngl",
     "0",
     "--ctx-size",
@@ -39,9 +39,9 @@
   ],
   "props_identity": {
     "server_log": "verification/export-smoke/run2-minicpm-q4km.server.log",
-    "model_path": "/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+    "model_path": "<repo>/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
     "model_path_resolves_to_artifact": true,
-    "model_alias": "/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+    "model_alias": "<repo>/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
     "model_ftype": "Q4_K - Medium",
     "build_info": "b12602-418fe97b5",
     "n_ctx": 4096,
