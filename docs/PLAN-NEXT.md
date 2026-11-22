@@ -202,14 +202,17 @@ written into the item and stays GATED.
     (scripts/ggml_ref/ref_iq4.c, 10 distributions + real F32 tensors); the
     zero-block path of IQ4_NL is undefined upstream (the reference leaves the
     code buffer untouched) and we write zero codes.
-    IQ3_XXS ENCODER: `jdewitt/iq3.py` ports iq3xs_init_impl (both grid sizes),
-    iq3_find_best_neighbour and quantize_row_iq3_xxs_impl, and is byte-exact
-    against the compiled reference (scripts/ggml_ref/ref_iq3.c) on 8
-    distributions x 64 blocks and real F32 tensors. It is NOT registered in
-    CODECS: it walks 32 elements at a time in Python, so a 4M-element tensor
-    takes minutes, not seconds; the is-loop and neighbour search need
-    vectorising across blocks first. The module is kept as that falsifier
-    target and documents the exact remaining work.
+    IQ3 ENCODERS LANDED: `jdewitt/iq3.py` ports iq3xs_init_impl (both grid
+    sizes), iq3_find_best_neighbour and both the IQ3_XXS and IQ3_S reference
+    quantizers, vectorised across blocks (padded neighbour lists, 2048-block
+    batches). Both are byte-exact against the compiled reference
+    (scripts/ggml_ref/ref_iq3.c) on 8 distributions x 64 blocks, on a
+    2,050-block multi-batch input, and on real F32 tensors; both are registered
+    in CODECS, so gguf-edit/edit-quantized can write them. Cost: ~40-50 s per
+    4M-element tensor — an explicit choice, never an `auto` candidate.
+    Replicated upstream quirk worth keeping: IQ3_S advances its qs/signs
+    pointers only for non-zero sub-blocks, so a skipped 32-block shifts later
+    sub-blocks; a port that writes by nominal index is not byte-exact.
     Remaining, stated honestly: wired ENCODERS for IQ1/IQ2/IQ3 need that
     vectorisation and, for IQ2_XXS/XS and IQ1, an importance matrix
     (llama-quantize itself refuses those without one). Those files are still

@@ -95,82 +95,132 @@ def _find_best(neigh, grid, xval, weight, scale):
     return grid_index, (grid[grid_index].astype(np.int32) - 1) // 2
 
 
-def _quantize_32(xb, grid, kmap, neighbours):
-    """One 32-element sub-block -> (scale, L[32], block_signs[4])."""
+def _padded_neighbours(neighbours, size=4096):
+    """(size, Lmax) neighbour-index matrix padded with -1, plus per-tuple lengths."""
+    lengths = np.zeros(size, dtype=np.int64)
+    for i, chosen in neighbours.items():
+        lengths[i] = len(chosen)
+    width = max(1, int(lengths.max()))
+    padded = np.full((size, width), -1, dtype=np.int64)
+    for i, chosen in neighbours.items():
+        padded[i, :len(chosen)] = chosen
+    return padded, lengths
+
+
+def _pack_tuples(values):
+    """(M, 32) per-element values -> (M, 8) packed 3-bit tuples, C bit order."""
+    v = values.reshape(-1, 8, 4).astype(np.int64)
+    return v[..., 0] | (v[..., 1] << 3) | (v[..., 2] << 6) | (v[..., 3] << 9)
+
+
+def _neighbour_pick(padded, grid, tuples, xval_t, waux_t, scale, kmap):
+    """Direct map hit, else the nearest neighbour entry (C's iq3_find_best_neighbour).
+
+    Returns (mapped tuple count M, 8) grid indices, (M, 8, 4) per-element codes,
+    and the on-grid mask.
+    """
+    gi = kmap[tuples]
+    on_grid = gi >= 0
+    codes = np.empty(tuples.shape + (4,), dtype=np.int64)
+    if on_grid.any():
+        codes[on_grid] = (grid[gi[on_grid]].astype(np.int64) - 1) // 2
+    miss = ~on_grid
+    if miss.any():
+        idxs = padded[tuples[miss]]
+        valid = idxs >= 0
+        safe = np.where(valid, idxs, 0)
+        pg = grid[safe].astype(np.float32)
+        sc = np.broadcast_to(scale[:, None], miss.shape)[miss]
+        diff = sc[:, None, None] * pg - xval_t[miss][:, None, :]
+        d2 = (waux_t[miss][:, None, :] * diff * diff).sum(axis=-1)
+        d2 = np.where(valid, d2, np.float32(np.inf))
+        best = np.argmin(d2, axis=1)
+        chosen = np.take_along_axis(idxs, best[:, None], axis=1)[:, 0]
+        gi = gi.copy()
+        gi[miss] = chosen
+        codes[miss] = (grid[chosen].astype(np.int64) - 1) // 2
+    return gi, codes, on_grid
+
+
+def _quantize_batch(xb, grid, kmap, padded):
+    """Vectorised quantize_row_iq3_xxs_impl for M 32-element blocks."""
+    m = xb.shape[0]
     weight = (xb * xb).astype(np.float32)
     waux = np.sqrt(weight).astype(np.float32)
-    xval = np.abs(xb).copy()
-    block_signs = np.zeros(4, dtype=np.uint8)
+    xv = np.abs(xb).copy()
+    signs = np.zeros((m, 4), dtype=np.uint8)
     for k in range(4):
-        segment = xb[8 * k:8 * k + 8]
-        negative = segment < 0
-        s = 0
+        sl = slice(8 * k, 8 * k + 8)
+        seg = xb[:, sl]
+        neg = seg < 0
+        s = np.zeros(m, dtype=np.uint8)
         for i in range(8):
-            if negative[i]:
-                s |= 1 << i
-        if int(negative.sum() % 2):
-            local = weight[8 * k:8 * k + 8] * xb[8 * k:8 * k + 8] ** 2
-            imin = int(np.argmin(local))  # C keeps the first strict minimum
-            xval[8 * k + imin] = -xval[8 * k + imin]
-            s ^= 1 << imin
-        block_signs[k] = s & 127
-    maxv = np.float32(xval.max())
-    L = np.zeros(32, dtype=np.int64)
-    if maxv < np.float32(GROUP_MAX_EPS_IQ3_XXS):
-        return np.float32(0.0), L, block_signs
-    best = np.float32(0.0)
-    scale = np.float32(maxv / np.float32(2 * K_MAX_Q - 1))
-    on_grid = np.ones(8, dtype=bool)
+            s = s | (neg[:, i].astype(np.uint8) << i)
+        odd = (neg.sum(axis=1) % 2).astype(bool)
+        if odd.any():
+            local = weight[:, sl] * seg * seg
+            imin = np.argmin(np.where(odd[:, None], local, np.float32(np.inf)), axis=1)
+            rows = np.arange(m)[odd]
+            cols = imin[odd]
+            xv[rows, 8 * k + cols] = -xv[rows, 8 * k + cols]
+            s[odd] ^= (1 << cols).astype(np.uint8)
+        signs[:, k] = s & 127
+    maxv = xv.max(axis=1)
+    zero = maxv < np.float32(GROUP_MAX_EPS_IQ3_XXS)
+    safe_max = np.where(zero, np.float32(1.0), maxv)
+    scale = np.where(zero, np.float32(0.0), maxv / np.float32(2 * K_MAX_Q - 1)).astype(np.float32)
+    best = np.zeros(m, dtype=np.float32)
+    L = np.zeros((m, 32), dtype=np.int64)
+    on_grid = np.ones((m, 8), dtype=bool)
+    xv_t = xv.reshape(m, 8, 4)
+    waux_t = waux.reshape(m, 8, 4)
+    wx = (weight * xv).astype(np.float32)
     for is_ in range(-15, 16):
-        id_ = (np.float32(2 * K_MAX_Q - 1) + np.float32(is_) * np.float32(0.2)) / maxv
-        this_scale = np.float32(1.0) / id_
-        Laux = np.empty(32, dtype=np.int64)
-        on_aux = np.ones(8, dtype=bool)
-        for k in range(8):
-            vals = np.float32(0.5) * (id_ * xval[4 * k:4 * k + 4] - np.float32(1.0))
-            lq = np.clip(_rint(vals), 0, K_MAX_Q - 1).astype(np.int64)
-            Laux[4 * k:4 * k + 4] = lq
-            u = int(lq[0] | (lq[1] << 3) | (lq[2] << 6) | (lq[3] << 9))
-            grid_index = int(kmap[u])
-            if grid_index < 0:
-                on_aux[k] = False
-                chosen = neighbours[u]
-                _, lq = _find_best(chosen, grid, xval[4 * k:4 * k + 4], waux[4 * k:4 * k + 4], this_scale)
-                Laux[4 * k:4 * k + 4] = lq
+        id_ = (np.float32(2 * K_MAX_Q - 1) + np.float32(is_) * np.float32(0.2)) / safe_max
+        with np.errstate(divide='ignore', invalid='ignore'):
+            this_scale = (np.float32(1.0) / id_).astype(np.float32)
+        lq = np.clip(_rint(np.float32(0.5) * (id_[:, None] * xv - np.float32(1.0))), 0, K_MAX_Q - 1)
+        tuples = _pack_tuples(lq)
+        _, codes, on_aux = _neighbour_pick(padded, grid, tuples, xv_t, waux_t, this_scale, kmap)
+        Laux = codes.reshape(m, 32)
         q = (2 * Laux + 1).astype(np.float32)
-        sumqx = _f32_fold(weight * xval * q)
-        sumq2 = _f32_fold(weight * q * q)
-        if sumq2 > 0 and sumqx * sumqx > best * sumq2:
-            scale = np.float32(sumqx / sumq2)
-            best = np.float32(scale * sumqx)
-            L = Laux.copy()
-            on_grid = on_aux.copy()
-    if not on_grid.all() and scale > 0:
-        id_ = np.float32(1.0) / scale
-        for k in range(8):
-            if on_grid[k]:
-                continue
-            vals = np.float32(0.5) * (id_ * xval[4 * k:4 * k + 4] - np.float32(1.0))
-            lq = np.clip(_rint(vals), 0, K_MAX_Q - 1).astype(np.int64)
-            u = int(lq[0] | (lq[1] << 3) | (lq[2] << 6) | (lq[3] << 9))
-            grid_index = int(kmap[u])
-            if grid_index < 0:
-                chosen = neighbours[u]
-                grid_index, lq = _find_best(chosen, grid, xval[4 * k:4 * k + 4],
-                                            waux[4 * k:4 * k + 4], scale)
-            else:
-                lq = (grid[grid_index].astype(np.int64) - 1) // 2
-            L[4 * k:4 * k + 4] = lq
+        sumqx = np.zeros(m, dtype=np.float32)
+        sumq2 = np.zeros(m, dtype=np.float32)
+        for j in range(32):
+            sumqx = (sumqx + wx[:, j] * q[:, j]).astype(np.float32)
+            sumq2 = (sumq2 + weight[:, j] * q[:, j] * q[:, j]).astype(np.float32)
+        update = (sumq2 > 0) & (sumqx * sumqx > best * sumq2) & ~zero
+        if update.any():
+            ns = (sumqx / np.where(sumq2 > 0, sumq2, np.float32(1.0))).astype(np.float32)
+            scale = np.where(update, ns, scale).astype(np.float32)
+            best = np.where(update, (ns * sumqx).astype(np.float32), best).astype(np.float32)
+            L = np.where(update[:, None], Laux, L)
+            on_grid = np.where(update[:, None], on_aux, on_grid)
+    need = (~on_grid.all(axis=1)) & (scale > 0)
+    if need.any():
+        id_ = (np.float32(1.0) / np.where(need, scale, np.float32(1.0))).astype(np.float32)
+        lq = np.clip(_rint(np.float32(0.5) * (id_[:, None] * xv - np.float32(1.0))), 0, K_MAX_Q - 1)
+        tuples = _pack_tuples(lq)
+        _, codes, on_new = _neighbour_pick(padded, grid, tuples, xv_t, waux_t, scale, kmap)
+        Lnew = codes.reshape(m, 32)
+        take = np.repeat(need[:, None] & ~on_grid, 4, axis=1)
+        L = np.where(take, Lnew, L)
         q = (2 * L + 1).astype(np.float32)
-        sumqx = _f32_fold(weight * xval * q)
-        sumq2 = _f32_fold(weight * q * q)
-        if sumq2 > 0:
-            scale = np.float32(sumqx / sumq2)
-    if scale < 0:
-        scale = -scale
-        for k in range(4):
-            block_signs[k] = (~block_signs[k]) & 127
-    return scale, L, block_signs
+        sumqx = np.zeros(m, dtype=np.float32)
+        sumq2 = np.zeros(m, dtype=np.float32)
+        for j in range(32):
+            sumqx = (sumqx + wx[:, j] * q[:, j]).astype(np.float32)
+            sumq2 = (sumq2 + weight[:, j] * q[:, j] * q[:, j]).astype(np.float32)
+        positive = need & (sumq2 > 0)
+        if positive.any():
+            scale = np.where(positive,
+                             (sumqx / np.where(sumq2 > 0, sumq2, np.float32(1.0))).astype(np.float32),
+                             scale)
+    neg_scale = scale < 0
+    if neg_scale.any():
+        scale = np.where(neg_scale, -scale, scale).astype(np.float32)
+        signs = np.where(neg_scale[:, None], (~signs) & 127, signs).astype(np.uint8)
+    return scale.astype(np.float32), L, signs
 
 
 def quantize_iq3_xxs(x):
@@ -178,36 +228,173 @@ def quantize_iq3_xxs(x):
     x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, QK_K)
     nb = x.shape[0]
     grid, kmap, neighbours = _build(256)
+    padded, _lengths = _padded_neighbours(neighbours)
     out = np.empty((nb, 98), dtype=np.uint8)
-    for row in range(nb):
-        body = np.zeros(96, dtype=np.uint8)  # q3: 64 grid indices + 32 scale/sign bytes
-        scales_and_signs = np.zeros(8, dtype=np.uint32)
-        scales = np.zeros(8, dtype=np.float32)
-        max_scale = np.float32(0.0)
+    chunk = 2048  # 256-blocks per batch keeps the padded neighbour gather bounded
+    for start in range(0, nb, chunk):
+        stop = min(start + chunk, nb)
+        xb = x[start:stop].reshape(-1, 32)
+        scales, L, signs = _quantize_batch(xb, grid, kmap, padded)
+        count = stop - start
+        scales = scales.reshape(count, 8)
+        L = L.reshape(count, 8, 32)
+        signs = signs.reshape(count, 8, 4)
+        bodies = np.zeros((count, 96), dtype=np.uint8)
+        sas = np.zeros((count, 8), dtype=np.uint32)
+        tuples = _pack_tuples(L.reshape(count * 8, 32)).reshape(count, 8, 8)
+        indices = kmap[tuples]
+        if (indices < 0).any():
+            raise ValueError('IQ3_XXS: point not on the grid after selection')
         for ib in range(8):
-            scale, L, block_signs = _quantize_32(x[row, 32 * ib:32 * ib + 32], grid, kmap, neighbours)
-            indices = np.empty(8, dtype=np.uint8)
-            for k in range(8):
-                u = int(L[4 * k] | (L[4 * k + 1] << 3) | (L[4 * k + 2] << 6) | (L[4 * k + 3] << 9))
-                grid_index = int(kmap[u])
-                if grid_index < 0:
-                    raise ValueError(f'IQ3_XXS: point {u} not on the grid after selection')
-                indices[k] = grid_index
-            body[8 * ib:8 * ib + 8] = indices
-            scales_and_signs[ib] = (int(block_signs[0]) | (int(block_signs[1]) << 7) |
-                                    (int(block_signs[2]) << 14) | (int(block_signs[3]) << 21))
-            scales[ib] = scale
-            max_scale = max(max_scale, scale)
-        if max_scale:
-            d = np.float32(max_scale / np.float32(31.0))
-            dh = np.float16(d * np.float32(1.0125))
-            id_ = np.float32(1.0) / d
-            for ib in range(8):
-                lv = int(np.clip(_rint(np.float32(0.5) * (id_ * scales[ib] - np.float32(1.0))), 0, 15))
-                scales_and_signs[ib] |= np.uint32(lv << 28)
-            body[64:96] = np.ascontiguousarray(scales_and_signs).view(np.uint8)
-            out[row, 0:2] = np.ascontiguousarray(dh).view(np.uint16).view(np.uint8)
-            out[row, 2:98] = body
+            bodies[:, 8 * ib:8 * ib + 8] = indices[:, ib].astype(np.uint8)
+        sas = (signs[..., 0].astype(np.uint32) |
+               (signs[..., 1].astype(np.uint32) << 7) |
+               (signs[..., 2].astype(np.uint32) << 14) |
+               (signs[..., 3].astype(np.uint32) << 21))
+        max_scale = scales.max(axis=1)
+        live = max_scale > 0
+        if live.any():
+            d = (max_scale / np.float32(31.0)).astype(np.float32)
+            dh = (d * np.float32(1.0125)).astype(np.float16)
+            id_ = (np.float32(1.0) / np.where(live, d, np.float32(1.0))).astype(np.float32)
+            lv = np.clip(_rint(np.float32(0.5) * (id_[:, None] * scales - np.float32(1.0))),
+                         0, 15).astype(np.uint32)
+            sas |= (lv << 28)
+            bodies[:, 64:96] = np.ascontiguousarray(sas).view(np.uint8).reshape(count, 32)
+            out[start:stop, 0:2] = np.ascontiguousarray(dh).view(np.uint16).view(np.uint8).reshape(count, 2)
+            out[start:stop, 2:98] = bodies
+            if not live.all():
+                out[start:stop][~live] = 0
         else:
-            out[row, :] = 0
+            out[start:stop, :] = 0
+    return out.reshape(-1)
+
+
+def _quantize_batch_s(xb, grid, kmap, padded):
+    """Vectorised quantize_row_iq3_s_impl for M 32-element blocks (512-entry grid)."""
+    m = xb.shape[0]
+    weight = (xb * xb).astype(np.float32)
+    waux = np.sqrt(weight).astype(np.float32)
+    xv = np.abs(xb).copy()
+    signs = np.zeros((m, 4), dtype=np.uint8)
+    for k in range(4):
+        neg = xb[:, 8 * k:8 * k + 8] < 0
+        s = np.zeros(m, dtype=np.uint8)
+        for i in range(8):
+            s = s | (neg[:, i].astype(np.uint8) << i)
+        signs[:, k] = s
+    maxv = xv.max(axis=1)
+    zero = maxv == 0
+    safe_max = np.where(zero, np.float32(1.0), maxv)
+    scale = np.where(zero, np.float32(0.0), maxv / np.float32(2 * K_MAX_Q - 1)).astype(np.float32)
+    best = np.zeros(m, dtype=np.float32)
+    L = np.zeros((m, 32), dtype=np.int64)
+    on_grid = np.zeros((m, 8), dtype=bool)
+    xv_t = xv.reshape(m, 8, 4)
+    waux_t = waux.reshape(m, 8, 4)
+    wx = (weight * xv).astype(np.float32)
+    for is_ in range(-9, 10):
+        id_ = (np.float32(2 * K_MAX_Q - 1) + np.float32(is_) * np.float32(0.2)) / safe_max
+        with np.errstate(divide='ignore', invalid='ignore'):
+            this_scale = (np.float32(1.0) / id_).astype(np.float32)
+        lq = np.clip(_rint(np.float32(0.5) * (id_[:, None] * xv - np.float32(1.0))), 0, K_MAX_Q - 1)
+        tuples = _pack_tuples(lq)
+        _, codes, on_aux = _neighbour_pick(padded, grid, tuples, xv_t, waux_t, this_scale, kmap)
+        Laux = codes.reshape(m, 32)
+        q = (2 * Laux + 1).astype(np.float32)
+        sumqx = np.zeros(m, dtype=np.float32)
+        sumq2 = np.zeros(m, dtype=np.float32)
+        for j in range(32):
+            sumqx = (sumqx + wx[:, j] * q[:, j]).astype(np.float32)
+            sumq2 = (sumq2 + weight[:, j] * q[:, j] * q[:, j]).astype(np.float32)
+        update = (sumq2 > 0) & (sumqx * sumqx > best * sumq2) & ~zero
+        if update.any():
+            ns = (sumqx / np.where(sumq2 > 0, sumq2, np.float32(1.0))).astype(np.float32)
+            scale = np.where(update, ns, scale).astype(np.float32)
+            best = np.where(update, (ns * sumqx).astype(np.float32), best).astype(np.float32)
+            L = np.where(update[:, None], Laux, L)
+            on_grid = np.where(update[:, None], on_aux, on_grid)
+    need = (~on_grid.all(axis=1)) & (scale > 0)
+    if need.any():
+        id_ = (np.float32(1.0) / np.where(need, scale, np.float32(1.0))).astype(np.float32)
+        lq = np.clip(_rint(np.float32(0.5) * (id_[:, None] * xv - np.float32(1.0))), 0, K_MAX_Q - 1)
+        tuples = _pack_tuples(lq)
+        _, codes, _ = _neighbour_pick(padded, grid, tuples, xv_t, waux_t, scale, kmap)
+        Lnew = codes.reshape(m, 32)
+        # The C reference redoes every sub-block here (its is_on_grid skip is commented out).
+        L = np.where(need[:, None], Lnew, L)
+        q = (2 * L + 1).astype(np.float32)
+        sumqx = np.zeros(m, dtype=np.float32)
+        sumq2 = np.zeros(m, dtype=np.float32)
+        for j in range(32):
+            sumqx = (sumqx + wx[:, j] * q[:, j]).astype(np.float32)
+            sumq2 = (sumq2 + weight[:, j] * q[:, j] * q[:, j]).astype(np.float32)
+        positive = need & (sumq2 > 0)
+        if positive.any():
+            scale = np.where(positive,
+                             (sumqx / np.where(sumq2 > 0, sumq2, np.float32(1.0))).astype(np.float32),
+                             scale)
+    neg_scale = scale < 0
+    if neg_scale.any():
+        scale = np.where(neg_scale, -scale, scale).astype(np.float32)
+        signs = np.where(neg_scale[:, None], ~signs, signs).astype(np.uint8)
+    return scale.astype(np.float32), L, signs, zero
+
+
+def quantize_iq3_s(x):
+    """Byte-reproducible mirror of quantize_row_iq3_s_ref (110-byte blocks)."""
+    x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, QK_K)
+    nb = x.shape[0]
+    grid, kmap, neighbours = _build(512)
+    padded, _lengths = _padded_neighbours(neighbours)
+    out = np.zeros((nb, 110), dtype=np.uint8)
+    chunk = 2048
+    for start in range(0, nb, chunk):
+        stop = min(start + chunk, nb)
+        xb = x[start:stop].reshape(-1, 32)
+        scales, L, signs, skip = _quantize_batch_s(xb, grid, kmap, padded)
+        count = stop - start
+        scales = scales.reshape(count, 8)
+        L = L.reshape(count, 8, 32)
+        signs = signs.reshape(count, 8, 4)
+        skip = skip.reshape(count, 8)
+        qs = np.zeros((count, 64), dtype=np.uint8)
+        qh = np.zeros((count, 8), dtype=np.uint8)
+        sign_bytes = np.zeros((count, 32), dtype=np.uint8)
+        tuples = _pack_tuples(L.reshape(count * 8, 32)).reshape(count, 8, 8)
+        indices = kmap[tuples]
+        if (indices < 0).any():
+            raise ValueError('IQ3_S: point not on the grid after selection')
+        # Upstream pointer bookkeeping: a zero sub-block `continue`s BEFORE qs/signs
+        # advance, so later sub-blocks shift left. Replicate it; qh is indexed by ib
+        # and does not shift.
+        advance = (~skip).astype(np.int64)
+        before = np.cumsum(advance, axis=1) - advance
+        rows = np.arange(count)
+        for ib in range(8):
+            live = ~skip[:, ib]
+            if not live.any():
+                continue
+            base = before[live, ib]
+            for k in range(8):
+                gi = indices[live, ib, k]
+                qs[rows[live], 8 * base + k] = (gi & 255).astype(np.uint8)
+                qh[rows[live], (ib * 8 + k) // 8] |= ((gi >> 8).astype(np.uint8) << ((ib * 8 + k) % 8))
+            sign_bytes[rows[live][:, None], 4 * base[:, None] + np.arange(4)[None, :]] = signs[live, ib]
+        max_scale = scales.max(axis=1)
+        live = max_scale > 0
+        if live.any():
+            d = (max_scale / np.float32(31.0)).astype(np.float32)
+            dh = (d * np.float32(1.033)).astype(np.float16)
+            id_ = (np.float32(1.0) / np.where(live, d, np.float32(1.0))).astype(np.float32)
+            lv = np.clip(_rint(np.float32(0.5) * (id_[:, None] * scales - np.float32(1.0))),
+                         0, 15).astype(np.uint8)
+            scale_bytes = np.zeros((count, 4), dtype=np.uint8)
+            for pair in range(4):
+                scale_bytes[:, pair] = lv[:, 2 * pair] | (lv[:, 2 * pair + 1] << 4)
+            out[start:stop, 0:2] = np.ascontiguousarray(dh).view(np.uint16).view(np.uint8).reshape(count, 2)
+            out[start:stop, 2:66] = qs
+            out[start:stop, 66:74] = qh
+            out[start:stop, 74:106] = sign_bytes
+            out[start:stop, 106:110] = scale_bytes
     return out.reshape(-1)

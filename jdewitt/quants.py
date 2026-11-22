@@ -1119,9 +1119,15 @@ DECODE_ONLY.update({
     'IQ2_XXS': (66, QK_K, dequantize_iq2_xxs),
     'IQ2_XS': (74, QK_K, dequantize_iq2_xs),
     'IQ2_S': (82, QK_K, dequantize_iq2_s),
-    'IQ3_XXS': (98, QK_K, dequantize_iq3_xxs),
-    'IQ3_S': (110, QK_K, dequantize_iq3_s),
     'IQ1_S': (50, QK_K, dequantize_iq1_s),
     'IQ1_M': (56, QK_K, dequantize_iq1_m),
 })
 
+
+# IQ3_XXS's encoder lives in iq3.py (the iq3xs map/neighbour tables are its own
+# concern); iq3.py does not import quants, so this registration cannot be circular.
+# Cost: the vectorised batch walks ~1 min per 4M-element tensor, which is why it is
+# an explicit --edit-type choice, not an `auto` candidate.
+from .iq3 import quantize_iq3_s, quantize_iq3_xxs  # noqa: E402
+CODECS['IQ3_XXS'] = (98, QK_K, quantize_iq3_xxs, dequantize_iq3_xxs)
+CODECS['IQ3_S'] = (110, QK_K, quantize_iq3_s, dequantize_iq3_s)
