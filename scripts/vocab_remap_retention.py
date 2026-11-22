@@ -490,11 +490,12 @@ def report(args) -> int:
         'arms': comparisons,
         'final_arm': final_label,
         'verdict': final['verdict'],
-        'limits': ('A deterministic greedy pass on one 0.5B IQ3_M artifact at one cap. The suite is the '
-                   'authored 241-row wave; a pass is the shipped grader\'s word, not a second opinion. '
-                   'Per-rule attribution lists the entry that fired on a failing row; the bias is the only '
-                   'difference between the arms, but a divergence can compound after the triggering step, '
-                   'so the table is evidence of attribution, not a per-token causal proof.'),
+        'limits': ('A deterministic greedy pass on one quantized artifact at one cap, with the client-stepped '
+                   'loop as the only decoder under test. The suite is the authored 241-row wave; a pass is the '
+                   'shipped grader\'s word, not a second opinion. Per-rule attribution lists the entry that '
+                   'fired on a failing row; the bias is the only difference between the arms, but a divergence '
+                   'can compound after the triggering step, so the table is evidence of attribution, not a '
+                   'per-token causal proof.'),
     }
     Path(args.out).write_text(json.dumps(document, indent=2, sort_keys=True) + '\n')
     _print_report(document)
