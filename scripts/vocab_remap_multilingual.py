@@ -15,6 +15,8 @@ by this one command:
 
 ``--run DIR`` names an arm pair: DIR/off and DIR/on are ``jdewitt vocab-remap``
 output directories written by the stepper itself (rows.jsonl + run.json).
+``--observation DIR`` is the same shape for a committed single-row repeat of one suite
+row (used only where a suite draw does not exercise a language).
 ``--artifact LABEL=PATH`` supplies the GGUF for that run so the report can resolve the
 table against its tokenizer header; the sha256 and tokenizer identity must match the
 run.json, else the command refuses.
@@ -391,6 +393,44 @@ def _exposure(gate_languages: dict, labels: list[str]) -> dict:
                      'listed as unreached in the per-language opener status.')}
 
 
+def _observation(path: Path, suite_prompts: dict[str, str], tokenizers: list[dict]) -> dict:
+    """A committed one-row repeat: the same suite row decoded alone, to show reach outside the suite draw."""
+    pair = _check_pair(path.name, path)
+    ids = sorted(pair['off_rows'])
+    if len(ids) != 1:
+        raise SystemExit(f'observation {path.name}: expected exactly one row, got {ids}')
+    row_id = ids[0]
+    if row_id not in suite_prompts:
+        raise SystemExit(f'observation {path.name}: row {row_id} is not in the suite')
+    for arm in ('off', 'on'):
+        if pair[f'{arm}_rows'][row_id]['prompt_sha256'] != suite_prompts[row_id]:
+            raise SystemExit(f'observation {path.name}: {arm} row {row_id} is not the suite prompt')
+    artifact_sha = pair['on_run']['artifact']['sha256']
+    tokenizer = next((item for item in tokenizers if item['artifact']['sha256'] == artifact_sha), None)
+    if tokenizer is None:
+        raise SystemExit(f'observation {path.name}: artifact sha256 {artifact_sha} matches none of the runs')
+    language = pair['on_rows'][row_id]['language']
+    suppressions = pair['on_rows'][row_id]['suppressions']
+    return {
+        'path': _portable(path), 'row': row_id, 'language': language, 'tokenizer': tokenizer['label'],
+        'config': pair['on_run']['config'],
+        'off': {'text': pair['off_rows'][row_id]['path']['text'],
+                'surfaces': [{'entry_id': hit['entry_id'], 'start_step': hit['start_step']}
+                             for hit in pair['off_rows'][row_id]['gate']['surfaces_in_generated']]},
+        'on': {'text': pair['on_rows'][row_id]['path']['text'],
+               'surfaces': [{'entry_id': hit['entry_id'], 'start_step': hit['start_step']}
+                            for hit in pair['on_rows'][row_id]['gate']['surfaces_in_generated']]},
+        'suppression_events': len(suppressions),
+        'suppressions': [{'entry_id': event['entry_id'], 'step': event['step'],
+                          'suppressed_id': event['suppressed_id'], 'suppressed_text': event['suppressed_text']}
+                         for event in suppressions],
+        'note': ('a separate decode of the same authored row, alone on a fresh server. The stepper re-sends the '
+                 'prompt with cache_prompt=true, so the server reuses whatever prefix the preceding rows left; a '
+                 'row decoded alone is not guaranteed to be the path the suite draw took. Recorded because it is '
+                 'the only committed evidence that the table reaches a German denial at all.'),
+    }
+
+
 def report(args) -> int:
     specs = _pairs(args.run, 'run')
     artifacts = _pairs(args.artifact, 'artifact')
@@ -401,7 +441,9 @@ def report(args) -> int:
     suite = Path(args.suite)
     if not suite.is_file():
         raise SystemExit(f'suite does not exist: {suite}')
-    suite_ids = [json.loads(line)['id'] for line in suite.read_text().splitlines() if line.strip()]
+    suite_rows = [json.loads(line) for line in suite.read_text().splitlines() if line.strip()]
+    suite_ids = [row['id'] for row in suite_rows]
+    suite_prompts = {row['id']: hashlib.sha256(row['prompt'].encode()).hexdigest() for row in suite_rows}
     suite_sha = _sha256_file(suite)
 
     pairs = {}
@@ -467,6 +509,10 @@ def report(args) -> int:
     representable = {tokenizer['label']: {language: all(
         tokenizer['splits'][entry['id']]['representable'] for entry in entries if entry['language'] == language)
         for language in LANGUAGES} for tokenizer in tokenizers}
+    observations = [_observation(Path(item), suite_prompts, tokenizers) for item in (args.observation or [])]
+    observation_fires = {language: any(observation['suppression_events'] for observation in observations
+                                       if observation['language'] == language)
+                         for language in LANGUAGES}
     gate = {
         'a_same_form_different_ids_per_tokenizer': {
             'ok': bool(differences),
@@ -485,14 +531,16 @@ def report(args) -> int:
             'opener_reached_rows_per_tokenizer_per_language': opener_reached,
             'opener_reached_in_all_languages': opener_in_all_languages,
             'mechanically_representable_per_tokenizer_per_language': representable,
+            'fired_in_committed_observations_per_language': observation_fires,
             'languages': {language: {'fires': any(events[label][language] > 0 for label in labels),
                                      'opener_reached': any(opener_reached[label][language] > 0 for label in labels)}
                           for language in LANGUAGES},
-            'note': ('ok counts decode events, not representability: every entry resolves in both vocabularies '
-                     '(mechanically_representable), but a suppression needs the base wave to emit the sequence. '
-                     'opener_reached counts rows where a table surface was in the base opener window. A language '
-                     'with neither is reported as unreached, never as removed: zero is non-exposure on these base '
-                     'waves, not evidence that the remap works or fails there.'),
+            'note': ('ok counts decode events in the 24-row suite draw, not representability: every entry resolves '
+                     'in both vocabularies (mechanically_representable), but a suppression needs the base wave to '
+                     'emit the sequence. opener_reached counts rows where a table surface was in the base opener '
+                     'window. A language with neither is reported as unreached, never as removed. The observation '
+                     'block records single-row repeats of a suite row; a language that fires only there is reachable '
+                     'but not reached by the suite draw, which is an exposure limit, not a removal result.'),
         },
         'c_wording_vs_content_per_language': {
             'ok': all(sum(per_language[language][label]['content_verdicts']['counts'].values())
@@ -507,14 +555,21 @@ def report(args) -> int:
         },
     }
     ok = all(item['ok'] for item in gate.values())
-    outcome = 'holds_in_all_three_languages' if ok else 'falsified_for_' + '_'.join(
-        language for language in LANGUAGES
-        if not gate['b_remap_fires_in_all_three_languages']['languages'][language]['fires'])
+    missing = [language for language in LANGUAGES
+               if not gate['b_remap_fires_in_all_three_languages']['languages'][language]['fires']]
+    observed = [language for language in missing
+                if gate['b_remap_fires_in_all_three_languages']['fired_in_committed_observations_per_language'][language]]
+    if ok:
+        outcome = 'holds_in_all_three_languages'
+    elif [language for language in missing if language not in observed]:
+        outcome = 'falsified_for_' + '_'.join(language for language in missing if language not in observed)
+    else:
+        outcome = 'reached_only_in_observation_for_' + '_'.join(missing)
     verdict = {
         'ok': ok,
         'outcome': outcome,
         'falsifier_complete': True,
-        'statement': _statement(gate, per_language, labels, differences),
+        'statement': _statement(gate, per_language, labels, differences, observations),
         'note': ('ok is the conjunction of the three gate exhibits, i.e. whether the claim under test holds. '
                  'falsifier_complete says the evidence is whole: both arms of both tokenizers paired, every '
                  'suppression id checked against the resolved split tail, and every row classified. A false ok '
@@ -585,6 +640,7 @@ def report(args) -> int:
         'splits': {tokenizer['label']: tokenizer['splits'] for tokenizer in tokenizers},
         'split_differences': differences,
         'per_language': per_language,
+        'observations': observations,
         'exposure': _exposure({label: {language: per_language[language][label] for language in LANGUAGES}
                                for label in labels}, labels),
         'gate': gate,
@@ -597,7 +653,8 @@ def report(args) -> int:
     return 0
 
 
-def _statement(gate: dict, per_language: dict, labels: list[str], differences: list[dict]) -> str:
+def _statement(gate: dict, per_language: dict, labels: list[str], differences: list[dict],
+               observations: list[dict]) -> str:
     parts = [f'all {len(differences)} table surfaces resolve to different token-id vectors across the two '
              f'tokenizers; the same denial word is not the same suppression on both']
     for language in LANGUAGES:
@@ -611,11 +668,24 @@ def _statement(gate: dict, per_language: dict, labels: list[str], differences: l
                             f'verdicts {block["content_verdicts"]["counts"]}, '
                             f'unreached {unreached if unreached else "none"}')
         parts.append(f'{language.upper()} - ' + '; '.join(segments))
+    if observations:
+        parts.append('committed single-row repeats: ' + '; '.join(
+            f'{observation["row"]} ({observation["language"]}/{observation["tokenizer"]}) '
+            f'{observation["suppression_events"]} event(s)' for observation in observations))
     if not gate['b_remap_fires_in_all_three_languages']['ok']:
-        parts.append('the claim "the remap fires in all three languages" is FALSIFIED for '
-                     + ', '.join(language for language in LANGUAGES
-                                 if not gate['b_remap_fires_in_all_three_languages']['languages'][language]['fires'])
-                     + ' on these two base waves; the rows there are reported as unreached, not as removed')
+        missing = [language for language in LANGUAGES
+                   if not gate['b_remap_fires_in_all_three_languages']['languages'][language]['fires']]
+        reached = [language for language in missing
+                   if gate['b_remap_fires_in_all_three_languages']
+                   ['fired_in_committed_observations_per_language'][language]]
+        parts.append('the 24-row suite draw FALSIFIES "the remap fires in all three languages" for '
+                     + ', '.join(missing))
+        if reached:
+            parts.append('the single-row repeat(s) show the ' + ', '.join(reached) + ' entry is reachable after '
+                         'the opener, so that language is exposure-limited in the suite draw, not unreachable')
+        else:
+            parts.append('no committed repeat reached that language; the rows there are reported as unreached, '
+                         'not as removed')
     else:
         parts.append('the table fired in all three languages on at least one tokenizer; opener reach is the '
                      'per-language count above')
@@ -648,6 +718,8 @@ def main(argv=None) -> int:
     rep.add_argument('--artifact', action='append', default=[], metavar='LABEL=PATH',
                      help='GGUF for that label, to resolve the table against its tokenizer header; repeatable')
     rep.add_argument('--suite', type=Path, default=REPO / 'verification/vocab-remap/probes/multilingual.jsonl')
+    rep.add_argument('--observation', action='append', default=[], metavar='DIR',
+                     help='committed single-row arm pair (DIR/off, DIR/on) repeating one suite row; repeatable')
     rep.add_argument('--table', type=Path, help='table override; default is the packaged asset')
     rep.add_argument('--out', type=Path, default=REPO / 'verification/vocab-remap/multilingual.json')
     args = parser.parse_args(argv)
