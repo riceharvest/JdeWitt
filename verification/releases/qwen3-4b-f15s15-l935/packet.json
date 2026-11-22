@@ -9,7 +9,9 @@
     "chosen_type": "Q8_0",
     "realized_cos": 0.7255,
     "byte_cost": 4280403392,
-    "byte_cost_source": "q3-4b-shl10 and q3-4b-f15s12, same base/quant/tensor inventory, both measure 4,280,403,392 bytes"
+    "byte_cost_source": "q3-4b-shl10 and q3-4b-f15s12, same base/quant/tensor inventory, both measure 4,280,403,392 bytes",
+    "realized_cos_kind": "codec-proxy",
+    "realized_cos_source_artifact_sha256": "18a9e9ea043254da3a0774ef713e6e4464c64190cf7e42c9f12d91f6a2890f36"
   },
   "artifact_sha256": null,
   "artifact_sha256_prefix_16": null,
