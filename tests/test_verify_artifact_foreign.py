@@ -186,6 +186,14 @@ def test_foreign_flag_cannot_be_combined_with_native_flags(tmp_path):
     assert json.loads(result.stderr)['error']['type'] == 'ValueError'
 
 
+def test_name_that_tries_to_traverse_is_refused(tmp_path):
+    directory = _fixture(tmp_path)
+    (directory / '..\\evil.gguf').write_bytes(b'GGUF')
+    result = invoke('verify-artifact', directory, '--foreign')
+    assert result.returncode != 0
+    assert json.loads(result.stderr)['error']['code'] == 'PATH_TRAVERSAL_REFUSED'
+
+
 def test_file_path_is_not_a_foreign_directory(tmp_path):
     path = _write_gguf(tmp_path / 'single.gguf')
     result = invoke('verify-artifact', path, '--foreign')
