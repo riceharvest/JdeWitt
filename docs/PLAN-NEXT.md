@@ -60,10 +60,9 @@ written into the item and stays GATED.
    `dequantize_q2_k`/`dequantize_q3_k` in quants.py: numpy ports of
    ggml_dequantize_row_q2k/q3k, 0/770,048 mismatches vs the independent
    HF gguf.quants port on random blocks and uniform-byte edge fills
-   (incl. the dmin/d zero guards). Wired into gguf-tensor-diff as a
-   decode-only path (quants.DECODE_ONLY): self-diff of a written Q2_K
-   +Q3_K GGUF is bit-identical, a 1-byte flip in a Q3_K block is caught
-   (rel_rms 6.9e-05), and such files no longer crash the diff. Remaining:
+   (incl. the dmin/d zero guards). Self-diff of a written Q2_K + Q3_K GGUF
+   is bit-identical, a 1-byte flip in a Q3_K block is caught (rel_rms
+   6.9e-05), and such files no longer crash the diff.
    Q3_K's quantizer landed 2026-11-22: 100% byte-exact vs the compiled C on
    12 distributions and six real F32 tensors, once `make_q3_quants` kept its
    refinement sums in float32 order (that double accumulation was the whole
@@ -502,11 +501,10 @@ written into the item and stays GATED.
 - Gates re-falsified: `schemas.enforce` still fires on every touched
   command after the added keys, and `--kind code` on a suite with no code
   rows fails with the kind named in the message.
-- STILL OPEN and unchanged by this: the capability suites themselves are
-  4 maths + 2 code rows on every suite on disk, so the retention axis is
-  now instrumented but still has almost nothing to measure; no 3-4B dense
-  instruct checkpoint is pinned. Populating the capability suite is the
-  next CODE item.
+- The retention axis is now populated (see the next section: 300 maths +
+  42 code authored rows, later 61 code tasks); this entry is kept only for
+  the instrument fix above. A 3-4B dense instruct checkpoint for the
+  head-to-head claim is still not pinned (selection note).
 
 ## Capability (retention) suite populated: 300 maths + 42 code tasks (2026-11-17, CPU)
 - `scripts/author_capability.py` writes `verification/capability/capability-suite.jsonl`:
