@@ -320,6 +320,16 @@ def build_parser():
     pprune=sub.add_parser('plan-prune',help='Report registry rot (failed integrity, orphans); delete only with --execute')
     pprune.add_argument('registry',type=Path)
     pprune.add_argument('--execute',action='store_true')
+    papply=sub.add_parser('plan-apply',help='Apply a digest-pinned plan BUNDLE to THEIR quantized GGUF: verify the card, discover the target tensors in the artifact, re-encode only those, measure the delivered cos; no model, no B70')
+    papply.add_argument('--bundle',type=Path,required=True,help='plan-bundle tar (signed meta + payload)')
+    papply.add_argument('--gguf',type=Path,required=True,help='the artifact to edit; it is only ever read')
+    papply.add_argument('--out',type=Path,required=True,help='the edited artifact to write')
+    papply.add_argument('--strength','--scale',dest='strength',type=float,default=1.0,
+        help='projection strength applied to the plan axis (1.0 = the fitted removal)')
+    papply.add_argument('--edit-type',default='auto',
+        help='type the edited tensors are re-encoded at: auto probes q6_k -> q8_0 -> f16 for the smallest type that clears --min-cos, or name one this build can encode')
+    papply.add_argument('--min-cos',type=float,default=0.95,help='delivered-cos floor --edit-type auto uses to pick the smallest type')
+    papply.add_argument('--axis-space',choices=('output','input'),default='output')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('--allow-config-mismatch',action='store_true',
         help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
@@ -761,6 +771,10 @@ def main():
         elif args.command=='plan-prune':
             from .registry import prune_registry
             result=prune_registry(args.registry,args.execute)
+        elif args.command=='plan-apply':
+            from .planapply import plan_apply
+            result=plan_apply(args.bundle,args.gguf,args.out,args.strength,
+                              args.edit_type,args.min_cos,args.axis_space)
         elif args.command=='studies-compare':
             from .agent import studies_compare
             result=studies_compare(args.paths)

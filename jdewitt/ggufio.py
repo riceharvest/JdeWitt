@@ -225,15 +225,17 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
             'note': 'a low cos here means the codec, not the axis, decides what ships'}
 
 
-def compare_edit(source, edited, edits, names=None, limit=None, renormalize=False):
+def compare_edit(source, edited, edits, names=None, limit=None, renormalize=False, scale=1.0):
     """What did the SHIPPED file keep of the intended edit?
 
     ``source`` is the pristine artifact the project started from, ``edited`` is the
     file that will be served, and ``edits`` is {name: (axis, space)} — the projection
-    the ladder chose. The realized change is dequant(edited) - dequant(source), so
-    this is the only number that describes the delivered edit; an adapter curve
-    describes the wanted one. Use it after merge+requantize to prove the pipeline
-    kept the edit and to name the tensors that lost it.
+    the ladder chose. ``scale`` is the strength the writer applied; leaving it at 1.0
+    while the artifact was written at another strength would compare the stored edit
+    against a projection nobody asked for. The realized change is dequant(edited) -
+    dequant(source), so this is the only number that describes the delivered edit; an
+    adapter curve describes the wanted one. Use it after merge+requantize to prove the
+    pipeline kept the edit and to name the tensors that lost it.
     """
     from gguf import GGUFReader
 
@@ -263,7 +265,7 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
             continue
         axis, space = edits[name]
         axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
-        intended = axis_delta(axis, base, 1.0, space)
+        intended = axis_delta(axis, base, scale, space)
         if renormalize:
             edited_base = base + intended
             before = np.linalg.norm(base, axis=1, keepdims=True)

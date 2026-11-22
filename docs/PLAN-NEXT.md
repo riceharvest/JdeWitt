@@ -1113,6 +1113,46 @@ content. The loop is now: attitude ladder (0 tokens) -> probe/confirm screen ->
 `--apply-quantized` writes the edit into the artifact the user runs, with the
 delivered edit and the byte-identity of everything else measured, not assumed.
 
+### plan-apply: the card is the unit of distribution (2026-11-22, CODE)
+
+`plan-bundle` made a fitted plan portable; nothing consumed it, so the delivery unit
+stopped halfway. `plan-apply --bundle CARD.tar --gguf THEIR.gguf --out EDITED.gguf
+--strength S [--edit-type auto|q6_k|...]` is the consumer half: it verifies the card
+into a throwaway registry (`registry.unbundle_plan`, signed meta + payload sha + basis
+rank), loads it with `load_plan`, discovers the artifact's residual-write tensors from
+the file itself (`gguf_weight_shapes` + `discover_writeback_targets`; no model, no
+tensor table), and re-encodes ONLY those tensors through the same axis path as
+`edit-quantized` (`ggufio.axis_delta` inside `rewrite_with_edits`). One JSON carries
+the plan key + meta_digest, per-tensor delivered cos/SNR, edited/untouched counts, the
+untouched byte-identity check, the edit fingerprint and the output sha256.
+
+Measured on Spark-X2.6-1.7B-Q4_K_M (1,107,458,592 bytes, 226 tensors, arch spark2_5,
+28 blocks, hidden 2048) with a rank-2 card whose basis geometry matches it:
+
+  56 target tensors (attn_output + ffn_down x 28 layers) discovered, 28 layers edited,
+  `--edit-type auto` probes q6_k cos 0.840 / q8_0 0.933 / f16 0.9999 at the 0.95 floor
+  and picks F16 — this is the codec floor, not a defect: a unit axis at strength 1.0
+  changes ~3% of a row norm, below what a 6-bit grid keeps,
+  delivered cos 1.0000 min (1.0001 mean), SNR 146.5 min per edited tensor,
+  170 untouched tensors BYTE-IDENTICAL (re-read from both files; gguf-tensor-diff
+  independently reports 170/170 bit_identical and names exactly the 56 edited ones),
+  file 1,108 MB -> 1,778 MB, 9m17s wall on a loaded CPU host (888 s CPU, 2.5 GB RSS).
+
+Determinism: a second run from the same pristine artifact and card wrote the same
+output sha256 (`104a9f9a...`), and re-running the card on the produced file is detected
+from the artifact's own `jdewitt.fingerprint` and answered with a byte copy (same sha,
+`already_applied: true`, 17 s) instead of a second quantization pass.
+
+Refusals, all before any byte is written and all named: a hidden-1024 card, a 29-layer
+card and a card whose signed fit fingerprint says rank 3 over a rank-2 basis
+(`GEOMETRY_MISMATCH` with the operands printed), `--out` equal to `--gguf`
+(`OUT_IS_INPUT`), and an `--edit-type` this build cannot encode
+(`EDIT_TYPE_NOT_ENCODABLE` listing the 35 encodable types — never a silent 16-bit
+merge + requantize).
+
+Honest limit: the cos/SNR are codec-realized fidelity computed on CPU from the two
+files. What the model then answers is not measured here and no removal claim is made.
+
 ### Quant breadth: any source format, twelve writable targets (2026-11-22)
 
 Reading the user's artifact must not depend on their quant choice. `ggufio.decode_values`
