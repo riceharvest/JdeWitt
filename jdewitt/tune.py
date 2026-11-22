@@ -598,6 +598,7 @@ def tune_command(args):
     pruned_by_codec = []
     searched = []
     codec_refusal = None
+    confirmed_refusal = None
     screens_path = out_dir / 'screens.json'
     screen_identity = dict(identity)
     screen_identity['records'] = {'path': str(Path(args.records).resolve()),
@@ -898,6 +899,7 @@ def tune_command(args):
                 and args.screen_rows > args.probe_rows):
             candidates = sorted([arm for arm in arms if arm_is_clean(arm)],
                                 key=lambda arm: (damage(arm), arm['scale']))
+            confirmed_clean = None
             for arm in candidates:
                 if budget_left < args.screen_rows * args.screen_k:
                     break
@@ -909,8 +911,17 @@ def tune_command(args):
                                   'state': state['state'] if state else 'unknown',
                                   'tokens': full['tokens']})
                 if state and state['clean']:
-                    winner = arm
+                    confirmed_clean = arm
                     break
+            if confirmed_clean is not None:
+                winner = confirmed_clean
+            else:
+                # The probe row cleared but the full row set did not: that arm is not
+                # shippable, and keeping it would ship a one-row measurement.
+                confirmed_refusal = {'family': winner['family'], 'scale': winner['scale'],
+                                     'reason': 'probe cleared, full-row confirmation refused',
+                                     'rows': args.screen_rows}
+                winner = None
     finally:
         if server is not None:
             server.stop()
@@ -924,10 +935,11 @@ def tune_command(args):
         'scales': scales, 'drift_budget': args.drift_budget,
         'drift_budget_used': drift_budget, 'drift_noise_ln': round(noise_ln, 4),
         'front_widened': widened, 'ctx_used': args.ctx,
-        'min_edit_cos': args.min_edit_cos,
+        'min_edit_cos': args.min_edit_cos, 'rank': args.rank,
         'pruned_by_codec': pruned_by_codec,
         'strength_searched_for_codec': searched,
         'codec_refusal': codec_refusal,
+        'confirmation_refusal': confirmed_refusal,
         'shipping_options': ({'adapter': {'path': adapters[winner['family']]['path'],
                                           'scale': winner['scale'],
                                           'note': 'the exact fp32 edit; serve with --lora-scaled '

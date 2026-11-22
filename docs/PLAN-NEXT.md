@@ -1087,3 +1087,17 @@ Also: `--rank` is wired into `edit-quantized` (delivered cos 0.990-0.993 at F16-
 Q8_0), and the two places that flattened an axis with `.reshape(-1)` (compare_edit,
 preview, rewrite) are fixed — flattening a (k, W) subspace turned it into a 6144-vector
 and crashed the fidelity check with a matmul mismatch.
+
+#### Rank-3 measured against rank-1, and a confirmation bug it exposed
+
+`tune --rank 3 --apply-quantized` (gate at the planned Q8_0 storage), footprint 10-27,
+scales 0.3/0.5/0.8: fidelity is fine (cos 0.936 / 0.975 / 0.990) but every rank-3 arm
+leaves a refusal on the probe row (1 of 1), while rank-1 @1.0 cleared 4/4 rows on the
+same artifact. Extra directions over-edit this model: the answers degrade
+("I'm sorry, butI can't ...") and hedging returns. So rank is a searched dimension with
+a real answer, and on this artifact the answer is 1.
+
+That run also exposed a shipping bug: an arm that cleared the probe row but REFUSED on
+the full-row confirmation was still kept as the winner, because the confirmation loop
+only replaced the winner when a candidate passed. It now clears the winner and records
+`confirmation_refusal`, so a one-row measurement can never ship.
