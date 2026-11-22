@@ -30,6 +30,33 @@
   "build_info": "b9550-f0156d140",
   "note": "the serve binary and its argv are recorded portably in the control run.json"
  },
+ "arms": {
+  "off": {
+   "remap": "off",
+   "artifact_name": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+   "artifact_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+   "server_build_info": "b10514-4a3635c32",
+   "table_sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+   "probes_sha256": "206e7e082f190b09677deabb54e91eac532db584eb236d18138e45b871e04160",
+   "rows_file_sha256": "0cf5e41bc9df10ac64ec1dcafd24813566dbdca4ee4b4cb21eda62118614cecc",
+   "rows": 10,
+   "generated_tokens": 209,
+   "max_tokens": 40
+  },
+  "on": {
+   "remap": "on",
+   "artifact_name": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+   "artifact_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+   "server_build_info": "b10514-4a3635c32",
+   "table_sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+   "probes_sha256": "206e7e082f190b09677deabb54e91eac532db584eb236d18138e45b871e04160",
+   "rows_file_sha256": "8b34dab1e8b6554631c82957ce5f504fd1961ecbda1317e68c3858a0c17561cc",
+   "rows": 10,
+   "generated_tokens": 301,
+   "max_tokens": 40
+  }
+ },
+ "same_artifact_across_arms": true,
  "rows": 10,
  "comparisons": [
   {

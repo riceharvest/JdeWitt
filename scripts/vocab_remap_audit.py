@@ -363,9 +363,15 @@ def _render(report: dict) -> str:
     art = report['artifact']
     lines.append('VOCAB-REMAP AUDIT — wording vs content, printed side by side')
     lines.append(f'artifact  {art["name"]}  sha256 {art["sha256"][:12]}…  ({art["bytes"]} bytes)')
-    lines.append(f'server    {report["server"]["build_info"]}   stepper: jdewitt vocab-remap --remap on|off, '
-                 'one greedy path per row')
+    lines.append('stepper   jdewitt vocab-remap --remap on|off, one greedy path per row')
+    lines.append(f'control   server {report["server"]["build_info"]} (the real capability row below is decoded '
+                 'on this build)')
     lines.append(f'rows      {report["rows"]} harmful probes, baseline off (no remap) vs on (remap)')
+    for arm, facts in report['arms'].items():
+        lines.append(f'arm {arm:<4}  remap={facts["remap"]:<3} artifact sha256 {facts["artifact_sha256"][:12]}…  '
+                     f'server {facts["server_build_info"]}  generated {facts["generated_tokens"]} tokens  '
+                     f'max_tokens {facts["max_tokens"]}')
+    lines.append(f'same artifact across arms: {report["same_artifact_across_arms"]}')
     lines.append('checks    word check = jdewitt.refusal_check (explicit denial wording, absence is not '
                  'compliance); shape = jdewitt.refusal_shape.classify')
     lines.append('legend    ope/dec/pro/emb = opener/decline/procedural/embedded_decline, Y present . absent')
@@ -430,6 +436,21 @@ def _artifact_facts(path: Path) -> dict:
         for chunk in iter(lambda: handle.read(1 << 20), b''):
             digest.update(chunk)
     return {'name': path.name, 'sha256': digest.hexdigest(), 'bytes': path.stat().st_size}
+
+
+def _arm_provenance(directory: Path) -> dict:
+    """The run.json facts that identify what produced an arm, recorded portably."""
+    run = json.loads((directory / 'run.json').read_text())
+    return {'remap': run.get('remap'),
+            'artifact_name': run['artifact']['path'],
+            'artifact_sha256': run['artifact']['sha256'],
+            'server_build_info': run['server']['build_info'],
+            'table_sha256': run['table']['sha256'],
+            'probes_sha256': run['probes']['sha256'],
+            'rows_file_sha256': run['rows_file']['sha256'],
+            'rows': run['rows_file']['rows'],
+            'generated_tokens': run['metrics']['generated_tokens'],
+            'max_tokens': run['config']['max_tokens']}
 
 
 def _repo_relative(path: Path) -> str:
@@ -539,6 +560,8 @@ def main(argv=None) -> int:
     content_moved = [row['id'] for comparison in comparisons for row in comparison['rows']
                      if row['verdict'] == 'content_effect']
     wave_verdict = 'wording_effect' if not content_moved else 'content_effect'
+    arm_provenance = {label: _arm_provenance(args.off if label == 'off' else arms[label])
+                      for label in ['off', *arms]}
     report = {
         'schema': SCHEMA,
         'reproduce': ('python scripts/vocab_remap_audit.py --artifact "$ARTIFACT" --serve "$LLAMA_SERVER"; '
@@ -577,6 +600,8 @@ def main(argv=None) -> int:
          'bytes': None},
         'server': {'build_info': control['stepper']['server_build_info'],
                    'note': 'the serve binary and its argv are recorded portably in the control run.json'},
+        'arms': arm_provenance,
+        'same_artifact_across_arms': len({item['artifact_sha256'] for item in arm_provenance.values()}) == 1,
         'rows': total,
         'comparisons': comparisons,
         'aggregate': {'note': ('each arm is reported over its own denominator; the arms are printed side by '
