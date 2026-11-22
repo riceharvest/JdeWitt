@@ -169,6 +169,14 @@ def main():
     qaudit=sub.add_parser('quants-audit',help='Dequant/requant falsifier for the GGML codec ports over a real GGUF: byte identity + worst drift on bounded block samples; no model')
     qaudit.add_argument('file',type=Path)
     qaudit.add_argument('--blocks',type=int,default=4096,help='block samples per dtype')
+    esmoke=sub.add_parser('export-smoke',help='Serve one exported GGUF with a real llama-server on a free port: header identity, /health, /props path check, one greedy completion, one JSON; exit 0 iff served (-ngl 0, CPU)')
+    esmoke.add_argument('--gguf',type=Path,required=True)
+    esmoke.add_argument('--server',type=Path,help='llama-server binary; required unless --no-server')
+    esmoke.add_argument('--ctx',type=int,default=4096)
+    esmoke.add_argument('--max-tokens',type=int,default=16)
+    esmoke.add_argument('--out',type=Path,default=Path('export-smoke.json'),help='JSON report path; the server log is written beside it')
+    esmoke.add_argument('--server-arg',action='append',default=[],metavar='ARG',help='Extra llama-server argv token, passed in order and recorded; use --server-arg=--flag for dash-leading values (repeatable)')
+    esmoke.add_argument('--no-server',action='store_true',help='Header half only: servable is "unmeasured", never true')
     editm.add_argument('input',type=Path)
     editm.add_argument('output',type=Path)
     editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
@@ -523,6 +531,7 @@ def main():
     add_arguments(sub)
     args=parser.parse_args()
     try:
+        exit_code=None
         if args.command=='tree-ranker-data':
             from .tree_behavior_data import prepare_ranker_data
             result=prepare_ranker_data(args.config)
@@ -610,6 +619,10 @@ def main():
         elif args.command=='quants-audit':
             from .agent import quants_audit
             result=quants_audit(args.file,args.blocks)
+        elif args.command=='export-smoke':
+            from .export_smoke import export_smoke_command
+            result=export_smoke_command(args)
+            exit_code=0 if result['verdict']['servable'] is True else 1
         elif args.command=='verify':
             from .verify import verify_files
             result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)
@@ -898,6 +911,8 @@ def main():
         if args.command in EMIT_SCHEMAS:
             enforce(args.command,result)
         print(json.dumps(result,indent=2,allow_nan=False))
+        if exit_code is not None:
+            raise SystemExit(exit_code)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
         print(json.dumps({'error':{'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)

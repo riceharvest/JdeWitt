@@ -1,0 +1,15 @@
+0.00.528.147 I srv  llama_server: initializing ...
+0.00.528.165 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.529.291 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.531.756 I srv    load_model: loading model '/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf'
+0.00.531.926 E gguf_init_from_reader: failed to read key-value pairs
+0.00.531.997 E llama_model_load: error loading model: llama_model_loader: failed to load model from /home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf
+0.00.532.001 E llama_model_load_from_file_impl: failed to load model
+0.00.532.034 E common_fit_params: encountered an error while trying to fit params to free device memory: failed to load model
+0.00.532.057 E gguf_init_from_reader: failed to read key-value pairs
+0.00.532.065 E llama_model_load: error loading model: llama_model_loader: failed to load model from /home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf
+0.00.532.066 E llama_model_load_from_file_impl: failed to load model
+0.00.532.068 E cmn  common_init_: failed to load model '/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf'
+0.00.532.071 E srv    load_model: failed to load model, '/home/dario/.agentboard/worktrees/t_296dc10c/verification/export-smoke/run3-truncated-q4km.gguf'
+0.00.532.072 I srv    operator(): operator(): cleaning up before exit...
+0.00.532.466 E srv  server_run_i: exiting due to model loading error
