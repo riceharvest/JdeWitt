@@ -32,8 +32,8 @@ def completion_script(parser, shell):
         raise ValueError('parser has no subcommands')
     commands = []
     per_command_opts = {}
-    for subaction in subactions._get_subactions():
-        child = subactions.choices[subaction.dest]
+    helped = {subaction.dest: subaction.help for subaction in subactions._get_subactions()}
+    for name, child in subactions.choices.items():
         opts = []
         for argument in child._actions:
             if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
@@ -41,9 +41,9 @@ def completion_script(parser, shell):
             opts.extend(argument.option_strings or [])
             if argument.metavar and not argument.option_strings:
                 opts.append('<' + argument.metavar.rstrip(']') + '>')
-        per_command_opts[subaction.dest] = ' '.join(sorted(set(opts)))
-        help_text = (subaction.help or child.description or '').replace(':', '-')
-        commands.append((subaction.dest, help_text))
+        per_command_opts[name] = ' '.join(sorted(set(opts)))
+        help_text = (helped.get(name) or child.description or '').replace(':', '-')
+        commands.append((name, help_text))
     command_names = ' '.join(sorted(name for name, _help in commands))
     if shell == 'bash':
         lines = [f'_{safe_prog}_completion() {{',
@@ -94,8 +94,8 @@ def command_manifest(parser):
     for action in parser._actions:
         if not isinstance(action, _argparse._SubParsersAction):
             continue
-        for subaction in action._get_subactions():
-            child = action.choices[subaction.dest]
+        helped = {subaction.dest: subaction.help for subaction in action._get_subactions()}
+        for name, child in action.choices.items():
             arguments = []
             for argument in child._actions:
                 if argument.dest == 'help' or argument.help == _argparse.SUPPRESS:
@@ -104,8 +104,8 @@ def command_manifest(parser):
                 arguments.append({'flags': list(argument.option_strings or [argument.dest]),
                                   'dest': argument.dest, 'required': bool(argument.required),
                                   'choices': [str(choice) for choice in choices] if choices else None})
-            commands.append({'command': subaction.dest, 'help': subaction.help or child.description,
-                             'arguments': arguments, 'schema_enforced': subaction.dest in EMIT_SCHEMAS})
+            commands.append({'command': name, 'help': helped.get(name) or child.description,
+                             'arguments': arguments, 'schema_enforced': name in EMIT_SCHEMAS})
     commands.sort(key=lambda item: item['command'])
     return {'scope': 'Self-description of the installed CLI; anything marked schema_enforced fails its own command if the writer drifts.',
             'commands': commands,
@@ -114,7 +114,13 @@ def command_manifest(parser):
             'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
 
 
-def main():
+def build_parser():
+    """Construct the full argparse tree without importing any command's runtime.
+
+    Kept separate from main() so auditing tools can walk the same parser the
+    installed CLI uses; building it must stay model-free (see
+    scripts/help_audit.py and tests/test_agent_interface.py).
+    """
     parser=AgentParser(description='B70-only ablation with real answer and quantized release gates')
     from . import __version__
     parser.add_argument('--version',action='version',version=f'jdewitt {__version__}')
@@ -529,6 +535,11 @@ def main():
     revert.add_argument('sidecar',type=Path)
     from .arguments import add_arguments
     add_arguments(sub)
+    return parser
+
+
+def main():
+    parser=build_parser()
     args=parser.parse_args()
     try:
         exit_code=None
