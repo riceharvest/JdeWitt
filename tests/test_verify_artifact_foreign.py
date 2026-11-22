@@ -201,6 +201,23 @@ def test_file_path_is_not_a_foreign_directory(tmp_path):
     assert json.loads(result.stderr)['error']['code'] == 'NOT_A_DIRECTORY'
 
 
+def test_foreign_mode_never_imports_a_model_runtime(tmp_path):
+    directory = _fixture(tmp_path)
+    code = """
+import sys, importlib.abc
+class NoModels(importlib.abc.MetaPathFinder):
+    def find_spec(self, fullname, *args):
+        if fullname.split('.')[0] in {'torch', 'transformers', 'bitsandbytes'}:
+            raise AssertionError('model runtime imported by --foreign: ' + fullname)
+sys.meta_path.insert(0, NoModels())
+from jdewitt.cli import main
+main()
+"""
+    result = subprocess.run([sys.executable, '-c', code, 'verify-artifact', str(directory), '--foreign'],
+                            cwd=ROOT, capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr
+
+
 def test_native_path_still_checks_nothing_extra_on_such_a_directory(tmp_path):
     """--all stays the native path: a foreign dir has no schema artifacts to check."""
     directory = _fixture(tmp_path)
