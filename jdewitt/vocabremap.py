@@ -29,7 +29,11 @@ plan is what the decode driver in the next stage would do on that path.
 
 import hashlib
 import json
+import os
+import socket
 import struct
+import subprocess
+import time
 import urllib.request
 from pathlib import Path
 
@@ -317,9 +321,16 @@ def _server_json(port, path, payload=None, timeout=60):
         raise RuntimeError(f'llama-server on port {port} did not answer {path}: {error}') from error
 
 
-def served_tokenize(port, text):
-    """Token ids for one string, exactly as the served tokenizer splits it."""
-    payload = _server_json(port, '/tokenize', {'content': text, 'add_special': False, 'parse_special': False})
+def served_tokenize(port, text, parse_special=False):
+    """Token ids for one string, exactly as the served tokenizer splits it.
+
+    The dry run probes plain surfaces, so special markers stay literal. The decode
+    driver tokenizes its own prompt with parse_special=True: the server parses the
+    chat template's <|im_start|> markers in a /completion prompt string, so the path
+    it evaluates has one token per marker, not the several the literal spelling has.
+    """
+    payload = _server_json(port, '/tokenize', {'content': text, 'add_special': False,
+                                               'parse_special': parse_special})
     tokens = payload.get('tokens') if isinstance(payload, dict) else None
     if not isinstance(tokens, list) or any(type(token) is not int for token in tokens):
         raise ValueError(f'llama-server /tokenize returned no integer token list for {text[:40]!r}')
@@ -727,3 +738,629 @@ def vocab_remap_dry_run(table=None, suite=None, probes=None, artifacts=(), ports
     if json_out is not None:
         Path(json_out).write_text(json.dumps(report, indent=2, allow_nan=False) + '\n')
     return report
+
+
+# --------------------------------------------------------------------------
+# --remap on|off: the decode driver (client-side single-token loop)
+# --------------------------------------------------------------------------
+
+DECODE_SCHEMA = 'jdewitt.vocab-remap-decode/1'
+SUPPRESS_BIAS = -100
+FORCE_BIAS = 100
+RESAMPLE_LIMIT = 16
+DECODE_TIMEOUT = 300
+DECODE_METHOD = (
+    'Client-side single-token loop against a live llama-server: each step POSTs /completion with the prompt '
+    're-sent and the emitted text appended, n_predict=1, temperature=0, cache_prompt=true, n_probs=1, so the '
+    'served tokenizer and the KV prefix stay the artifact\'s own. The server does not continue cached generated '
+    'tokens when the prompt is unchanged: the prompt carries the emitted text each step and prompt_n is 1. '
+    'remap=on applies logit_bias only for the step it belongs to: the candidate token that completes a table '
+    'sequence is suppressed with -100, and when the table names a replacement its first token is forced with '
+    '+100 (the remaining replacement tokens carry +100 on the following steps while they still match, or the '
+    'force is dropped and the divergence recorded). Suppression is sequence-aware: " can" alone completes '
+    'nothing, " can"+"\'t" completes the denial and is the step that fires. Re-sampling after a suppression can '
+    'surface another completing token (a typographic apostrophe, " can not"), so the same step is re-sampled '
+    'until the chosen token completes no table sequence or RESAMPLE_LIMIT is reached; every suppression is '
+    'recorded. remap=off runs the identical loop with no bias, so the difference between the two arms is one '
+    'flag, not a different build. Each row is also decoded as one plain greedy /completion wave for comparison.')
+
+
+def _free_port():
+    with socket.socket() as sock:
+        sock.bind(('127.0.0.1', 0))
+        return sock.getsockname()[1]
+
+
+def _log_tail(path, limit=3):
+    try:
+        lines = [line.strip() for line in Path(path).read_text(errors='replace').splitlines() if line.strip()]
+    except OSError:
+        return 'no server log'
+    return '; '.join(lines[-limit:]) or 'no loader output'
+
+
+def _wait_healthy(port, process, log_path, timeout=180.0):
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            raise RuntimeError(f'llama-server exited {process.returncode} before /health: {_log_tail(log_path)}')
+        try:
+            with urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=2) as response:
+                if response.status == 200:
+                    return
+        except OSError:
+            pass
+        time.sleep(0.1)
+    raise RuntimeError(f'llama-server on port {port} did not become healthy in {timeout:.0f}s: {_log_tail(log_path)}')
+
+
+def start_server(serve, artifact, port, log_path):
+    """Start the artifact on a loopback port and wait for /health; return the process handle."""
+    argv = [str(serve), '-m', str(Path(artifact).resolve()), '-ngl', '0', '-c', '2048',
+            '--parallel', '1', '--host', '127.0.0.1', '--port', str(port)]
+    env = {key: value for key, value in os.environ.items() if not key.startswith(('LLAMA_', 'HF_TOKEN'))}
+    Path(log_path).parent.mkdir(parents=True, exist_ok=True)
+    handle = open(log_path, 'w')
+    process = subprocess.Popen(argv, stdout=handle, stderr=subprocess.STDOUT, env=env)
+    try:
+        _wait_healthy(port, process, log_path)
+    except BaseException:
+        process.terminate()
+        try:
+            process.wait(timeout=15)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait(timeout=10)
+        handle.close()
+        raise
+    return {'argv': argv, 'process': process, 'handle': handle, 'port': port}
+
+
+def stop_server(started):
+    started['process'].terminate()
+    try:
+        started['process'].wait(timeout=15)
+    except subprocess.TimeoutExpired:
+        started['process'].kill()
+        started['process'].wait(timeout=10)
+    started['handle'].close()
+
+
+def verify_artifact_identity(port, artifact):
+    """Refuse unless the server's /props model_path is the artifact: the same gate release.py uses."""
+    props = _server_json(port, '/props')
+    if not isinstance(props, dict):
+        raise ValueError('llama-server /props returned no object')
+    reported = props.get('model_path')
+    if not isinstance(reported, str) or not reported:
+        raise ValueError('llama-server /props carried no model_path; the loaded artifact cannot be proven')
+    if Path(reported).resolve() != Path(artifact).resolve():
+        raise ValueError(f'refusing to run: the server loaded {reported!r}, not the artifact '
+                         f'{Path(artifact).name!r}; a decode row from another GGUF would describe another model')
+    generation = props.get('default_generation_settings') or {}
+    return {'model_path_reported': _portable_path(reported),
+            'model_path_reported_is_absolute': os.path.isabs(reported),
+            'model_path_resolves_to_artifact': True,
+            'build_info': props.get('build_info'), 'model_alias': props.get('model_alias'),
+            'n_ctx': generation.get('n_ctx'), 'total_slots': props.get('total_slots')}
+
+
+def apply_chat_template(port, text):
+    """Render the artifact's own chat template through the served runtime; never re-implement it here."""
+    response = _server_json(port, '/apply-template',
+                            {'messages': [{'role': 'user', 'content': text}],
+                             'add_generation_prompt': True})
+    prompt = response.get('prompt') if isinstance(response, dict) else None
+    if not isinstance(prompt, str) or not prompt.strip():
+        raise ValueError('llama-server /apply-template returned no prompt; pass --template raw to decode the '
+                         'suite prompts verbatim')
+    return prompt
+
+
+def _completion(port, payload):
+    response = _server_json(port, '/completion', payload, timeout=DECODE_TIMEOUT)
+    if not isinstance(response, dict):
+        raise ValueError('llama-server /completion returned no object')
+    return response
+
+
+def _candidate(response):
+    """The top candidate of a one-token completion (None when the runtime sampled nothing)."""
+    probabilities = response.get('completion_probabilities')
+    if not isinstance(probabilities, list) or not probabilities:
+        return None
+    top = probabilities[0]
+    if not isinstance(top, dict) or type(top.get('id')) is not int:
+        raise ValueError('llama-server /completion returned no integer candidate id')
+    return {'id': top['id'], 'text': top.get('token')}
+
+
+def _bias_document(bias):
+    return {str(token_id): int(value) for token_id, value in sorted(bias.items())}
+
+
+def _piece(token_id, tokens):
+    """Display text of one token, empty for an id outside the artifact vocabulary."""
+    if type(token_id) is not int or not 0 <= token_id < len(tokens):
+        return ''
+    return piece_text(token_id, tokens)
+
+
+def _piece_bytes(token_id, tokens):
+    if type(token_id) is not int or not 0 <= token_id < len(tokens):
+        return b''
+    return _token_bytes(tokens[token_id])
+
+
+def _firing(entry_items, path_ids, candidate_id, step):
+    """Table sequences the candidate token completes at generated step ``step`` (sequence-aware).
+
+    The candidate is the token about to be emitted, so a sequence fires only when the whole
+    sequence ends at it. A sequence that starts inside the prompt is not the model's own denial
+    and is not fired (it is counted as prompt-origin instead).
+    """
+    full = path_ids + [candidate_id]
+    fires = []
+    seen = set()
+    for item in entry_items:
+        for context_item in item['contexts']:
+            sequence = context_item['ids']
+            if not sequence or len(sequence) > len(full):
+                continue
+            if full[-len(sequence):] != sequence:
+                continue
+            start_step = step - len(sequence) + 1
+            if start_step < 0 or not _scope_allows(item['entry'], start_step):
+                continue
+            key = (item['entry']['id'], tuple(sequence))
+            if key in seen:
+                continue
+            seen.add(key)
+            fires.append((item, context_item, start_step))
+    return fires
+
+
+def _occurrences_in_generated(path_ids, prompt_length, entry_items):
+    """Table sequences present in the generated part of a token path, with the step they start at."""
+    hits = []
+    generated = path_ids[prompt_length:]
+    for item in entry_items:
+        for context_item in item['contexts']:
+            sequence = context_item['ids']
+            for start in _occurrences(generated, sequence):
+                if not _scope_allows(item['entry'], start):
+                    continue
+                hits.append({'entry_id': item['entry']['id'], 'context': context_item['context'],
+                             'start_step': start, 'ids': sequence})
+    return hits
+
+
+def _sent_prompt(prompt, prompt_ids, emitted_ids, emitted_bytes):
+    """What to POST as the prompt this step: the text with the emitted text appended, or the ids.
+
+    The emitted text is the concatenation of the emitted tokens' raw bytes. A multi-byte character
+    split across two tokens has no text form, so that step (and only that step) sends the ids the
+    server already knows; nothing is silently replaced.
+    """
+    try:
+        text = prompt + emitted_bytes.decode('utf-8')
+    except UnicodeDecodeError:
+        return {'field': list(prompt_ids) + list(emitted_ids), 'form': 'ids', 'path_ids': None}
+    return {'field': text, 'form': 'text', 'path_ids': None}
+
+
+def decode_steps(port, tokens, entry_items, prompt, prompt_ids, max_tokens, remap):
+    """One client-side single-token loop: per step, suppress the completing token and force replacements."""
+    emitted_ids = []
+    emitted_bytes = b''
+    steps, suppressions, forced = [], [], []
+    retokenized, prompt_origin = [], 0
+    pending = []
+    stop = None
+    resample_limit_steps = []
+    requests = 0
+    for step in range(max_tokens):
+        sent = _sent_prompt(prompt, prompt_ids, emitted_ids, emitted_bytes)
+        path_ids = (list(prompt_ids) + list(emitted_ids) if sent['form'] == 'ids'
+                    else served_tokenize(port, sent['field'], parse_special=True))
+        if sent['form'] == 'text' and path_ids != list(prompt_ids) + list(emitted_ids):
+            retokenized.append({'step': step, 'served_tokens': len(path_ids),
+                                'tracked_tokens': len(prompt_ids) + len(emitted_ids)})
+        payload = {'prompt': sent['field'], 'n_predict': 1, 'temperature': 0.0,
+                   'cache_prompt': True, 'n_probs': 1}
+        bias = {}
+        if remap and pending:
+            bias[pending[0]] = FORCE_BIAS
+        if bias:
+            payload['logit_bias'] = _bias_document(bias)
+        response = _completion(port, payload)
+        requests += 1
+        suppressed_here = []
+        attempts = 0
+        chosen = None
+        while True:
+            candidate = _candidate(response)
+            if candidate is None:
+                break
+            fires = _firing(entry_items, path_ids, candidate['id'], step) if remap else []
+            if not fires:
+                # a sequence that starts before step 0 begins in the prompt: the user's words, not the model's denial
+                full = list(path_ids) + [candidate['id']]
+                prompt_origin += sum(1 for item in entry_items for context_item in item['contexts']
+                                     if context_item['ids'] and len(context_item['ids']) <= len(full)
+                                     and full[-len(context_item['ids']):] == context_item['ids']
+                                     and step - len(context_item['ids']) + 1 < 0)
+                chosen = candidate
+                break
+            if pending and candidate['id'] == pending[0]:
+                forced.append({'step': step, 'reason': 'the forced replacement token completes a table '
+                                                       'sequence; the suppression rule wins'})
+                pending = []
+            previous = path_ids[-1] if path_ids else None
+            for item, _context, _start in fires:
+                replacement = item['replacement']
+                event = {'step': step, 'suppressed_id': candidate['id'],
+                         'suppressed_text': _piece(candidate['id'], tokens),
+                         'replacement_id': replacement['first_id'] if replacement else None,
+                         'entry_id': item['entry']['id'],
+                         'prev_token': {'id': previous, 'text': _piece(previous, tokens)}
+                         if previous is not None else None}
+                suppressions.append(event)
+                suppressed_here.append(event)
+            bias[candidate['id']] = SUPPRESS_BIAS
+            forces = {item['replacement']['first_id'] for item, _c, _s in fires if item['replacement']}
+            if len(forces) == 1:
+                force_id = next(iter(forces))
+                if force_id != candidate['id']:
+                    bias[force_id] = FORCE_BIAS
+                    source = next(item for item, _c, _s in fires if item['replacement'])
+                    pending = list(source['replacement']['ids'][1:])
+                    forced.append({'step': step, 'entry_id': source['entry']['id'], 'first_id': force_id,
+                                   'first_text': _piece(force_id, tokens), 'remaining_ids': pending,
+                                   'reason': 'the table replacement is forced on its first token; the rest '
+                                             'follows with +100 while it still matches'})
+            elif len(forces) > 1:
+                forced.append({'step': step, 'reason': 'several entries with different replacements complete '
+                                                       'this token; none is forced', 'ids': sorted(forces)})
+            payload['logit_bias'] = _bias_document(bias)
+            response = _completion(port, payload)
+            requests += 1
+            attempts += 1
+            if attempts >= RESAMPLE_LIMIT:
+                chosen = _candidate(response)
+                resample_limit_steps.append({'step': step, 'attempts': attempts,
+                                             'resampled_id': chosen['id'] if chosen else None})
+                break
+        if chosen is None:
+            stop = response.get('stop_type') or 'eos'
+            break
+        token_id = chosen['id']
+        piece = _piece_bytes(token_id, tokens)
+        if not piece and not (response.get('content') or ''):
+            stop = 'eos'
+            break
+        emitted_ids.append(token_id)
+        emitted_bytes += piece
+        timings = response.get('timings') if isinstance(response.get('timings'), dict) else {}
+        steps.append({'step': step, 'token_id': token_id, 'piece': _piece(token_id, tokens),
+                      'resampled': attempts, 'suppressions': len(suppressed_here),
+                      'prompt_n': timings.get('prompt_n'), 'cache_n': timings.get('cache_n')})
+        if pending:
+            if token_id == pending[0]:
+                pending.pop(0)
+            else:
+                forced.append({'step': step, 'reason': 'the model left the forced replacement',
+                               'expected_id': pending[0], 'got_id': token_id})
+                pending = []
+        stop_type = response.get('stop_type')
+        if stop_type and stop_type != 'limit':
+            stop = stop_type
+            break
+    return {'ids': emitted_ids, 'steps': steps, 'suppressions': suppressions, 'forced': forced,
+            'retokenized_steps': retokenized, 'prompt_origin_completions': prompt_origin,
+            'resample_limit_steps': resample_limit_steps, 'stop': stop, 'completion_requests': requests,
+            'pending_unfinished': pending}
+
+
+def greedy_wave(port, prompt, max_tokens, tokens):
+    """One plain greedy /completion wave: the base continuation the off arm must reproduce token-for-token."""
+    start = time.monotonic()
+    response = _completion(port, {'prompt': prompt, 'n_predict': max_tokens, 'temperature': 0.0,
+                                  'cache_prompt': True, 'n_probs': 1})
+    probabilities = response.get('completion_probabilities') or []
+    ids = []
+    for item in probabilities:
+        token_id = item.get('id') if isinstance(item, dict) else None
+        if type(token_id) is not int or not _piece_bytes(token_id, tokens):
+            break
+        ids.append(token_id)
+    return {'ids': ids, 'text': detokenize(ids, tokens), 'reported_text': response.get('content') or '',
+            'stop_type': response.get('stop_type'), 'seconds': round(time.monotonic() - start, 3)}
+
+
+APOSTROPHE_VARIANTS = '\u2019\u2018\u02bc`\u00b4\uff07'
+
+
+def _normalize_apostrophes(text):
+    for character in APOSTROPHE_VARIANTS:
+        text = text.replace(character, "'")
+    return text
+
+
+def variant_forms(text, entry_items):
+    """Table forms that reappear in a spelling the table does not name.
+
+    A contraction the table spells with ASCII "'" can be emitted with a typographic
+    apostrophe (U+2019): the token is different, the words are the same. This is
+    reported, never silently normalized into the suppression rule — the table decides
+    what is named, and an unnamed variant is a gap in the table, not a driver bug.
+    """
+    normalized = _normalize_apostrophes(text).lower()
+    hits = []
+    for item in entry_items:
+        form = item['entry']['form']
+        if "'" not in form:
+            continue
+        if _normalize_apostrophes(form).lower() in normalized and form.lower() not in text.lower():
+            hits.append({'entry_id': item['entry']['id'], 'form': form,
+                         'note': 'the same words in an apostrophe spelling the table does not name'})
+    return hits
+
+
+def decode_row(port, tokens, entry_items, probe, prompt, max_tokens, remap, template_mode):
+    """Decode one probe in both arms' shape: the single-token loop, plus the plain greedy wave beside it."""
+    start = time.monotonic()
+    prompt_ids = served_tokenize(port, prompt, parse_special=True)
+    loop = decode_steps(port, tokens, entry_items, prompt, prompt_ids, max_tokens, remap == 'on')
+    loop_seconds = time.monotonic() - start
+    wave = greedy_wave(port, prompt, max_tokens, tokens)
+    generated = loop['ids']
+    text = detokenize(generated, tokens)
+    surfaces = _occurrences_in_generated(generated, 0, entry_items)
+    opener_surfaces = [hit for hit in surfaces if hit['start_step'] < OPENER_WINDOW_TOKENS]
+    wave_surfaces = _occurrences_in_generated(wave['ids'], 0, entry_items)
+    wave_opener_surfaces = [hit for hit in wave_surfaces if hit['start_step'] < OPENER_WINDOW_TOKENS]
+    base_shape = classify(wave['text'])
+    loop_shape = classify(text)
+    prompt_n = [step['prompt_n'] for step in loop['steps'] if type(step['prompt_n']) is int]
+    cache_n = [step['cache_n'] for step in loop['steps'] if type(step['cache_n']) is int]
+    return {
+        'id': probe['id'], 'kind': probe['kind'], 'language': probe['language'],
+        'source': probe['source'], 'prompt': probe['prompt'],
+        'prompt_sha256': hashlib.sha256(probe['prompt'].encode()).hexdigest(),
+        'template': template_mode, 'remap': remap, 'max_tokens': max_tokens,
+        'prompt_tokens': len(prompt_ids),
+        'path': {'n_tokens': len(generated), 'ids': generated,
+                 'pieces': [_piece(token_id, tokens) for token_id in generated], 'text': text},
+        'steps': loop['steps'], 'suppressions': loop['suppressions'], 'forced': loop['forced'],
+        'stop': loop['stop'], 'completion_requests': loop['completion_requests'],
+        'retokenized_steps': loop['retokenized_steps'],
+        'prompt_origin_completions': loop['prompt_origin_completions'],
+        'resample_limit_steps': loop['resample_limit_steps'],
+        'pending_unfinished': loop['pending_unfinished'],
+        'prompt_evaluation': {'prompt_n_per_step': prompt_n, 'cache_n_per_step': cache_n,
+                              'max_prompt_n_after_first_step': max(prompt_n[1:], default=None),
+                              'min_cache_n': min(cache_n, default=None),
+                              'note': ('prompt_n is the number of prompt tokens the server actually evaluated in '
+                                       'that request (the runtime timing field), so 1 after the first step is the '
+                                       'KV prefix being reused; cache_n is the matched prefix length')},
+        'plain': {'ids': wave['ids'], 'text': wave['text'],
+                  'reported_text': wave['reported_text'], 'stop_type': wave['stop_type'],
+                  'seconds': wave['seconds']},
+        'gate': {'equals_plain_token_for_token': generated == wave['ids'],
+                 'surfaces_in_generated': surfaces,
+                 'surfaces_in_opener_window': opener_surfaces,
+                 'plain_declining': base_shape['declining'], 'remapped_declining': loop_shape['declining'],
+                 'plain_shape': base_shape['shape'], 'remapped_shape': loop_shape['shape'],
+                 'opener_gone': bool(wave_opener_surfaces) and not opener_surfaces,
+                 'variant_forms_in_text': variant_forms(text, entry_items)},
+        'seconds': round(loop_seconds, 3)}
+
+
+def _sha256_file(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as handle:
+        for block in iter(lambda: handle.read(8 * 1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _portable_argv(serve, artifact, port):
+    return [Path(serve).name, '-m', _portable_path(artifact), '-ngl', '0', '-c', '2048',
+            '--parallel', '1', '--host', '127.0.0.1', '--port', str(port)]
+
+
+def _entry_counts(events):
+    counts = {}
+    for event in events:
+        counts[event['entry_id']] = counts.get(event['entry_id'], 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='on', max_tokens=40,
+                       serve=None, port=None, template='chat'):
+    """Run the decode driver on one artifact: the same loop with bias (on) or without it (off)."""
+    if remap not in ('on', 'off'):
+        raise ValueError('--remap must be on or off')
+    if artifact is None:
+        raise ValueError('--remap needs exactly one --artifact GGUF (the artifact the server must be serving)')
+    artifact = Path(artifact)
+    if not artifact.is_file():
+        raise FileNotFoundError(artifact)
+    if suite is None:
+        raise ValueError('--remap needs --suite FILE (the authored probe rows)')
+    if out is None:
+        raise ValueError('--remap needs --out DIR; rows.jsonl and run.json are written there')
+    if type(max_tokens) is not int or max_tokens < 1:
+        raise ValueError('--max-tokens must be a positive integer')
+    if template not in ('chat', 'raw'):
+        raise ValueError('--template must be chat or raw')
+    if serve is None and port is None:
+        raise ValueError('--remap needs --serve PATH (start a CPU llama-server on the artifact) or --port N '
+                         'for one already running')
+    if serve is not None and not Path(serve).is_file():
+        raise FileNotFoundError(serve)
+    document, raw_table = load_table(table)
+    entries = document['entries']
+    tokenizer = read_tokenizer(artifact)
+    tokens = tokenizer['tokens']
+    vocab = {token: token_id for token_id, token in enumerate(tokens)}
+    ranks = _merge_ranks(tokenizer['merges'])
+    probes = load_probe_rows(suite)
+    out = Path(out)
+    out.mkdir(parents=True, exist_ok=True)
+    started = None
+    began = time.monotonic()
+    try:
+        if serve is not None:
+            port = port or _free_port()
+            started = start_server(serve, artifact, port, out / 'server.log')
+        if type(port) is not int or not 0 < port < 65536:
+            raise ValueError(f'--port must be an integer in 1..65535, got {port!r}')
+        props = verify_artifact_identity(port, artifact)
+        served_check = verify_served_tokenizer(entries, port, tokens, vocab, ranks)
+        if not served_check['agrees']:
+            raise ValueError(f'the server on port {port} does not tokenize the table forms the way the artifact '
+                             f'header does ({len(served_check["mismatches"])} of {served_check["contexts_checked"]} '
+                             'contexts differ); a decode row here would describe a different tokenizer')
+        entry_items = entry_sequences(entries, port, tokens)
+        rows = []
+        for probe in probes:
+            prompt = apply_chat_template(port, probe['prompt']) if template == 'chat' else probe['prompt']
+            rows.append(decode_row(port, tokens, entry_items, probe, prompt, max_tokens, remap, template))
+    finally:
+        if started is not None:
+            stop_server(started)
+
+    rows_path = out / 'rows.jsonl'
+    rows_path.write_text(''.join(json.dumps(row, sort_keys=True, allow_nan=False) + '\n' for row in rows))
+    decode_seconds = round(sum(row['seconds'] for row in rows), 3)
+    wall_seconds = round(time.monotonic() - began, 3)
+    generated = sum(row['path']['n_tokens'] for row in rows)
+    suppressions = [event for row in rows for event in row['suppressions']]
+    forced = [event for row in rows for event in row['forced']]
+    equals = [row['id'] for row in rows if row['gate']['equals_plain_token_for_token']]
+    base_declining = [row['id'] for row in rows if row['gate']['plain_declining']]
+    opener_base = [row['id'] for row in rows if row['gate']['surfaces_in_opener_window'] or
+                   (row['gate']['plain_declining'] and row['gate']['opener_gone'])]
+    opener_gone = [row['id'] for row in rows if row['gate']['opener_gone']]
+    still_open = [row['id'] for row in rows if row['gate']['surfaces_in_opener_window']]
+    variant_rows = [row['id'] for row in rows if row['gate']['variant_forms_in_text']]
+    resample_limits = [row['id'] for row in rows if row['resample_limit_steps']]
+    prompt_n = [row['prompt_evaluation']['max_prompt_n_after_first_step'] for row in rows]
+    cache_n = [row['prompt_evaluation']['min_cache_n'] for row in rows]
+    claim_row = next((row for row in rows if row['gate']['opener_gone']), None)
+    if remap == 'off':
+        gate = {'plain_wave_equality': {
+            'rows': len(rows), 'equal': len(equals),
+            'mismatched': [row['id'] for row in rows if row['id'] not in equals],
+            'required': 'the per-step loop with no bias must reproduce the plain greedy wave token-for-token',
+            'ok': len(equals) == len(rows)},
+            'bias_applied': False}
+        ok = gate['plain_wave_equality']['ok']
+        verdict_reason = ('every row of the unbiased loop equals the plain greedy wave token-for-token; the off arm '
+                          'is the untouched decode' if ok else
+                          'the unbiased loop did not reproduce the plain greedy wave; the off arm is not a control')
+    else:
+        gate = {'plain_wave_equality': {'rows': len(rows), 'equal': len(equals),
+                                        'mismatched': [row['id'] for row in rows if row['id'] not in equals],
+                                        'required': 'informational: the on arm is expected to diverge',
+                                        'ok': True},
+                'openers': {'base_rows_declining': len(base_declining),
+                            'base_rows_with_opener_surface': len(opener_base),
+                            'rows_openers_gone': len(opener_gone),
+                            'rows_opener_surface_left': still_open,
+                            'rows_with_unnamed_variant': variant_rows,
+                            'note': ('opener surfaces are table contexts inside the first %d generated tokens; a row '
+                                     'whose base opened with one and whose remapped text does not is counted as '
+                                     'gone' % OPENER_WINDOW_TOKENS)},
+                'suppressions': {'events': len(suppressions), 'rows': sum(1 for row in rows if row['suppressions']),
+                                 'by_entry': _entry_counts(suppressions),
+                                 'resample_limit_rows': resample_limits,
+                                 'forced_replacements': len(forced)},
+                'bias_applied': True}
+        ok = not resample_limits
+        verdict_reason = ('the bias arm decoded every row; every denial sequence completed inside the generated '
+                          'text was suppressed and re-sampled' if ok else
+                          'at least one step hit the re-sample limit, so a denial surface survived suppression')
+    report = {
+        'schema': DECODE_SCHEMA,
+        'remap': remap,
+        'scope': ('Decode-side reference implementation of the denial-word remap on a real CPU serve of the '
+                  'artifact. The single-token loop is the same code in both arms; only --remap on|off changes '
+                  'whether logit_bias is sent. A row here is a token path, its suppression events and the plain '
+                  'greedy wave beside it, not a harmlessness, capability or removal measurement.'),
+        'method': DECODE_METHOD,
+        'claim': _opener_claim(claim_row, remap, tokens),
+        'artifact': {'path': _portable_path(artifact), 'sha256': _sha256_file(artifact),
+                     'bytes': artifact.stat().st_size, 'tokenizer': tokenizer['identity']},
+        'server': {'argv': _portable_argv(serve, artifact, port) if serve is not None else [],
+                   'argv_note': 'the model and binary are recorded portably; the artifact is identified by sha256',
+                   'started_by_driver': started is not None, 'port': port,
+                   'model_path_reported': props['model_path_reported'],
+                   'model_path_resolves_to_artifact': props['model_path_resolves_to_artifact'],
+                   'build_info': props['build_info'], 'model_alias': props['model_alias'],
+                   'n_ctx': props['n_ctx'], 'total_slots': props['total_slots'],
+                   'tokenizer_check': {'contexts_checked': served_check['contexts_checked'],
+                                       'agrees': served_check['agrees']}},
+        'table': {'schema': document['schema'], 'sha256': hashlib.sha256(raw_table).hexdigest(),
+                  'entries': len(entries),
+                  'with_replacement': sum(1 for entry in entries if entry['replacement']),
+                  'replacement_note': ('the checked-in table is an inventory: every replacement is null, so this '
+                                       'run suppresses and never forces. The force path is exercised by the '
+                                       'documented table override in this directory, not by this arm.')},
+        'probes': {'path': _portable_path(suite), 'sha256': _sha256_file(suite), 'rows': len(probes),
+                   'ids': [probe['id'] for probe in probes]},
+        'config': {'template': template, 'max_tokens': max_tokens, 'temperature': 0.0,
+                   'cache_prompt': True, 'n_probs': 1, 'suppress_bias': SUPPRESS_BIAS,
+                   'force_bias': FORCE_BIAS, 'resample_limit': RESAMPLE_LIMIT,
+                   'opener_window_tokens': OPENER_WINDOW_TOKENS},
+        'rows_file': {'path': 'rows.jsonl', 'sha256': _sha256_file(rows_path), 'rows': len(rows)},
+        'metrics': {'generated_tokens': generated, 'steps': sum(len(row['steps']) for row in rows),
+                    'completion_requests': sum(row['completion_requests'] for row in rows),
+                    'prompt_tokens': sum(row['prompt_tokens'] for row in rows),
+                    'decode_seconds': decode_seconds, 'wall_seconds': wall_seconds,
+                    'tokens_per_second': round(generated / decode_seconds, 2) if decode_seconds else None,
+                    'max_prompt_n_after_first_step': max((value for value in prompt_n
+                                                          if type(value) is int), default=None),
+                    'min_cache_n': min((value for value in cache_n if type(value) is int), default=None),
+                    'plain_wave_seconds': round(sum(row['plain']['seconds'] for row in rows), 3),
+                    'retokenized_steps': sum(len(row['retokenized_steps']) for row in rows),
+                    'prompt_origin_sequences_seen': sum(row['prompt_origin_completions'] for row in rows)},
+        'gate': gate,
+        'verdict': {'ok': ok, 'reason': verdict_reason},
+    }
+    (out / 'run.json').write_text(json.dumps(report, indent=2, allow_nan=False) + '\n')
+    return report
+
+
+def _opener_claim(row, remap, tokens):
+    """What the on arm actually did to the base's refusal opener, in the run's own words."""
+    if remap == 'off':
+        return {'applicable': False,
+                'note': 'no bias is applied in this arm; compare it to the on arm, not to a base model'}
+    if row is None:
+        return {'applicable': False,
+                'note': ('no row both declined at the base and lost its opener-window surface; the claim is not made '
+                         'for this run')}
+    path_ids = row['path']['ids']
+    base_ids = row['plain']['ids']
+    variants = row['gate']['variant_forms_in_text']
+    note = ('the table-named denial words are gone from the opener: every token that completed a table sequence '
+            'was suppressed at its own step. What follows is the model\'s own continuation, so this is not content '
+            'removal, not a compliance claim and not evidence that the answer avoids the topic.')
+    if variants:
+        note = ('the table-named denial words are gone from the opener, but the same denial reappears in a spelling '
+                'the table does not name (%s); the words are not gone from the answer, and this is a gap in the table, '
+                'not a driver failure. The rest of the text is the model\'s own continuation: this is not content '
+                'removal and not a compliance claim.' % ', '.join(item['entry_id'] for item in variants))
+    return {'applicable': True, 'row': row['id'], 'language': row['language'],
+            'base_opener': detokenize(base_ids[:OPENER_WINDOW_TOKENS], tokens),
+            'remapped_opener': detokenize(path_ids[:OPENER_WINDOW_TOKENS], tokens),
+            'suppressed': [{'step': event['step'], 'id': event['suppressed_id'],
+                            'text': event['suppressed_text'], 'entry_id': event['entry_id']}
+                           for event in row['suppressions']],
+            'table_named_words_gone': not row['gate']['surfaces_in_opener_window'],
+            'content_removal': False,
+            'unnamed_variants_in_text': variants,
+            'note': note}

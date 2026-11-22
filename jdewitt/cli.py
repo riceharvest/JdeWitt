@@ -139,6 +139,11 @@ def build_parser():
     vremap.add_argument('--table',type=Path,help='Table JSON override; default is the packaged assets/vocab-remap-denial.json')
     vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
     vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
+    vremap.add_argument('--remap',choices=['on','off'],help='Decode driver: apply the table bias (on) or run the identical loop with no bias (off); writes rows.jsonl and run.json under --out')
+    vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log)')
+    vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
+    vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
+    vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -794,9 +799,18 @@ def main():
             from .architectures import architecture_catalog
             result=architecture_catalog()
         elif args.command=='vocab-remap':
-            if args.list and args.dry_run:
-                raise ValueError('--list and --dry-run write different reports; pass exactly one')
-            if args.dry_run:
+            modes=[bool(args.list),bool(args.dry_run),args.remap is not None]
+            if sum(modes)!=1:
+                raise ValueError('pass exactly one of --list, --dry-run or --remap on|off')
+            if args.remap is not None:
+                from .vocabremap import vocab_remap_decode
+                if len(args.artifact)!=1:
+                    raise ValueError('--remap needs exactly one --artifact GGUF')
+                result=vocab_remap_decode(table=args.table,artifact=args.artifact[0],suite=args.suite,out=args.out,
+                                          remap=args.remap,max_tokens=args.max_tokens,serve=args.serve,
+                                          port=(args.port[0] if args.port else None),template=args.template)
+                exit_code=0 if result['verdict']['ok'] else 1
+            elif args.dry_run:
                 from .vocabremap import vocab_remap_dry_run
                 result=vocab_remap_dry_run(table=args.table,suite=args.suite,probes=args.probes,
                                            artifacts=args.artifact,ports=args.port,json_out=args.json,
