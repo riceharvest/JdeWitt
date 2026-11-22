@@ -176,6 +176,14 @@ def main():
     gdiff=sub.add_parser('gguf-tensor-diff',help='Compare two GGUF files tensor-by-tensor: byte identity plus dequant error, no model')
     gdiff.add_argument('before',type=Path)
     gdiff.add_argument('after',type=Path)
+    vf=sub.add_parser('verify',help='Recompute an edit fingerprint from pristine+edited GGUF (or --other: same-edit test); exit 1 unless recomputes/same edit; no model')
+    vf.add_argument('--pristine',type=Path,required=True)
+    vf.add_argument('--edited',type=Path,required=True)
+    vf.add_argument('--claim',type=Path,help='Fingerprint JSON block to check field by field')
+    vf.add_argument('--other',type=Path,help='Second edited artifact on the same base: same-edit test')
+    vf.add_argument('--rows',type=int,default=8,help='Sampled rows per changed tensor, plus row 0')
+    vf.add_argument('--threshold',type=float,default=0.98,help='Median cos for same edit')
+    vf.add_argument('--min-overlap',type=float,default=0.5,help='Changed-set overlap for same edit')
     sdiff=sub.add_parser('safetensors-diff',help='Compare two safetensors checkpoints tensor-by-tensor: byte identity plus relative RMS, no model')
     sdiff.add_argument('before',type=Path)
     sdiff.add_argument('after',type=Path)
@@ -595,6 +603,12 @@ def main():
         elif args.command=='quants-audit':
             from .agent import quants_audit
             result=quants_audit(args.file,args.blocks)
+        elif args.command=='verify':
+            from .verify import verify_files
+            result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)
+            if result['verdict'] not in ('recomputes','same edit'):
+                print(json.dumps(result,indent=2,allow_nan=False))
+                raise SystemExit(1)
         elif args.command=='gguf-tensor-diff':
             from .agent import gguf_tensor_diff
             result=gguf_tensor_diff(args.before,args.after)
