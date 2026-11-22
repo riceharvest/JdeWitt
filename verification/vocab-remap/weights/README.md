@@ -83,6 +83,21 @@ sidecar, so `diff.json` describes it and revert can be re-run. The gate's revert
 step was also re-checked on a scratch copy of the final artifact, so the sidecar
 present now is proven, not just the one the run consumed.
 
+## Untied heads and other codecs
+
+The gate artifact ties its head, so the two-tensor path was checked on a synthetic
+fixture (28 byte-level tokens, 256-wide rows; `token_embd.weight` Q8_0,
+`output.weight` Q6_K, a merge rank that never fires so every form resolves
+per byte). `--weights` resolved both roles, edited 22 rows in each, reported cos
+1.0 on both tensors, and `gguf-revert` restored the file byte for byte
+(`byte_exact: true`, `cmp` clean).
+
+That run also shows a codec difference the gate's Q8_0 case hides: the Q6_K
+tensor changed 25 blocks for 22 touched rows. Q6_K's requantization of an
+unedited block is not always byte-exact, so blocks outside the covered rows of
+the same tensor move too. The report counts them as changed blocks and the
+sidecar restores them; "untouched" on this card means tensors, never rows.
+
 ## What this does not say
 
 - No model was loaded and no token was generated on this card: cos is a storage
