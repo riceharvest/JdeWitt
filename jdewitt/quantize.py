@@ -33,6 +33,10 @@ TYPE_ALIASES = {
     'q4_0': 'Q4_0', 'q4_1': 'Q4_1', 'q4_k_s': 'Q4_K_S', 'q4_k_m': 'Q4_K_M',
     'q5_0': 'Q5_0', 'q5_1': 'Q5_1', 'q5_k_s': 'Q5_K_S', 'q5_k_m': 'Q5_K_M',
     'q6_k': 'Q6_K', 'q8_0': 'Q8_0', 'f16': 'F16', 'bf16': 'BF16', 'f32': 'F32',
+    'iq1_s': 'IQ1_S', 'iq1_m': 'IQ1_M', 'iq2_xxs': 'IQ2_XXS', 'iq2_xs': 'IQ2_XS',
+    'iq2_s': 'IQ2_S', 'iq2_m': 'IQ2_M', 'iq3_xxs': 'IQ3_XXS', 'iq3_xs': 'IQ3_XS',
+    'iq3_s': 'IQ3_S', 'iq3_m': 'IQ3_M', 'iq4_xs': 'IQ4_XS', 'iq4_nl': 'IQ4_NL',
+    'tq1_0': 'TQ1_0', 'tq2_0': 'TQ2_0', 'mxfp4': 'MXFP4',
 }
 
 
@@ -55,6 +59,16 @@ def canonical_type(name):
     upper = str(name).strip().upper()
     if upper in set(TYPE_ALIASES.values()):
         return upper
+    # Anything gguf-py can name is worth handing to llama-quantize: the binary is the
+    # authority on what this build can emit, and refusing here would silently cap the
+    # tool at the K-quant family (IQ/TQ/MXFP4 targets included).
+    try:
+        from gguf import GGMLQuantizationType
+
+        if upper in GGMLQuantizationType.__members__:
+            return upper
+    except Exception:
+        pass
     raise ValueError(f'unknown quantization type {name!r}; known: {", ".join(sorted(TYPE_ALIASES))}')
 
 
@@ -76,7 +90,8 @@ def tensor_names(path):
 
 
 def quantize_file(src, out, kind, *, binary=None, overrides=(), threads=None,
-                  allow_requantize=True, keep_output_tensor=False, timeout=7200):
+                  allow_requantize=True, keep_output_tensor=False, imatrix=None,
+                  timeout=7200):
     """Quantize `src` to `out` at `kind`, with per-tensor `overrides`.
 
     Returns one report dict: the exact argv, the tensor counts on both sides, and the
@@ -99,6 +114,12 @@ def quantize_file(src, out, kind, *, binary=None, overrides=(), threads=None,
         command.append('--allow-requantize')
     if keep_output_tensor:
         command.append('--leave-output-tensor')
+    if imatrix:
+        # IQ-family targets refuse to quantize without an importance matrix; the flag is
+        # the difference between "IQ is unsupported" and "IQ needs one more input".
+        if not Path(imatrix).is_file():
+            raise ValueError(f'importance matrix {imatrix} does not exist')
+        command += ['--imatrix', str(imatrix)]
     for override in override_list:
         command += ['--tensor-type', override]
     started = time.monotonic()
@@ -108,7 +129,12 @@ def quantize_file(src, out, kind, *, binary=None, overrides=(), threads=None,
                               encoding='utf-8', errors='replace', timeout=timeout)
     output = finished.stdout + finished.stderr
     if finished.returncode != 0 or not out.is_file():
-        raise ValueError(f'llama-quantize failed (rc {finished.returncode}): {output[-800:]}')
+        hint = ''
+        if 'importance matrix' in output and not imatrix:
+            hint = ('  Hint: this target needs an importance matrix; pass --imatrix FILE '
+                    '(llama-imatrix over a corpus) or pick a type that does not '
+                    '(q2_k..q8_0, f16, bf16).')
+        raise ValueError(f'llama-quantize failed (rc {finished.returncode}): {output[-800:]}{hint}')
     before, after = tensor_names(src), tensor_names(out)
     missing = [name for name in before if name not in set(after)]
     report = {

@@ -461,6 +461,7 @@ def main():
     requant.add_argument('--keep-tensor',action='append',default=[],help='NAME=TYPE for a tensor that must stay high-precision (repeatable)')
     requant.add_argument('--binary',default=None,help='llama-quantize binary (default: first known local build, or JDEWITT_QUANTIZE)')
     requant.add_argument('--threads',type=int,default=None)
+    requant.add_argument('--imatrix',default=None,help='importance matrix for IQ-family targets (they refuse without one)')
     editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)
@@ -776,7 +777,8 @@ def main():
         elif args.command=='requant':
             from .quantize import quantize_file
             result=quantize_file(args.gguf,args.out,args.type,binary=args.binary,
-                                 overrides=args.keep_tensor,threads=args.threads)
+                                 overrides=args.keep_tensor,threads=args.threads,
+                                 imatrix=args.imatrix)
         elif args.command=='gguf-revert':
             from .ggufio import revert_inplace
             result=revert_inplace(args.artifact,args.sidecar)

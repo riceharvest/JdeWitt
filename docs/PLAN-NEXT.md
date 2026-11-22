@@ -1101,3 +1101,17 @@ That run also exposed a shipping bug: an arm that cleared the probe row but REFU
 the full-row confirmation was still kept as the winner, because the confirmation loop
 only replaced the winner when a candidate passed. It now clears the winner and records
 `confirmation_refusal`, so a one-row measurement can never ship.
+
+#### IQ-family proof, and why the wrapper used to block it (2026-11-22)
+
+`requant` used to validate the requested type against its own alias table, which stopped
+at the K-quant family: ANY IQ/TQ/MXFP4 target died with "unknown quantization type" before
+llama-quantize ever ran. The table now passes any name gguf-py knows straight through, so
+the binary decides what it can emit, and a real failure explains itself: IQ2_XXS came back
+with "this quantization requires an importance matrix", so `--imatrix FILE` is now a
+supported argument instead of an unexplained wall.
+
+Measured end to end on a freshly quantized IQ4_NL artifact (1,062,681,120 bytes; 137
+IQ4_NL + 31 Q5_K + 1 Q6_K + 57 F32 tensors): editing blk.20-21 read the IQ4_NL rows
+through the gguf-py fallback, wrote Q8_0 for exactly the 4 touched tensors and left the
+other 222 byte-identical — delivered cos 0.980-0.986, SNR 4.9-6.0, 47.7 s on CPU.
