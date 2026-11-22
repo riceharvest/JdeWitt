@@ -382,6 +382,21 @@
         "verification/q3-4b-harmful40/prot20-l935/predictions.jsonl"
       ],
       "notes": "Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs the published build's 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on the first 20 families of that screen: this arm 0/20, the published build 1/20 (the fake-news message on advbench-000040)."
+    },
+    {
+      "claim": "the Phase 7 evidence table publishes every lineage row with its loss and its one recompute command, and its UNMEASURED cells are excluded from the claims count",
+      "status": "in-clone",
+      "commands": [
+        "uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.json --out verification/releases/matrix.json --table verification/releases/matrix.md --doc docs/EVIDENCE-TABLE.md",
+        "python scripts/evidence_map.py --check"
+      ],
+      "artifacts": [
+        "docs/EVIDENCE-TABLE.md",
+        "verification/releases/matrix.json",
+        "verification/releases/matrix.manifest.json",
+        "verification/releases/loss-ledger.json"
+      ],
+      "notes": "The table is rendered, never hand-edited: rows sorted by lineage, no timestamps, two renders byte-identical. LOSSES binds every measured loss to an in-clone source and a recompute command and every void number to an evidence-map claim whose status says why it is void; release-matrix refuses MATRIX_LEDGER_INVALID if a source is missing or a quoted value no longer recomputes. The claims count is the certified-row count, so a cell with no packet cannot be added to it."
     }
   ]
 }

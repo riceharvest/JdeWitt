@@ -120,6 +120,13 @@ support, zero capability loss, beating every competitor. Say the word
 "established" around this project and it will demand receipts. They are
 in `docs/`.
 
+The per-lineage table — every row bound to its revision, quant, artifact
+digest, serve argv and one recompute command, with the losses and the
+unmeasured cells in the same file — is `docs/EVIDENCE-TABLE.md`, rendered
+from the matrix JSON by `jdewitt release-matrix --doc`. It is registered in
+the evidence map, so `python scripts/evidence_map.py --check` fails if the
+table or its loss ledger stops matching the artifacts they name.
+
 ## V. The Machine
 
 Any GPU that PyTorch and llama.cpp will admit. Screening box, test box,
