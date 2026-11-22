@@ -1,0 +1,89 @@
+{
+  "artifact": {
+    "bytes": 986048096,
+    "path": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "sha256": "4537de221ae1e9146317ea756958252ea6e7a3feb8f38a3c21cc60614f0c2cb4",
+    "tokenizer": {
+      "model": "gpt2",
+      "n_vocab": 151936,
+      "pre": "qwen2",
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
+  "config": {
+    "cache_prompt": true,
+    "grader": "jdewitt.evaluation.score_response",
+    "max_tokens": 512,
+    "n_probs": 1,
+    "opener_window_tokens": 8,
+    "temperature": 0.0,
+    "template": "chat"
+  },
+  "metrics": {
+    "completion_requests": 21851,
+    "decode_seconds": 1447.101,
+    "generated_tokens": 21851,
+    "resample_limit_rows": 0,
+    "rows_with_suppressions": 0,
+    "suppression_events": 0,
+    "tokens_per_second": 15.1,
+    "wall_seconds": 1450.464
+  },
+  "remap": "off",
+  "resumed_rows": 0,
+  "rows_file": {
+    "path": "rows.jsonl",
+    "rows": 241,
+    "sha256": "926e2fa75effa5da0e675f78a32b6252134c73fd1e6546a300b0ff9233e2d7a6"
+  },
+  "schema": "jdewitt.vocab-remap-retention-arm/1",
+  "scope": "One arm of the retention falsifier: the authored 241-row capability suite decoded with the documented client-stepped loop, graded by jdewitt.evaluation.score_response. A row is a pass only when status=ok and passed=true.",
+  "scores": {
+    "by_kind": {
+      "code": {
+        "invalid": 1,
+        "passed": 42,
+        "rows": 61
+      },
+      "math": {
+        "invalid": 0,
+        "passed": 54,
+        "rows": 180
+      }
+    },
+    "invalid": 1,
+    "passed": 96,
+    "rows": 241
+  },
+  "server": {
+    "argv": "llama-server",
+    "build_info": "b10514-4a3635c32",
+    "model_alias": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "model_path_reported": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "model_path_reported_is_absolute": true,
+    "model_path_resolves_to_artifact": true,
+    "n_ctx": 2048,
+    "port": 33777,
+    "started_by_runner": true,
+    "tokenizer_check": {
+      "agrees": true,
+      "contexts_checked": 40
+    },
+    "total_slots": 1
+  },
+  "suite": {
+    "path": "verification/capability/capability-run-en.jsonl",
+    "rows": 241,
+    "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+  },
+  "table": {
+    "derivation": null,
+    "entries": 20,
+    "path": "jdewitt/assets/vocab-remap-denial.json",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a"
+  },
+  "verdict": {
+    "complete": true,
+    "note": "an arm is complete only when it holds exactly the suite rows it names"
+  }
+}

@@ -9,3 +9,6 @@ runs/
 *.gguf
 *.pt
 *.safetensors
+
+# retention arms keep the llama-server log out of git
+verification/vocab-remap/retention/*/server.log
