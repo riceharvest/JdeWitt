@@ -127,6 +127,7 @@ def main():
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
     hub.add_argument('--per-author',type=int,default=40,help='Cap newest text-generation repositories scanned per publisher')
+    hub.add_argument('--out',type=Path,help='Persist the same JSON to this path; refuses an existing file (FILE_EXISTS)')
     cmdm=sub.add_parser('commands',help='Self-description of the command surface, flags, exit codes and error-code reference; no model loads')
     cmdm.add_argument('--completions',choices=['bash','zsh'],help='Print a shell completion script generated from the live parser')
     explain=sub.add_parser('explain-error',help='What one stable CLI error code means and what to do about it; no model loads')
@@ -721,7 +722,7 @@ def main():
             result=architecture_catalog()
         elif args.command=='hub-census':
             from .hubcensus import hub_census
-            result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author)
+            result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)
         elif args.command=='commands':
             if args.completions:
                 print(completion_script(parser,args.completions),end='')
