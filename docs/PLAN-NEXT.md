@@ -1287,3 +1287,38 @@ tokens, ctx 4096, ngl 99, --parallel 1) over the same rank-1 edit
   used a capture with no cybercrime family in it at all, so their clean screens
   could not see the family the board kept refusing; the report now carries
   `screen_families` and `screen_uncovered_families` and names the gap.
+
+## Full GGML type coverage (2026-11-22)
+
+Every type the pinned gguf dependency names now has a codec, plus the reader path
+for the blockless dtypes. New modules + compiled-C falsifiers:
+
+- `q8.py` — Q8_1 (36 B/32) and Q8_K (292 B/256), byte-exact vs `ref_q8.c` on 8
+  distributions + tie data + 4 real F32 tensors. Layout correction: block_q8_1 is
+  `2 f16 + int8[32]` = 36 bytes at the pinned ggml-common.h; gguf-py 0.19's size
+  table still says 40 (pre-f16), so `CODECS['Q8_1']` is the authority for files we
+  write and `decode_values` uses it first. Q8_1 has no upstream standalone
+  dequantizer; decode is `d*qs` (`s` is a dot-product accumulator, not a scale).
+- `raw_dtypes.py` — I8/I16/I32/I64/F64 (blockless, little-endian). Float→int is
+  C-style truncation; NaN/Inf/out-of-range raise instead of guessing at C UB.
+  `decode_values` returns the NATIVE dtype for these (a float32 cast would round
+  I32/I64 ids and masks). Cross-checked by writing real GGUFs with GGUFWriter and
+  reading them back with GGUFReader (gguf's own dequantize raises NotImplementedError
+  for all five, so it cannot be the reference).
+- `tq.py` — TQ1_0 (54 B/256) and TQ2_0 (66 B/256), byte-exact vs `ref_tq.c` on 8
+  distributions + 64 random-byte dequant blocks + 4 real F32 tensors.
+- `ggml_fp4.py` — GGML MXFP4 (17 B/32) and NVFP4 (36 B/64), byte-exact vs
+  `ref_fp4.c`: 8 distributions incl. scale-edge/tie and NaN/Inf blocks, a 200,254
+  single-amax sweep, 4,096 random-byte dequant blocks, and 4 real F32 tensors.
+  Scales follow ggml (E8M0 = floor(log2 amax)-2, UE4M3 = round(amax/6)), which
+  differs from the safetensors codec in fp4.py; layouts are lo=j/hi=j+16 and
+  lo=j/hi=j+8 per 16-element sub-block.
+- `q1.py` — Q1_0 (18 B/128). Not ternary despite the name: one sign bit per weight
+  (set iff x >= 0) and a f16 mean-|x| scale, so decode is ±d and never 0. Byte-exact
+  vs `ref_q1.c` on 8 distributions + 4,096 random-byte dequant blocks + real tensors;
+  dequant needed an x86 sNaN-quieting detail (C's f16→f32 sets bit 22; numpy 0.19
+  does not), which caused 49 mismatched blocks before the fix.
+
+Q2_0 (raw type id 42) has no entry in published gguf (0.19.0 is the latest), so its
+codec and the id→name fallback are tracked separately; Q4_2/Q4_3 and the
+Q4_0_4_x/8_x GPU variants are removed upstream and cannot appear in files.

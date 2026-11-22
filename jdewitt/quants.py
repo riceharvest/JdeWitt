@@ -1131,3 +1131,38 @@ DECODE_ONLY.update({
 from .iq3 import quantize_iq3_s, quantize_iq3_xxs  # noqa: E402
 CODECS['IQ3_XXS'] = (98, QK_K, quantize_iq3_xxs, dequantize_iq3_xxs)
 CODECS['IQ3_S'] = (110, QK_K, quantize_iq3_s, dequantize_iq3_s)
+
+
+# ------------------------------------------------ remaining GGML type coverage
+# Every type this build's dependency can name now has a codec. Q8_1 is 36 bytes at
+# the current ggml-common struct (2 f16 + 32 int8); gguf-py 0.19's size table still
+# says 40 (the pre-f16 layout), so the CODECS entry is the authority for files our
+# writer produces. Q8_1 has no upstream standalone dequantizer; d*qs is the value
+# decode (s is the dot-product accumulator, not a scale).
+from .q8 import (  # noqa: E402
+    dequantize_q8_1, dequantize_q8_k, quantize_q8_1, quantize_q8_k,
+)
+from .tq import (  # noqa: E402
+    dequantize_tq1_0, dequantize_tq2_0, quantize_tq1_0, quantize_tq2_0,
+)
+from .ggml_fp4 import (  # noqa: E402
+    dequantize_mxfp4, dequantize_nvfp4, quantize_mxfp4, quantize_nvfp4,
+)
+from .q1 import dequantize_q1_0, quantize_q1_0  # noqa: E402
+
+
+def _tq1_dequant(raw, n):
+    return dequantize_tq1_0(raw)[:n]
+
+
+def _tq2_dequant(raw, n):
+    return dequantize_tq2_0(raw)[:n]
+
+
+CODECS['Q8_1'] = (36, 32, quantize_q8_1, dequantize_q8_1)
+CODECS['Q8_K'] = (292, QK_K, quantize_q8_k, dequantize_q8_k)
+CODECS['TQ1_0'] = (54, QK_K, quantize_tq1_0, _tq1_dequant)
+CODECS['TQ2_0'] = (66, QK_K, quantize_tq2_0, _tq2_dequant)
+CODECS['MXFP4'] = (17, 32, quantize_mxfp4, dequantize_mxfp4)
+CODECS['NVFP4'] = (36, 64, quantize_nvfp4, dequantize_nvfp4)
+CODECS['Q1_0'] = (18, 128, quantize_q1_0, dequantize_q1_0)

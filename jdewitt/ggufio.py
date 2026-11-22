@@ -82,6 +82,14 @@ def decode_values(raw, qtype_name, n_values=None):
     which quant they chose; only the type we WRITE has to be one we can encode.
     """
     raw = np.asarray(raw, dtype=np.uint8).reshape(-1)
+    from .raw_dtypes import RAW_CODECS
+    raw_codec = RAW_CODECS.get(str(qtype_name))
+    if raw_codec is not None:
+        # Raw integer / F64 tensors keep their native dtype: a float32 cast would
+        # silently round I32/I64 ids and masks.
+        width, _els, _q, decode = raw_codec
+        count = n_values if n_values is not None else raw.size // width
+        return np.asarray(decode(raw, count)).reshape(-1)
     codec = CODECS.get(str(qtype_name))
     if codec is not None:
         block_bytes, block_els, _quantize, dequantize = codec
