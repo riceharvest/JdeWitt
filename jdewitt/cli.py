@@ -396,6 +396,7 @@ def build_parser():
     matrix.add_argument('--manifest',type=Path,required=True,help='Manifest registering each lineage: model and pinned revision, quant, base/artifact digests, packet, head-to-head side')
     matrix.add_argument('--out',type=Path,help='Write the matrix JSON here as well as printing it')
     matrix.add_argument('--table',type=Path,help='Write the human table (lineages, LOSSES, refusals) here')
+    matrix.add_argument('--doc',type=Path,help='Write the honest evidence table (per-lineage rows, LOSSES, UNMEASURED) here; deterministic markdown')
     claimadd=sub.add_parser('claim-add',help='Append an evidence-backed claim to a release evidence ledger')
     claimadd.add_argument('directory',type=Path)
     claimadd.add_argument('--claim',required=True,help='What is asserted')
@@ -804,7 +805,7 @@ def main():
             result=release_certify(args.spec,args.out)
         elif args.command=='release-matrix':
             from .matrix import release_matrix
-            result=release_matrix(args.manifest,args.out,args.table)
+            result=release_matrix(args.manifest,args.out,args.table,args.doc)
         elif args.command=='claim-add':
             from .release import add_claim
             result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity,args.successes,args.total)

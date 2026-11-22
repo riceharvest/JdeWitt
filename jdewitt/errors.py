@@ -129,6 +129,9 @@ EXPLAINER = {
     'MATRIX_MANIFEST_INVALID': {
         'meaning': 'The release-matrix manifest cannot be counted: bad version/kind, a lineage registered twice, a missing registered floor, or a suite file shorter than the floor it registers.',
         'agent_action': 'Fix the manifest field the message names; the matrix writes nothing on a bad manifest and no row is silently dropped.'},
+    'MATRIX_LEDGER_INVALID': {
+        'meaning': 'The registered loss ledger cannot be published: a measured number has no in-clone source or recompute command, its quoted value no longer recomputes, or a void number cites no evidence-map claim with a void status.',
+        'agent_action': 'Fix the ledger entry the message names (source, locator, command, or claim status); a loss with no artifact does not get printed as if it had one.'},
 }
 
 

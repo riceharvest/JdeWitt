@@ -648,6 +648,455 @@ def _registered_suite_problems(registered) -> list[str]:
     return problems
 
 
+ROOT = Path(__file__).resolve().parents[1]
+
+LEDGER_KINDS = ('retraction', 'delivery', 'config_sensitivity', 'void')
+VOID_CLAIM_STATUSES = {'pre-2026-11-17-scoring-fix', 'no-artifact-in-clone'}
+LEDGER_HEADINGS = {
+    'retraction': 'Retracted',
+    'delivery': 'Delivery (reported, not credited)',
+    'config_sensitivity': 'Config sensitivity (reported, not counted)',
+    'void': 'Pre-2026-11-17 voids (no artifact in this clone)',
+}
+
+
+def _source_path(source) -> Path:
+    path = Path(str(source)).expanduser()
+    return path if path.is_absolute() else ROOT / path
+
+
+def _pointer(doc, ptr: str):
+    if ptr in ('', '/'):
+        return doc
+    for part in ptr.lstrip('/').split('/'):
+        part = part.replace('~1', '/').replace('~0', '~')
+        doc = doc[int(part)] if isinstance(doc, list) else doc[part]
+    return doc
+
+
+def _text(value) -> str:
+    if isinstance(value, bool):
+        return str(value).lower()
+    if isinstance(value, float):
+        return f'{value:g}'
+    return str(value)
+
+
+def _same_value(artifact: str, wanted: str) -> bool:
+    try:
+        return abs(float(artifact) - float(wanted)) < 1e-9
+    except ValueError:
+        return artifact.strip() == wanted.strip()
+
+
+def _wide_removal(screen_dir: Path) -> tuple[int, int]:
+    """(removed, rows) under the wider declination inventory.
+
+    This is scripts/screen_agreement.py's grading, against the tool's own
+    RefusalChecker: the same rows regraded with the inventory that catches
+    'Absolutely not.' as a refusal.
+    """
+    from .refusal_check import RefusalChecker
+
+    checker = RefusalChecker()
+    wave = screen_dir / 'wave.json'
+    if not wave.exists():
+        wave = screen_dir.parent / (screen_dir.name + '.wave.json')
+    language = 'en'
+    if wave.exists():
+        suite = (json.loads(wave.read_text()) or {}).get('suite')
+        if suite and Path(suite).exists():
+            for line in Path(suite).read_text().splitlines():
+                if line.strip():
+                    language = json.loads(line).get('lang', 'en')
+                    break
+    removed = rows = 0
+    for line in (screen_dir / 'predictions.jsonl').read_text().splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if row.get('status') != 'ok':
+            continue
+        rows += 1
+        if checker.check(row.get('answer') or '', language, wide=True)['result'] != 'refusal_detected':
+            removed += 1
+    return removed, rows
+
+
+def _evidence_map_claims():
+    path = ROOT / 'verification/evidence-map.json'
+    if not path.is_file():
+        return None
+    return json.loads(path.read_text()).get('claims') or []
+
+
+def _ledger_problems(ledger: dict) -> list[str]:
+    """A ledger number is only admitted when its source, value and command agree."""
+    problems = []
+    if ledger.get('schema_version') != SCHEMA_VERSION:
+        problems.append(f'schema_version {ledger.get("schema_version")!r} is not {SCHEMA_VERSION}')
+    if ledger.get('kind') != 'loss-ledger':
+        problems.append(f'kind {ledger.get("kind")!r} is not loss-ledger')
+    entries = ledger.get('entries')
+    if not isinstance(entries, list):
+        return problems + ['entries is not a list']
+    claims = _evidence_map_claims()
+    if claims is None:
+        problems.append('verification/evidence-map.json is missing: a void number has no claim to bind')
+    seen = set()
+    for entry in entries:
+        eid = entry.get('id')
+        if not eid:
+            problems.append(f'an entry has no id: {entry!r}')
+            continue
+        if eid in seen:
+            problems.append(f'entry {eid!r} is registered twice')
+        seen.add(eid)
+        if entry.get('kind') not in LEDGER_KINDS:
+            problems.append(f'{eid}: kind {entry.get("kind")!r} is not one of {LEDGER_KINDS}')
+        statement = entry.get('statement') or ''
+        if not statement:
+            problems.append(f'{eid}: no statement')
+        for cited in entry.get('claims') or []:
+            if not any(claim.get('claim') == cited for claim in claims or []):
+                problems.append(f'{eid}: cites a claim the evidence map does not carry: {cited!r}')
+        for number in entry.get('numbers') or []:
+            text, value = number.get('text'), number.get('value')
+            if not text or value is None:
+                problems.append(f'{eid}: a number has no text/value: {number!r}')
+                continue
+            if text not in statement:
+                problems.append(f'{eid}: number {text!r} does not appear in the statement')
+            if number.get('void'):
+                cited, status = number.get('claim') or '', number.get('claim_status')
+                claim = next((c for c in claims or [] if c.get('claim') == cited), None)
+                if claim is None:
+                    problems.append(f'{eid}: void number {text!r} cites a claim not in the evidence map')
+                elif claim.get('status') != status:
+                    problems.append(f'{eid}: void number {text!r} claims status {status!r} but the '
+                                    f'evidence map says {claim.get("status")!r}')
+                elif status not in VOID_CLAIM_STATUSES:
+                    problems.append(f'{eid}: void number {text!r} has status {status!r}, which is a claim')
+                else:
+                    body = ' '.join([cited, claim.get('notes') or '']
+                                    + [n.get('text', '') for n in claim.get('numbers') or []])
+                    if text not in body:
+                        problems.append(f'{eid}: void number {text!r} is not in the claim it cites')
+                if not (number.get('command') or '').strip():
+                    problems.append(f'{eid}: void number {text!r} has no command')
+                continue
+            command = (number.get('command') or '').strip()
+            if not command:
+                problems.append(f'{eid}: measured number {text!r} has no recompute command')
+            source = number.get('source')
+            locator = number.get('locator') or ''
+            if not source:
+                problems.append(f'{eid}: measured number {text!r} has no source')
+                continue
+            src = _source_path(source)
+            if not src.exists():
+                problems.append(f'{eid}: source does not exist in this clone: {source}')
+                continue
+            try:
+                if locator in ('wide', 'shipped'):
+                    if src.name != 'predictions.jsonl':
+                        raise ValueError('wide/shipped needs a predictions.jsonl source')
+                    removed, rows = _wide_removal(src.parent)
+                    artifact = f'{removed}/{rows}'
+                elif locator.startswith('json:'):
+                    doc = json.loads(src.read_text())
+                    values = [_pointer(doc, part) for part in locator[5:].split('|')]
+                    artifact = '/'.join(_text(v) for v in values) if len(values) > 1 else _text(values[0])
+                elif locator == 'prose':
+                    if str(value) not in src.read_text():
+                        problems.append(f'{eid}: {source} does not state {value!r}')
+                    continue
+                else:
+                    raise ValueError(f'unknown locator {locator!r}')
+            except (KeyError, IndexError, TypeError, ValueError, json.JSONDecodeError) as error:
+                problems.append(f'{eid}: {text!r} cannot be recomputed from {source}: {error}')
+                continue
+            if not _same_value(artifact, str(value)):
+                problems.append(f'{eid}: {text!r} no longer recomputes from {source} (got {artifact})')
+    return problems
+
+
+def _load_ledger(manifest, manifest_file: Path) -> dict:
+    registered = manifest.get('loss_ledger')
+    if not registered:
+        return {'schema_version': SCHEMA_VERSION, 'kind': 'loss-ledger', 'entries': []}
+    path = Path(str(registered)).expanduser()
+    if not path.is_absolute() and not path.exists():
+        path = manifest_file.parent / path
+    if not path.is_file():
+        _fail('MATRIX_LEDGER_INVALID', f'manifest loss_ledger {registered!r} does not exist')
+    ledger = _read_json(path, f'loss ledger ({registered})')
+    problems = _ledger_problems(ledger)
+    if problems:
+        _fail('MATRIX_LEDGER_INVALID', '; '.join(problems))
+    ledger['path'] = str(registered)
+    ledger['digest'] = _digest(path)
+    return ledger
+
+
+def _loss_detail(matrix, item) -> list[str]:
+    row = next((candidate for candidate in matrix['rows'] + matrix['spares']
+                if candidate['lineage'] == item['lineage']), None) or {}
+    kind = 'math' if item['axis'] == 'maths' else 'code'
+    loss = (row.get('losses') or {}).get(kind) or {}
+    numbers = row.get('numbers') or {}
+    detail = []
+    if loss.get('before') is not None:
+        delta = numbers.get(f'retention.{kind}.strict.delta', loss.get('drop'))
+        reference = (row.get('reference_losses') or {}).get(kind) or {}
+        median_line = (f"median answer {loss.get('median_answer_chars')} chars vs base "
+                       f"{loss.get('base_median_answer_chars')}")
+        if reference.get('median_answer_chars') is not None:
+            median_line += f" (reference {reference.get('median_answer_chars')})"
+        detail.append(f"strict {loss.get('after')}/{loss.get('paired_rows')} after "
+                      f"({loss.get('before')} before); delta {delta}; "
+                      f"Cohen's h {numbers.get(f'retention.{kind}.cohens_h')}; "
+                      f"paired p {loss.get('paired_p_two_sided')}; {median_line}; "
+                      f"length collapse flag: {str(loss.get('length_collapse_flag')).lower()}")
+    if detail:
+        detail.append(f"source: packet `{row.get('packet')}`")
+        detail.append(f"recompute: `{row.get('recompute_command')}`")
+    return detail
+
+
+def _ledger_lines(ledger) -> list[str]:
+    lines = []
+    for kind in LEDGER_KINDS:
+        entries = [entry for entry in ledger.get('entries') or [] if entry.get('kind') == kind]
+        if not entries:
+            continue
+        lines += ['', f'### {LEDGER_HEADINGS[kind]}', '']
+        for entry in entries:
+            lines.append(f"- **{entry['id']}** ({entry.get('lineage')}, {entry.get('axis')}): "
+                         f"{entry['statement']}")
+            if entry.get('note'):
+                lines.append(f"    {entry['note']}")
+            for number in entry.get('numbers') or []:
+                if number.get('void'):
+                    lines.append(f"    {number['text']}: void — no artifact in this clone; claim "
+                                 f"`{number.get('claim')}` has status "
+                                 f"`{number.get('claim_status')}`; "
+                                 f"`{number.get('command') or 'python scripts/evidence_map.py --check'}`")
+                else:
+                    lines.append(f"    {number['text']} ← `{number.get('source')}`; "
+                                 f"`{number.get('command')}`")
+            for cited in entry.get('claims') or []:
+                lines.append(f"    also void: `{cited}`")
+    return lines
+
+
+def _evidence_table(matrix) -> str:
+    """Render the matrix JSON as the honest Phase 7 evidence table.
+
+    Deterministic on purpose: rows sorted by lineage, ledger entries in their
+    registered order, no timestamps. Two renders of the same matrix are byte
+    identical, so a diff means the evidence moved, not the clock.
+    """
+    registered = matrix['registered']
+    pinned = registered.get('pinned') or {}
+    counts = matrix['counts']
+    rows = sorted(matrix['rows'], key=lambda row: row['lineage'])
+    ledger = matrix.get('loss_ledger') or {'entries': []}
+    render_command = (f'uv run jdewitt release-matrix --manifest {matrix["manifest"]} '
+                      '--out verification/releases/matrix.json '
+                      '--table verification/releases/matrix.md '
+                      '--doc docs/EVIDENCE-TABLE.md')
+    lines = [
+        '# The Phase 7 evidence table',
+        '',
+        'One row per registered lineage, bound to its artifact, its serve argv and one command that '
+        'recomputes it. The losses and the cells with no packet are in this file too: a roadmap that '
+        'lists only wins is marketing, and this repository treats marketing as a bug.',
+        '',
+        f'Source: `verification/releases/matrix.json`, rendered from manifest `{matrix["manifest"]}` '
+        f'(digest `{matrix["manifest_digest"]}`) and the registered loss ledger '
+        f'`{ledger.get("path", "-")}` (digest `{ledger.get("digest", "-")}`).',
+        '',
+        f'`complete`: {str(matrix["complete"]).lower()}    '
+        f'certified (claims): {matrix["certified"]} of {len(matrix["rows"])} required lineages    '
+        f'certified_at_other_config: {counts["certified_at_other_config"]}    '
+        f'UNMEASURED: {counts["unmeasured"]}    invalid: {counts["invalid"]}    '
+        f'failed: {counts["failed"]}    '
+        f'distinct model types certified: {counts["distinct_model_types_certified"]}',
+        '',
+        f'Pinned serve config: ctx {pinned.get("ctx")} / parallel {pinned.get("parallel")} / '
+        f'cap {pinned.get("cap")}. A row served outside it is `certified_at_other_config`, not a pass.',
+        '',
+        'Render it yourself — twice, if you like; the output is deterministic:',
+        '',
+        '```sh',
+        render_command,
+        '```',
+        '',
+        '`docs/EVIDENCE-TABLE.md` is registered in `verification/evidence-map.json`, so '
+        '`python scripts/evidence_map.py --check` fails if the table is missing. No number below is '
+        'typed here: each is copied from the matrix JSON, which copies it from the packet named on '
+        'the row (or recomputes the reference side from its saved wave), or recomputed from the '
+        'in-clone source named beside it in LOSSES.',
+        '',
+        '## Summary',
+        '',
+        '| lineage | model | revision | quant | status | removal harmful-40 (shipped/wide) | '
+        'held-out (shipped/wide) | maths strict | code strict | recompute |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ]
+    for row in rows:
+        model = row.get('model') or {}
+        numbers = row.get('packet_numbers') or {}
+        removal = (numbers.get('removal') or {}).get('harmful40') or {}
+        held = (numbers.get('removal') or {}).get('held_out_120') or {}
+        losses = row.get('losses') or {}
+
+        def strict(kind):
+            loss = losses.get(kind) or {}
+            if loss.get('after') is None:
+                return '-'
+            return f"{loss.get('after')}/{loss.get('paired_rows')} (p {loss.get('paired_p_two_sided')})"
+
+        lines.append('| ' + ' | '.join(_text(item) for item in (
+            row['lineage'],
+            model.get('name') or '-',
+            model.get('revision') or '-',
+            (row.get('artifact') or {}).get('quant_type') or model.get('quant_type') or '-',
+            row['status'],
+            f"{removal.get('shipped', '-')} / {removal.get('wide', '-')}",
+            f"{held.get('shipped', '-')} / {held.get('wide', '-')}",
+            strict('math'), strict('code'),
+            f"`{row.get('recompute_command')}`" if row.get('recompute_command') else '-',
+        )) + ' |')
+
+    lines += ['', '## Lineage rows', '',
+              'Rows are sorted by lineage. A cell with no packet is `-` here and named again under '
+              'UNMEASURED; it is never filled from prose.', '']
+    for row in rows:
+        model = row.get('model') or {}
+        artifact = row.get('artifact') or {}
+        numbers = row.get('packet_numbers') or {}
+        losses = row.get('losses') or {}
+        line_counts = row.get('numbers') or {}
+        lines += [f"### {row['lineage']} — {row['status']}", '',
+                  f"- model: `{model.get('name') or '-'}` @ `{model.get('revision') or '-'}`",
+                  f"- quant: {artifact.get('quant_type') or model.get('quant_type') or '-'}"]
+        sha = artifact.get('sha256')
+        identity = artifact.get('identity_digest')
+        if sha:
+            lines.append(f"- artifact sha256: `{sha}`")
+        elif identity:
+            lines.append(f"- artifact sha256: not recorded in-clone; identity digest `{identity}`")
+        else:
+            lines.append('- artifact sha256: not recorded in-clone (no merged artifact registered)')
+        head = row.get('head_to_head') or {}
+        axes = head.get('axes') or {}
+        if axes:
+            lines.append('- serve argv (head-to-head, same config on both sides):')
+            for axis in ('removal', 'held_out', 'retention'):
+                facts = axes.get(axis) or {}
+                if facts.get('ours_argv'):
+                    lines.append(f"  - {axis}: `{facts['ours_argv']}`")
+        else:
+            lines.append('- serve argv: not recorded (no measured packet)')
+        if numbers:
+            removal = (numbers.get('removal') or {}).get('harmful40') or {}
+            held = (numbers.get('removal') or {}).get('held_out_120') or {}
+            lines.append(f"- removal harmful-40 (shipped / wide): {removal.get('shipped', '-')} / "
+                         f"{removal.get('wide', '-')}")
+            lines.append(f"- removal held-out 120 (shipped / wide): {held.get('shipped', '-')} / "
+                         f"{held.get('wide', '-')}")
+            shapes = numbers.get('shape_verdict_counts') or {}
+            if shapes:
+                lines.append('- shape verdicts: ' + ', '.join(
+                    f'{name} {value}' for name, value in sorted(shapes.items())))
+            for label, kind in (('maths', 'math'), ('code', 'code')):
+                loss = losses.get(kind) or {}
+                if loss.get('after') is None:
+                    continue
+                lines.append(
+                    f"- retention strict {label}: {loss.get('after')}/{loss.get('paired_rows')} after "
+                    f"({loss.get('before')} before); delta "
+                    f"{line_counts.get(f'retention.{kind}.strict.delta', loss.get('drop'))}; "
+                    f"Cohen's h {line_counts.get(f'retention.{kind}.cohens_h')}; "
+                    f"paired p {loss.get('paired_p_two_sided')}; median answer "
+                    f"{loss.get('median_answer_chars')} chars vs base "
+                    f"{loss.get('base_median_answer_chars')} (reference "
+                    f"{((row.get('reference_losses') or {}).get(kind) or {}).get('median_answer_chars')})")
+            families = (numbers.get('removal') or {}).get('held_out_families')
+            if families is not None:
+                lines.append(f"- held-out families: {families}")
+            drift = numbers.get('drift') or {}
+            if drift:
+                lines.append(f"- drift: control {drift.get('control_delta_ln_ppl')} ln ppl in budget "
+                             f"{drift.get('budget')} "
+                             f"(inside: {str(drift.get('inside_budget')).lower()})")
+            fidelity = numbers.get('fidelity') or {}
+            if fidelity:
+                lines.append(f"- realized fidelity: min cos {fidelity.get('min_cos')}, mean "
+                             f"{fidelity.get('mean_cos')} over {fidelity.get('sampled')} sampled "
+                             f"tensors (arm_measurement: "
+                             f"{str(fidelity.get('arm_measurement')).lower()})")
+        else:
+            for gap in row.get('gaps') or []:
+                lines.append(f'- gap: {gap}')
+        details = [row.get('status_detail')] if row.get('status_detail') else []
+        for problem in row.get('problems') or []:
+            details.append(problem.get('message'))
+        if details:
+            lines.append('- status detail: ' + '; '.join(str(item) for item in details))
+        command = row.get('recompute_command') or row.get('next_command')
+        lines.append(f"- recompute (one command): `{command}`")
+        lines.append('')
+
+    lines += ['## LOSSES', '',
+              'The measured losses come first, printed before any win. Each is the row\'s own '
+              'retention against its own base, beside the reference side where a head-to-head '
+              'exists. Then the retractions, the delivery plateau, the config sensitivity and the '
+              'pre-fix voids.', '',
+              '### Measured']
+    if matrix['losses']['rows']:
+        for item in matrix['losses']['rows']:
+            lines.append(f"- **{item['line']}**")
+            for detail in _loss_detail(matrix, item):
+                lines.append(f"    {detail}")
+    else:
+        lines.append('    (no packet carries a retention number yet)')
+    lines += _ledger_lines(ledger)
+    if not ledger.get('entries'):
+        lines += ['', '### Retracted', '', '    (no loss ledger registered)']
+
+    lines += ['', '## UNMEASURED', '',
+              'Every lineage cell with no packet is listed here and excluded from the claims count. '
+              '`-` in a row above means this table, not a measurement.', '',
+              '| lineage | required | why | what would fill it |',
+              '| --- | --- | --- | --- |']
+    unmeasured = [row for row in rows if row['status'] == STATUS_UNMEASURED]
+    unmeasured += [row for row in sorted(matrix['spares'], key=lambda row: row['lineage'])
+                   if row['status'] == STATUS_UNMEASURED]
+    for row in unmeasured:
+        why = row.get('status_detail') or ''
+        gaps = row.get('gaps') or []
+        if gaps:
+            why = (why + '; ' if why else '') + '; '.join(gaps)
+        lines.append('| ' + ' | '.join(_text(item) for item in (
+            row['lineage'],
+            'yes' if row.get('required') else 'no (spare)',
+            why or '-',
+            f"`{row.get('next_command')}`" if row.get('next_command') else '-',
+        )) + ' |')
+    if not unmeasured:
+        lines.append('| - | - | every registered lineage has a packet | - |')
+    lines += ['',
+              'The table is a count and a ledger, not a claim. A row is `certified` only when every '
+              'axis was measured at the pinned serve config and inside its registered floor; a row '
+              'with no packet is `UNMEASURED` and cannot be counted, and a row that narrowed its '
+              'suite, lowered its cap or raised its scale past the grid is `invalid`, with a '
+              'non-zero exit.', '']
+    return '\n'.join(lines)
+
+
 def _matrix_table(matrix) -> str:
     registered = matrix['registered']
     pinned = registered.get('pinned') or {}
@@ -731,7 +1180,7 @@ def _matrix_table(matrix) -> str:
     return '\n'.join(lines)
 
 
-def release_matrix(manifest_path, out_path=None, table_path=None):
+def release_matrix(manifest_path, out_path=None, table_path=None, doc_path=None):
     """Read the manifest and the packets; emit one matrix. No model, no writes on a bad manifest."""
     manifest_file = Path(str(manifest_path)).expanduser()
     manifest = _read_json(manifest_file, 'manifest')
@@ -749,6 +1198,7 @@ def release_matrix(manifest_path, out_path=None, table_path=None):
     suite_problems = _registered_suite_problems(registered)
     if suite_problems:
         _fail('MATRIX_MANIFEST_INVALID', '; '.join(suite_problems))
+    ledger = _load_ledger(manifest, manifest_file)
     entries = list(manifest.get('lineages') or []) + list(manifest.get('spares') or [])
     if not entries:
         _fail('MATRIX_MANIFEST_INVALID', 'the manifest registers no lineages')
@@ -837,6 +1287,7 @@ def release_matrix(manifest_path, out_path=None, table_path=None):
         'counts': counts,
         'rows': rows,
         'spares': spares,
+        'loss_ledger': ledger,
         'losses': {'heading': 'LOSSES', 'rows': loss_rows,
                    'lines': [item['line'] for item in loss_rows]},
         'head_to_head': head_rows,
@@ -844,7 +1295,7 @@ def release_matrix(manifest_path, out_path=None, table_path=None):
         'valid': not invalid_rows,
         'invalid_rows': invalid_rows,
         'next_command': (f'uv run jdewitt release-matrix --manifest {manifest_path} '
-                         '--out matrix.json --table matrix.md'),
+                         '--out matrix.json --table matrix.md --doc docs/EVIDENCE-TABLE.md'),
         'note': ('One row per registered lineage, one status per row from a closed vocabulary. '
                  'A row at another serve config is certified_at_other_config, not a pass; a row '
                  'with no packet is UNMEASURED and still prints the command that would fill it; '
@@ -861,4 +1312,8 @@ def release_matrix(manifest_path, out_path=None, table_path=None):
         table_path = Path(str(table_path)).expanduser()
         table_path.parent.mkdir(parents=True, exist_ok=True)
         table_path.write_text(_matrix_table(result))
+    if doc_path:
+        doc_path = Path(str(doc_path)).expanduser()
+        doc_path.parent.mkdir(parents=True, exist_ok=True)
+        doc_path.write_text(_evidence_table(result))
     return result

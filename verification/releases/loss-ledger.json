@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "kind": "loss-ledger",
+  "purpose": "The losses the Phase 7 matrix must publish beside its rows. Every measured number names an in-clone source and one command that recomputes it; a void number names the evidence-map claim whose status says why it is void. release-matrix refuses the whole matrix (MATRIX_LEDGER_INVALID) if a source is missing or a quoted value no longer recomputes, so a loss cannot outlive its artifact.",
+  "entries": [
+    {
+      "id": "q25-removal-retraction",
+      "kind": "retraction",
+      "lineage": "qwen25-1.5b",
+      "axis": "removal",
+      "statement": "the Qwen2.5-1.5B arm's shipped-checker removal result is retracted: under the wider inventory the same rows remove wording on 6/40, 11/24 and 34/120, against the published build's 39/40, 23/23 and 120/120",
+      "numbers": [
+        {
+          "text": "6/40",
+          "value": "6/40",
+          "source": "verification/q3-4b-harmful40/yxboth10-l935/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/yxboth10-l935"
+        },
+        {
+          "text": "11/24",
+          "value": "11/24",
+          "source": "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-yxboth10"
+        },
+        {
+          "text": "34/120",
+          "value": "34/120",
+          "source": "verification/q3-4b-holdout-wider/wider-yxboth10/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-yxboth10"
+        },
+        {
+          "text": "39/40",
+          "value": "39/40",
+          "source": "verification/q3-4b-harmful40/q3oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/q3oracle"
+        },
+        {
+          "text": "23/23",
+          "value": "23/23",
+          "source": "verification/q3-4b-holdout/hold-oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-oracle"
+        },
+        {
+          "text": "120/120",
+          "value": "120/120",
+          "source": "verification/q3-4b-holdout-wider/wider-oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle"
+        }
+      ],
+      "note": "RETRACTED. The wording parity was a checker artifact: the shipped inventory matched first-person refusals only, so answers opening 'Absolutely not.' scored as removal. 34 of the 40 harmful-40 'removals' were declinations the shipped checker missed."
+    },
+    {
+      "id": "delivery-plateau",
+      "kind": "delivery",
+      "lineage": "qwen3-4b",
+      "axis": "delivery",
+      "statement": "on the semantic read of 24 held-out families the fitted arm hands over the asked-for content on 5/24, the published build on 4/24 and the unedited base on 1/24; on the first 20 families of the wider screen the arm is 0/20 and the published build 1/20",
+      "numbers": [
+        {
+          "text": "5/24",
+          "value": "5/24",
+          "source": "verification/q3-4b-holdout/semantic-read-yxboth10.json",
+          "locator": "json:/counts/delivered|/counts/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-yxboth10.json"
+        },
+        {
+          "text": "4/24",
+          "value": "4/24",
+          "source": "verification/q3-4b-holdout/semantic-read-oracle.json",
+          "locator": "json:/counts/delivered|/counts/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-oracle.json"
+        },
+        {
+          "text": "1/24",
+          "value": "1/24",
+          "source": "verification/q3-4b-holdout/semantic-read-sampling-decode.json",
+          "locator": "json:/counts/base-sampled/delivered|/counts/base-sampled/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-sampling-decode.json"
+        },
+        {
+          "text": "0/20",
+          "value": "0/20",
+          "source": "verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "locator": "json:/counts/arm/delivered|/counts/arm/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout-wider/semantic-read-20.json"
+        },
+        {
+          "text": "1/20",
+          "value": "1/20",
+          "source": "verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "locator": "json:/counts/published/delivered|/counts/published/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout-wider/semantic-read-20.json"
+        }
+      ],
+      "note": "REPORTED, NOT CREDITED. Both artifacts decline most of what is asked; the gap the word checker called removal is tone (a short flat refusal becomes a long lecture pivot), not policy. The arm is not claimed to deliver where the published build does."
+    },
+    {
+      "id": "minicpm-r9-config-sensitivity",
+      "kind": "config_sensitivity",
+      "lineage": "minicpm-v47",
+      "axis": "removal",
+      "statement": "MiniCPM-V 4.7's merged edit is config-sensitive: 36/40 at --ctx-size 2048 --parallel 2, ~21/40 at --ctx-size 4096 --parallel 4, on byte-identical files",
+      "numbers": [
+        {
+          "text": "36/40",
+          "value": "36/40",
+          "void": true,
+          "claim": "MiniCPM-V 4.7 per-layer answer-span fit: 36/40, plus null-space-protected and shape-interpolated variants",
+          "claim_status": "pre-2026-11-17-scoring-fix",
+          "command": "python scripts/evidence_map.py --check"
+        },
+        {
+          "text": "~21/40",
+          "value": "~21/40",
+          "source": "docs/METHODOLOGY.md",
+          "locator": "prose",
+          "command": "sed -n '84,87p' docs/METHODOLOGY.md"
+        }
+      ],
+      "note": "REPORTED, NOT COUNTED. Neither reading has committed row-level evidence in this clone, so the sensitivity is named as a property (R9) and never appears in a claims count. A row on this lineage is UNMEASURED until a packet is committed."
+    },
+    {
+      "id": "pre-2026-11-17-voids",
+      "kind": "void",
+      "lineage": "qwen25-1.5b",
+      "axis": "removal",
+      "statement": "taken before the 2026-11-17 row-kind scoring fix and void as numbers: the Qwen2.5-1.5B 40/40 and 24/24 held-out removal, the MiniCPM-V 4.7 36/40 removal; the Spark-X2.6-1.7B and LFM3-1.7B rows have no committed artifact at all",
+      "claims": [
+        "Qwen2.5-1.5B shared-axis fit: 40/40 on the harmful-40 suite, 24/24 on held-out refusal families, harmless clean",
+        "MiniCPM-V 4.7 per-layer answer-span fit: 36/40, plus null-space-protected and shape-interpolated variants",
+        "Spark-X2.6-1.7B and LFM3-1.7B refusal openers gone 40/40, harmless clean, style drift recorded"
+      ],
+      "numbers": [
+        {
+          "text": "40/40",
+          "value": "40/40",
+          "void": true,
+          "claim": "Qwen2.5-1.5B shared-axis fit: 40/40 on the harmful-40 suite, 24/24 on held-out refusal families, harmless clean",
+          "claim_status": "pre-2026-11-17-scoring-fix",
+          "command": "python scripts/evidence_map.py --check"
+        },
+        {
+          "text": "24/24",
+          "value": "24/24",
+          "void": true,
+          "claim": "Qwen2.5-1.5B shared-axis fit: 40/40 on the harmful-40 suite, 24/24 on held-out refusal families, harmless clean",
+          "claim_status": "pre-2026-11-17-scoring-fix",
+          "command": "python scripts/evidence_map.py --check"
+        },
+        {
+          "text": "36/40",
+          "value": "36/40",
+          "void": true,
+          "claim": "MiniCPM-V 4.7 per-layer answer-span fit: 36/40, plus null-space-protected and shape-interpolated variants",
+          "claim_status": "pre-2026-11-17-scoring-fix",
+          "command": "python scripts/evidence_map.py --check"
+        }
+      ],
+      "note": "The rows stay named because they happened on this machine, and they stay out of every claim the table makes. The Spark/LFM claim carries no numbers and no artifact: no wave, screen or provenance file is in this repository or on the lab disk."
+    }
+  ]
+}

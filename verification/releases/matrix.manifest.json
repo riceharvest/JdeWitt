@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "kind": "release-matrix-manifest",
+  "loss_ledger": "verification/releases/loss-ledger.json",
   "note": "Registration for the Phase 7 release matrix. One row per lineage, bound to the merged quant artifact by digest identity, never by the path that happens to exist. The registered floors are the ones a row is checked against: a suite shorter than suite_rows, a cap below cap, or a scale past scale_grid.max is invalid, not a pass. model_type is read from the checkpoint config.json; a duplicate model_type does not increment the count.",
   "registered": {
     "pinned": {

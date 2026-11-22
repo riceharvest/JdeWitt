@@ -156,6 +156,7 @@ SCHEMAS = {
             'counts': {'type': 'object'},
             'rows': {'type': 'array'},
             'spares': {'type': 'array'},
+            'loss_ledger': {'type': 'object'},
             'losses': {'type': 'object'},
             'head_to_head': {'type': 'array'},
             'refusals': {'type': 'array'},
