@@ -332,6 +332,31 @@ def _median(values: list[int]) -> float | None:
     return round(statistics.median(values), 1) if values else None
 
 
+def _binomial_cdf(k: int, n: int, p: float) -> float:
+    return sum(math.comb(n, i) * p ** i * (1 - p) ** (n - i) for i in range(k + 1))
+
+
+def loss_rate_upper(k: int, n: int, alpha: float = ALPHA) -> float | None:
+    """One-sided Clopper-Pearson upper bound on the per-row loss probability.
+
+    With k=0 losses out of n this is the exact ``1 - alpha**(1/n)`` bound; the
+    paired test says nothing about rows it never flipped, so the bound is the
+    honest ceiling the suite can put on a rule that costs a row.
+    """
+    if n == 0:
+        return None
+    if k >= n:
+        return 1.0
+    low, high = k / n, 1.0
+    for _ in range(80):
+        middle = (low + high) / 2
+        if _binomial_cdf(k, n, middle) > alpha:
+            low = middle
+        else:
+            high = middle
+    return round(high, 6)
+
+
 def _arm_stats(off: dict[str, dict], on: dict[str, dict]) -> dict:
     ids = sorted(off)
     both = [rid for rid in ids if _passes(off[rid]) and _passes(on[rid])]
@@ -351,15 +376,31 @@ def _arm_stats(off: dict[str, dict], on: dict[str, dict]) -> dict:
                    'both_fail': len(neither), 'discordant': len(lost) + len(gained),
                    'mcnemar_exact_p': mcnemar_exact(len(lost), len(gained)),
                    'alpha': ALPHA,
+                   'row_loss_rate_upper95': loss_rate_upper(len(lost), len(ids)),
+                   'row_loss_rate_upper95_note': ('one-sided 95% Clopper-Pearson bound on the probability '
+                                                  'that a capability row which passes without the remap '
+                                                  'fails with it; rows the suite never flipped are not '
+                                                  'evidence of absence beyond this bound'),
                    'method': 'exact two-sided binomial test over the discordant pairs (McNemar)'},
         'off_pass_on_fail_rows': lost,
         'off_fail_on_pass_rows': gained,
     }
 
 
-def _rule_table(off: dict[str, dict], on: dict[str, dict]) -> dict:
-    """Per table entry: where it fired, on which failing rows, and what it cost."""
+def _rule_table(off: dict[str, dict], on: dict[str, dict], entry_ids: list[str] | None = None) -> dict:
+    """Per table entry: where it fired, on which failing rows, and what it cost.
+
+    Every entry in the table gets a row, including the ones that never fired: a
+    zero is part of the falsifier, it says that entry had no opportunity on this
+    suite rather than that it was measured to be harmless.
+    """
     rules: dict[str, dict] = {}
+    for entry_id in entry_ids or []:
+        rules[entry_id] = {
+            'entry_id': entry_id, 'events': 0, 'rows_fired': [],
+            'rows_fired_off_passed_upstream': [], 'collateral_rows': [], 'recovered_rows': [],
+            'failing_row_firings': [], 'fired_after_opener_window': 0,
+        }
     for rid in sorted(on):
         row = on[rid]
         for event in row.get('suppressions') or []:
@@ -466,13 +507,34 @@ def report(args) -> int:
             raise SystemExit(f'arm {label} used cap {on_meta["config"]["max_tokens"]}, the off arm '
                              f'{off_meta["config"]["max_tokens"]}; the arms must share the cap')
         stats = _arm_stats(off_rows, on_rows)
-        rules = _rule_table(off_rows, on_rows)
+        table_path = Path(on_meta['table']['path'])
+        table_entries, _raw = load_table(table_path if table_path.is_absolute() else REPO / table_path)
+        entry_ids = [entry['id'] for entry in table_entries['entries']]
+        rules = _rule_table(off_rows, on_rows, entry_ids)
+        fired = [name for name, rule in rules.items() if rule['events']]
+        verdict = _verdict(stats, rules)
+        verdict['exposure'] = {
+            'rows_with_firing': sum(1 for row in on_rows.values() if row.get('suppressions')),
+            'rows': len(on_rows),
+            'entries_never_fired': [name for name in entry_ids if name not in fired],
+            'note': ('the verdict is bounded by exposure: a suite where the table rarely fires cannot '
+                     'measure the cost of rules it never fires'),
+        }
         comparisons[label] = {
             'directory': _portable(directory),
             'table': on_meta['table'], 'config': on_meta['config'], 'scores': on_meta.get('scores'),
             'stats': stats, 'per_rule': rules,
+            'exposure': {
+                'table_entries': len(entry_ids),
+                'entries_fired': len(fired),
+                'entries_never_fired': [name for name in entry_ids if name not in fired],
+                'rows_with_any_firing': sum(1 for row in on_rows.values() if row.get('suppressions')),
+                'rows': len(on_rows),
+                'note': ('Entries that never fired had no opportunity on this suite; their zeros are '
+                         'non-exposure, not evidence that the rule is harmless.'),
+            },
             'failing_rows': _failing_attribution(on_rows),
-            'verdict': _verdict(stats, rules),
+            'verdict': verdict,
         }
     final_label = args.final or ('narrowed' if 'narrowed' in comparisons else 'asset')
     final = comparisons.get(final_label)
@@ -516,7 +578,12 @@ def _print_report(document: dict) -> None:
         paired = stats['paired']
         print(f'  paired both={paired["both_pass"]} lost={paired["off_pass_on_fail"]} '
               f'gained={paired["off_fail_on_pass"]} both_fail={paired["both_fail"]}  '
-              f'exact McNemar p={paired["mcnemar_exact_p"]:.6g}')
+              f'exact McNemar p={paired["mcnemar_exact_p"]:.6g}  '
+              f'loss-rate 95% upper {paired["row_loss_rate_upper95"]:.4g}')
+        exposure = arm.get('exposure') or {}
+        if exposure:
+            print(f'  exposure {exposure["rows_with_any_firing"]}/{exposure["rows"]} rows, '
+                  f'{exposure["entries_fired"]}/{exposure["table_entries"]} table entries fired')
         for name, rule in arm['per_rule'].items():
             if rule['events']:
                 print(f'  rule {name}: {rule["events"]} events on {rule["rows_fired_count"]} rows, '

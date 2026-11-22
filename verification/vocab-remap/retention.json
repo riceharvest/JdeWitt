@@ -1,0 +1,1775 @@
+{
+  "arms": {
+    "asset": {
+      "config": {
+        "cache_prompt": true,
+        "grader": "jdewitt.evaluation.score_response",
+        "max_tokens": 512,
+        "n_probs": 1,
+        "opener_window_tokens": 8,
+        "temperature": 0.0,
+        "template": "chat"
+      },
+      "directory": "verification/vocab-remap/retention/on",
+      "exposure": {
+        "entries_fired": 2,
+        "entries_never_fired": [
+          "en-can-not",
+          "en-cant",
+          "en-wont",
+          "en-unable",
+          "en-not-able",
+          "en-im-sorry",
+          "en-i-am-sorry",
+          "en-i-apologize",
+          "nl-kan-niet",
+          "nl-kan-ik-niet",
+          "nl-niet-mogelijk",
+          "nl-het-spijt-me",
+          "nl-ik-kan-niet",
+          "de-kann-nicht",
+          "de-kann-ich-nicht",
+          "de-nicht-moeglich",
+          "de-es-tut-mir-leid",
+          "de-ich-kann-nicht"
+        ],
+        "note": "Entries that never fired had no opportunity on this suite; their zeros are non-exposure, not evidence that the rule is harmless.",
+        "rows": 241,
+        "rows_with_any_firing": 3,
+        "table_entries": 20
+      },
+      "failing_rows": [
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-distributed-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-exact-division-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-arith-times-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 377,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-combinations-count-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 262,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-count-distinct-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 280,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-count-substring-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 371,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-fibonacci-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "length",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 512,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-gcd-en-00",
+          "status": "truncated_or_error"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 400,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-kv-parse-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 281,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-mean-floor-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 346,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-move-zeros-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 396,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-prefix-sums-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 376,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-prime-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 313,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-product-even-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 268,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-reverse-digits-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 349,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-running-max-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 325,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-sort-by-length-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 379,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-trim-ends-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 226,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-truncate-words-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [
+            {
+              "entry_id": "en-cannot",
+              "step": 139,
+              "suppressed_text": " cannot"
+            }
+          ],
+          "kind": "code",
+          "n_tokens": 334,
+          "note": "the row did not pass; this is the attributed rule firing, not proof that the rule caused the failure on its own",
+          "row": "cap-code-unique-ordered-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 320,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-window-average-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "code",
+          "n_tokens": 458,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-code-word-count-top-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-counting-combinations-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-fraction-sum-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-fraction-sum-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-fraction-sum-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-fraction-sum-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-rectangle-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-geometry-triangle-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 6,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-linear-solve-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 2,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-gcd-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-number-theory-lcm-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 5,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-chain-cents-en-11",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-pct-reverse-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 241,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 310,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 317,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 338,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 346,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 295,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 360,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 336,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 378,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 351,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-rate-together-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-00",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-01",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-02",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-03",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-04",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-05",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-06",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-07",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-08",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 3,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-09",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-10",
+          "status": "ok"
+        },
+        {
+          "finish_reason": "stop",
+          "fired": [],
+          "kind": "math",
+          "n_tokens": 4,
+          "note": "the row did not pass and no table entry fired on it",
+          "row": "cap-sequence-arithmetic-en-11",
+          "status": "ok"
+        }
+      ],
+      "per_rule": {
+        "de-es-tut-mir-leid": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "de-es-tut-mir-leid",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "de-ich-kann-nicht": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "de-ich-kann-nicht",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "de-kann-ich-nicht": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "de-kann-ich-nicht",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "de-kann-nicht": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "de-kann-nicht",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "de-nicht-moeglich": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "de-nicht-moeglich",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-can-not": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-can-not",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-cannot": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-cannot",
+          "events": 2,
+          "failing_row_firings": [
+            {
+              "kind": "code",
+              "off_passed": false,
+              "row": "cap-code-unique-ordered-en-00",
+              "status": "ok",
+              "step": 139,
+              "suppressed_text": " cannot"
+            }
+          ],
+          "fired_after_opener_window": 2,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [
+            "cap-code-perfect-square-en-00",
+            "cap-code-unique-ordered-en-00"
+          ],
+          "rows_fired_count": 2,
+          "rows_fired_off_passed_upstream": [
+            "cap-code-perfect-square-en-00"
+          ]
+        },
+        "en-cant": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-cant",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-i-am-sorry": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-i-am-sorry",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-i-apologize": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-i-apologize",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-im-sorry": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-im-sorry",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-not-able": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-not-able",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-unable": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-unable",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "en-will-not": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-will-not",
+          "events": 1,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 1,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [
+            "cap-code-flatten-one-en-00"
+          ],
+          "rows_fired_count": 1,
+          "rows_fired_off_passed_upstream": [
+            "cap-code-flatten-one-en-00"
+          ]
+        },
+        "en-wont": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "en-wont",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "nl-het-spijt-me": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "nl-het-spijt-me",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "nl-ik-kan-niet": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "nl-ik-kan-niet",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "nl-kan-ik-niet": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "nl-kan-ik-niet",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "nl-kan-niet": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "nl-kan-niet",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        },
+        "nl-niet-mogelijk": {
+          "collateral_count": 0,
+          "collateral_rows": [],
+          "entry_id": "nl-niet-mogelijk",
+          "events": 0,
+          "failing_row_firings": [],
+          "fired_after_opener_window": 0,
+          "recovered_count": 0,
+          "recovered_rows": [],
+          "rows_fired": [],
+          "rows_fired_count": 0,
+          "rows_fired_off_passed_upstream": []
+        }
+      },
+      "scores": null,
+      "stats": {
+        "median_answer_chars": {
+          "off": 3,
+          "on": 3
+        },
+        "off_fail_on_pass_rows": [],
+        "off_invalid": 1,
+        "off_pass_on_fail_rows": [],
+        "off_passed": 96,
+        "on_invalid": 1,
+        "on_passed": 96,
+        "paired": {
+          "alpha": 0.05,
+          "both_fail": 145,
+          "both_pass": 96,
+          "discordant": 0,
+          "mcnemar_exact_p": 1.0,
+          "method": "exact two-sided binomial test over the discordant pairs (McNemar)",
+          "off_fail_on_pass": 0,
+          "off_pass_on_fail": 0,
+          "row_loss_rate_upper95": 0.012353,
+          "row_loss_rate_upper95_note": "one-sided 95% Clopper-Pearson bound on the probability that a capability row which passes without the remap fails with it; rows the suite never flipped are not evidence of absence beyond this bound"
+        },
+        "rows": 241
+      },
+      "table": {
+        "derivation": null,
+        "entries": 20,
+        "path": "jdewitt/assets/vocab-remap-denial.json",
+        "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a"
+      },
+      "verdict": {
+        "costly_rules": [],
+        "exposure": {
+          "entries_never_fired": [
+            "en-can-not",
+            "en-cant",
+            "en-wont",
+            "en-unable",
+            "en-not-able",
+            "en-im-sorry",
+            "en-i-am-sorry",
+            "en-i-apologize",
+            "nl-kan-niet",
+            "nl-kan-ik-niet",
+            "nl-niet-mogelijk",
+            "nl-het-spijt-me",
+            "nl-ik-kan-niet",
+            "de-kann-nicht",
+            "de-kann-ich-nicht",
+            "de-nicht-moeglich",
+            "de-es-tut-mir-leid",
+            "de-ich-kann-nicht"
+          ],
+          "note": "the verdict is bounded by exposure: a suite where the table rarely fires cannot measure the cost of rules it never fires",
+          "rows": 241,
+          "rows_with_firing": 3
+        },
+        "outcome": "no_discordant_pairs",
+        "statement": "both arms pass and fail the same 241 rows (0 discordant pairs, McNemar p=1); this suite and decode found no capability difference. That is a measured absence on 241 rows, not a general no-loss claim"
+      }
+    }
+  },
+  "artifact": {
+    "bytes": 986048096,
+    "path": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "sha256": "4537de221ae1e9146317ea756958252ea6e7a3feb8f38a3c21cc60614f0c2cb4",
+    "tokenizer": {
+      "model": "gpt2",
+      "n_vocab": 151936,
+      "pre": "qwen2",
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
+  "cap": 512,
+  "final_arm": "asset",
+  "limits": "A deterministic greedy pass on one quantized artifact at one cap, with the client-stepped loop as the only decoder under test. The suite is the authored 241-row wave; a pass is the shipped grader's word, not a second opinion. Per-rule attribution lists the entry that fired on a failing row; the bias is the only difference between the arms, but a divergence can compound after the triggering step, so the table is evidence of attribution, not a per-token causal proof.",
+  "off": {
+    "directory": "verification/vocab-remap/retention/off",
+    "scores": {
+      "by_kind": {
+        "code": {
+          "invalid": 1,
+          "passed": 42,
+          "rows": 61
+        },
+        "math": {
+          "invalid": 0,
+          "passed": 54,
+          "rows": 180
+        }
+      },
+      "invalid": 1,
+      "passed": 96,
+      "rows": 241
+    },
+    "table": {
+      "derivation": null,
+      "entries": 20,
+      "path": "jdewitt/assets/vocab-remap-denial.json",
+      "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a"
+    }
+  },
+  "schema": "jdewitt.vocab-remap-retention/1",
+  "scope": "Retention falsifier: the authored 241-row capability suite decoded through the documented client-stepped remap loop, both arms at one cap, graded by the shipped score_response. The off arm carries no logit_bias. Paired by row id; the arms are never averaged.",
+  "suite": {
+    "path": "verification/capability/capability-run-en.jsonl",
+    "rows": 241,
+    "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+  },
+  "verdict": {
+    "costly_rules": [],
+    "exposure": {
+      "entries_never_fired": [
+        "en-can-not",
+        "en-cant",
+        "en-wont",
+        "en-unable",
+        "en-not-able",
+        "en-im-sorry",
+        "en-i-am-sorry",
+        "en-i-apologize",
+        "nl-kan-niet",
+        "nl-kan-ik-niet",
+        "nl-niet-mogelijk",
+        "nl-het-spijt-me",
+        "nl-ik-kan-niet",
+        "de-kann-nicht",
+        "de-kann-ich-nicht",
+        "de-nicht-moeglich",
+        "de-es-tut-mir-leid",
+        "de-ich-kann-nicht"
+      ],
+      "note": "the verdict is bounded by exposure: a suite where the table rarely fires cannot measure the cost of rules it never fires",
+      "rows": 241,
+      "rows_with_firing": 3
+    },
+    "outcome": "no_discordant_pairs",
+    "statement": "both arms pass and fail the same 241 rows (0 discordant pairs, McNemar p=1); this suite and decode found no capability difference. That is a measured absence on 241 rows, not a general no-loss claim"
+  }
+}
