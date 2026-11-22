@@ -86,6 +86,25 @@ EXPLAINER = {
     'IO_ERROR': {'meaning': 'Filesystem-level I/O failure.', 'agent_action': 'Check mount and disk state; not a schema problem.'},
     'ARGUMENT_ERROR': {'meaning': 'The CLI arguments themselves were invalid (exit code 2).',
                        'agent_action': 'Run `commands` for the exact flag table instead of guessing.'},
+    'SYMLINK_REFUSED': {'meaning': 'A symlink appeared where plain bytes were required (directory or entry).',
+                        'agent_action': 'Point --foreign at the real directory and unpack the release '
+                                        'without links; nothing is hashed through a link.'},
+    'NONREGULAR_REFUSED': {'meaning': 'A socket, fifo or device was found in the directory.',
+                           'agent_action': 'Inspect the directory by hand; only regular files can be '
+                                           'hashed and reported.'},
+    'PATH_TRAVERSAL_REFUSED': {'meaning': 'A filename was not a plain name inside the directory.',
+                               'agent_action': 'Treat the directory as hostile; do not retry with a '
+                                               'resolved path that points outside it.'},
+    'FOREIGN_AMBIGUOUS': {'meaning': '--foreign was pointed at a directory that carries files.json.',
+                          'agent_action': 'Use the native path: verify-artifact DIR --all (or '
+                                          'verify-release for a release bundle).'},
+    'HEADER_INVALID': {'meaning': 'A file named .gguf does not carry a readable GGUF header '
+                                  '(bad magic, truncated, or tensor data past end of file).',
+                       'agent_action': 'Re-download or re-export that file; the message names it. '
+                                       'Nothing else in the directory was certified.'},
+    'NOT_A_DIRECTORY': {'meaning': '--foreign needs a directory, not a file.',
+                        'agent_action': 'Pass the release directory; for one artifact use the '
+                                        'native path verify-artifact FILE --name SCHEMA.'},
 }
 
 
@@ -101,6 +120,18 @@ class BudgetExhausted(RuntimeError):
     """A per-job budget (generated tokens or judge requests) ran out mid-run."""
 
 
+class ForeignArtifactRefused(ValueError):
+    """A foreign release directory cannot be inspected under the stated rules.
+
+    ``code`` names the rule that stopped it (SYMLINK_REFUSED, NONREGULAR_REFUSED,
+    PATH_TRAVERSAL_REFUSED, FOREIGN_AMBIGUOUS, HEADER_INVALID, NOT_A_DIRECTORY)
+    so a caller can branch on the envelope instead of parsing prose.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 class AdapterCardRefused(ValueError):
     """A shipped adapter cannot be labelled honestly (R8); ``code`` names the reason.
 
@@ -114,7 +145,7 @@ class AdapterCardRefused(ValueError):
 
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
-    if isinstance(exception, AdapterCardRefused):
+    if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

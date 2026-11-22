@@ -275,6 +275,7 @@ def build_parser():
     art.add_argument('file',type=Path)
     art.add_argument('--name',help='Schema name; inferred from the file name by default')
     art.add_argument('--all',action='store_true',help='Treat FILE as a directory and check every known artifact found in it')
+    art.add_argument('--foreign',action='store_true',help='Treat DIR as someone else\'s release directory: hash regular files, read GGUF headers, and report what is verifiable and what is missing (never decoded, never printed)')
     rdiff=sub.add_parser('release-diff',help='File-set, claim-chain and signature differences between two release directories; reads only')
     rdiff.add_argument('left',type=Path)
     rdiff.add_argument('right',type=Path)
@@ -703,8 +704,14 @@ def main():
             from .schemas import SCHEMAS
             result={'schemas':[{'file':name,'description':schema['description']} for name,schema in sorted(SCHEMAS.items())]}
         elif args.command=='verify-artifact':
-            from .schemas import validate_artifact, verify_all
-            result=verify_all(args.file) if args.all else validate_artifact(args.file,args.name)
+            if args.foreign and (args.all or args.name):
+                raise ValueError('--foreign inspects a directory; it cannot be combined with --all or --name')
+            if args.foreign:
+                from .foreign import verify_foreign_artifact
+                result=verify_foreign_artifact(args.file)
+            else:
+                from .schemas import validate_artifact, verify_all
+                result=verify_all(args.file) if args.all else validate_artifact(args.file,args.name)
         elif args.command=='release-diff':
             from .release import release_diff
             result=release_diff(args.left,args.right)
