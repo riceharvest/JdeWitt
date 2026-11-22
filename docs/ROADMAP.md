@@ -291,7 +291,8 @@ on different hardware, every README number resolving through `evidence_map`.
 ## Phase 8 — Steady-state rhythm (not a phase) — card `t_73669702`
 
 - Quarterly `hub-census` -> adapter worklist, ordered by downloads; the human
-  gap list stays in the same JSON.
+  gap list stays in the same JSON. The dated artifact and its triage table live
+  in `verification/hub-census/` and `docs/HUB-CENSUS.md`.
 - Per-architecture export smoke: a GGUF llama.cpp cannot serve is not a release.
 - `capture`/`tune` keep working on architectures never seen: discovery, not
   tables, and a typed refusal when a layout has no verified adapter.

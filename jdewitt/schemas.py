@@ -414,10 +414,15 @@ def validate_against(value, schema, path='$'):
 
 
 def infer_schema_name(path):
-    name = Path(path).name
-    if name not in SCHEMAS:
-        raise ValueError(f'No published schema for {name!r}; available: {sorted(SCHEMAS)}')
-    return name
+    path = Path(path)
+    if path.name in SCHEMAS:
+        return path.name
+    # An artifact persisted by a command keeps that command's name on its directory,
+    # so `verification/hub-census/2026-11-22.json` is checked without repeating --name.
+    emitted = EMIT_SCHEMAS.get(path.parent.name)
+    if emitted:
+        return emitted
+    raise ValueError(f'No published schema for {path.name!r}; available: {sorted(SCHEMAS)}')
 
 
 def validate_artifact(path, name=None):

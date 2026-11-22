@@ -10,7 +10,7 @@ import huggingface_hub
 import pytest
 
 from jdewitt.hubcensus import hub_census, quarter_of
-from jdewitt.schemas import enforce
+from jdewitt.schemas import enforce, validate_artifact
 
 
 class FakeApi:
@@ -73,6 +73,9 @@ def test_out_persists_the_same_payload_and_refuses_to_clobber(hub, tmp_path):
     target = tmp_path / 'hub-census' / '2026-11-22.json'
     payload = hub_census(authors=['LiquidAI'], since='2026-08-01', out=target)
     assert json.loads(target.read_text()) == payload
+    # The directory names the writing command, so verify-artifact needs no --name.
+    checked = validate_artifact(target)
+    assert checked['schema'] == 'hub-census.command.json' and checked['valid']
     before = target.read_bytes()
     with pytest.raises(FileExistsError):
         hub_census(authors=['LiquidAI'], since='2026-08-01', out=target)
