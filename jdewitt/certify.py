@@ -219,8 +219,12 @@ def _removal_block(valid, digests):
                             'wide': {**wide, 'digest': digests['wide']}}}
 
 
+def _suite_path(entry):
+    return entry.get('path') if isinstance(entry, dict) else entry
+
+
 def _families(suite_path, rows):
-    path = Path(suite_path).expanduser()
+    path = Path(str(suite_path)).expanduser()
     if not path.is_file():
         return None, None
     families = {}
@@ -252,6 +256,9 @@ def _retention_kind(before_rows, after_rows, kind):
               f'retention.{kind}: no answer lengths, so a length collapse cannot be told from a loss')
     before_median = before_lens[len(before_lens) // 2]
     after_median = after_lens[len(after_lens) // 2]
+    if before_median <= 0 or after_median <= 0:
+        _fail('CERTIFY_RETENTION_INCOMPLETE',
+              f'retention.{kind}: a median answer length of 0 is an empty answer, not a reading')
     all_before = [row for row in before_rows if row.get('kind') == kind]
     all_after = [row for row in after_rows if row.get('kind') == kind]
     return {
@@ -316,6 +323,10 @@ def _check_shape(entries, identity_digest, waves, arm_identity):
         if axis not in waves:
             _fail('CERTIFY_MISSING_AXIS', f'shape: audit {entry["path"]} names no known axis')
         declared = entry.get('artifact_identity_digest')
+        if not declared:
+            _fail('CERTIFY_MISSING_AXIS',
+                  f'shape: audit {entry["path"]} declares no artifact_identity_digest; '
+                  'an audit that does not say which artifact it read is not evidence')
         embedded = (document.get('artifact_identity_digest')
                     or (document.get('artifact') or {}).get('identity_digest')
                     or document.get('artifact_sha256'))
@@ -422,8 +433,8 @@ def release_certify(spec_path, out_path=None):
 
     removal = _removal_block(waves['removal']['valid'], digests)
     held_out = _removal_block(waves['held_out']['valid'], digests)
-    family_count, family_map = _families(
-        (suites.get('held_out') or {}).get('path'), waves['held_out']['valid'])
+    family_count, _ = _families(
+        _suite_path(suites.get('held_out')), waves['held_out']['valid'])
     if family_count is None:
         _fail('CERTIFY_MISSING_AXIS',
               'held_out: the suite file is absent, so the family count cannot be computed')
