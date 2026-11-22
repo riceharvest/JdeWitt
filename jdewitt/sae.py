@@ -25,9 +25,9 @@ side, not by a table: grouped-query projections write to ``heads * head_dim != h
 so a residual-stream feature direction addresses their READ side (``side='input'``)
 and never their output side.
 
-The same ``realized_cos`` is what the codec lane (``ggufio.preview_edit``,
-``--min-edit-cos``) reports: an edit that survives the arithmetic but not the storage
-is caught there, not here.
+The same quantity ``realized_cos`` measures is what the codec lane
+(``ggufio.preview_edit``, ``--min-edit-cos``) reports on re-encoded bytes: an edit that
+survives the arithmetic but not the storage is caught there, not here.
 """
 from __future__ import annotations
 
@@ -260,7 +260,9 @@ def realized_cos(weight_before, intended_delta, weight_after) -> float:
     ``realized = weight_after - weight_before``. 1.0 means the edit landed exactly as
     computed, 0.0 means the change is orthogonal to the intent (the edit was overwritten,
     rounded away, or applied on the wrong side), negative means the weight moved the
-    other way. Used by the codec lane (``--min-edit-cos``) and by the resident path here.
+    other way. The codec lane (``ggufio.preview_edit``, ``--min-edit-cos``) measures
+    this same quantity on re-encoded bytes; this is the in-memory form of that number,
+    so a resident edit and a merged artifact are reported on the same scale.
 
     A no-op intended delta whose realized delta is also zero is 1.0: nothing was asked
     for and nothing happened. Exactly one zero is 0.0 -- a delta that moved nothing
