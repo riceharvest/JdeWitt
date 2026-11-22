@@ -87,6 +87,32 @@ def _add_packed(writer, name, raw, ggml_shape, qtype):
                       raw_shape=(rows, bytes_per_row), raw_dtype=qtype)
 
 
+def axis_fingerprint(edits, names=None):
+    """Digest of the axis -> tensor map: what anyone can recompute from the two files.
+
+    ``edits`` is the same map ``rewrite_with_edits`` takes. Only entries that carry
+    a (axis, space) tuple contribute, and only those in ``names`` (the tensors the
+    writer actually re-encoded) are hashed, so the digest describes the edit as it
+    landed rather than the request.
+    """
+    import hashlib
+
+    digest = hashlib.sha256()
+    layer_norms = {}
+    for name in sorted(names if names is not None else edits):
+        entry = edits[name]
+        if not isinstance(entry, tuple):
+            continue
+        axis = np.asarray(entry[0], dtype=np.float32)
+        axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
+        digest.update(name.encode())
+        digest.update(np.round(axis, 6).tobytes())
+        layer = int(name.split('.')[1])
+        layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
+    return {'edit_sha256': digest.hexdigest()[:32],
+            'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms}
+
+
 def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                        edit_type='q6_k', renormalize=False, verify_untouched=True,
                        repair='none', norm_clamp=(0.9, 1.1), claims=None):
@@ -208,22 +234,8 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     # untouched count, the axis digest and its per-layer norm). Anyone can recompute
     # it from the two files, so "this is a fresh edit" stops being a matter of trust —
     # the same idea as publishing "81 matrices changed, 1,111 tensors untouched".
-    import hashlib
-
-    digest = hashlib.sha256()
-    layer_norms = {}
-    for name in sorted(matrices):
-        entry = edits[name]
-        if isinstance(entry, tuple):
-            axis = np.asarray(entry[0], dtype=np.float32)
-            axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
-            digest.update(name.encode())
-            digest.update(np.round(axis, 6).tobytes())
-            layer = int(name.split('.')[1])
-            layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
-    fingerprint = {'edit_sha256': digest.hexdigest()[:32],
+    fingerprint = {**axis_fingerprint(edits, matrices),
                    'edited': len(matrices), 'untouched': len(header['tensors']) - len(payloads),
-                   'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
                    'scale': scale, 'axis_space': axis_space, 'edit_type': target_name,
                    'repair': repair_block}
     # The fingerprint travels WITH the artifact: a claim nobody can check is marketing,
