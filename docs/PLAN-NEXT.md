@@ -920,3 +920,27 @@ Two levers that cost ZERO generated tokens to add, plus the confirmation safety 
   That is the intended behaviour: the probe prunes cheaply, the confirmation decides.
 - Ledger for the run: 1,820 fresh tokens, 36 s cold with `--parallel 6`; the report's
   `next` now prints the merge command WITH `--only-layers` and the cert-wave command.
+
+### R8 verification of the shipped pick (2026-11-22) — the gate fired
+
+Running `tune` WITHOUT `--no-verify` on the same capture merged the winner in
+place (perlayer|10-27@1.0: 36 tensors, 1,093,269 blocks, 550 s), re-measured the
+three corpora on the merged bytes and reverted (sha256 restored to the pristine
+80ff5222…, sidecar deleted). Result:
+
+- adapter curve: drift -0.030, delta_br +0.215
+- merged bytes:  drift -0.026, delta_br +0.119  -> ratio 0.553
+
+So on this artifact the LoRA curve OVERSTATES the export delta by ~1.8x in BR even
+though coverage is identical (36 tensors both sides; the functional is identical on
+paper). `matches_adapter_screen` therefore reads false and the report now carries
+`adapter_to_merged_ratio` and `ranking_valid_on_this_artifact`, plus a note saying
+the ladder ranks and never predicts what ships. Ranking stays adapter-based (0
+tokens); SHIPPING decisions need the merged re-measure and a cert wave over the
+merged bytes. Closing this gap properly means screening merged bytes per arm (~9
+min, 0 tokens) — a token-vs-wall-clock trade, not a correctness shortcut.
+
+Also fixed: cache identity is now the artifact/records sha256, not mtime. `tune`
+merges and reverts its own artifact, which restores every byte but moves mtime, so
+an mtime-keyed cache discarded the ladder and every adapter after each verification
+run (2m20 -> 15 s once keyed on content).

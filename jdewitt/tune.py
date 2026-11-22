@@ -42,6 +42,23 @@ DEFAULT_SERVE = '/mnt/ssd/dev workspace/llama.cpp-dspark/build-cuda/bin/llama-se
 SCREEN_TOKENS_PER_ROW = 280
 
 
+def file_sha(path, chunk=1 << 20):
+    """Content digest for cache identity.
+
+    mtime is the WRONG key here: `tune` itself merges the artifact in place and
+    reverts it, which restores every byte but moves mtime, so an mtime-keyed cache
+    throws away the whole ladder and every adapter after a verification run. Hash
+    the bytes instead; 1.1 GB costs ~1 s.
+    """
+    import hashlib
+
+    digest = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for block in iter(lambda: handle.read(chunk), b''):
+            digest.update(block)
+    return digest.hexdigest()
+
+
 def parse_footprints(spec, first, last):
     """'all' or comma-separated 'start-end' ranges, clamped to the editable layers.
 
@@ -325,10 +342,9 @@ def tune_command(args):
     # 4B artifacts where a reused reader costs ~11 s. The adapters themselves are
     # cached: they are a deterministic function of (artifact bytes, records bytes,
     # families, axes width), so an iteration pays the dequant pass ONCE per model.
-    fit_identity = {'artifact_bytes': Path(args.gguf).stat().st_size,
-                    'artifact_mtime': int(Path(args.gguf).stat().st_mtime),
-                    'records_bytes': Path(args.records).stat().st_size,
-                    'records_mtime': int(Path(args.records).stat().st_mtime),
+    artifact_sha = file_sha(args.gguf)
+    fit_identity = {'artifact_sha256': artifact_sha,
+                    'records_sha256': file_sha(args.records, chunk=4 << 20),
                     'families': [family['key'] for family in families],
                     'width': width, 'layers': len(covered), 'arch': arch}
     adapters_path = out_dir / 'adapters.json'
@@ -375,9 +391,7 @@ def tune_command(args):
     # the expensive ladder must not pay for it twice, and a re-run with a wider
     # grid only pays for the new arms.
     ladder_path = out_dir / 'ladder.json'
-    identity = {'artifact': str(Path(args.gguf).resolve()),
-                'bytes': Path(args.gguf).stat().st_size,
-                'mtime': int(Path(args.gguf).stat().st_mtime),
+    identity = {'artifact': str(Path(args.gguf).resolve()), 'sha256': artifact_sha,
                 'corpora': {label: str(Path(path).resolve()) for label, path in corpora.items()}}
     cache = {}
     if ladder_path.is_file():
@@ -484,8 +498,7 @@ def tune_command(args):
     screens_path = out_dir / 'screens.json'
     screen_identity = dict(identity)
     screen_identity['records'] = {'path': str(Path(args.records).resolve()),
-                                  'bytes': Path(args.records).stat().st_size,
-                                  'mtime': int(Path(args.records).stat().st_mtime)}
+                                  'sha256': file_sha(args.records, chunk=4 << 20)}
     screens = {}
     cached_spend = {'tokens': 0}
     if screens_path.is_file():
@@ -822,13 +835,27 @@ def tune_command(args):
     if all('ppl' in reading for reading in merged_ppl.values()):
         merged_metrics = _arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
                                        'ppl': merged_ppl}, base)
+    ratio = None
+    if winner.get('delta_br') and merged_metrics.get('delta_br') is not None:
+        ratio = round(merged_metrics['delta_br'] / winner['delta_br'], 3)
+    agreement = bool(merged_metrics.get('delta_br') is not None
+                     and (abs(merged_metrics['delta_br'] - (winner['delta_br'] or 0)) <= 0.05
+                          or (ratio is not None and 0.7 <= ratio <= 1.3)))
     report['merged_verification'] = {
         'build': {k: merged.get(k) for k in ('tensors_changed', 'changed_blocks_total',
                                              'revert_sidecar', 'elapsed_s')},
         'metrics': merged_metrics,
-        'matches_adapter_screen': (merged_metrics.get('delta_br') is not None
-                                   and abs(merged_metrics['delta_br'] - (winner['delta_br'] or 0)) <= 0.05),
+        'adapter_to_merged_ratio': ratio,
+        'ranking_valid_on_this_artifact': agreement,
+        'matches_adapter_screen': agreement,
     }
+    if not agreement:
+        report['notes'].append(
+            f'the adapter ladder is a SCREENING instrument on this artifact (R8): at '
+            f"{winner['family']}@{winner['scale']} the merged bytes moved delta_br "
+            f"{merged_metrics.get('delta_br')} against the adapter curve's "
+            f"{winner['delta_br']} (ratio {ratio}). Rank with it, but screen the MERGED "
+            f'artifact before calling anything removed.')
     revert = merged.get('revert_sidecar')
     if args.keep_merged:
         report['next'] = [
