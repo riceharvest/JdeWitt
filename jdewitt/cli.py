@@ -131,6 +131,11 @@ def build_parser():
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
     vremap=sub.add_parser('vocab-remap',help='Denial-word table resolved to ids/splits per GGUF tokenizer (--list); no model loads')
     vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
+    vremap.add_argument('--dry-run',action='store_true',help='Plan per-step suppression/forced replacement over probes with a live llama-server /tokenize; audits declining base answers')
+    vremap.add_argument('--suite',type=Path,help='Probe JSONL for --dry-run (one row per line with id and prompt)')
+    vremap.add_argument('--probes',type=Path,help='Directory of probe JSONL files for --dry-run')
+    vremap.add_argument('--base-answers',type=Path,action='append',default=[],help='Prediction JSONL to audit for coverage (repeatable; default is the in-clone base waves)')
+    vremap.add_argument('--port',type=int,action='append',default=[],help='llama-server port, paired with each --artifact in order')
     vremap.add_argument('--table',type=Path,help='Table JSON override; default is the packaged assets/vocab-remap-denial.json')
     vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
     vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
@@ -773,8 +778,15 @@ def main():
             from .architectures import architecture_catalog
             result=architecture_catalog()
         elif args.command=='vocab-remap':
-            from .vocabremap import vocab_remap_list
-            result=vocab_remap_list(table=args.table,artifacts=args.artifact,list_mode=args.list,json_out=args.json)
+            if args.dry_run:
+                from .vocabremap import vocab_remap_dry_run
+                result=vocab_remap_dry_run(table=args.table,suite=args.suite,probes=args.probes,
+                                           artifacts=args.artifact,ports=args.port,json_out=args.json,
+                                           base_answers=args.base_answers or None)
+                exit_code=0 if not result['rules_that_can_never_fire'] else 1
+            else:
+                from .vocabremap import vocab_remap_list
+                result=vocab_remap_list(table=args.table,artifacts=args.artifact,list_mode=args.list,json_out=args.json)
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)
