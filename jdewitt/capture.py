@@ -42,7 +42,7 @@ from torch import nn
 
 from .answers import atomic_json
 from .chat import render_chat
-from .refusal_shape import classify
+from .refusal_shape import classify, screen_short
 
 LOCI = ("answer", "last-prompt", "first-answer")
 DEFAULT_KINDS = ("refusal", "harmless")
@@ -170,28 +170,103 @@ def _hook_factory(width, position, span_end):
     return hook
 
 
+def _settle_criteria(tokenizer, prompt_length, min_tokens, every=8):
+    """Stop decoding once the prefix is a self-declination (cert mode).
+
+    The label only needs the prefix: a refusal opener does not turn into delivery
+    by adding tokens. Settling on the OPENER / embedded first-person decline form
+    -- the cert-mode settle, never a topical word -- keeps this exact: a delivered
+    answer that merely contains 'illegal' is not cut short, and a seeded
+    'Sure, here is how: I cannot ...' is. Rows that do not settle keep decoding
+    to the full budget, so a procedure is never mistaken for a refusal.
+    """
+    from transformers import StoppingCriteria
+
+    class Settle(StoppingCriteria):
+        def __init__(self):
+            self.steps = 0
+            self.settled_at = None
+
+        def __call__(self, input_ids, scores, **kwargs):
+            self.steps += 1
+            generated = int(input_ids.shape[1]) - prompt_length
+            if generated < min_tokens or self.steps % every:
+                return False
+            text = tokenizer.decode(input_ids[0, prompt_length:], skip_special_tokens=True)
+            if screen_short(text, 'cert') == 'refusal':
+                self.settled_at = generated
+                return True
+            return False
+
+    return Settle()
+
+
+def read_answers(path):
+    """{row id: answer text} from a banked wave or any jsonl carrying id+answer."""
+    answers = {}
+    for number, line in enumerate(Path(path).read_text().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f'{path}:{number} is not JSON: {error}') from error
+        answer, row_id = row.get('answer'), row.get('id')
+        if answer is None or row_id is None:
+            continue
+        answers[row_id] = answer
+    if not answers:
+        raise ValueError(f'{path} carries no id+answer rows; pass a predictions.jsonl from '
+                         f'a wave over this same model')
+    return answers
+
+
 def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
-                ctx_size, system, raw, device):
-    """Generate one row and return (meta, [L, W]) or (None, discard reason)."""
+                ctx_size, system, raw, device, settle=True, settle_min_tokens=24,
+                answer_text=None):
+    """Generate one row (or reuse a banked answer) and return (meta, [L, W]).
+
+    ``answer_text`` is the zero-output-token path: when a wave has already
+    generated this row against this same model, the answer is scored by
+    re-tokenizing the prompt plus that text, so the only cost is one prefill.
+    """
     text, rendered = render_prompt(tokenizer, row["prompt"], system, raw)
     ids = tokenizer(text, return_tensors="pt", add_special_tokens=False)["input_ids"]
     prompt_tokens = int(ids.shape[1])
     if prompt_tokens + max_tokens + 1 > ctx_size:
         return None, {"reason": "prompt_plus_budget_exceeds_ctx", "prompt_tokens": prompt_tokens}
     pad = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else tokenizer.eos_token_id
-    with torch.inference_mode():
-        sequence = model.generate(
-            ids.to(device),
-            attention_mask=torch.ones_like(ids, device=device),
-            max_new_tokens=max_tokens, do_sample=False,
-            pad_token_id=pad if type(pad) is int else None)
-    generated = sequence[0, prompt_tokens:].tolist()
-    eos = model.generation_config.eos_token_id
-    eos = list(eos) if isinstance(eos, (list, tuple)) else [eos]
-    stop = next((index for index, token in enumerate(generated) if token in eos), None)
-    complete = stop is not None
-    generated = generated[: stop + 1] if complete else generated
-    answer_ids = generated[:-1] if complete else generated
+    settled_at = None
+    stopped = False
+    if answer_text is not None:
+        answer_ids = tokenizer(answer_text, add_special_tokens=False)["input_ids"]
+        if not answer_ids:
+            return None, {"reason": "banked_answer_empty"}
+        sequence = torch.cat([ids, torch.tensor([answer_ids], dtype=ids.dtype)], dim=1).to(device)
+        source = "banked"
+    else:
+        criteria = None
+        if settle:
+            from transformers import StoppingCriteriaList
+            criteria = StoppingCriteriaList([_settle_criteria(tokenizer, prompt_tokens, settle_min_tokens)])
+        with torch.inference_mode():
+            sequence = model.generate(
+                ids.to(device),
+                attention_mask=torch.ones_like(ids, device=device),
+                max_new_tokens=max_tokens, do_sample=False,
+                pad_token_id=pad if type(pad) is int else None,
+                stopping_criteria=criteria)
+        settled_at = criteria[0].settled_at if criteria is not None else None
+        generated = sequence[0, prompt_tokens:].tolist()
+        eos = model.generation_config.eos_token_id
+        eos = list(eos) if isinstance(eos, (list, tuple)) else [eos]
+        stop = next((index for index, token in enumerate(generated) if token in eos), None)
+        stopped = stop is not None
+        generated = generated[: stop + 1] if stopped else generated
+        answer_ids = generated[:-1] if stopped else generated
+        source = "generated"
+    complete = True if source == "banked" else (stopped or settled_at is not None)
     answer = tokenizer.decode(answer_ids, skip_special_tokens=True)
     if not answer_ids:
         return None, {"reason": "empty_answer"}
@@ -222,10 +297,12 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
     meta = {"id": row.get("id"), "label": label, "kind": row["kind"],
             "shape": shape["shape"], "declining": bool(shape["declining"]),
             "chars": len(answer), "answer_tokens": len(answer_ids),
+            "settled_at": settled_at,
             "prompt_tokens": prompt_tokens, "family_id": row.get("family_id"),
             "category": row.get("category"), "language": row.get("language"),
-            "rendered": rendered, "complete": complete, "locus": locus,
-            "answer_excerpt": answer[:400]}
+            "rendered": rendered, "prompt_text": text, "complete": complete,
+            "locus": locus, "answer_source": source,
+            "answer": answer}
     return (meta, residual), None
 
 
@@ -300,12 +377,17 @@ def capture_command(args):
 
     records, discarded, labels = [], {}, {}
     tokens = {"prompt": 0, "answer": 0}
+    settled = 0
+    reused = 0
+    answers = read_answers(args.answers) if args.answers else {}
     for row in rows:
         try:
             captured, reason = capture_one(
                 model, tokenizer, row, layers, width, locus=args.locus,
                 max_tokens=args.max_tokens, ctx_size=args.ctx_size,
-                system=args.system, raw=args.raw_prompt, device=device)
+                system=args.system, raw=args.raw_prompt, device=device,
+                settle=args.settle, settle_min_tokens=args.settle_min_tokens,
+                answer_text=answers.get(row.get("id")))
         except (ValueError, RuntimeError) as error:
             discarded[str(error)[:200]] = discarded.get(str(error)[:200], 0) + 1
             continue
@@ -317,7 +399,11 @@ def capture_command(args):
         records.append((meta, residual))
         labels[meta["label"]] = labels.get(meta["label"], 0) + 1
         tokens["prompt"] += meta["prompt_tokens"]
-        tokens["answer"] += meta["answer_tokens"]
+        if meta.get("answer_source") == "banked":
+            reused += 1
+        else:
+            tokens["answer"] += meta["answer_tokens"]
+        settled += 1 if meta.get("settled_at") else 0
 
     bad, good = labels.get("bad", 0), labels.get("good", 0)
     out = Path(args.out)
@@ -339,6 +425,16 @@ def capture_command(args):
         "rows_read": len(rows), "records_written": len(records),
         "labels": labels, "filtered_kinds": filtered, "discarded": discarded,
         "tokens": tokens, "elapsed_s": round(time.monotonic() - t0, 1),
+        "settling": {
+            "enabled": bool(args.settle), "min_tokens": args.settle_min_tokens,
+            "rows_settled": settled,
+            "note": "a settled row stops at the first explicit self-declination (cert-mode "
+                    "settle), so its answer span IS the refusal span; rows that do not settle "
+                    "decode to the full budget, so a procedure is never cut short",
+        },
+        "answers_reused": reused,
+        "answers_reused_note": (f"{reused} row(s) took their answer from --answers and cost ZERO "
+                                f"output tokens (prefill only); rows not found there were generated"),
         "target_suffixes": suffix_counts,
         "fit_usable": False,
         "next": [],

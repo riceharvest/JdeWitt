@@ -150,7 +150,7 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
     because the artifact is quantized in place and never re-quantized as a whole.
     """
     from .gguf_adapters import gguf_weight_shapes, resolve_gguf_names
-    from .ggufio import dequantize_tensor, edit_tensors, edit_tensors_inplace
+    from .ggufio import dequantize_tensor, edit_tensors, project_tensors_inplace
 
     t0 = time.monotonic()
     shapes = gguf_weight_shapes(gguf_in)
@@ -164,11 +164,11 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
     if not names:
         raise SystemExit("no target tensors resolved from source keys")
 
+    projections = {}
     deltas = {}
     skipped = []
     for key, base in names.items():
         layer = int([p for p in key.split(".") if p.isdigit()][0])
-        w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
         axis = axes[layer]
         # A zero-length axis means 'do not touch this layer'. Skipping it is not
         # an optimisation: an identity delta still goes through dequant-requant,
@@ -178,12 +178,22 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         if float(axis.norm()) == 0.0:
             skipped.append(f'{base}:zero-axis')
             continue
-        # dequantize_tensor hands back the torch layout [out, in]; gguf stores
-        # it reversed, which is why an 'in'-space axis has to be applied to w.T.
-        want = w.shape[0] if axis_space == 'output' else w.shape[1]
+        dims = shapes.get(base)
+        if dims is None or len(dims) != 2:
+            skipped.append(f'{base}:not-a-2d-weight')
+            continue
+        # gguf shape is (in, out); the axis lives on the side the caller declared,
+        # and checking it here means a wrong side is refused before any byte moves.
+        want = int(dims[1]) if axis_space == 'output' else int(dims[0])
         if want != axis.shape[0]:
             skipped.append(f'{base}:axis-dim-{axis.shape[0]}-want-{want}')
             continue
+        if in_place:
+            # The in-place writer computes the delta from the weight it is already
+            # dequantizing, so the axis is the only thing that crosses over.
+            projections[base] = (axis.detach().cpu().numpy().astype(np.float32), axis_space)
+            continue
+        w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
         a = axis.reshape(-1, 1).numpy()
         if axis_space == "output":
             # axis lives in the space W writes into (the residual stream):
@@ -194,11 +204,13 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         else:
             wt = w.T
             deltas[base] = -(scale * (a @ (a.T @ wt))).T.astype(np.float32)
+        del w
     if in_place:
         # One file, byte-level: the artifact keeps its quantization, its size and
         # every offset it had; only the changed tiles move, and the sidecar keeps
         # the pre-patch bytes so this is reversible.
-        report = edit_tensors_inplace(gguf_in, deltas, revert_path=str(gguf_in) + '.revert.npz')
+        report = project_tensors_inplace(gguf_in, projections, scale=scale,
+                                         revert_path=str(gguf_in) + '.revert.npz')
     else:
         report = edit_tensors(gguf_in, gguf_out, deltas)
     report["skipped"] = skipped

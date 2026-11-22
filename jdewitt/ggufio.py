@@ -143,52 +143,109 @@ def edit_tensors_inplace(path, deltas, revert_path=None):
     sidecar, and a crash mid-patch then leaves a partly edited artifact with no
     way back.
     """
+    return _patch_inplace(path, deltas, revert_path=revert_path)
+
+
+def project_tensors_inplace(path, projections, scale=1.0, revert_path=None):
+    """The same patch, but the delta is computed from the weights being edited.
+
+    projections maps a tensor name to ``(axis, space)``: ``axis`` is the fitted
+    direction and ``space`` is ``output`` (the axis lives in the dimension W
+    writes into; dW = -s u (u^T W)) or ``input`` (it lives on the module input).
+    Computing the delta from the tensor the loop already dequantized is the
+    difference between one dequant pass and two over the whole model: on a 1.1 GB
+    Q4_K_M that was half the wall clock, and it is why the arm a search picks can
+    be merged once instead of screened by building full artifacts.
+    """
+    return _patch_inplace(path, projections, revert_path=revert_path, scale=scale)
+
+
+def _patch_inplace(path, edits, revert_path=None, scale=1.0):
+    """One writer for both forms: {name: float32 delta} or {name: (axis, space)}."""
     from gguf import GGUFReader
     path = Path(path)
     if not path.is_file():
         raise ValueError(f'{path} does not exist')
-    plans = _plan(GGUFReader(str(path)), deltas)
+    reader = GGUFReader(str(path))
+    # Every operand is validated before the first byte is written: a shape or
+    # width mismatch discovered halfway leaves a half-edited model.
+    plans = []
+    for name, edit in edits.items():
+        tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+        if isinstance(edit, tuple):
+            axis, space = edit
+            axis = np.asarray(axis, dtype=np.float32).reshape(-1)
+            want = shape[0] if space == 'output' else shape[1]
+            if axis.shape[0] != want:
+                raise ValueError(f'axis for {name} is {axis.shape[0]}-wide, {space} space needs {want}')
+            if not np.isfinite(axis).all():
+                raise ValueError(f'axis for {name} contains NaN/Inf')
+            kind = ('project', axis, space)
+        else:
+            delta = np.asarray(edit, dtype=np.float32)
+            if delta.shape != shape:
+                raise ValueError(f'delta for {name} has shape {delta.shape}, tensor shape is {shape}')
+            if not np.isfinite(delta).all():
+                raise ValueError(f'delta for {name} contains NaN/Inf')
+            kind = ('delta', delta.reshape(-1), None)
+        if n != int(np.prod(shape)):
+            raise ValueError(f'tensor {name}: {n} values for shape {shape}')
+        plans.append((name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, kind))
     size_before = path.stat().st_size
     reports, originals, proofs = [], [], []
     with open(path, 'r+b') as f:
-        for name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta in plans:
+        for name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, kind in plans:
             nb = n // els
             blocks_per_tile = max(1, (1 << 24) // els)
-            changed_blocks, delta_sq, sum_sq, count, first = 0, 0.0, 0.0, 0, None
+            f.seek(offset)
+            raw = f.read(n_bytes)
+            if len(raw) != n_bytes:
+                raise ValueError(f'{name}: short read at byte {offset} (truncated artifact?)')
+            raw_u8 = np.frombuffer(raw, dtype=np.uint8)
+            mode, payload, space = kind
+            values = dequantize(raw_u8, n).astype(np.float32).reshape(shape)
+            if mode == 'delta':
+                edited = values + payload.reshape(shape)
+            elif space == 'output':
+                edited = values - scale * np.outer(payload, payload @ values)
+            else:
+                edited = values - scale * np.outer(values @ payload, payload)
+            if not np.isfinite(edited).all():
+                raise ValueError(f'edited tensor {name} contains NaN/Inf')
+            flat = np.ascontiguousarray(edited).reshape(-1)
+            new_raw = np.empty(n_bytes, dtype=np.uint8)
             for start in range(0, nb, blocks_per_tile):
                 tile = min(blocks_per_tile, nb - start)
                 byte0, byte1 = start * bs, (start + tile) * bs
-                f.seek(offset + byte0)
-                raw = f.read(byte1 - byte0)
-                if len(raw) != byte1 - byte0:
-                    raise ValueError(f'{name}: short read at byte {offset + byte0} (truncated artifact?)')
-                values = dequantize(np.frombuffer(raw, dtype=np.uint8), tile * els).reshape(-1)
-                piece_delta = delta[start * els:(start + tile) * els]
-                edited = values + piece_delta
-                if not np.isfinite(edited).all():
-                    raise ValueError(f'edited tensor {name} contains NaN/Inf')
-                piece = quantize(np.ascontiguousarray(edited))
+                piece = quantize(np.ascontiguousarray(flat[start * els:(start + tile) * els]))
                 if piece.size != byte1 - byte0:
                     raise ValueError(f'requantized {name}: block produced {piece.size} bytes, '
                                      f'expected {byte1 - byte0}')
-                mask = np.any(piece.reshape(tile, bs) != np.frombuffer(raw, np.uint8).reshape(tile, bs), axis=-1)
-                if mask.any():
-                    originals.append((offset + byte0, np.frombuffer(raw, np.uint8).copy()))
+                new_raw[byte0:byte1] = piece
+            moved = edited - values
+            sum_sq = float((values ** 2).sum())
+            rms = float(math.sqrt(float((moved ** 2).sum()) / n)) if n else 0.0
+            mean_sq = float(sum_sq / n) if n else 0.0
+            del values, edited, moved
+            changed = np.any(new_raw.reshape(nb, bs) != raw_u8.reshape(nb, bs), axis=-1)
+            changed_blocks = int(changed.sum())
+            first = None
+            if changed_blocks:
+                for start in range(0, nb, blocks_per_tile):
+                    tile = min(blocks_per_tile, nb - start)
+                    if not changed[start:start + tile].any():
+                        continue
+                    byte0, byte1 = start * bs, (start + tile) * bs
+                    originals.append((offset + byte0, raw_u8[byte0:byte1].copy()))
                     f.seek(offset + byte0)
-                    f.write(piece.tobytes())
-                    changed_blocks += int(mask.sum())
+                    f.write(new_raw[byte0:byte1].tobytes())
                     if first is None:
-                        first = (offset + byte0, piece.tobytes())
-                delta_sq += float((piece_delta ** 2).sum())
-                sum_sq += float((values ** 2).sum())
-                count += tile * els
-            if first is not None:
+                        first = (offset + byte0, new_raw[byte0:byte1].tobytes())
                 proofs.append((name, first))
-            rms = float(math.sqrt(delta_sq / count)) if count else 0.0
-            mean_sq = float(sum_sq / count) if count else 0.0
             reports.append({'tensor': name, 'dtype': dtype, 'blocks': int(nb),
                             'changed_blocks': changed_blocks, 'rms_delta': rms,
                             'relative_rms_delta': rms / mean_sq if mean_sq else 0.0})
+            del new_raw, raw, raw_u8
         f.flush()
         os.fsync(f.fileno())
     if path.stat().st_size != size_before:

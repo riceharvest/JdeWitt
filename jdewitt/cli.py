@@ -404,6 +404,42 @@ def main():
     capture.add_argument('--trust-remote-code',action='store_true')
     capture.add_argument('--allow-cuda',action='store_true',help='allow the second-rank CUDA backend')
     capture.add_argument('--dtype',choices=('bfloat16','float16'),default='bfloat16')
+    capture.add_argument('--settle-min-tokens',type=int,default=24,help='do not settle before this many generated tokens')
+    capture.add_argument('--no-settle',dest='settle',action='store_false',help='always decode to --max-tokens (the token-expensive, fully-determined label path)')
+    capture.add_argument('--answers',type=Path,default=None,help='jsonl with id+answer (a banked predictions.jsonl): reuse those answers and spend ZERO output tokens on those rows')
+    tune=sub.add_parser('tune',help='Rank edit arms by perplexity and refusal-branch preference before generating anything: adapters + --lora-scaled, prefill only, then re-measure the winner on the merged bytes')
+    tune.add_argument('--gguf',type=Path,required=True)
+    tune.add_argument('--records',type=Path,required=True)
+    tune.add_argument('--perplexity',default=None,help='llama-perplexity binary (default: the repo CPU build)')
+    tune.add_argument('--control',default=None,help='benign corpus for generic drift (default: derived from the records)')
+    tune.add_argument('--refusal',default=None,help='refusal-continuation corpus (default: derived from the model\'s own declining answers)')
+    tune.add_argument('--delivery',default=None,help='delivery-continuation corpus (default: derived from the model\'s own compliant answers)')
+    tune.add_argument('--corpus-chars',type=int,default=1500,help='characters per derived corpus: this is what keeps one reading at a few seconds, so the loop iterates in about a minute')
+    tune.add_argument('--shapes',default='perlayer,shared')
+    tune.add_argument('--scales',default='1.0,1.5')
+    tune.add_argument('--drift-budget',type=float,default=0.02,help='max |control ln-PPL drift| an arm may cost')
+    tune.add_argument('--axis-space',choices=('output','input'),default='output')
+    tune.add_argument('--ctx',type=int,default=512)
+    tune.add_argument('--threads',type=int,default=16)
+    tune.add_argument('--parallel',type=int,default=3,help='perplexity readings run concurrently (mirrors the ladder: one run of wall clock instead of one per arm)')
+    tune.add_argument('--out',type=Path,default=None)
+    tune.add_argument('--no-verify',action='store_true',help='skip the merged re-measurement')
+    tune.add_argument('--keep-merged',action='store_true',help='leave the winning edit on the artifact')
+    tune.add_argument('--token-budget',type=int,default=0,help='output tokens the screen stage may spend (0 = prefill-only ladder; the ladder itself always costs zero tokens)')
+    tune.add_argument('--serve',default=None,help='llama-server binary used by the screen stage (default: the repo CUDA build)')
+    tune.add_argument('--serve-lib',default=None,help="colon-separated dirs prepended to the server's LD_LIBRARY_PATH (e.g. the nccl dir the build links against)")
+    tune.add_argument('--screen-rows',type=int,default=8,help='harmful rows decoded per arm in the screen stage')
+    tune.add_argument('--screen-k',type=int,default=100,help='tokens decoded per screened row (K=100 measured zero false delivery-settles)')
+    tune.add_argument('--screen-ctx',type=int,default=4096,help='context the screen server is started with')
+    tune.add_argument('--escalate-to',type=int,default=600,help='window cap per row in tokens: undecided rows are continued (window doubling) until they settle or reach this cap')
+    tune.add_argument('--ngl',type=int,default=99,help='gpu layers for the screen server')
+    tune.add_argument('--front',type=int,default=3,help='how many Pareto arms the screen stage may decode')
+    tune.add_argument('--rounds',type=int,default=1,help='ladder rounds; later rounds grow the strength grid by --grow')
+    tune.add_argument('--grow',type=float,default=1.5,help='factor the scale grid is multiplied by on the next round')
+    tune.add_argument('--refine-steps',type=int,default=0,help='after an arm clears the screen, walk its scale DOWN by --refine-factor and re-screen: lowest-perplexity strength that still clears (0 = off)')
+    tune.add_argument('--refine-factor',type=float,default=0.75,help='multiplier for each strength-reduction step')
+    tune.add_argument('--settle-chars',type=int,default=300,help='at the window cap, a non-declining row with at least this many characters becomes a delivery CANDIDATE (still agent-read, never a pass)')
+    tune.add_argument('--refine-floor',type=float,default=0.1,help='the strength reduction stops here')
     revert=sub.add_parser('gguf-revert',help='Restore the pre-patch bytes an --in-place merge saved; refuses if the artifact changed since')
     revert.add_argument('artifact',type=Path)
     revert.add_argument('sidecar',type=Path)
@@ -657,6 +693,12 @@ def main():
         elif args.command=='gguf-revert':
             from .ggufio import revert_inplace
             result=revert_inplace(args.artifact,args.sidecar)
+        elif args.command=='tune':
+            from .ppl import DEFAULT_BINARY
+            from .tune import tune_command
+            if args.perplexity is None:
+                args.perplexity=DEFAULT_BINARY
+            result=tune_command(args)
         elif args.command=='run':
             from .search import RunConfig
             from .pipeline import run

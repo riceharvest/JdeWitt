@@ -151,7 +151,15 @@ hand-typed tensor name. `spanfit build --in-place` then edits the quantized GGUF
 you already serve: same file, same size, same offsets, only the changed tiles
 written, pre-patch bytes kept in a sidecar so `gguf-revert` puts the model back
 exactly. Nothing is re-quantized to get an edit, because the artifact was
-already the artifact.
+already the artifact. `tune` then answers which edit to ship by alternating two
+costs rather than guessing at one: a shape × strength ladder is scored by
+perplexity with the arm as a LoRA adapter, so the whole ladder generates ZERO
+tokens, and only the least-damaging arms that still move the refusal branch are
+decoded — short windows, doubled only on rows that stay undecided, until the
+weakest clearing strength is found and re-measured on the merged bytes. Measured
+on a 1.7B Q4_K_M: 38 labelled rows, three probe corpora derived from the model's
+own answers, three shapes of strength, 1,940 generated tokens and 70 s for a
+full pick.
 
 Search inside, train inside, judge inside: `auto` selects the best
 measured candidate under one explicit trial budget; `train` runs local

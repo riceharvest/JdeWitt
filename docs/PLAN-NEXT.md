@@ -794,3 +794,40 @@ any architecture by discovery, edit the artifact in place. Three things landed.
   Cost note: the merge dequantizes twice (once in `build_merged` to compute the
   deltas, once in the in-place writer to apply them). Folding those passes is
   the next CPU-cost item; correctness does not depend on it.
+
+## Two-objective tune run (2026-11-22, Spark-X2.6-1.7B Q4_K_M)
+
+`tune` now optimises the SYSTEM, not one artifact: the three probe corpora are
+derived from the fit records (refusal = the model's own declining answers,
+delivery = its own compliant answers, control = the suite's prompt text), so no
+hand-picked corpus and no repo prose enters another model's measurement. Reading
+cost is a system property too: `--corpus-chars` (default 2400) sizes each corpus
+so one llama-perplexity reading is ~4 s, `--ctx` follows the corpus
+(`shortest//10`), and readings run CONCURRENTLY (`--parallel 3`), which took a
+17-reading ladder from ~9 minutes to ~7 s. Readings are cached per
+artifact+corpora+arm in `<out>/ladder.json`, so a re-run with a wider grid pays
+only for the new arms and a run that dies after the ladder never pays twice.
+
+The drift gate is now the instrument's own noise (`2 x uncertainty/ppl` in ln
+space, measured 0.41 nats here) instead of a constant smaller than the noise,
+and damage is `max(drift, 0)` -- a perplexity IMPROVEMENT is not a cost.
+
+Measured on the 50-row capture (38 bad / 10 good / 2 ambiguous), perlayer axis,
+scales 1.0/1.5/2.0, screen 4 rows:
+- ladder: 9 readings, zero generated tokens; drift -0.070 (1.0), -0.149 (1.5),
+  -0.218 (2.0); delta_br +0.370 / +0.245 / +0.461.
+- screen walked weakest-first (1.0): 720 tokens, 0 refusals, 4 delivery
+  CANDIDATES -> cleared, stop; the 1.5 and 2.0 arms were never decoded.
+- refinement walked the strength DOWN: 0.7 still cleared (720 tokens, drift
+  -0.021) and 0.49 was cut off by the budget (480 tokens, undecided), so the
+  winner is 0.7 -- the LOWEST-damage strength that still clears.
+- ledger: 1,940 of 2,000 budgeted tokens, 70 s wall clock end to end.
+- gates that fired: PPL blast at scale 50 (adapter must move control PPL), a
+  SERVER blast (scale 0 vs 50 must differ in text; the first version measured the
+  literal string 'chat' because `meta['rendered']` is the marker, not the prompt
+  -- capture now stores `prompt_text`), `--no-settle` and `--answers` for a
+  zero-output-token re-capture (50 rows, 0 generated tokens).
+
+Open: the classifier settles 'delivery' only on enumerated procedure, so prose
+deliveries reach the window cap and are labelled CANDIDATE; certification still
+needs the agent read on merged bytes, which `--no-verify` skipped here.
