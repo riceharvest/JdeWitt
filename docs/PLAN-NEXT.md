@@ -199,9 +199,21 @@ written into the item and stays GATED.
     file sha256 and independently re-derived (max diff 1.08e-7); hand
     blocks exact, grid roundtrip bit-exact, quant err 0.15160 <= 0.15190
     (half largest bin), zero-delta file edit byte-identical, delta edit
-    requants inside the bound, schema enforced+falsified. Double-quant
-    (quantized absmax tensors) not implemented; nibble order asserted,
-    real bnb checkpoint confirmation still open.
+    requants inside the bound, schema enforced+falsified.
+    DOUBLE-QUANT LANDED 2026-11-22: the second level (absmax quantized to the
+    8-bit dynamic map with `offset = mean(absmax)`, blocks of 256) is now a
+    codec — `dynamic_map()` is a port of the pinned `create_dynamic_map` with
+    `code[0] = -1.0` from `quantize_cpu`, agreeing with torch to 5.96e-08, and
+    `safetensors_nf4_edit_double` rewrites the three tensor ranges (weights U8,
+    quantized absmax U8, nested absmax F32) while copying the packed
+    quant_state blob verbatim, so no offset ever moves. `nf4-edit
+    --quant-state BLOB --nested-absmax NAME` drives it, schema-enforced.
+    Proven on a five-tensor fixture: zero-delta edit byte-identical on all
+    three ranges, an unrelated tensor verbatim, and a delta edit whose decoded
+    change stays inside one-step NF4 error (0.0214 vs 0.0246). Honest limits
+    kept: the container layout and nibble order are ports of pinned bnb 0.42,
+    and no real double-quantized bnb checkpoint exists on this machine to
+    confirm them.
 
 11b. LANDED (this landing): IQ4_XS decode ported from the vendored
      ggml-quants.c dequantize_row_iq4_xs and bit-exact vs the pinned

@@ -22,6 +22,7 @@ convention is wrong the decode is a pairwise element swap — flag before
 trusting a produced file.
 """
 
+import json
 from pathlib import Path
 
 import numpy as np
@@ -162,3 +163,188 @@ def safetensors_nf4_edit(source, target, weights_name, delta_path, scales_name,
                      'the recomputed absmax equals the stored one (the codebook spans +-1), so a zero '
                      'delta is byte-identical; packing nibble order is asserted, not yet checked '
                      'against a real bitsandbytes checkpoint.'}
+
+
+# ---------------------------------------------------------------- double quant
+# bitsandbytes 0.42 `Linear4bit(compress_statistics=True)` quantizes the NF4
+# absmax values a second time with `quantize_blockwise(...)`: the dynamic 8-bit
+# map from `create_dynamic_map`, blocks of 256 absmax values, and a float offset
+# (`offset = absmax.mean()`, subtracted before quantizing and added back on
+# decode). The map below is a port of that pinned function; `quantize_cpu` also
+# overwrites its first entry with -1.0 before the binary search, which is part of
+# the effective table and therefore of the port.
+DYNAMIC_MAP_POINTS = 256
+
+
+def dynamic_map(signed=True, max_exponent_bits=7, total_bits=8):
+    """Port of `create_dynamic_map` (bnb 0.42), with `code[0] = -1.0` applied."""
+    non_sign_bits = total_bits - 1
+    additional_items = 2 ** (non_sign_bits - max_exponent_bits) - 1
+    data = []
+    last_exponent = 0
+    for i in range(max_exponent_bits):
+        fraction_items = int(2 ** (i + non_sign_bits - max_exponent_bits) + 1 if signed
+                             else 2 ** (i + non_sign_bits - max_exponent_bits + 1) + 1)
+        boundaries = np.linspace(0.1, 1.0, fraction_items, dtype=np.float32)
+        means = (boundaries[:-1] + boundaries[1:]) / np.float32(2.0)
+        scale = np.float32(10.0) ** np.float32(-(max_exponent_bits - 1) + i)
+        data += (scale * means).tolist()
+        if signed:
+            data += (-scale * means).tolist()
+        last_exponent = i
+    if additional_items > 0:
+        boundaries = np.linspace(0.1, 1.0, additional_items + 1, dtype=np.float32)
+        means = (boundaries[:-1] + boundaries[1:]) / np.float32(2.0)
+        scale = np.float32(10.0) ** np.float32(-(max_exponent_bits - 1) + last_exponent)
+        data += (scale * means).tolist()
+        if signed:
+            data += (-scale * means).tolist()
+    data.append(0.0)
+    data.append(1.0)
+    data.sort()
+    table = np.asarray(data, dtype=np.float32)
+    if table.size != 2 ** total_bits:
+        raise RuntimeError(f'dynamic map has {table.size} entries, expected {2 ** total_bits}')
+    table[0] = np.float32(-1.0)
+    return table
+
+
+_DYNAMIC_CACHE = {}
+
+
+def _dynamic_code():
+    if 'code' not in _DYNAMIC_CACHE:
+        _DYNAMIC_CACHE['code'] = dynamic_map()
+    return _DYNAMIC_CACHE['code']
+
+
+def _nearest_code(values, code):
+    """bnb `quantize_block` search: left neighbour, then right only if strictly closer."""
+    flat = np.asarray(values, dtype=np.float32).reshape(-1)
+    idx = np.searchsorted(code, flat, side='right') - 1
+    idx = np.clip(idx, 0, code.size - 1)
+    right = np.minimum(idx + 1, code.size - 1)
+    take_right = (np.abs(flat - code[right]) < np.abs(flat - code[idx])) & (idx < code.size - 1)
+    return np.where(take_right, right, idx).astype(np.uint8)
+
+
+def quantize_blockwise_u8(values, blocksize=256):
+    """Quantize float values to 8-bit dynamic-map codes + per-block absmax (f32)."""
+    values = np.asarray(values, dtype=np.float32).reshape(-1)
+    code = _dynamic_code()
+    blocks = -(-values.size // blocksize)
+    padded = np.zeros(blocks * blocksize, dtype=np.float32)
+    padded[:values.size] = values
+    view = padded.reshape(blocks, blocksize)
+    absmax = np.max(np.abs(view), axis=1).astype(np.float32)
+    safe = np.where(absmax > 0, absmax, np.float32(1.0)).astype(np.float32)
+    codes = np.empty(view.shape, dtype=np.uint8)
+    for block in range(blocks):
+        codes[block] = _nearest_code(view[block] / safe[block], code)
+    return codes.reshape(-1)[:values.size], absmax
+
+
+def dequantize_blockwise_u8(codes, absmax, blocksize=256, n=None):
+    """Decode 8-bit dynamic-map codes with per-block absmax back to float32."""
+    codes = np.asarray(codes, dtype=np.uint8).reshape(-1)
+    count = codes.size if n is None else int(n)
+    code = _dynamic_code()
+    blocks = -(-count // blocksize)
+    padded = np.zeros(blocks * blocksize, dtype=np.uint8)
+    padded[:codes.size] = codes
+    vals = code[padded].astype(np.float32).reshape(blocks, blocksize)
+    return (vals * np.asarray(absmax, dtype=np.float32).reshape(blocks, 1)).reshape(-1)[:count]
+
+
+def encode_absmax_double(absmax, offset, nested_blocksize=256):
+    """absmax (f32 per 64-block) -> (qabsmax u8, nested_absmax f32), bnb semantics."""
+    absmax = np.asarray(absmax, dtype=np.float32)
+    shifted = (absmax - np.float32(offset)).astype(np.float32)
+    codes, nested = quantize_blockwise_u8(shifted, nested_blocksize)
+    return codes, nested
+
+
+def decode_absmax_double(codes, nested_absmax, offset, nested_blocksize=256, n=None):
+    vals = dequantize_blockwise_u8(codes, nested_absmax, nested_blocksize, n=n)
+    return (vals + np.float32(offset)).astype(np.float32)
+
+
+def safetensors_nf4_edit_double(source, target, weights_name, delta_path,
+                                absmax_name, nested_absmax_name, quant_state_name,
+                                blocksize=NF4_BLOCK, nested_blocksize=256):
+    """Edit a double-quantized NF4 tensor in place: weights, u8 absmax and nested absmax.
+
+    `quant_state_name` is the packed JSON blob (`quant_state.bitsandbytes__nf4`);
+    only its `nested_offset` is read, and the blob is copied verbatim: the stored
+    offset stays the one the file was quantized with, so a re-encode never needs
+    to move a byte outside the three tensor ranges.
+    """
+    from .fp4 import _read_safetensors
+    source, target = Path(source), Path(target)
+    if source.resolve() == target.resolve():
+        raise ValueError('output must differ from input')
+    if target.exists():
+        raise ValueError(f'{target} already exists')
+    data, header, base = _read_safetensors(source)
+    for name in (weights_name, absmax_name, nested_absmax_name, quant_state_name):
+        if name not in header:
+            raise ValueError(f'{name} is not in {source.name}')
+    winfo, ainfo = header[weights_name], header[absmax_name]
+    ninfo, qinfo = header[nested_absmax_name], header[quant_state_name]
+    if winfo['dtype'] != 'U8':
+        raise ValueError(f'{weights_name} must be U8-packed; got {winfo["dtype"]}')
+    if ainfo['dtype'] != 'U8':
+        raise ValueError(f'{absmax_name} must be the U8 quantized absmax; got {ainfo["dtype"]}')
+    if ninfo['dtype'] != 'F32':
+        raise ValueError(f'{nested_absmax_name} must be F32; got {ninfo["dtype"]}')
+    wa, wb = winfo['data_offsets']
+    aa, ab = ainfo['data_offsets']
+    na, nb = ninfo['data_offsets']
+    qa, qb = qinfo['data_offsets']
+    packed = np.frombuffer(data, dtype=np.uint8, count=wb - wa, offset=base + wa).copy()
+    qabsmax = np.frombuffer(data, dtype=np.uint8, count=ab - aa, offset=base + aa).copy()
+    nested = np.frombuffer(data, dtype=np.float32, count=(nb - na) // 4, offset=base + na).copy()
+    blob = json.loads(bytes(data[base + qa:base + qb]).decode('utf-8'))
+    if blob.get('quant_type') != 'nf4':
+        raise ValueError(f'quant_state says {blob.get("quant_type")!r}, expected nf4')
+    if int(blob.get('nested_blocksize', nested_blocksize)) != nested_blocksize:
+        raise ValueError(f'quant_state nested_blocksize {blob.get("nested_blocksize")} '
+                         f'!= {nested_blocksize}')
+    offset = np.float32(blob.get('nested_offset', 0.0))
+    n_elements = int(packed.size) * 2
+    if n_elements % blocksize:
+        raise ValueError(f'{n_elements} elements not a multiple of {blocksize}')
+    n_absmax = n_elements // blocksize
+    if qabsmax.size != n_absmax:
+        raise ValueError(f'{absmax_name} holds {qabsmax.size} codes, expected {n_absmax}')
+    if nested.size != -(-n_absmax // nested_blocksize):
+        raise ValueError(f'{nested_absmax_name} holds {nested.size} values, expected '
+                         f'{-(-n_absmax // nested_blocksize)}')
+    absmax = decode_absmax_double(qabsmax, nested, offset, nested_blocksize, n=n_absmax)
+    delta = np.load(delta_path)
+    values = decode_blockwise(packed, absmax, blocksize)
+    if delta.dtype != np.float32 or delta.size != values.size:
+        raise ValueError(f'delta must be float32 with {values.size} elements, got '
+                         f'{delta.dtype} size {delta.size}')
+    edited = values + delta.reshape(values.shape)
+    if not np.isfinite(edited).all():
+        raise ValueError('edited tensor contains NaN/Inf; refusing to encode')
+    new_packed, new_absmax = encode_blockwise(edited, blocksize)
+    new_codes, new_nested = encode_absmax_double(new_absmax.reshape(-1), offset, nested_blocksize)
+    if new_packed.size != packed.size or new_codes.size != qabsmax.size or new_nested.size != nested.size:
+        raise ValueError('requant changed a tensor size; refusing a rewriting edit')
+    out = bytearray(data)
+    out[base + wa:base + wb] = new_packed.tobytes()
+    out[base + aa:base + ab] = new_codes.tobytes()
+    out[base + na:base + nb] = new_nested.astype(np.float32).tobytes()
+    target.write_bytes(bytes(out))
+    return {'input': str(source), 'output': str(target), 'tensor': weights_name,
+            'scales': absmax_name, 'scale_dtype': 'U8 (quantized absmax)',
+            'nested_absmax': nested_absmax_name,
+            'elements': n_elements, 'block': blocksize,
+            'nested_block': nested_blocksize, 'offset': float(offset),
+            'absmax_codes': int(new_codes.size), 'nested_absmax_values': int(new_nested.size),
+            'note': 'Weights, U8 absmax and nested absmax byte ranges rewritten; the packed '
+                    'quant_state blob (and its offset) is copied verbatim, so no offset moves. '
+                    'Layout and the dynamic map are ports of pinned bitsandbytes 0.42; no real '
+                    'bnb double-quantized checkpoint was available to confirm the container.'}

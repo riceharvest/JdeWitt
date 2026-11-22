@@ -207,8 +207,11 @@ def main():
     nf4.add_argument('output',type=Path)
     nf4.add_argument('--weights',required=True,help='U8 packed tensor name (two 4-bit codes per byte)')
     nf4.add_argument('--delta',type=Path,required=True,help='float32 npy delta matching the unpacked tensor shape')
-    nf4.add_argument('--scales',required=True,help='F32 or F16 absmax tensor name (one per 64-element block)')
+    nf4.add_argument('--scales',help='F32 or F16 absmax tensor name (one per 64-element block); required unless --quant-state is given')
     nf4.add_argument('--blocksize',type=int,default=64)
+    nf4.add_argument('--quant-state',help='double-quantized: name of the packed quant_state.bitsandbytes__nf4 JSON blob; then --scales is the U8 quantized absmax and --nested-absmax the F32 nested absmax')
+    nf4.add_argument('--nested-absmax',help='double-quantized: F32 nested absmax tensor name')
+    nf4.add_argument('--nested-blocksize',type=int,default=256,help='double-quantized: block size of the absmax quantization (bnb default 256)')
     fp4=sub.add_parser('fp4-edit',help='Edit MXFP4/NVFP4 safetensors tensors via dequant->edit->requant; everything else byte-verbatim, no model')
     fp4.add_argument('input',type=Path)
     fp4.add_argument('output',type=Path)
@@ -627,8 +630,17 @@ def main():
             result=safetensors_fp8_edit(args.input,args.output,getattr(args,'format'),args.weights,args.delta,
                                         args.scales,args.scale_mode,args.axis)
         elif args.command=='nf4-edit':
-            from .nf4 import safetensors_nf4_edit
-            result=safetensors_nf4_edit(args.input,args.output,args.weights,args.delta,args.scales,args.blocksize)
+            from .nf4 import safetensors_nf4_edit, safetensors_nf4_edit_double
+            if args.quant_state:
+                if not args.nested_absmax:
+                    raise ValueError('--quant-state needs --nested-absmax (the F32 nested absmax tensor)')
+                result=safetensors_nf4_edit_double(args.input,args.output,args.weights,args.delta,
+                                                   args.scales,args.nested_absmax,args.quant_state,
+                                                   args.blocksize,args.nested_blocksize)
+            elif args.scales:
+                result=safetensors_nf4_edit(args.input,args.output,args.weights,args.delta,args.scales,args.blocksize)
+            else:
+                raise ValueError('nf4-edit needs --scales (single quant) or --quant-state + --nested-absmax (double quant)')
         elif args.command=='fp4-edit':
             from .fp4 import safetensors_fp4_edit
             if args.output.exists():
