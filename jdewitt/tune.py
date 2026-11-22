@@ -33,6 +33,8 @@ import time
 from pathlib import Path
 
 from .answers import atomic_json
+from .profiles import (build_profile, is_flat, layer_axis, profile_name, profiled_axes,
+                       self_check)
 from .ppl import ladder, ln, perplexity
 from .refusal_shape import screen_short
 
@@ -222,6 +224,58 @@ def _read_arch(gguf):
     return str(field.contents()) if field is not None else None
 
 
+def profile_specs(args):
+    """The profiles one run compares, flat first: [(kind, params)].
+
+    flat alone keeps today's ladder. Any other --profile ALSO runs flat and two
+    bell variants (half and double the width) at the SAME scales, so every
+    profile is measured like-for-like against the flat strength it replaces.
+    """
+    params = {'centre_fraction': args.profile_centre, 'width_fraction': args.profile_width,
+              'min_weight': args.profile_min, 'spec': args.profile_spec,
+              'mean': args.profile_mean}
+    if args.profile == 'flat':
+        return [('flat', params)]
+    return [('flat', params), (args.profile, params)] + [
+        ('bell', dict(params, width_fraction=round(args.profile_width * factor, 4)))
+        for factor in (0.5, 2.0)]
+
+
+def profile_comparison(arms):
+    """Per profile, like-for-like: drift_ln and delta_br at each (family, scale).
+
+    Keys inside a profile are `<shape|footprint>@<scale>`, the same on every
+    profile, so a bell and the flat strength it replaces read side by side.
+    `vs_flat` counts the pairs where the profile moved the branch at least as
+    far for no more drift (and strictly better on one).
+    """
+    out = {}
+    for arm in arms:
+        entry = out.setdefault(arm.get('profile', 'flat'), {'drift_ln': {}, 'delta_br': {}})
+        point = f"{arm.get('base_family', arm['family'])}@{arm['scale']}"
+        entry['drift_ln'][point] = arm.get('drift_ln')
+        entry['delta_br'][point] = arm.get('delta_br')
+    flat = out.get('flat')
+    for name, entry in out.items():
+        if name == 'flat' or flat is None:
+            continue
+        pairs = [(point, flat['drift_ln'].get(point), flat['delta_br'].get(point))
+                 for point in entry['drift_ln']]
+        pairs = [(entry['drift_ln'][point], entry['delta_br'][point], drift, delta)
+                 for point, drift, delta in pairs
+                 if None not in (drift, delta, entry['drift_ln'][point], entry['delta_br'][point])]
+        wins = [1 for drift, delta, flat_drift, flat_delta in pairs
+                if drift <= flat_drift and delta >= flat_delta
+                and (drift < flat_drift or delta > flat_delta)]
+        entry['vs_flat'] = {
+            'pairs': len(pairs), 'wins': len(wins),
+            'mean_delta_br_gain': (round(sum(d - fd for _, d, _, fd in pairs) / len(pairs), 4)
+                                   if pairs else None),
+            'mean_drift_ln_change': (round(sum(dr - fdr for dr, _, fdr, _ in pairs) / len(pairs), 4)
+                                     if pairs else None)}
+    return out
+
+
 def _arm_metrics(row, base):
     """Derived numbers for one arm, from its raw PPL readings."""
     control, refusal, delivery = row['ppl'].get('control'), row['ppl'].get('refusal'), row['ppl'].get('delivery')
@@ -405,6 +459,7 @@ def tune_command(args):
                 f'makes this model both decline harmful rows and comply with harmless ones '
                 f'(`fit_usable` in capture\'s report says whether it does).') from error
     width = int(next(iter(axes_by_shape.values())).shape[-1])
+    self_check()
 
     artifact_shapes = gguf_weight_shapes(args.gguf)
     discovered = discover_writeback_targets(artifact_shapes, width)
@@ -416,9 +471,19 @@ def tune_command(args):
     arch = _read_arch(args.gguf)
     first_layer, last_layer = covered[0], covered[-1]
     footprints = parse_footprints(args.footprints, first_layer, last_layer)
-    families = [{'shape': shape, 'layers': list(footprint),
-                 'key': f'{shape}|{footprint_label(footprint, first_layer, last_layer)}'}
-                for shape in shapes_requested for footprint in footprints]
+    families = []
+    for shape in shapes_requested:
+        for footprint in footprints:
+            base_key = f'{shape}|{footprint_label(footprint, first_layer, last_layer)}'
+            in_footprint = [layer for layer in covered if footprint[0] <= layer <= footprint[1]]
+            for kind, spec_params in profile_specs(args):
+                weights = build_profile(kind, in_footprint, spec_params)
+                name = profile_name(kind, spec_params, weights)
+                # flat keeps the bare family key: existing adapters and ladder caches stay valid
+                families.append({'shape': shape, 'layers': list(footprint),
+                                 'key': base_key if name == 'flat' else f'{base_key}|{name}',
+                                 'base_family': base_key, 'profile': name, 'weights': weights})
+    family_by_key = {family['key']: family for family in families}
 
     # One dequant pass over the artifact feeds every family's adapter. One reused
     # GGUFReader, not one per tensor: 48 fresh header parses cost ~400 s on the
@@ -432,6 +497,9 @@ def tune_command(args):
                     'families': [family['key'] for family in families],
                     'basis': basis, 'hf': str(args.hf) if args.hf else None,
                     'width': width, 'layers': len(covered), 'arch': arch}
+    if any(not is_flat(family['weights']) for family in families):
+        fit_identity['profile_weights'] = {family['key']: sorted(family['weights'].items())
+                                           for family in families}
     adapters_path = out_dir / 'adapters.json'
     adapters = {}
     primal, basis_counts = {}, {'primal': 0, 'artifact': 0}
@@ -474,6 +542,7 @@ def tune_command(args):
                     axis = axes_by_shape[family['shape']][layer]
                     if float(axis.norm()) == 0.0:
                         continue
+                    axis = layer_axis(axis, family['weights'][layer])
                     direction = axis if axis.dim() == 2 else axis.reshape(1, -1)
                     a, b = serve_factors(direction, weight, 1.0)
                     pairs[family['key']].append((name, a, b))
@@ -658,7 +727,9 @@ def tune_command(args):
             edits = {}
             for name in picks:
                 layer = int(name.split('.')[1])
-                edits[name] = (axes_by_shape[family['shape']][layer].numpy(), args.axis_space)
+                edits[name] = (layer_axis(axes_by_shape[family['shape']][layer],
+                                          family['weights'].get(layer, 1.0)).numpy(),
+                               args.axis_space)
             reading = preview_edit(args.gguf, edits, scale=scale,
                                    renormalize=args.renormalize, target_type=gate_type)
             cache[key] = reading
@@ -690,8 +761,11 @@ def tune_command(args):
         def measure_arm(family, scale, round_index=0):
             readings = fetch(arm_jobs(family, scale))
             row = {'shape': family['shape'], 'layers': list(family['layers']),
-                   'family': family['key'], 'scale': scale, 'round': round_index + 1,
-                   'ppl': {}}
+                   'family': family['key'], 'base_family': family['base_family'],
+                   'profile': family['profile'],
+                   'profile_weights': {str(layer): weight
+                                       for layer, weight in family['weights'].items()},
+                   'scale': scale, 'round': round_index + 1, 'ppl': {}}
             for label in corpora:
                 reading = readings.get(f"{family['key']}|{scale}|{label}") or {}
                 if 'ppl' in reading:
@@ -872,8 +946,7 @@ def tune_command(args):
                     break
                 if budget_left < len(screen_rows) * args.screen_k:
                     break
-                arm = measure_arm({'key': best['family'], 'shape': best['shape'],
-                                  'layers': best['layers']}, candidate_scale)
+                arm = measure_arm(family_by_key[best['family']], candidate_scale)
                 if arm is None:
                     break
                 arms.append(arm)
@@ -931,6 +1004,12 @@ def tune_command(args):
         'artifact': str(args.gguf), 'records': str(args.records), 'arch': arch,
         'width': width, 'layers_covered': len(covered), 'shapes': shapes_requested,
         'footprints': [list(item) for item in footprints],
+        'profile': args.profile, 'profile_mean': args.profile_mean,
+        'profiles': {family['key']: {'profile': family['profile'],
+                                     'weights': {str(layer): weight
+                                                 for layer, weight in family['weights'].items()}}
+                     for family in families},
+        'profile_comparison': profile_comparison(arms),
         'families': [family['key'] for family in families],
         'scales': scales, 'drift_budget': args.drift_budget,
         'drift_budget_used': drift_budget, 'drift_noise_ln': round(noise_ln, 4),
@@ -1026,9 +1105,13 @@ def tune_command(args):
         layers_flag = ''
         if arm is not None and arm['layers'] != [first_layer, last_layer]:
             layers_flag = f" --only-layers {arm['layers'][0]}-{arm['layers'][1]}"
-        return (f"python -m jdewitt.spanfit build --gguf-in {args.gguf} --in-place "
-                f"--records {args.records} --shape {arm['shape'] if arm else '<shape>'} "
-                f"--scale {arm['scale'] if arm else '<scale>'}{layers_flag} --gguf-targets auto")
+        command = (f"python -m jdewitt.spanfit build --gguf-in {args.gguf} --in-place "
+                   f"--records {args.records} --shape {arm['shape'] if arm else '<shape>'} "
+                   f"--scale {arm['scale'] if arm else '<scale>'}{layers_flag} --gguf-targets auto")
+        if arm is not None and arm.get('profile', 'flat') != 'flat':
+            command += (f"  # profile {arm['profile']} is not expressible here: "
+                        f"drop --no-verify and tune merges it itself")
+        return command
 
     def cert_steps(arm):
         """What turns this pick into a claim: the merge, then ONE cert wave.
@@ -1055,7 +1138,12 @@ def tune_command(args):
 
     # The axes are masked to the winning footprint: build_merged skips zero-norm
     # layers, so a footprint edit never touches bytes outside its own range.
-    winner_axes = axes_by_shape[winner['shape']].clone()
+    # The winner's profile is baked into the axes ONCE (d * sqrt(weight)), so the
+    # in-place patch, the 16-bit merge and the codec edit below all carry exactly
+    # the weights the adapter was ranked with. Flat returns the axes untouched.
+    winner_base = profiled_axes(axes_by_shape[winner['shape']],
+                                family_by_key[winner['family']]['weights'])
+    winner_axes = winner_base.clone()
     start, end = winner['layers']
     winner_axes[:start] = 0
     winner_axes[end + 1:] = 0
@@ -1072,7 +1160,7 @@ def tune_command(args):
         edits = {}
         for name in override_names:
             layer = int(name.split('.')[1])
-            edits[name] = (axes_by_shape[winner['shape']][layer].numpy(), args.axis_space)
+            edits[name] = (winner_base[layer].numpy(), args.axis_space)
         target_path = (args.out_gguf if args.out_gguf
                        else out_dir / f"edited-{winner['family'].replace('|', '-')}"
                                       f"@{winner['scale']}-{Path(args.gguf).name}")
@@ -1132,7 +1220,7 @@ def tune_command(args):
         edits = {}
         for name in sample:
             layer = int(name.split('.')[1])
-            edits[name] = (axes_by_shape[winner['shape']][layer].numpy(), args.axis_space)
+            edits[name] = (winner_base[layer].numpy(), args.axis_space)
         delivered = compare_edit(str(source), str(served_path), edits,
                                  renormalize=args.renormalize)
         served_ppl = {}
