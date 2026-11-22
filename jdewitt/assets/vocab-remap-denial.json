@@ -1,0 +1,186 @@
+{
+  "schema": "jdewitt.vocab-remap-denial/1",
+  "note": "Surfaces only: this file carries no token ids, because the split is a property of a tokenizer, not of the word. jdewitt vocab-remap --list resolves every form against each artifact vocabulary and reports the resulting ids. replacement stays null while this is an inventory: the field is reserved for the stage that fixes the surface to force, so no behavioural policy is smuggled in here.",
+  "entries": [
+    {
+      "id": "en-cannot",
+      "language": "en",
+      "form": "cannot",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Fused negative modal; the whole surface is one BPE word."
+    },
+    {
+      "id": "en-can-not",
+      "language": "en",
+      "form": "can not",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Spaced variant of the same denial; two words, so it resolves in prose context."
+    },
+    {
+      "id": "en-cant",
+      "language": "en",
+      "form": "can't",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Contraction; the clitic is a separate token in every tokenizer in the fixture set."
+    },
+    {
+      "id": "en-wont",
+      "language": "en",
+      "form": "won't",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Contraction of will not; 'won' and the clitic split differently from will not."
+    },
+    {
+      "id": "en-will-not",
+      "language": "en",
+      "form": "will not",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Uncontracted refusal of futurity; two words."
+    },
+    {
+      "id": "en-unable",
+      "language": "en",
+      "form": "unable",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Single-word capability denial; byte-level BPE may split un+able."
+    },
+    {
+      "id": "en-not-able",
+      "language": "en",
+      "form": "not able",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Spaced capability denial; two words."
+    },
+    {
+      "id": "en-im-sorry",
+      "language": "en",
+      "form": "I'm sorry",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Apology opener; the clitic and the word sorry are separate tokens."
+    },
+    {
+      "id": "en-i-am-sorry",
+      "language": "en",
+      "form": "I am sorry",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Uncontracted apology opener."
+    },
+    {
+      "id": "en-i-apologize",
+      "language": "en",
+      "form": "I apologize",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Explicit apology opener; the verb is a single token in all three tokenizers."
+    },
+    {
+      "id": "nl-kan-niet",
+      "language": "nl",
+      "form": "kan niet",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Dutch verb-final denial; two words."
+    },
+    {
+      "id": "nl-kan-ik-niet",
+      "language": "nl",
+      "form": "kan ik niet",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Dutch inverted first-person denial; three words with the subject between verb and negation."
+    },
+    {
+      "id": "nl-niet-mogelijk",
+      "language": "nl",
+      "form": "niet mogelijk",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Impersonal Dutch denial; two words."
+    },
+    {
+      "id": "nl-het-spijt-me",
+      "language": "nl",
+      "form": "het spijt me",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Dutch apology opener; spijt is split by both model tokenizers, so its ids matter."
+    },
+    {
+      "id": "nl-ik-kan-niet",
+      "language": "nl",
+      "form": "ik kan niet",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Dutch first-person refusal opener; the negation closes the clause."
+    },
+    {
+      "id": "de-kann-nicht",
+      "language": "de",
+      "form": "kann nicht",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "German verb-final denial; two words."
+    },
+    {
+      "id": "de-kann-ich-nicht",
+      "language": "de",
+      "form": "kann ich nicht",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "German inverted first-person denial; three words."
+    },
+    {
+      "id": "de-nicht-moeglich",
+      "language": "de",
+      "form": "nicht möglich",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Impersonal German denial; the umlaut is two UTF-8 bytes and therefore two byte-level symbols."
+    },
+    {
+      "id": "de-es-tut-mir-leid",
+      "language": "de",
+      "form": "es tut mir leid",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "German apology opener; leid merges differently across the two model tokenizers."
+    },
+    {
+      "id": "de-ich-kann-nicht",
+      "language": "de",
+      "form": "ich kann nicht",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "German first-person refusal opener; the negation closes the clause."
+    }
+  ]
+}

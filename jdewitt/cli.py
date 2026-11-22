@@ -129,6 +129,11 @@ def build_parser():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
+    vremap=sub.add_parser('vocab-remap',help='Denial-word table resolved to ids/splits per GGUF tokenizer (--list); no model loads')
+    vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
+    vremap.add_argument('--table',type=Path,help='Table JSON override; default is the packaged assets/vocab-remap-denial.json')
+    vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
+    vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -767,6 +772,9 @@ def main():
         elif args.command=='architectures':
             from .architectures import architecture_catalog
             result=architecture_catalog()
+        elif args.command=='vocab-remap':
+            from .vocabremap import vocab_remap_list
+            result=vocab_remap_list(table=args.table,artifacts=args.artifact,list_mode=args.list,json_out=args.json)
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)
