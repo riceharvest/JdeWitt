@@ -846,11 +846,12 @@ def verify_artifact_identity(port, artifact):
             'n_ctx': generation.get('n_ctx'), 'total_slots': props.get('total_slots')}
 
 
-def apply_chat_template(port, text):
+def apply_chat_template(port, text, template_kwargs=None):
     """Render the artifact's own chat template through the served runtime; never re-implement it here."""
-    response = _server_json(port, '/apply-template',
-                            {'messages': [{'role': 'user', 'content': text}],
-                             'add_generation_prompt': True})
+    payload = {'messages': [{'role': 'user', 'content': text}], 'add_generation_prompt': True}
+    if template_kwargs:
+        payload['chat_template_kwargs'] = template_kwargs
+    response = _server_json(port, '/apply-template', payload)
     prompt = response.get('prompt') if isinstance(response, dict) else None
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError('llama-server /apply-template returned no prompt; pass --template raw to decode the '
@@ -1179,10 +1180,12 @@ def _entry_counts(events):
 
 
 def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='on', max_tokens=40,
-                       serve=None, port=None, template='chat'):
+                       serve=None, port=None, template='chat', no_think=False):
     """Run the decode driver on one artifact: the same loop with bias (on) or without it (off)."""
     if remap not in ('on', 'off'):
         raise ValueError('--remap must be on or off')
+    if type(no_think) is not bool:
+        raise ValueError('--no-think must be a boolean')
     if artifact is None:
         raise ValueError('--remap needs exactly one --artifact GGUF (the artifact the server must be serving)')
     artifact = Path(artifact)
@@ -1196,6 +1199,8 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
         raise ValueError('--max-tokens must be a positive integer')
     if template not in ('chat', 'raw'):
         raise ValueError('--template must be chat or raw')
+    if no_think and template != 'chat':
+        raise ValueError('--no-think only applies to --template chat (raw prompts carry no chat template)')
     if serve is None and port is None:
         raise ValueError('--remap needs --serve PATH (start a CPU llama-server on the artifact) or --port N '
                          'for one already running')
@@ -1225,9 +1230,11 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
                              f'header does ({len(served_check["mismatches"])} of {served_check["contexts_checked"]} '
                              'contexts differ); a decode row here would describe a different tokenizer')
         entry_items = entry_sequences(entries, port, tokens)
+        template_kwargs = {'enable_thinking': False} if no_think and template == 'chat' else None
         rows = []
         for probe in probes:
-            prompt = apply_chat_template(port, probe['prompt']) if template == 'chat' else probe['prompt']
+            prompt = (apply_chat_template(port, probe['prompt'], template_kwargs)
+                      if template == 'chat' else probe['prompt'])
             rows.append(decode_row(port, tokens, entry_items, probe, prompt, max_tokens, remap, template))
     finally:
         if started is not None:
@@ -1298,7 +1305,8 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
                         '--template', template]
                        + (['--serve', Path(serve).name] if serve is not None else [])
                        + (['--port', str(port)] if serve is None else [])
-                       + (['--table', _portable_path(table)] if table is not None else []),
+                       + (['--table', _portable_path(table)] if table is not None else [])
+                       + (['--no-think'] if no_think else []),
         'claim': _opener_claim(claim_row, remap, tokens),
         'artifact': {'path': _portable_path(artifact), 'sha256': _sha256_file(artifact),
                      'bytes': artifact.stat().st_size, 'tokenizer': tokenizer['identity']},
@@ -1325,7 +1333,12 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
         'config': {'template': template, 'max_tokens': max_tokens, 'temperature': 0.0,
                    'cache_prompt': True, 'n_probs': 1, 'suppress_bias': SUPPRESS_BIAS,
                    'force_bias': FORCE_BIAS, 'resample_limit': RESAMPLE_LIMIT,
-                   'opener_window_tokens': OPENER_WINDOW_TOKENS},
+                   'opener_window_tokens': OPENER_WINDOW_TOKENS,
+                   'no_think': no_think,
+                   'no_think_note': ('the chat template is rendered with enable_thinking=false so the answer '
+                                     'starts at the opener instead of inside a reasoning block; only used for '
+                                     'artifacts whose template names that variable'
+                                     if no_think else 'the artifact chat template is rendered unmodified')},
         'rows_file': {'path': 'rows.jsonl', 'sha256': _sha256_file(rows_path), 'rows': len(rows)},
         'metrics': {'generated_tokens': generated, 'steps': sum(len(row['steps']) for row in rows),
                     'completion_requests': sum(row['completion_requests'] for row in rows),
@@ -1338,6 +1351,10 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
                                                        default=None),
                     'plain_wave_seconds': round(sum(row['plain']['seconds'] for row in rows), 3),
                     'retokenized_steps': sum(len(row['retokenized_steps']) for row in rows),
+                    'retokenized_note': ('a step whose re-sent text tokenized to a different id path than the tokens '
+                                         'already emitted. The bytes are unchanged (the model sees the same text a '
+                                         'text client would send), but the server re-tokenizes them; non-zero on '
+                                         'byte-level BPE over non-ASCII output (measured on German umlauts)'),
                     'prompt_origin_sequences_seen': sum(row['prompt_origin_completions'] for row in rows)},
         'gate': gate,
         'verdict': {'ok': ok, 'reason': verdict_reason},

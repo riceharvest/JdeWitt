@@ -144,6 +144,7 @@ def build_parser():
     vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
     vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
     vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
+    vremap.add_argument('--no-think',action='store_true',help='--remap chat template: render with enable_thinking=false (artifacts whose template names it; keeps the answer opener inside the cap)')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -815,7 +816,8 @@ def main():
                     raise ValueError('--remap needs exactly one --artifact GGUF')
                 result=vocab_remap_decode(table=args.table,artifact=args.artifact[0],suite=args.suite,out=args.out,
                                           remap=args.remap,max_tokens=args.max_tokens,serve=args.serve,
-                                          port=(args.port[0] if args.port else None),template=args.template)
+                                          port=(args.port[0] if args.port else None),template=args.template,
+                                          no_think=args.no_think)
                 exit_code=0 if result['verdict']['ok'] else 1
             elif args.dry_run:
                 from .vocabremap import vocab_remap_dry_run
