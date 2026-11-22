@@ -588,6 +588,24 @@ def release_certify(spec_path, out_path=None):
         configs[axis] = argv
         match[axis], _fields = _pinned_match(argv, pinned)
 
+    # What each axis was actually run at. The argv string is not always where the
+    # cap lives (llama-server takes it per request), so a matrix that only read the
+    # argv could not tell a row graded at 512 tokens from one at 4096. Recording
+    # suite rows and cap per axis makes "the suite was narrowed" and "the cap was
+    # lowered" checkable from the packet alone.
+    measured_axes = {}
+    for axis in ('removal', 'retention', 'held_out'):
+        wave = waves[axis]['wave']
+        cap = wave.get('max_tokens')
+        if not isinstance(cap, int):
+            cap = _argv_fields(wave.get('serve_config')).get('cap')
+        measured_axes[axis] = {
+            'rows': int(wave.get('rows') or len(waves[axis]['rows'])),
+            'cap': cap,
+            'suite': wave.get('suite'),
+            'serve_config': wave.get('serve_config'),
+        }
+
     arm = dict(spec['arm'])
     arm.setdefault('chosen_type', fidelity_block['chosen_type'])
     arm.setdefault('realized_cos', fidelity_block['min_cos'])
@@ -681,6 +699,7 @@ def release_certify(spec_path, out_path=None):
         'drift': drift_block,
         'realized_fidelity': fidelity_block,
         'configs': configs,
+        'measured_axes': measured_axes,
         'suites': suites,
         'pinned_cert_argv': spec['pinned_cert_argv'],
         'pinned_cert': pinned,

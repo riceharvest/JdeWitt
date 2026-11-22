@@ -126,6 +126,9 @@ EXPLAINER = {
     'CERTIFY_ARTIFACT_MISMATCH': {
         'meaning': 'A shape audit or artifact identity does not belong to the packet artifact (METHODOLOGY R8).',
         'agent_action': 'Re-audit the packet artifact or fix the recorded identity; an audit of another artifact is not evidence.'},
+    'MATRIX_MANIFEST_INVALID': {
+        'meaning': 'The release-matrix manifest cannot be counted: bad version/kind, a lineage registered twice, a missing registered floor, or a suite file shorter than the floor it registers.',
+        'agent_action': 'Fix the manifest field the message names; the matrix writes nothing on a bad manifest and no row is silently dropped.'},
 }
 
 
@@ -177,9 +180,24 @@ class CertifyRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class MatrixRefused(ValueError):
+    """The release matrix cannot be counted at all; ``code`` names the rule.
+
+    Row-level shortcuts (a narrowed suite, a lowered cap, a scale past the grid, a
+    head-to-head at two configs) are row statuses in the emitted matrix and exit
+    non-zero with the row named. This exception is for the manifest itself: when
+    the registration is contradictory there is no honest count to print, so
+    nothing is written.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
-    if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused)):
+    if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
+                             MatrixRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

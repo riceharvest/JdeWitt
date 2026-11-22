@@ -392,6 +392,10 @@ def build_parser():
     certify=sub.add_parser('release-certify',help='Assemble one Phase 7 certification packet per arm from saved waves; no model')
     certify.add_argument('--spec',type=Path,required=True,help='Spec naming the arm, artifact identity, serve argv per axis and evidence inputs')
     certify.add_argument('--out',type=Path,help='Write the packet JSON here as well as printing it')
+    matrix=sub.add_parser('release-matrix',help='Count registered lineages and their packets into one Phase 7 matrix; refuses a narrowed suite, a lowered cap, a scale past the grid and a two-config head-to-head; no model')
+    matrix.add_argument('--manifest',type=Path,required=True,help='Manifest registering each lineage: model and pinned revision, quant, base/artifact digests, packet, head-to-head side')
+    matrix.add_argument('--out',type=Path,help='Write the matrix JSON here as well as printing it')
+    matrix.add_argument('--table',type=Path,help='Write the human table (lineages, LOSSES, refusals) here')
     claimadd=sub.add_parser('claim-add',help='Append an evidence-backed claim to a release evidence ledger')
     claimadd.add_argument('directory',type=Path)
     claimadd.add_argument('--claim',required=True,help='What is asserted')
@@ -798,6 +802,9 @@ def main():
         elif args.command=='release-certify':
             from .certify import release_certify
             result=release_certify(args.spec,args.out)
+        elif args.command=='release-matrix':
+            from .matrix import release_matrix
+            result=release_matrix(args.manifest,args.out,args.table)
         elif args.command=='claim-add':
             from .release import add_claim
             result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity,args.successes,args.total)
@@ -982,6 +989,11 @@ def main():
         # a report: scripts and release gates must see a non-zero exit. The body is
         # still printed first (valid:false + the named problems).
         if args.command=='verify-artifact' and result.get('valid') is False:
+            raise SystemExit(1)
+        # a matrix row that narrowed its suite, lowered its cap or split a
+        # head-to-head across two configs is a refusal, not a report: the body is
+        # printed first (the offending row is named) and the exit is non-zero.
+        if args.command=='release-matrix' and result.get('valid') is False:
             raise SystemExit(1)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code

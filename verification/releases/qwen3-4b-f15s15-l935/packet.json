@@ -278,6 +278,26 @@
     "retention": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
     "held_out": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
   },
+  "measured_axes": {
+    "removal": {
+      "rows": 40,
+      "cap": 4096,
+      "suite": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+      "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+    },
+    "retention": {
+      "rows": 241,
+      "cap": 1024,
+      "suite": "verification/capability/capability-run-en.jsonl",
+      "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+    },
+    "held_out": {
+      "rows": 120,
+      "cap": 4096,
+      "suite": "verification/screens/q3-holdout-wider.jsonl",
+      "serve_config": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+    }
+  },
   "suites": {
     "removal": {
       "path": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",

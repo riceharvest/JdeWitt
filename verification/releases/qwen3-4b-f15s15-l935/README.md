@@ -75,3 +75,13 @@ artifact is rebuilt.
 
 `drift.json` is a provenance excerpt of
 `verification/ppl-probe/screen-2026-11-18.json` (`artifacts.f15s15.delta_control`).
+
+## What each axis was run at
+
+`measured_axes` records, per axis, the rows generated, the generation cap and the
+suite the wave actually covered (plus its `serve_config`). The argv string does
+not carry the cap — llama-server takes it per request — so without this block a
+matrix could not tell a row graded at 512 tokens from one at 4096, and could not
+refuse a narrowed suite from the packet alone. `jdewitt release-matrix` checks
+those numbers against the registered floors.
+
