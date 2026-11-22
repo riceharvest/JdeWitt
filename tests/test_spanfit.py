@@ -165,7 +165,8 @@ def test_build_merged_rewrites_targets_only(tmp_path):
                 keys[1]: 'blk.0.ffn_down.weight',
                 keys[2]: 'blk.1.attn_output.weight'}
     out = tmp_path / 'out.gguf'
-    rep = spanfit.build_merged(str(src), str(out), axes, keys, name_map=name_map)
+    rep = spanfit.build_merged(str(src), str(out), axes, keys, name_map=name_map,
+                               axis_space='output')
     assert rep['tensors_edited'] == 3
     for hf, base in name_map.items():
         L0 = int([p for p in hf.split('.') if p.isdigit()][0])
@@ -175,3 +176,29 @@ def test_build_merged_rewrites_targets_only(tmp_path):
         assert np.allclose(got, want, atol=1e-5), base
     assert np.allclose(dequantize_tensor(str(out), 'token_embd.weight'),
                        tensors['token_embd.weight'], atol=1e-6)
+
+
+def test_build_help_needs_no_numeric_stack(tmp_path):
+    """`python -m jdewitt.spanfit build --help` must answer without numpy/torch.
+
+    That is the card's verify command on a host whose `python` is not the
+    project venv, and it is the same reason scripts/merge_bench.py keeps its
+    heavy imports inside functions: the CLI surface is stdlib.
+    """
+    import subprocess
+    from pathlib import Path
+    root = Path(spanfit.__file__).resolve().parents[1]
+    probe = tmp_path / 'probe.py'
+    probe.write_text(
+        "import importlib.abc, runpy, sys\n"
+        "class Block(importlib.abc.MetaPathFinder):\n"
+        "    def find_spec(self, name, path=None, target=None):\n"
+        "        if name.split('.')[0] in ('numpy', 'torch'):\n"
+        "            raise ModuleNotFoundError(name)\n"
+        "sys.meta_path.insert(0, Block())\n"
+        f"sys.path.insert(0, {str(root)!r})\n"
+        "sys.argv = ['jdewitt.spanfit', 'build', '--help']\n"
+        "runpy.run_module('jdewitt.spanfit', run_name='__main__')\n")
+    done = subprocess.run([sys.executable, str(probe)], capture_output=True, text=True)
+    assert done.returncode == 0, done.stderr
+    assert '--dequant-cache' in done.stdout

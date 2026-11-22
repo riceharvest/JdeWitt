@@ -13,7 +13,7 @@ argued against a guess.
 
 One command, one JSON: artifact sha before and after revert, tensors and
 changed blocks, per-arm dequant/apply/requant seconds, requant_share,
-projected_4_arm_s, records_sha256, and `next` (the P2b command).
+projected_4_arm_s, records_sha256, and `next` (the card this run hands to).
 
 How the split is measured. Production code has no timers, and this script does
 not add any: it runs build_merged in its own process and, for the duration of
@@ -46,13 +46,26 @@ ART_SHA256 = '80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad'
 
 # P2b (t_35cd0a5b) is the card this baseline unblocks: one dequant pass plus a
 # content-addressed base cache. Its gate command is printed in `next` so the
-# next agent starts from this JSON instead of from this docstring.
-NEXT_TEMPLATE = (
+# next agent starts from this JSON instead of from this docstring; a run that
+# already used the cache prints the card it hands to instead (P2c), because
+# re-printing its own command would be a loop.
+P2B_NEXT = (
     'python scripts/merge_bench.py --artifact {artifact} --axes {axes} '
     '--only-layers {only_layers} --arms 3 --cache /mnt/ssd/models/spark/p2/dequant '
     '--json-out verification/p2/bench-cache.json   # P2b (t_35cd0a5b): the same bench '
     'with a dequant cache; arms[1].dequant_s must read 0.0 and cache_hits==cache_misses==36'
 )
+P2C_NEXT = (
+    'ab show t_542ab2dc   # P2c: parallel requant across tensors. This file is the P2b '
+    'gate (arm 0 dequant > 0, arms 1+ dequant_s == 0.0, cache_hits == cache_misses == '
+    '{tensors}); requant_share above is why the 4-arm <3min gate (t_cf83773e) lives there'
+)
+
+
+def next_command(artifact: str, axes: str, only_layers: str, cached: bool, tensors: int) -> str:
+    if cached:
+        return P2C_NEXT.format(tensors=tensors)
+    return P2B_NEXT.format(artifact=artifact, axes=axes, only_layers=only_layers)
 
 
 def sha256_file(path) -> str:
@@ -146,18 +159,21 @@ def merge_targets(artifact: str, axes, only_layers: str | None) -> tuple[dict, l
     return name_map, sorted(targets)
 
 
-def run_arm(artifact: Path, axes, name_map: dict, scale: float, axis_space: str) -> dict:
+def run_arm(artifact: Path, axes, name_map: dict, scale: float, axis_space: str,
+            cache=None) -> dict:
     """Merge in place, revert, and prove the bytes came back; return one arm row."""
     from jdewitt.ggufio import revert_inplace
     from jdewitt.spanfit import build_merged
 
     before = sha256_file(artifact)
     clock = PhaseClock()
+    snap = cache.snapshot() if cache is not None else None
     saved = install_timed_codecs(clock)
     try:
         start = time.perf_counter()
         report = build_merged(str(artifact), str(artifact), axes, [], name_map=name_map,
-                              scale=scale, axis_space=axis_space, in_place=True)
+                              scale=scale, axis_space=axis_space, in_place=True,
+                              dequant_cache=cache)
         total_s = time.perf_counter() - start
     finally:
         restore_codecs(saved)
@@ -181,7 +197,24 @@ def run_arm(artifact: Path, axes, name_map: dict, scale: float, axis_space: str)
                 'revert_s': round(revert_s, 3),
                 'tiles_restored': int(revert.get('tiles_restored', 0)),
                 'artifact_sha_after_revert': after})
+    if snap is not None:
+        # Per-arm access counts: a warm arm must show hits == tensors and misses
+        # == 0, and dequant_s == 0.0 above proves no codec call was made.
+        row.update(cache.since(snap))
     return row
+
+
+def _purge_cache(root: Path) -> None:
+    """Drop previously cached bases so a bench run is cold on arm 0.
+
+    A benchmark's first arm is the dequant cost; a warm directory would report
+    0 misses and the run would no longer measure what it claims. Only the
+    hash-named .npy entries this cache writes are removed.
+    """
+    root.mkdir(parents=True, exist_ok=True)
+    for pattern in ('*.npy', '*.npy.tmp.npy'):
+        for path in root.glob(pattern):
+            path.unlink()
 
 
 def bench(args) -> tuple[dict, str]:
@@ -207,19 +240,46 @@ def bench(args) -> tuple[dict, str]:
     records = Path(args.records) if args.records else axes_path.with_name('records.pt')
     records_sha = sha256_file(records) if records.is_file() else None
 
+    import jdewitt
+    code_root = str(Path(jdewitt.__file__).resolve().parent)
+    print(f'code: {code_root}', flush=True)
+
     name_map, layer_ids = merge_targets(str(artifact), axes, args.only_layers)
     names = sorted(name_map)
     print(f'{len(names)} tensors over layers {layer_ids[0]}-{layer_ids[-1]}: '
           f'{names[0]} .. {names[-1]}', flush=True)
 
+    cache = None
+    if args.cache:
+        from jdewitt.ggufio import DequantBases
+        if not args.cache_keep:
+            _purge_cache(Path(args.cache))
+        cache = DequantBases(args.cache)
+        print(f'dequant cache {cache.root} ({"reused" if args.cache_keep else "purged"}): '
+              f'arm 0 misses, later arms hit', flush=True)
+
     arm_rows = []
     for index in range(args.arms):
-        row = run_arm(artifact, axes, name_map, args.scale, args.axis_space)
+        row = run_arm(artifact, axes, name_map, args.scale, args.axis_space, cache=cache)
         row['arm'] = index
+        if (index == 0 and cache is not None and not args.cache_keep
+                and row.get('cache_hits')):
+            # A purged directory cannot serve arm 0; if it did, something else
+            # wrote into --cache while this arm ran (the keys are content-based,
+            # so a concurrent run on the same weights lands on the same files).
+            # The dequant column then measures a warm cache, so refuse the run
+            # instead of publishing a number that is not dequant cost.
+            raise SystemExit(
+                f'arm 0 read {row["cache_hits"]} hit(s) from a purged cache directory '
+                f'{cache.root}: another process is writing the same content-addressed '
+                f'bases. Re-run with a private --cache directory (or wait for it to finish); '
+                f'dequant_s on this run is not the cold dequant cost.')
         arm_rows.append(row)
         print(f'arm {index}: dequant {row["dequant_s"]}s apply {row["apply_s"]}s '
               f'requant {row["requant_s"]}s total {row["total_s"]}s '
-              f'({row["changed_blocks_total"]} blocks) reverted in {row["revert_s"]}s', flush=True)
+              f'({row["changed_blocks_total"]} blocks, {row["dequantize_calls"]} dequant calls, '
+              f'{row.get("cache_hits", 0)} hits/{row.get("cache_misses", 0)} misses) '
+              f'reverted in {row["revert_s"]}s', flush=True)
 
     after = sha256_file(artifact)
     if after != before:
@@ -228,6 +288,8 @@ def bench(args) -> tuple[dict, str]:
     requant_s = sum(row['requant_s'] for row in arm_rows)
     total_s = sum(row['total_s'] for row in arm_rows)
     report = {
+        'code_root': code_root,
+        'provenance': args.provenance,
         'artifact': str(artifact),
         'artifact_bytes': artifact.stat().st_size,
         'artifact_sha_before': before,
@@ -250,9 +312,26 @@ def bench(args) -> tuple[dict, str]:
         'note': 'apply_s is total_s minus dequant_s and requant_s: projection arithmetic, '
                 'block-change detection, file I/O and the writer closing sha256. No model is '
                 'loaded and no server is started on this path.',
-        'next': NEXT_TEMPLATE.format(artifact=artifact, axes=axes_path,
-                                     only_layers=args.only_layers or '10-27'),
+        'next': next_command(str(artifact), str(axes_path), args.only_layers or '10-27',
+                             cache is not None, len(names)),
     }
+    if cache is not None:
+        # Distinct keys: each of the 36 tensor bases is a miss once and a hit on
+        # every later arm, so cache_hits == cache_misses == tensors. The *_accesses
+        # counters are the per-arm sums (arm 0: 36 misses, arms 1..: 36 hits each).
+        report.update({
+            'cache_dir': str(cache.root),
+            'cache_hits': len(cache.hit_keys),
+            'cache_misses': len(cache.miss_keys),
+            'cache_hit_accesses': cache.hits,
+            'cache_miss_accesses': cache.misses,
+            'cache_keys': len(cache.hit_keys | cache.miss_keys),
+            'cache_dequant_s': round(cache.dequant_seconds, 3),
+            'cache_note': 'cache_hits/cache_misses count distinct tensor keys: one cold miss '
+                          'per tensor on arm 0, then a hit on every later arm. '
+                          'cache_hit_accesses/cache_miss_accesses are the summed per-arm '
+                          'lookups, and each arm row carries its own counters.',
+        })
     text = json.dumps(report, indent=1) + '\n'
     if args.json_out:
         atomic_json(args.json_out, report)
@@ -274,6 +353,17 @@ def main(argv=None) -> int:
                                      'JSON); defaults to records.pt beside the axes file')
     ap.add_argument('--expected-sha', default=ART_SHA256,
                     help='refuse an artifact whose sha256 differs (default: the pinned spark quant)')
+    ap.add_argument('--provenance', metavar='TEXT',
+                    help='one line explaining where this artifact came from, carried into the '
+                         'JSON (e.g. "byte copy of the pinned bench.gguf: the shared path was being '
+                         'patched by another card in the same window")')
+    ap.add_argument('--cache', '--dequant-cache', dest='cache', metavar='DIR',
+                    help='content-addressed dequantized-base cache: arm 0 dequantizes and '
+                         'stores, later arms map the saved base and make zero dequantize calls '
+                         '(purged at the start unless --cache-keep)')
+    ap.add_argument('--cache-keep', action='store_true',
+                    help='reuse the cache directory instead of purging it (a warm first arm '
+                         'then reports 0 misses, so this is not the default)')
     ap.add_argument('--json-out', help='write the report here (atomic; one JSON)')
     args = ap.parse_args(argv)
     if args.arms < 1:

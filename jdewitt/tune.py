@@ -408,6 +408,17 @@ def blast_server(server, rows, adapter_id, k, reset):
     }
 
 
+def _dequant_cache(args):
+    """Merge cache setting: False disables; None lets build_merged default.
+
+    build_merged defaults to ``<artifact>.dequant/``, so repeated merged arms in
+    one tune run pay the dequant once. ``--no-dequant-cache`` opts out.
+    """
+    if getattr(args, 'no_dequant_cache', False):
+        return False
+    return getattr(args, 'dequant_cache', None)
+
+
 def tune_command(args):
     import torch
 
@@ -1337,7 +1348,8 @@ def tune_command(args):
         build = build_merged(str(source), str(edited_path), winner_axes, [],
                              name_map=name_map, scale=winner['scale'],
                              axis_space=args.axis_space, in_place=False,
-                             renormalize=args.renormalize)
+                             renormalize=args.renormalize,
+                             dequant_cache=_dequant_cache(args))
         override_names = [name for layer in range(start, end + 1)
                           for name in discovered['targets'].get(layer, [])]
         overrides = [f'{name}={args.edit_type}' for name in override_names]
@@ -1379,7 +1391,8 @@ def tune_command(args):
                           [], name_map={name: name for layer in covered
                                         for name in discovered['targets'][layer]},
                           scale=winner['scale'], axis_space=args.axis_space, in_place=True,
-                          renormalize=args.renormalize)
+                          renormalize=args.renormalize,
+                          dequant_cache=_dequant_cache(args))
     merged_ppl, merged_metrics = {}, {}
     for label, corpus in corpora.items():
         reading = perplexity(args.perplexity, args.gguf, corpus, ctx=args.ctx,
