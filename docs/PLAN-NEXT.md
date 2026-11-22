@@ -857,9 +857,16 @@ any architecture by discovery, edit the artifact in place. Three things landed.
   1.1 GB Q4_K_M: 56 tensors, 1,678,218 blocks changed, file size byte-identical
   before/after, sha changed then restored to the EXACT original by `gguf-revert`,
   sidecar 326 MB (deleted on revert), 1057 s on a loaded host.
-  Cost note: the merge dequantizes twice (once in `build_merged` to compute the
-  deltas, once in the in-place writer to apply them). Folding those passes is
-  the next CPU-cost item; correctness does not depend on it.
+  Cost note: the merge used to dequantize twice (once in `build_merged` to
+  compute the deltas, once in the in-place writer to apply them). Both paths now
+  hand `(axis, space)` to the writer and compute the delta from the tensor it is
+  already unpacking, and a content-addressed base cache
+  (`<artifact>.dequant/`, `DequantBases`) means a warm arm dequantizes nothing:
+  the key is sha256 of the tensor's raw block bytes + name + quant type, so an
+  in-place patch changes the key and a revert restores it. `--dequant-cache`
+  selects the directory (`--no-dequant-cache` disables it); `merge_bench --cache`
+  measures the warm arms. Correctness does not depend on it: the folded writer
+  emits the same bytes the precomputed-delta path did.
 
 ## Two-objective tune run (2026-11-22, Spark-X2.6-1.7B Q4_K_M)
 
