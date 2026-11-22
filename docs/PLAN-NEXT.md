@@ -1400,3 +1400,46 @@ into the merged field. The twin artifact stays outside the clone; the card
 carries its sha256. The twin record itself is committed at
 `verification/adapter-card/twin-spark-perlayer-10-27.json`, with a README that
 says which numbers were measured here and which are the quoted behaviour pair.
+
+### The release ships the edit, the twin and the plan card (2026-11-22)
+
+Phase 6's release bullet landed as one command:
+`release-assemble DIR --adapter A.gguf --twin MODEL-MERGED.gguf --plan P.tar
+--adapter-card adapter.json --evaluation EVAL.json --readme README.md`. The
+finished directory carries `adapter.gguf`, `model-merged.gguf`, `plan-card.tar`,
+`plan-card.json` (the bundle's manifest, so `verify-artifact --all` checks the
+card without unpacking a tar while `plan-unbundle plan-card.tar` still works),
+`adapter.json`, `twin.json`, `evaluation.json`, `README.md` and `files.json`.
+Copies go through `release.copy_independent`; `release_identity` is
+`digest({evaluation, readme})` exactly as `create_release` computes it; `files.json`
+is written last and the staging directory is renamed only after `verify_release`
+passes. `create_release`/`verify_release` are untouched.
+
+`twin.json` is the codec-realized record: artifact sha256 and bytes, architecture
+and per-tensor codec type read from the shipped GGUF, edited/untouched counts, the
+edit fingerprint, per-tensor delivered cos/SNR (copied from the adapter card, which
+names this artifact by sha256), and a `measurement_ledger` that labels which
+numbers are codec-realized on CPU and which are behaviour claims, with the pinned
+serve argv when `evaluation.json` records one. `twin.json` and `plan-card.json` are
+published schemas; `verify-artifact` also runs their semantics (counts add up, each
+delivered row names its codec, MEASURED vs UNMEASURED behaviour agreement, ledger
+classes present; signed-meta and payload digests agree).
+
+Refusals are named `ReleaseRefused` codes, non-zero, and never publish a directory:
+a `.gguf` twin with no adapter and no plan card is `NO_PREQUANTIZED_MODEL_RELEASE`;
+a `.safetensors` twin is `NON_GGUF_EXPORT_ROADMAP` ("non-GGUF export is a roadmap
+line until a fitted plan can be served and round-tripped through vLLM/SGLang"); a
+card whose base sha does not equal the adapter's bound base is
+`ADAPTER_CARD_BASE_SHA_MISMATCH`; a card that names another twin sha is
+`TWIN_ARTIFACT_SHA_MISMATCH`; a plan bundle whose payload disagrees with its
+manifest is `PLAN_CARD_PAYLOAD_MISMATCH`; a foreign file in the file set is
+`UNEXPECTED_RELEASE_FILE`.
+
+Verified on the fixture in `verification/release-assemble/` (placeholder bytes, not
+weights): assemble exit 0 with `valid: true`, `verify-artifact --all` lists
+`adapter.json`, `twin.json` and `plan-card.json` as valid, `verify-release` exit 0,
+one extra file makes it exit 1, and all five refusals exit 1 with their named code
+and no published directory. Behaviour numbers in the fixture (0.215 adapter /
+0.119 merged, ratio 0.553) are quoted from "Where we are short" item 3, not
+measured here; the real merged-twin run stays GATED in the
+adapter-vs-merged card.
