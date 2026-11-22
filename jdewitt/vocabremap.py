@@ -841,7 +841,8 @@ def verify_artifact_identity(port, artifact):
     return {'model_path_reported': _portable_path(reported),
             'model_path_reported_is_absolute': os.path.isabs(reported),
             'model_path_resolves_to_artifact': True,
-            'build_info': props.get('build_info'), 'model_alias': props.get('model_alias'),
+            'build_info': props.get('build_info'),
+            'model_alias': _portable_path(props['model_alias']) if isinstance(props.get('model_alias'), str) else None,
             'n_ctx': generation.get('n_ctx'), 'total_slots': props.get('total_slots')}
 
 
@@ -1140,7 +1141,7 @@ def decode_row(port, tokens, entry_items, probe, prompt, max_tokens, remap, temp
         'pending_unfinished': loop['pending_unfinished'],
         'prompt_evaluation': {'prompt_n_per_step': prompt_n, 'cache_n_per_step': cache_n,
                               'max_prompt_n_after_first_step': max(prompt_n[1:], default=None),
-                              'min_cache_n': min(cache_n, default=None),
+                              'min_cache_n_after_first_step': min(cache_n[1:], default=None),
                               'note': ('prompt_n is the number of prompt tokens the server actually evaluated in '
                                        'that request (the runtime timing field), so 1 after the first step is the '
                                        'KV prefix being reused; cache_n is the matched prefix length')},
@@ -1248,7 +1249,7 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
     variant_rows = [row['id'] for row in rows if row['gate']['variant_forms_in_text']]
     resample_limits = [row['id'] for row in rows if row['resample_limit_steps']]
     prompt_n = [row['prompt_evaluation']['max_prompt_n_after_first_step'] for row in rows]
-    cache_n = [row['prompt_evaluation']['min_cache_n'] for row in rows]
+    cache_n = [row['prompt_evaluation']['min_cache_n_after_first_step'] for row in rows]
     claim_row = next((row for row in rows if row['gate']['opener_gone']), None)
     if remap == 'off':
         gate = {'plain_wave_equality': {
@@ -1291,6 +1292,13 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
                   'whether logit_bias is sent. A row here is a token path, its suppression events and the plain '
                   'greedy wave beside it, not a harmlessness, capability or removal measurement.'),
         'method': DECODE_METHOD,
+        'pinned_argv': ['jdewitt', 'vocab-remap', '--artifact', _portable_path(artifact),
+                        '--suite', _portable_path(suite), '--out', _portable_path(out),
+                        '--remap', remap, '--max-tokens', str(max_tokens),
+                        '--template', template]
+                       + (['--serve', Path(serve).name] if serve is not None else [])
+                       + (['--port', str(port)] if serve is None else [])
+                       + (['--table', _portable_path(table)] if table is not None else []),
         'claim': _opener_claim(claim_row, remap, tokens),
         'artifact': {'path': _portable_path(artifact), 'sha256': _sha256_file(artifact),
                      'bytes': artifact.stat().st_size, 'tokenizer': tokenizer['identity']},
@@ -1306,9 +1314,12 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
         'table': {'schema': document['schema'], 'sha256': hashlib.sha256(raw_table).hexdigest(),
                   'entries': len(entries),
                   'with_replacement': sum(1 for entry in entries if entry['replacement']),
-                  'replacement_note': ('the checked-in table is an inventory: every replacement is null, so this '
-                                       'run suppresses and never forces. The force path is exercised by the '
-                                       'documented table override in this directory, not by this arm.')},
+                  'replacement_note': ('the table names %d replacement(s), so this arm can force as well as suppress'
+                                       % sum(1 for entry in entries if entry['replacement'])
+                                       if any(entry['replacement'] for entry in entries) else
+                                       ('the checked-in table is an inventory: every replacement is null, so this '
+                                        'arm suppresses and never forces. The force path is exercised by the '
+                                        'documented table override under verification/vocab-remap/decode/forced/.'))},
         'probes': {'path': _portable_path(suite), 'sha256': _sha256_file(suite), 'rows': len(probes),
                    'ids': [probe['id'] for probe in probes]},
         'config': {'template': template, 'max_tokens': max_tokens, 'temperature': 0.0,
@@ -1323,7 +1334,8 @@ def vocab_remap_decode(table=None, artifact=None, suite=None, out=None, remap='o
                     'tokens_per_second': round(generated / decode_seconds, 2) if decode_seconds else None,
                     'max_prompt_n_after_first_step': max((value for value in prompt_n
                                                           if type(value) is int), default=None),
-                    'min_cache_n': min((value for value in cache_n if type(value) is int), default=None),
+                    'min_cache_n_after_first_step': min((value for value in cache_n if type(value) is int),
+                                                       default=None),
                     'plain_wave_seconds': round(sum(row['plain']['seconds'] for row in rows), 3),
                     'retokenized_steps': sum(len(row['retokenized_steps']) for row in rows),
                     'prompt_origin_sequences_seen': sum(row['prompt_origin_completions'] for row in rows)},

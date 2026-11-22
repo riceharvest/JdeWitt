@@ -129,7 +129,7 @@ def build_parser():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
-    vremap=sub.add_parser('vocab-remap',help='Denial-word table resolved to ids/splits per GGUF tokenizer (--list); no model loads')
+    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --remap on|off decodes with the bias applied or withheld')
     vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
     vremap.add_argument('--dry-run',action='store_true',help='Plan per-step suppression/forced replacement over probes with a live llama-server /tokenize; audits declining base answers')
     vremap.add_argument('--suite',type=Path,help='Probe JSONL for --dry-run (one row per line with id and prompt)')
