@@ -1,0 +1,2016 @@
+{
+  "schema": "jdewitt.vocab-remap-weights/1",
+  "scope": "Vocabulary-row edit of a quantized artifact: storage fidelity and byte accounting only. No model is loaded, no logits or generations are read, and no behavioral claim is made; the weight side of this card is gated for claims.",
+  "method": "The denial table is resolved against the artifact tokenizer (the same byte-level BPE as --list, both contexts) and the resulting ids name rows of the token-embedding matrix and, when it is untied, of the output head. For each covered row W_i the edit is the rank-1 projection a refusal axis gets, with the axis being the row's own direction u = W_i/||W_i|| on the row's input side: dW_i = -s (W_i u^T) u = -s W_i, so the algebra and a per-row down-weight scale (1 - s) are the same operation and the same helper (ggufio.axis_delta) computes it. Rows outside the table are not touched by the edit. The write reuses ggufio.edit_tensors: every untouched tensor is copied byte for byte and the edited tensors are requantized at their own stored type, which keeps every tensor offset and byte length, so the revert sidecar can hold the pre-edit bytes and restore the artifact exactly. The dry run measures the edited blocks only (ggufio.preview_edit rows=) because the edit exists at a few dozen rows of a 151,936-row matrix; --apply re-measures the shipped bytes (ggufio.compare_edit rows=) against the pristine source. No model, no logits, no generation, and no behavioral claim: the weight side is measured here for storage fidelity only.",
+  "dry_run": true,
+  "artifact": {
+    "path": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "bytes": 342752576,
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+  },
+  "table": {
+    "schema": "jdewitt.vocab-remap-denial/1",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+    "entries": 20,
+    "path": "jdewitt/assets/vocab-remap-denial.json"
+  },
+  "tokenizer": {
+    "model": "gpt2",
+    "pre": "qwen2",
+    "n_vocab": 151936,
+    "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+  },
+  "discovery": {
+    "n_vocab": 151936,
+    "roles": {
+      "embedding": "token_embd.weight",
+      "output_head": null,
+      "output_head_tied_to_embedding": true
+    },
+    "tied": true,
+    "vocab_wide_tensors": [
+      "token_embd.weight"
+    ],
+    "unmapped_vocab_wide": [],
+    "how": "2-D tensors whose logical row count is the tokenizer vocabulary size; the artifact name decides the role, no per-model table"
+  },
+  "coverage": {
+    "ids": [
+      40,
+      74,
+      77,
+      83,
+      288,
+      307,
+      358,
+      512,
+      537,
+      646,
+      686,
+      713,
+      752,
+      944,
+      978,
+      1020,
+      1079,
+      1531,
+      1579,
+      1921,
+      2765,
+      2776,
+      2952,
+      3172,
+      3891,
+      4157,
+      4814,
+      4865,
+      8652,
+      8656,
+      8793,
+      9017,
+      10638,
+      11889,
+      13361,
+      13422,
+      13803,
+      14387,
+      14589,
+      15719,
+      18060,
+      20791,
+      33260,
+      36879,
+      45928,
+      50837,
+      54667,
+      74411
+    ],
+    "rows": [
+      {
+        "id": 40,
+        "token": "I",
+        "entries": [
+          "en-i-am-sorry",
+          "en-i-apologize",
+          "en-im-sorry"
+        ]
+      },
+      {
+        "id": 74,
+        "token": "k",
+        "entries": [
+          "de-kann-ich-nicht",
+          "de-kann-nicht"
+        ]
+      },
+      {
+        "id": 77,
+        "token": "n",
+        "entries": [
+          "de-nicht-moeglich",
+          "nl-niet-mogelijk"
+        ]
+      },
+      {
+        "id": 83,
+        "token": "t",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 288,
+        "token": "es",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 307,
+        "token": "id",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 358,
+        "token": "\u0120I",
+        "entries": [
+          "en-i-am-sorry",
+          "en-i-apologize",
+          "en-im-sorry"
+        ]
+      },
+      {
+        "id": 512,
+        "token": "\u0120le",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 537,
+        "token": "\u0120not",
+        "entries": [
+          "en-can-not",
+          "en-not-able",
+          "en-will-not"
+        ]
+      },
+      {
+        "id": 646,
+        "token": "\u0120can",
+        "entries": [
+          "en-can-not",
+          "en-cant"
+        ]
+      },
+      {
+        "id": 686,
+        "token": "\u0120will",
+        "entries": [
+          "en-will-not"
+        ]
+      },
+      {
+        "id": 713,
+        "token": "ich",
+        "entries": [
+          "de-ich-kann-nicht"
+        ]
+      },
+      {
+        "id": 752,
+        "token": "\u0120me",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 944,
+        "token": "'t",
+        "entries": [
+          "en-cant",
+          "en-wont"
+        ]
+      },
+      {
+        "id": 978,
+        "token": "\u0120sp",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 1020,
+        "token": "ann",
+        "entries": [
+          "de-kann-ich-nicht",
+          "de-kann-nicht"
+        ]
+      },
+      {
+        "id": 1079,
+        "token": "\u0120am",
+        "entries": [
+          "en-i-am-sorry"
+        ]
+      },
+      {
+        "id": 1531,
+        "token": "\u0120es",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 1579,
+        "token": "ik",
+        "entries": [
+          "nl-ik-kan-niet"
+        ]
+      },
+      {
+        "id": 1921,
+        "token": "not",
+        "entries": [
+          "en-not-able"
+        ]
+      },
+      {
+        "id": 2765,
+        "token": "\u0120won",
+        "entries": [
+          "en-wont"
+        ]
+      },
+      {
+        "id": 2776,
+        "token": "'m",
+        "entries": [
+          "en-im-sorry"
+        ]
+      },
+      {
+        "id": 2952,
+        "token": "\u0120able",
+        "entries": [
+          "en-not-able"
+        ]
+      },
+      {
+        "id": 3172,
+        "token": "ij",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 3891,
+        "token": "iet",
+        "entries": [
+          "nl-niet-mogelijk"
+        ]
+      },
+      {
+        "id": 4157,
+        "token": "\u0120cannot",
+        "entries": [
+          "en-cannot"
+        ]
+      },
+      {
+        "id": 4814,
+        "token": "can",
+        "entries": [
+          "en-can-not",
+          "en-cant"
+        ]
+      },
+      {
+        "id": 4865,
+        "token": "icht",
+        "entries": [
+          "de-nicht-moeglich"
+        ]
+      },
+      {
+        "id": 8652,
+        "token": "\u0120mir",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 8656,
+        "token": "kan",
+        "entries": [
+          "nl-kan-ik-niet",
+          "nl-kan-niet"
+        ]
+      },
+      {
+        "id": 8793,
+        "token": "\u0120nicht",
+        "entries": [
+          "de-ich-kann-nicht",
+          "de-kann-ich-nicht",
+          "de-kann-nicht",
+          "de-nicht-moeglich"
+        ]
+      },
+      {
+        "id": 9017,
+        "token": "\u0120het",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 10638,
+        "token": "\u0120ich",
+        "entries": [
+          "de-ich-kann-nicht",
+          "de-kann-ich-nicht"
+        ]
+      },
+      {
+        "id": 11889,
+        "token": "\u0120unable",
+        "entries": [
+          "en-unable"
+        ]
+      },
+      {
+        "id": 13361,
+        "token": "\u0120ik",
+        "entries": [
+          "nl-ik-kan-niet",
+          "nl-kan-ik-niet"
+        ]
+      },
+      {
+        "id": 13422,
+        "token": "\u0120kan",
+        "entries": [
+          "nl-ik-kan-niet",
+          "nl-kan-ik-niet",
+          "nl-kan-niet"
+        ]
+      },
+      {
+        "id": 13803,
+        "token": "het",
+        "entries": [
+          "nl-het-spijt-me"
+        ]
+      },
+      {
+        "id": 14387,
+        "token": "will",
+        "entries": [
+          "en-will-not"
+        ]
+      },
+      {
+        "id": 14589,
+        "token": "\u0120sorry",
+        "entries": [
+          "en-i-am-sorry",
+          "en-im-sorry"
+        ]
+      },
+      {
+        "id": 15719,
+        "token": "\u0120kann",
+        "entries": [
+          "de-ich-kann-nicht",
+          "de-kann-ich-nicht",
+          "de-kann-nicht"
+        ]
+      },
+      {
+        "id": 18060,
+        "token": "\u0120tut",
+        "entries": [
+          "de-es-tut-mir-leid"
+        ]
+      },
+      {
+        "id": 20791,
+        "token": "\u0120niet",
+        "entries": [
+          "nl-ik-kan-niet",
+          "nl-kan-ik-niet",
+          "nl-kan-niet",
+          "nl-niet-mogelijk"
+        ]
+      },
+      {
+        "id": 33260,
+        "token": "cannot",
+        "entries": [
+          "en-cannot"
+        ]
+      },
+      {
+        "id": 36879,
+        "token": "\u0120apologize",
+        "entries": [
+          "en-i-apologize"
+        ]
+      },
+      {
+        "id": 45928,
+        "token": "unable",
+        "entries": [
+          "en-unable"
+        ]
+      },
+      {
+        "id": 50837,
+        "token": "\u0120m\u00c3\u00b6glich",
+        "entries": [
+          "de-nicht-moeglich"
+        ]
+      },
+      {
+        "id": 54667,
+        "token": "won",
+        "entries": [
+          "en-wont"
+        ]
+      },
+      {
+        "id": 74411,
+        "token": "\u0120mogelijk",
+        "entries": [
+          "nl-niet-mogelijk"
+        ]
+      }
+    ],
+    "entries": [
+      {
+        "id": "en-cannot",
+        "form": "cannot",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          33260
+        ],
+        "ids": [
+          4157,
+          33260
+        ],
+        "contexts": {
+          "bare": [
+            33260
+          ],
+          "leads_with_space": [
+            4157
+          ]
+        }
+      },
+      {
+        "id": "en-can-not",
+        "form": "can not",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          646,
+          537
+        ],
+        "ids": [
+          537,
+          646,
+          4814
+        ],
+        "contexts": {
+          "bare": [
+            4814,
+            537
+          ],
+          "leads_with_space": [
+            646,
+            537
+          ]
+        }
+      },
+      {
+        "id": "en-cant",
+        "form": "can't",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          4814,
+          944
+        ],
+        "ids": [
+          646,
+          944,
+          4814
+        ],
+        "contexts": {
+          "bare": [
+            4814,
+            944
+          ],
+          "leads_with_space": [
+            646,
+            944
+          ]
+        }
+      },
+      {
+        "id": "en-wont",
+        "form": "won't",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          54667,
+          944
+        ],
+        "ids": [
+          944,
+          2765,
+          54667
+        ],
+        "contexts": {
+          "bare": [
+            54667,
+            944
+          ],
+          "leads_with_space": [
+            2765,
+            944
+          ]
+        }
+      },
+      {
+        "id": "en-will-not",
+        "form": "will not",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          686,
+          537
+        ],
+        "ids": [
+          537,
+          686,
+          14387
+        ],
+        "contexts": {
+          "bare": [
+            14387,
+            537
+          ],
+          "leads_with_space": [
+            686,
+            537
+          ]
+        }
+      },
+      {
+        "id": "en-unable",
+        "form": "unable",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          45928
+        ],
+        "ids": [
+          11889,
+          45928
+        ],
+        "contexts": {
+          "bare": [
+            45928
+          ],
+          "leads_with_space": [
+            11889
+          ]
+        }
+      },
+      {
+        "id": "en-not-able",
+        "form": "not able",
+        "language": "en",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          537,
+          2952
+        ],
+        "ids": [
+          537,
+          1921,
+          2952
+        ],
+        "contexts": {
+          "bare": [
+            1921,
+            2952
+          ],
+          "leads_with_space": [
+            537,
+            2952
+          ]
+        }
+      },
+      {
+        "id": "en-im-sorry",
+        "form": "I'm sorry",
+        "language": "en",
+        "kind": "apology",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          358,
+          2776,
+          14589
+        ],
+        "ids": [
+          40,
+          358,
+          2776,
+          14589
+        ],
+        "contexts": {
+          "bare": [
+            40,
+            2776,
+            14589
+          ],
+          "leads_with_space": [
+            358,
+            2776,
+            14589
+          ]
+        }
+      },
+      {
+        "id": "en-i-am-sorry",
+        "form": "I am sorry",
+        "language": "en",
+        "kind": "apology",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          358,
+          1079,
+          14589
+        ],
+        "ids": [
+          40,
+          358,
+          1079,
+          14589
+        ],
+        "contexts": {
+          "bare": [
+            40,
+            1079,
+            14589
+          ],
+          "leads_with_space": [
+            358,
+            1079,
+            14589
+          ]
+        }
+      },
+      {
+        "id": "en-i-apologize",
+        "form": "I apologize",
+        "language": "en",
+        "kind": "apology",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          358,
+          36879
+        ],
+        "ids": [
+          40,
+          358,
+          36879
+        ],
+        "contexts": {
+          "bare": [
+            40,
+            36879
+          ],
+          "leads_with_space": [
+            358,
+            36879
+          ]
+        }
+      },
+      {
+        "id": "nl-kan-niet",
+        "form": "kan niet",
+        "language": "nl",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          13422,
+          20791
+        ],
+        "ids": [
+          8656,
+          13422,
+          20791
+        ],
+        "contexts": {
+          "bare": [
+            8656,
+            20791
+          ],
+          "leads_with_space": [
+            13422,
+            20791
+          ]
+        }
+      },
+      {
+        "id": "nl-kan-ik-niet",
+        "form": "kan ik niet",
+        "language": "nl",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          13422,
+          13361,
+          20791
+        ],
+        "ids": [
+          8656,
+          13361,
+          13422,
+          20791
+        ],
+        "contexts": {
+          "bare": [
+            8656,
+            13361,
+            20791
+          ],
+          "leads_with_space": [
+            13422,
+            13361,
+            20791
+          ]
+        }
+      },
+      {
+        "id": "nl-niet-mogelijk",
+        "form": "niet mogelijk",
+        "language": "nl",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          20791,
+          74411
+        ],
+        "ids": [
+          77,
+          3891,
+          20791,
+          74411
+        ],
+        "contexts": {
+          "bare": [
+            77,
+            3891,
+            74411
+          ],
+          "leads_with_space": [
+            20791,
+            74411
+          ]
+        }
+      },
+      {
+        "id": "nl-het-spijt-me",
+        "form": "het spijt me",
+        "language": "nl",
+        "kind": "apology",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          9017,
+          978,
+          3172,
+          83,
+          752
+        ],
+        "ids": [
+          83,
+          752,
+          978,
+          3172,
+          9017,
+          13803
+        ],
+        "contexts": {
+          "bare": [
+            13803,
+            978,
+            3172,
+            83,
+            752
+          ],
+          "leads_with_space": [
+            9017,
+            978,
+            3172,
+            83,
+            752
+          ]
+        }
+      },
+      {
+        "id": "nl-ik-kan-niet",
+        "form": "ik kan niet",
+        "language": "nl",
+        "kind": "refusal_opener",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          13361,
+          13422,
+          20791
+        ],
+        "ids": [
+          1579,
+          13361,
+          13422,
+          20791
+        ],
+        "contexts": {
+          "bare": [
+            1579,
+            13422,
+            20791
+          ],
+          "leads_with_space": [
+            13361,
+            13422,
+            20791
+          ]
+        }
+      },
+      {
+        "id": "de-kann-nicht",
+        "form": "kann nicht",
+        "language": "de",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          15719,
+          8793
+        ],
+        "ids": [
+          74,
+          1020,
+          8793,
+          15719
+        ],
+        "contexts": {
+          "bare": [
+            74,
+            1020,
+            8793
+          ],
+          "leads_with_space": [
+            15719,
+            8793
+          ]
+        }
+      },
+      {
+        "id": "de-kann-ich-nicht",
+        "form": "kann ich nicht",
+        "language": "de",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          15719,
+          10638,
+          8793
+        ],
+        "ids": [
+          74,
+          1020,
+          8793,
+          10638,
+          15719
+        ],
+        "contexts": {
+          "bare": [
+            74,
+            1020,
+            10638,
+            8793
+          ],
+          "leads_with_space": [
+            15719,
+            10638,
+            8793
+          ]
+        }
+      },
+      {
+        "id": "de-nicht-moeglich",
+        "form": "nicht m\u00f6glich",
+        "language": "de",
+        "kind": "denial_word",
+        "scope": "any",
+        "representable": true,
+        "split": [
+          8793,
+          50837
+        ],
+        "ids": [
+          77,
+          4865,
+          8793,
+          50837
+        ],
+        "contexts": {
+          "bare": [
+            77,
+            4865,
+            50837
+          ],
+          "leads_with_space": [
+            8793,
+            50837
+          ]
+        }
+      },
+      {
+        "id": "de-es-tut-mir-leid",
+        "form": "es tut mir leid",
+        "language": "de",
+        "kind": "apology",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          1531,
+          18060,
+          8652,
+          512,
+          307
+        ],
+        "ids": [
+          288,
+          307,
+          512,
+          1531,
+          8652,
+          18060
+        ],
+        "contexts": {
+          "bare": [
+            288,
+            18060,
+            8652,
+            512,
+            307
+          ],
+          "leads_with_space": [
+            1531,
+            18060,
+            8652,
+            512,
+            307
+          ]
+        }
+      },
+      {
+        "id": "de-ich-kann-nicht",
+        "form": "ich kann nicht",
+        "language": "de",
+        "kind": "refusal_opener",
+        "scope": "opener_window",
+        "representable": true,
+        "split": [
+          10638,
+          15719,
+          8793
+        ],
+        "ids": [
+          713,
+          8793,
+          10638,
+          15719
+        ],
+        "contexts": {
+          "bare": [
+            713,
+            15719,
+            8793
+          ],
+          "leads_with_space": [
+            10638,
+            15719,
+            8793
+          ]
+        }
+      }
+    ],
+    "unrepresentable": [],
+    "note": "union of both tokenizer contexts (bare and leading space); a phrase entry covers every token of its split"
+  },
+  "edit": {
+    "algebra": "per-row rank-1 projection along the row itself: dW_i = -s (W_i u^T) u = -s W_i, the same axis_delta helper a refusal axis uses",
+    "strength": 1.0,
+    "row_scale": 0.0,
+    "tensors_targeted": 1,
+    "rows_edited_per_tensor": {
+      "token_embd.weight": 48
+    },
+    "row_detail": {
+      "token_embd.weight": [
+        {
+          "row": 40,
+          "row_norm": 0.466851,
+          "edited": true
+        },
+        {
+          "row": 74,
+          "row_norm": 0.472703,
+          "edited": true
+        },
+        {
+          "row": 77,
+          "row_norm": 0.506094,
+          "edited": true
+        },
+        {
+          "row": 83,
+          "row_norm": 0.523119,
+          "edited": true
+        },
+        {
+          "row": 288,
+          "row_norm": 0.541981,
+          "edited": true
+        },
+        {
+          "row": 307,
+          "row_norm": 0.501961,
+          "edited": true
+        },
+        {
+          "row": 358,
+          "row_norm": 0.452987,
+          "edited": true
+        },
+        {
+          "row": 512,
+          "row_norm": 0.456991,
+          "edited": true
+        },
+        {
+          "row": 537,
+          "row_norm": 0.42027,
+          "edited": true
+        },
+        {
+          "row": 646,
+          "row_norm": 0.395286,
+          "edited": true
+        },
+        {
+          "row": 686,
+          "row_norm": 0.40555,
+          "edited": true
+        },
+        {
+          "row": 713,
+          "row_norm": 0.501706,
+          "edited": true
+        },
+        {
+          "row": 752,
+          "row_norm": 0.447383,
+          "edited": true
+        },
+        {
+          "row": 944,
+          "row_norm": 0.422604,
+          "edited": true
+        },
+        {
+          "row": 978,
+          "row_norm": 0.451752,
+          "edited": true
+        },
+        {
+          "row": 1020,
+          "row_norm": 0.473286,
+          "edited": true
+        },
+        {
+          "row": 1079,
+          "row_norm": 0.449071,
+          "edited": true
+        },
+        {
+          "row": 1531,
+          "row_norm": 0.410507,
+          "edited": true
+        },
+        {
+          "row": 1579,
+          "row_norm": 0.468987,
+          "edited": true
+        },
+        {
+          "row": 1921,
+          "row_norm": 0.440217,
+          "edited": true
+        },
+        {
+          "row": 2765,
+          "row_norm": 0.462961,
+          "edited": true
+        },
+        {
+          "row": 2776,
+          "row_norm": 0.399431,
+          "edited": true
+        },
+        {
+          "row": 2952,
+          "row_norm": 0.407478,
+          "edited": true
+        },
+        {
+          "row": 3172,
+          "row_norm": 0.472386,
+          "edited": true
+        },
+        {
+          "row": 3891,
+          "row_norm": 0.520642,
+          "edited": true
+        },
+        {
+          "row": 4157,
+          "row_norm": 0.389312,
+          "edited": true
+        },
+        {
+          "row": 4814,
+          "row_norm": 0.434959,
+          "edited": true
+        },
+        {
+          "row": 4865,
+          "row_norm": 0.508751,
+          "edited": true
+        },
+        {
+          "row": 8652,
+          "row_norm": 0.421743,
+          "edited": true
+        },
+        {
+          "row": 8656,
+          "row_norm": 0.506158,
+          "edited": true
+        },
+        {
+          "row": 8793,
+          "row_norm": 0.334473,
+          "edited": true
+        },
+        {
+          "row": 9017,
+          "row_norm": 0.363045,
+          "edited": true
+        },
+        {
+          "row": 10638,
+          "row_norm": 0.421156,
+          "edited": true
+        },
+        {
+          "row": 11889,
+          "row_norm": 0.382235,
+          "edited": true
+        },
+        {
+          "row": 13361,
+          "row_norm": 0.415548,
+          "edited": true
+        },
+        {
+          "row": 13422,
+          "row_norm": 0.408623,
+          "edited": true
+        },
+        {
+          "row": 13803,
+          "row_norm": 0.51944,
+          "edited": true
+        },
+        {
+          "row": 14387,
+          "row_norm": 0.447335,
+          "edited": true
+        },
+        {
+          "row": 14589,
+          "row_norm": 0.443824,
+          "edited": true
+        },
+        {
+          "row": 15719,
+          "row_norm": 0.357188,
+          "edited": true
+        },
+        {
+          "row": 18060,
+          "row_norm": 0.459413,
+          "edited": true
+        },
+        {
+          "row": 20791,
+          "row_norm": 0.370594,
+          "edited": true
+        },
+        {
+          "row": 33260,
+          "row_norm": 0.418256,
+          "edited": true
+        },
+        {
+          "row": 36879,
+          "row_norm": 0.467161,
+          "edited": true
+        },
+        {
+          "row": 45928,
+          "row_norm": 0.445125,
+          "edited": true
+        },
+        {
+          "row": 50837,
+          "row_norm": 0.47776,
+          "edited": true
+        },
+        {
+          "row": 54667,
+          "row_norm": 0.512232,
+          "edited": true
+        },
+        {
+          "row": 74411,
+          "row_norm": 0.508233,
+          "edited": true
+        }
+      ]
+    }
+  },
+  "tensors": [
+    {
+      "name": "token_embd.weight",
+      "roles": [
+        "embedding"
+      ],
+      "qtype": "Q8_0",
+      "codec_chosen": "Q8_0",
+      "codec_reason": "the tensor requantizes at its own stored type, so every tensor offset and byte length stays put and the pre-edit bytes restore the file exactly",
+      "shape": [
+        151936,
+        896
+      ],
+      "bytes": {
+        "source": 144643072,
+        "reencoded": 144643072,
+        "blocks_total": 4254208,
+        "touched_blocks": 1344,
+        "touched_bytes": 45696,
+        "touched_fraction": 0.000316,
+        "bytes_read_to_measure": 45696
+      },
+      "ids": [
+        40,
+        74,
+        77,
+        83,
+        288,
+        307,
+        358,
+        512,
+        537,
+        646,
+        686,
+        713,
+        752,
+        944,
+        978,
+        1020,
+        1079,
+        1531,
+        1579,
+        1921,
+        2765,
+        2776,
+        2952,
+        3172,
+        3891,
+        4157,
+        4814,
+        4865,
+        8652,
+        8656,
+        8793,
+        9017,
+        10638,
+        11889,
+        13361,
+        13422,
+        13803,
+        14387,
+        14589,
+        15719,
+        18060,
+        20791,
+        33260,
+        36879,
+        45928,
+        50837,
+        54667,
+        74411
+      ],
+      "storage": {
+        "cos": 1.0,
+        "cos_touched_rows": 1.0,
+        "norm_ratio": 1.0,
+        "snr": 11682935.16,
+        "rows_touched": 48,
+        "blocks_touched": 1344,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 74,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 77,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 83,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 288,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 307,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 358,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 512,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 537,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 646,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 686,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 713,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 752,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 944,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 978,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1020,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1079,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1531,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1579,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1921,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2765,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2776,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2952,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 3172,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 3891,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4157,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4814,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4865,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8652,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8656,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8793,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 9017,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 10638,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 11889,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13361,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13422,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13803,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 14387,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 14589,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 15719,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 18060,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 20791,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 33260,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 36879,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 45928,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 50837,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 54667,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 74411,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          }
+        ]
+      }
+    }
+  ],
+  "strength_sensitivity": [
+    {
+      "strength": 0.9,
+      "row_scale": 0.1,
+      "cos_touched_rows": {
+        "token_embd.weight": 1.0
+      }
+    },
+    {
+      "strength": 0.5,
+      "row_scale": 0.5,
+      "cos_touched_rows": {
+        "token_embd.weight": 1.0
+      }
+    }
+  ],
+  "dry_run_measurement": {
+    "sample": "the block-aligned spans holding the covered rows only",
+    "tensors": [
+      {
+        "name": "token_embd.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          151936,
+          896
+        ],
+        "cos": 1.0,
+        "norm_ratio": 1.0,
+        "snr": 11682935.16,
+        "delta_norm": 3.119,
+        "noise_norm": 0.0,
+        "windows": 48,
+        "blocks_per_window": 32,
+        "row_scoped": true,
+        "rows_touched": 48,
+        "blocks_touched": 1344,
+        "cos_touched_rows": 1.0,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 74,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 77,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 83,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 288,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 307,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 358,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 512,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 537,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 646,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 686,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 713,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 752,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 944,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 978,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1020,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1079,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1531,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1579,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 1921,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2765,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2776,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 2952,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 3172,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 3891,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4157,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4814,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 4865,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8652,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8656,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 8793,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 9017,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 10638,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 11889,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13361,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13422,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 13803,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 14387,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 14589,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 15719,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 18060,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 20791,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 33260,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 36879,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 45928,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 50837,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 54667,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          },
+          {
+            "row": 74411,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.0
+          }
+        ]
+      }
+    ],
+    "min_cos": 1.0
+  },
+  "plan": {
+    "writer": "jdewitt.ggufio.edit_tensors (copy + requantize the edited tensors at their own type; every other byte verbatim)",
+    "out": null,
+    "apply": false,
+    "revert_sidecar": null
+  },
+  "verdict": {
+    "ok": true,
+    "cos_floor": 0.95,
+    "problems": [],
+    "notes": [
+      "a phrase entry covers every token of its split, function tokens included (the table names surfaces, not lexemes); coverage.rows names the entry behind every id",
+      "a row edit is not the sequence-aware decode rule: a covered row is down-weighted wherever that token appears, while --remap only suppresses a token that completes a whole table sequence, so the weight side is strictly broader than the decode side and is not a substitute for it"
+    ]
+  }
+}

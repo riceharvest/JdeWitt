@@ -206,7 +206,7 @@ def _row_scale_delta(tensor, vectors, strength):
         row_delta = axis_delta(axis, values.reshape(1, -1), strength, space='input')
         delta[row] = np.asarray(row_delta, dtype=np.float32).reshape(-1)
         detail.append({'row': row, 'row_norm': round(norm, 6), 'edited': True})
-    return {'delta': delta.reshape(-1), 'rows': detail,
+    return {'delta': delta, 'rows': detail,
             'rows_edited': sum(1 for item in detail if item['edited'])}
 
 
@@ -391,6 +391,10 @@ def vocab_remap_weights(weights, table=None, out=None, apply=False, strength=1.0
     if any(len(entry['ids']) > 1 for entry in coverage['entries']):
         notes.append('a phrase entry covers every token of its split, function tokens included (the table '
                      'names surfaces, not lexemes); coverage.rows names the entry behind every id')
+    notes.append('a row edit is not the sequence-aware decode rule: a covered row is down-weighted wherever '
+                 'that token appears, while --remap only suppresses a token that completes a whole table '
+                 'sequence, so the weight side is strictly broader than the decode side and is not a '
+                 'substitute for it')
     if cosines and min(cosines) < COS_FLOOR:
         problems.append(f'min cos on the edited rows {min(cosines)} is below the {COS_FLOOR} screening floor')
     report = {
