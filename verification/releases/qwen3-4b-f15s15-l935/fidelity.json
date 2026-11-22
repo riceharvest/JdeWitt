@@ -1,0 +1,78 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen3-4b-instruct-2507",
+ "label": "f15s15-l935",
+ "measured": true,
+ "arm_measurement": false,
+ "method": "ggufio.preview_edit on the shipped Q8_0 codec, 2 windows x 32 blocks per tensor",
+ "artifact_sha256": "18a9e9ea043254da3a0774ef713e6e4464c64190cf7e42c9f12d91f6a2890f36",
+ "artifact_bytes": 4280403392,
+ "tensors": [
+  {
+   "name": "blk.15.attn_output.weight",
+   "qtype": "Q8_0",
+   "shape": [
+    2560,
+    4096
+   ],
+   "cos": 0.9561,
+   "norm_ratio": 1.0437,
+   "snr": 3.269,
+   "delta_norm": 0.0286,
+   "noise_norm": 0.0087,
+   "windows": 2,
+   "blocks_per_window": 32
+  },
+  {
+   "name": "blk.15.ffn_down.weight",
+   "qtype": "Q8_0",
+   "shape": [
+    2560,
+    9728
+   ],
+   "cos": 0.7897,
+   "norm_ratio": 1.0451,
+   "snr": 1.505,
+   "delta_norm": 0.0313,
+   "noise_norm": 0.0208,
+   "windows": 2,
+   "blocks_per_window": 32
+  },
+  {
+   "name": "blk.35.attn_output.weight",
+   "qtype": "Q8_0",
+   "shape": [
+    2560,
+    4096
+   ],
+   "cos": 0.9169,
+   "norm_ratio": 1.0837,
+   "snr": 2.312,
+   "delta_norm": 0.028,
+   "noise_norm": 0.0121,
+   "windows": 2,
+   "blocks_per_window": 32
+  },
+  {
+   "name": "blk.35.ffn_down.weight",
+   "qtype": "Q8_0",
+   "shape": [
+    2560,
+    9728
+   ],
+   "cos": 0.7255,
+   "norm_ratio": 1.0237,
+   "snr": 1.333,
+   "delta_norm": 0.0233,
+   "noise_norm": 0.0174,
+   "windows": 2,
+   "blocks_per_window": 32
+  }
+ ],
+ "sampled": 4,
+ "min_cos": 0.7255,
+ "mean_cos": 0.847,
+ "min_snr": 1.333,
+ "note": "a low cos here means the codec, not the axis, decides what ships",
+ "scope": "codec proxy: seeded unit output-space axes at the f15s15 arm's footprint (blk.15-35, o_proj + down_proj) and scale 1.5, re-encoded through the shipped Q8_0 codec on the available q3-4b Q8_0 artifact. It measures what the codec stores, not the fitted direction; the arm artifact itself was deleted with /mnt/ssd/hermes/models."
+}
