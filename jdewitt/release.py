@@ -19,6 +19,7 @@ from .scoring import search_rate
 from .answers import atomic_json, atomic_text, exclusive
 from .clock import now_iso as _now_iso
 from .data import digest
+from .errors import ReleaseRefused
 from .storage import atomic_destination, sync_directory
 
 QUANTS = {'Q4_K_M': gguf.LlamaFileType.MOSTLY_Q4_K_M, 'Q5_K_M': gguf.LlamaFileType.MOSTLY_Q5_K_M}
@@ -706,3 +707,386 @@ def create_release(directory,hf,artifacts,metadata,readme):
         add_claim(directory,'Release created: file set matches the verified finalist and evaluation record',
                   'files.json release index','jdewitt create_release')
         return verify_release(directory,identity)
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 assembly: the edit on the artifact the user already serves.
+#
+# docs/ROADMAP.md "Phase 6 — Delivery formats that do not fight the codec": the
+# release carries the adapter (a first-class artifact with its honest R8 label),
+# the merged twin (the bytes the adapter curve is NOT), and the plan card a
+# stranger replays on their own quant. `create_release` above stays the legacy
+# HF-export shape and is untouched by this section.
+#
+# The plan card is distributed as the digest-pinned bundle (plan-card.tar, a
+# `jdewitt plan-bundle`) AND its manifest beside it (plan-card.json), so
+# `verify-artifact --all` can check the card without unpacking a tar and
+# `plan-unbundle DIR/plan-card.tar` still works. Both are first-class files.
+# ---------------------------------------------------------------------------
+
+# Exactly what a phase-6 staging directory may contain before files.json exists.
+V2_RELEASE_FILES = ('README.md', 'adapter.gguf', 'adapter.json', 'evaluation.json',
+                    'model-merged.gguf', 'plan-card.json', 'plan-card.tar', 'twin.json')
+
+NO_PREQUANTIZED_MODEL_RELEASE = 'NO_PREQUANTIZED_MODEL_RELEASE'
+NON_GGUF_EXPORT_ROADMAP = 'NON_GGUF_EXPORT_ROADMAP'
+MISSING_RELEASE_INPUT = 'MISSING_RELEASE_INPUT'
+TWIN_HEADER_UNREADABLE = 'TWIN_HEADER_UNREADABLE'
+ADAPTER_CARD_BASE_SHA_MISMATCH = 'ADAPTER_CARD_BASE_SHA_MISMATCH'
+ADAPTER_ARTIFACT_SHA_MISMATCH = 'ADAPTER_ARTIFACT_SHA_MISMATCH'
+TWIN_ARTIFACT_SHA_MISMATCH = 'TWIN_ARTIFACT_SHA_MISMATCH'
+TWIN_TENSOR_COUNTS_DISAGREE = 'TWIN_TENSOR_COUNTS_DISAGREE'
+TWIN_TENSOR_MISSING = 'TWIN_TENSOR_MISSING'
+BEHAVIOUR_CLAIM_UNLABELLED = 'BEHAVIOUR_CLAIM_UNLABELLED'
+PLAN_CARD_STRUCTURE = 'PLAN_CARD_STRUCTURE'
+PLAN_CARD_PAYLOAD_MISMATCH = 'PLAN_CARD_PAYLOAD_MISMATCH'
+UNEXPECTED_RELEASE_FILE = 'UNEXPECTED_RELEASE_FILE'
+
+# Non-GGUF export stays a roadmap line until a fitted plan can be served and
+# round-tripped through that runtime (docs/ROADMAP.md Phase 6, last bullet).
+NON_GGUF_REASON = ('non-GGUF export is a roadmap line until a fitted plan can be served and '
+                   'round-tripped through vLLM/SGLang')
+
+# Where a pinned serve argv may live in an evaluation record. Nothing is invented:
+# an absent argv is recorded as absent next to the behaviour numbers it belongs to.
+_SERVE_ARGV_PATHS = ('serve_argv', 'argv', 'server.argv', 'behaviour.serve_argv',
+                     'evaluation.serve_argv', 'merged_verification.serve_argv',
+                     'winner.serve_argv', 'settings.serve_argv')
+
+
+def _dig_path(document, path):
+    current = document
+    for part in path.split('.'):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
+def _pinned_serve_argv(evaluation):
+    """The serve argv an evaluation record pins, or None when it recorded none."""
+    for path in _SERVE_ARGV_PATHS:
+        value = _dig_path(evaluation, path)
+        if isinstance(value, list) and value and all(isinstance(token, str) for token in value):
+            return [str(token) for token in value]
+    return None
+
+
+def _gguf_twin_header(path):
+    """Architecture and per-tensor codec type of the released bytes; header reads only."""
+    try:
+        reader = gguf.GGUFReader(str(path))
+        field = reader.get_field('general.architecture')
+        if field is None:
+            raise ValueError('GGUF has no general.architecture')
+        architecture = str(field.contents())
+        tensors = {tensor.name: tensor.tensor_type.name for tensor in reader.tensors}
+        del reader
+    except Exception as error:
+        raise ReleaseRefused(TWIN_HEADER_UNREADABLE,
+                             f'{Path(path).name} is not a readable GGUF: {error}') from error
+    if not tensors:
+        raise ReleaseRefused(TWIN_HEADER_UNREADABLE, f'{Path(path).name} carries no tensors')
+    return architecture, tensors
+
+
+def _read_plan_card(path):
+    """Verify a plan-bundle by digest and return (manifest, payload_sha256)."""
+    import tarfile
+    from .registry import BUNDLE_FORMAT
+    path = Path(path)
+    try:
+        with tarfile.open(path, 'r') as tar:
+            names = tar.getnames()
+            if len(names) != 2 or set(names) != {f'{BUNDLE_FORMAT}/manifest.json',
+                                                 f'{BUNDLE_FORMAT}/plan.pt'}:
+                raise ReleaseRefused(
+                    PLAN_CARD_STRUCTURE,
+                    f'{path.name} members {names} do not match {BUNDLE_FORMAT}/manifest.json + plan.pt')
+            manifest_member = tar.extractfile(f'{BUNDLE_FORMAT}/manifest.json')
+            payload_member = tar.extractfile(f'{BUNDLE_FORMAT}/plan.pt')
+            if manifest_member is None or payload_member is None:
+                raise KeyError('bundle members are not regular files')
+            manifest = json.loads(manifest_member.read())
+            payload = payload_member.read()
+    except (tarfile.TarError, KeyError, json.JSONDecodeError) as error:
+        raise ReleaseRefused(PLAN_CARD_STRUCTURE,
+                             f'{path.name} is not a readable plan-bundle: {error}') from error
+    if not isinstance(manifest, dict) or manifest.get('format') != BUNDLE_FORMAT:
+        found = manifest.get('format') if isinstance(manifest, dict) else None
+        raise ReleaseRefused(PLAN_CARD_STRUCTURE,
+                             f'{path.name} manifest format {found!r} is not {BUNDLE_FORMAT!r}')
+    payload_sha = hashlib.sha256(payload).hexdigest()
+    if manifest.get('payload_sha256') != payload_sha:
+        raise ReleaseRefused(
+            PLAN_CARD_PAYLOAD_MISMATCH,
+            f'{path.name} manifest names payload {str(manifest.get("payload_sha256"))[:12]}… but the '
+            f'bundle payload is {payload_sha[:12]}…; the card does not describe these bytes')
+    meta = manifest.get('meta')
+    if not isinstance(meta, dict):
+        raise ReleaseRefused(PLAN_CARD_STRUCTURE, f'{path.name} manifest carries no signed meta')
+    if meta.get('payload_sha256') != payload_sha:
+        raise ReleaseRefused(
+            PLAN_CARD_PAYLOAD_MISMATCH,
+            f'{path.name} signed meta names payload {str(meta.get("payload_sha256"))[:12]}… but the '
+            f'bundle payload is {payload_sha[:12]}…')
+    if meta.get('meta_digest') != digest({key: value for key, value in meta.items()
+                                          if key != 'meta_digest'}):
+        raise ReleaseRefused(PLAN_CARD_STRUCTURE,
+                             f'{path.name} signed meta fails its own meta_digest')
+    return manifest, payload_sha
+
+
+def _require_input(label, path):
+    if path is None:
+        raise ReleaseRefused(MISSING_RELEASE_INPUT, f'{label} is required for a phase-6 release')
+    path = Path(path)
+    if not path.is_file() or path.is_symlink():
+        raise ReleaseRefused(MISSING_RELEASE_INPUT,
+                             f'{label} {path} must be an existing regular file')
+    return path
+
+
+def build_twin_record(twin, architecture, header_types, card, evaluation, card_sha256,
+                      plan_manifest, plan_payload_sha, plan_bundle_sha):
+    """The codec-realized record of the shipped twin, labelled number by number.
+
+    Every number is copied from a named upstream artifact or read from the released
+    bytes here; this function measures no behaviour. cos/SNR are requant fidelity
+    (CPU, full-tensor decode) and are labelled codec-realized; delta_br and the
+    ranking verdict are behaviour claims, labelled with where they were measured and
+    the pinned serve argv when the evaluation record carries one.
+    """
+    twin, header_types = Path(twin), dict(header_types)
+    merged = card['merged_twin']
+    delivered = merged['delivered']['tensors']
+    fingerprint = merged.get('edit_fingerprint') or {}
+    rows = []
+    for row in delivered:
+        name = row['name']
+        if name not in header_types:
+            raise ReleaseRefused(
+                TWIN_TENSOR_MISSING,
+                f'adapter card measures {name!r}, which the released twin does not carry')
+        rows.append({'name': name, 'cos': row['cos'], 'snr': row.get('snr'),
+                     'edited_type': header_types[name],
+                     'edit': {'shape': _dig_path(fingerprint, 'shape'),
+                              'scale': _dig_path(fingerprint, 'scale'),
+                              'rank': _dig_path(fingerprint, 'rank')},
+                     'measurement_class': 'codec-realized'})
+    cosines = [row['cos'] for row in rows]
+    snrs = [row['snr'] for row in rows if isinstance(row['snr'], (int, float))]
+    argv = _pinned_serve_argv(evaluation)
+    measured = card.get('merged_effect_status') == 'MEASURED'
+    argv_note = ('recorded in evaluation.json and pinned here' if argv else
+                 'evaluation.json records no serve argv, so none is claimed')
+    behaviour = {
+        'status': card.get('merged_effect_status'),
+        'measurement_class': 'behaviour-claim',
+        'measured_where': (
+            f'merged bytes, reported by adapter.json as merged_measured_on='
+            f'{card.get("merged_measured_on") or "merged-bytes"}; release-assemble does not '
+            f'run generation, so these are behaviour claims, not codec-realized numbers'),
+        'serve_argv': argv,
+        'argv_recorded': argv is not None,
+        'adapter_delta_br': card.get('adapter_delta_br'),
+        'merged_delta_br': card.get('merged_delta_br'),
+        'adapter_to_merged_ratio': card.get('adapter_to_merged_ratio'),
+        'ranking_valid_on_this_artifact': card.get('ranking_valid_on_this_artifact'),
+        'ranking_validity_ratio_floor': card.get('ranking_validity_ratio_floor'),
+        'curve_is_not_merged_bytes': True,
+        'curve_note': ('R8: the adapter curve is a screening number; merged_delta_br is the '
+                       'edit\'s effect on the released bytes'),
+    }
+    if not measured and behaviour['merged_delta_br'] is not None:
+        raise ReleaseRefused(
+            BEHAVIOUR_CLAIM_UNLABELLED,
+            'card reports a merged delta_br without a MEASURED status; refusing an unlabelled '
+            'behaviour claim')
+    return {
+        'version': 1,
+        'kind': 'merged-twin',
+        'generated_by': 'jdewitt release-assemble',
+        'artifact': {'file': 'model-merged.gguf', 'sha256': sha256_file(twin),
+                     'bytes': twin.stat().st_size, 'arch': architecture},
+        'base': {'sha256': card['base']['sha256'], 'arch': card['base'].get('arch'),
+                 'tensor_count': card['base'].get('tensor_count')},
+        'tensor_count': len(header_types),
+        'edited_tensors': merged['edited_tensors'],
+        'untouched_tensors': merged['untouched_tensors'],
+        'edit_fingerprint': merged.get('edit_fingerprint') or {},
+        'edit_type_per_tensor': {row['name']: row['edited_type'] for row in rows},
+        'delivered': {'measurement_class': 'codec-realized',
+                      'measured_where': ('CPU byte-level: full-tensor decode of this twin GGUF '
+                                         'against the projection the adapter encodes '
+                                         '(ggufio.compare_edit); requant fidelity, not behaviour'),
+                      'tensors': rows, 'sampled': len(rows),
+                      'min_cos': min(cosines) if cosines else None,
+                      'min_snr': min(snrs) if snrs else None},
+        'behaviour': behaviour,
+        'provenance': {'adapter_file': 'adapter.gguf',
+                       'adapter_sha256': card['adapter']['sha256'],
+                       'adapter_card_file': 'adapter.json', 'adapter_card_sha256': card_sha256,
+                       'adapter_card_twin_record_sha256': merged.get('record_sha256'),
+                       'plan_card_file': 'plan-card.tar', 'plan_card_key': plan_manifest.get('key'),
+                       'plan_card_payload_sha256': plan_payload_sha,
+                       'plan_card_bundle_sha256': plan_bundle_sha},
+        'measurement_ledger': [
+            {'numbers': ['artifact.sha256', 'artifact.bytes', 'tensor_count', 'edited_tensors',
+                         'untouched_tensors', 'delivered.tensors[].cos',
+                         'delivered.tensors[].snr', 'delivered.tensors[].edited_type'],
+             'class': 'codec-realized', 'basis': 'CPU byte-level',
+             'where': ('released twin header + full-tensor decode of the shipped bytes; cos/SNR are '
+                       'requant fidelity copied from the adapter card, which names this artifact '
+                       'by sha256')},
+            {'numbers': ['behaviour.adapter_delta_br', 'behaviour.merged_delta_br',
+                         'behaviour.adapter_to_merged_ratio',
+                         'behaviour.ranking_valid_on_this_artifact'],
+             'class': 'behaviour-claim', 'basis': 'generation-scored',
+             'where': f'{behaviour["measured_where"]}; serve argv: {argv_note}'}],
+        'note': ('The adapter ranks, this twin ships. codec-realized numbers were measured on these '
+                 'bytes on CPU; behaviour numbers are claims carried from adapter.json and are '
+                 'marked as such.'),
+    }
+
+
+def assemble_release(directory, adapter, twin, plan, adapter_card, evaluation, readme):
+    """Stage the phase-6 release: adapter + merged twin + plan card, with labels.
+
+    All six arguments are file paths. The finished directory carries adapter.gguf,
+    model-merged.gguf, plan-card.tar, plan-card.json, adapter.json (copied byte for
+    byte), twin.json (built here, labelled number by number), evaluation.json,
+    README.md and files.json. Copies go through `copy_independent`; files.json is
+    written last; the staging directory is renamed only after `verify_release`
+    passes, so a refusal never publishes a partial release.
+
+    Refusals are named (jdewitt.errors.ReleaseRefused): a .gguf twin with no
+    adapter and no plan card is a pre-quantized model release; a .safetensors twin
+    is the non-GGUF roadmap line; an adapter card whose base digest does not bind
+    the adapter, or which does not name the released twin, is refused; and a plan
+    card whose manifest payload digest disagrees with the bundle payload is refused.
+    """
+    directory = Path(directory)
+    twin_path = Path(twin)
+    if not twin_path.is_file() or twin_path.is_symlink():
+        raise ReleaseRefused(MISSING_RELEASE_INPUT, f'--twin {twin_path} must be a regular file')
+    suffix = twin_path.suffix.lower()
+    if suffix != '.gguf':
+        raise ReleaseRefused(NON_GGUF_EXPORT_ROADMAP,
+                             f'--twin {twin_path.name}: {NON_GGUF_REASON}')
+    if adapter is None and plan is None:
+        raise ReleaseRefused(
+            NO_PREQUANTIZED_MODEL_RELEASE,
+            f'--twin {twin_path.name} with no adapter and no plan card is a bare pre-quantized '
+            f'model release; ship the adapter, the merged twin and the plan card together')
+    adapter_path = _require_input('--adapter', adapter)
+    plan_path = _require_input('--plan', plan)
+    card_path = _require_input('--adapter-card', adapter_card)
+    evaluation_path = _require_input('--evaluation', evaluation)
+    readme_path = _require_input('--readme', readme)
+
+    # Labels are checked against the shipped bytes before anything is staged.
+    from .adapter_card import _adapter_identity
+    from .schemas import validate_artifact
+    adapter_info = _adapter_identity(adapter_path)
+    card = json.loads(card_path.read_text())
+    if not isinstance(card, dict):
+        raise ReleaseRefused(ADAPTER_CARD_BASE_SHA_MISMATCH,
+                             f'adapter card {card_path.name} is not a JSON object')
+    base_sha = str((card.get('base') or {}).get('sha256') or '')
+    bound_sha = str((card.get('adapter') or {}).get('bound_base_sha256') or '')
+    if not base_sha or base_sha != bound_sha:
+        raise ReleaseRefused(
+            ADAPTER_CARD_BASE_SHA_MISMATCH,
+            f'adapter card base sha256 {base_sha[:12] or "(missing)"}… does not equal the base the '
+            f'adapter is bound to ({bound_sha[:12] or "(missing)"}…); the card would label bytes it '
+            f'was not fitted on')
+    card_check = validate_artifact(card_path, 'adapter.json')
+    if not card_check['valid']:
+        raise ReleaseRefused(card_check['problems'][0].split(':', 1)[0],
+                             'adapter card fails its own R8 check: '
+                             + '; '.join(card_check['problems'][:3]))
+    if card.get('adapter', {}).get('sha256') != adapter_info['sha256']:
+        raise ReleaseRefused(
+            ADAPTER_ARTIFACT_SHA_MISMATCH,
+            f'adapter card names adapter {str(card.get("adapter", {}).get("sha256"))[:12]}… but '
+            f'--adapter is {adapter_info["sha256"][:12]}…')
+    twin_sha = sha256_file(twin_path)
+    if card['merged_twin']['artifact_sha256'].lower() != twin_sha:
+        raise ReleaseRefused(
+            TWIN_ARTIFACT_SHA_MISMATCH,
+            f'adapter card names merged twin {card["merged_twin"]["artifact_sha256"][:12]}… but '
+            f'--twin is {twin_sha[:12]}…; the codec-realized numbers were not measured on these bytes')
+
+    architecture, header_types = _gguf_twin_header(twin_path)
+    edited = card['merged_twin']['edited_tensors']
+    untouched = card['merged_twin']['untouched_tensors']
+    if edited + untouched != len(header_types):
+        raise ReleaseRefused(
+            TWIN_TENSOR_COUNTS_DISAGREE,
+            f'adapter card counts {edited} edited + {untouched} untouched tensors but the released '
+            f'twin carries {len(header_types)}; the card describes a different artifact')
+
+    plan_manifest, plan_payload_sha = _read_plan_card(plan_path)
+    plan_bundle_sha = sha256_file(plan_path)
+    try:
+        evaluation_document = json.loads(evaluation_path.read_text())
+    except json.JSONDecodeError as error:
+        raise ValueError(f'--evaluation {evaluation_path} is not valid JSON: {error}') from error
+    if not isinstance(evaluation_document, dict):
+        raise ValueError(f'--evaluation {evaluation_path} must be a JSON object')
+    readme_text = readme_path.read_text()
+    identity = digest({'evaluation': evaluation_document, 'readme': readme_text})
+
+    with exclusive(directory.parent, '.' + directory.name + '.lock'):
+        if directory.exists():
+            return verify_release(directory, identity)
+        stage = directory.with_name(directory.name + '-staging-' + uuid.uuid4().hex)
+        stage.mkdir()
+        copies = ((adapter_path, stage / 'adapter.gguf'),
+                  (twin_path, stage / 'model-merged.gguf'),
+                  (plan_path, stage / 'plan-card.tar'),
+                  (card_path, stage / 'adapter.json'))
+        for source, target in copies:
+            copy_independent(source, target)
+            if sha256_file(source) != sha256_file(target):
+                raise ValueError(f'{source.name} changed during independent release copy')
+        atomic_json(stage / 'evaluation.json', evaluation_document)
+        atomic_text(stage / 'README.md', readme_text)
+        atomic_json(stage / 'plan-card.json',
+                    {**plan_manifest, 'bundle_file': 'plan-card.tar',
+                     'bundle_sha256': plan_bundle_sha,
+                     'note': 'manifest of plan-card.tar, shipped beside the bundle so '
+                             'verify-artifact can check the card without unpacking it'})
+        atomic_json(stage / 'twin.json',
+                    build_twin_record(twin_path, architecture, header_types, card,
+                                      evaluation_document, sha256_file(card_path), plan_manifest,
+                                      plan_payload_sha, plan_bundle_sha))
+        unexpected = sorted({path.name for path in stage.iterdir()} - set(V2_RELEASE_FILES))
+        if unexpected:
+            raise ReleaseRefused(
+                UNEXPECTED_RELEASE_FILE,
+                f'staging directory carries files that are not release artifacts: {unexpected}')
+        missing = sorted(set(V2_RELEASE_FILES) - {path.name for path in stage.iterdir()})
+        if missing:
+            raise ReleaseRefused(MISSING_RELEASE_INPUT,
+                                 f'staging directory is missing release files: {missing}')
+        record = {'version': 1, 'release_identity': identity,
+                  'files': release_inventory(stage)}
+        record['record_digest'] = digest(record)
+        atomic_json(stage / 'files.json', record)
+        verify_release(stage, identity)
+        sync_directory(stage)
+        stage.rename(directory)
+        sync_directory(directory.parent)
+        add_claim(directory,
+                  'Release assembled: adapter, merged twin, plan card and their labels bind these '
+                  'exact bytes; codec-realized numbers are separated from behaviour claims',
+                  'files.json release index + twin.json measurement ledger',
+                  'jdewitt release-assemble')
+        result = verify_release(directory, identity)
+        result['plan_card_key'] = plan_manifest.get('key')
+        result['plan_card_payload_sha256'] = plan_payload_sha
+        result['twin_artifact_sha256'] = twin_sha
+        result['adapter_sha256'] = adapter_info['sha256']
+        return result

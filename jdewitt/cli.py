@@ -386,6 +386,14 @@ def build_parser():
     verify=sub.add_parser('verify-release',help='Verify a finished release using only file reads, no models')
     verify.add_argument('directory',type=Path)
     verify.add_argument('--expected-identity')
+    assemble=sub.add_parser('release-assemble',help='Assemble the phase-6 release (adapter + merged twin + plan card + their labels); refuses a bare pre-quantized model')
+    assemble.add_argument('directory',type=Path)
+    assemble.add_argument('--adapter',type=Path,help='shipped LoRA adapter GGUF, a first-class release file')
+    assemble.add_argument('--twin',type=Path,required=True,help='merged twin GGUF: the bytes that ship, not the adapter curve')
+    assemble.add_argument('--plan',type=Path,help='digest-pinned plan-bundle tar for the fitted plan (plan-bundle output)')
+    assemble.add_argument('--adapter-card',type=Path,help='adapter.json: the R8 label for --adapter')
+    assemble.add_argument('--evaluation',type=Path,help='evaluation record JSON (one half of the release identity)')
+    assemble.add_argument('--readme',type=Path,help='README.md shipped in the release (the other identity half)')
     claims=sub.add_parser('release-claims',help='Read a release evidence ledger (claims, evidence, chain digest)')
     claims.add_argument('directory',type=Path)
     claimadd=sub.add_parser('claim-add',help='Append an evidence-backed claim to a release evidence ledger')
@@ -644,6 +652,10 @@ def main():
         elif args.command=='adapter-card':
             from .adapter_card import build_adapter_card
             result=build_adapter_card(args.adapter,args.base,args.twin,args.out,args.scale)
+        elif args.command=='release-assemble':
+            from .release import assemble_release
+            result=assemble_release(args.directory,args.adapter,args.twin,args.plan,
+                                    args.adapter_card,args.evaluation,args.readme)
         elif args.command=='verify':
             from .verify import verify_files
             result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)

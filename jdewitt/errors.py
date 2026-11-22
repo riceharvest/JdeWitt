@@ -112,9 +112,24 @@ class AdapterCardRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class ReleaseRefused(ValueError):
+    """A phase-6 release cannot be assembled honestly; ``code`` names the reason.
+
+    The phase-6 release is the edit on the artifact the user already serves, so a
+    directory that omits the adapter, the merged twin or the plan card, or that
+    ships labels whose digests do not bind the shipped bytes, is refused before a
+    staging directory becomes visible. Distinct from INPUT_ERROR so scripts can
+    grep one vocabulary (jdewitt.schemas names the same shape problems in
+    verify-artifact).
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
-    if isinstance(exception, AdapterCardRefused):
+    if isinstance(exception, (AdapterCardRefused, ReleaseRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

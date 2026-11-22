@@ -91,6 +91,84 @@ SCHEMAS = {
             'curve_is_not_merged_bytes': {'const': True},
             'r8_note': {'type': 'string'},
             'claim_limit': {'type': 'string'}}},
+    'twin.json': {
+        'description': 'Codec-realized record of the merged twin shipped beside the adapter: '
+                       'artifact identity, edited/untouched counts, the edit fingerprint, the '
+                       'per-tensor delivered cos/SNR with the codec type that realized them, and '
+                       'a ledger that says which numbers are codec-realized and which are '
+                       'behaviour claims (and where each was measured).',
+        'type': 'object',
+        'required': ['version', 'kind', 'artifact', 'base', 'tensor_count', 'edited_tensors',
+                     'untouched_tensors', 'edit_fingerprint', 'edit_type_per_tensor', 'delivered',
+                     'behaviour', 'measurement_ledger'],
+        'properties': {
+            'version': {'const': 1},
+            'kind': {'const': 'merged-twin'},
+            'artifact': {'type': 'object', 'required': ['file', 'sha256', 'bytes'],
+                         'properties': {'file': {'type': 'string'},
+                                        'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                        'bytes': {'type': 'integer'}}},
+            'base': {'type': 'object', 'required': ['sha256'],
+                     'properties': {'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}},
+            'tensor_count': {'type': 'integer'},
+            'edited_tensors': {'type': 'integer'},
+            'untouched_tensors': {'type': 'integer'},
+            'edit_fingerprint': {'type': 'object'},
+            'edit_type_per_tensor': {'type': 'object',
+                                     'additionalProperties': {'type': 'string'}},
+            'delivered': {
+                'type': 'object',
+                'required': ['measurement_class', 'measured_where', 'tensors'],
+                'properties': {
+                    'measurement_class': {'const': 'codec-realized'},
+                    'measured_where': {'type': 'string'},
+                    'tensors': {'type': 'array', 'items': {
+                        'type': 'object',
+                        'required': ['name', 'cos', 'edited_type', 'measurement_class'],
+                        'properties': {'name': {'type': 'string'},
+                                       'cos': {'type': 'number'},
+                                       'snr': {'type': 'number', 'nullable': True},
+                                       'edited_type': {'type': 'string'},
+                                       'edit': {'type': 'object'},
+                                       'measurement_class': {'const': 'codec-realized'}}}}}},
+            'behaviour': {
+                'type': 'object',
+                'required': ['status', 'measurement_class', 'measured_where', 'serve_argv',
+                             'argv_recorded', 'curve_is_not_merged_bytes', 'adapter_delta_br',
+                             'merged_delta_br', 'ranking_valid_on_this_artifact'],
+                'properties': {'status': {'type': 'string'},
+                               'measurement_class': {'const': 'behaviour-claim'},
+                               'measured_where': {'type': 'string'},
+                               'serve_argv': {'type': 'array', 'nullable': True,
+                                              'items': {'type': 'string'}},
+                               'argv_recorded': {'type': 'boolean'},
+                               'curve_is_not_merged_bytes': {'const': True},
+                               'adapter_delta_br': {'type': 'number', 'nullable': True},
+                               'merged_delta_br': {'type': 'number', 'nullable': True},
+                               'adapter_to_merged_ratio': {'type': 'number', 'nullable': True},
+                               'ranking_valid_on_this_artifact': {'type': 'boolean'},
+                               'ranking_validity_ratio_floor': {'type': 'number'}}},
+            'measurement_ledger': {
+                'type': 'array',
+                'items': {'type': 'object', 'required': ['numbers', 'class', 'basis', 'where'],
+                          'properties': {'numbers': {'type': 'array', 'items': {'type': 'string'}},
+                                         'class': {'type': 'string'},
+                                         'basis': {'type': 'string'},
+                                         'where': {'type': 'string'}}}}}},
+    'plan-card.json': {
+        'description': 'Manifest of the digest-pinned plan bundle shipped as plan-card.tar '
+                       '(jdewitt plan-bundle): one key, the signed meta and the payload digest. '
+                       'The format const mirrors jdewitt.registry.BUNDLE_FORMAT.',
+        'type': 'object',
+        'required': ['format', 'key', 'meta', 'payload_sha256'],
+        'properties': {
+            'format': {'const': 'b70ablator-plan-bundle-v1'},
+            'key': {'type': 'string'},
+            'payload_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+            'meta': {'type': 'object', 'required': ['meta_digest', 'payload_sha256'],
+                     'properties': {
+                         'meta_digest': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                         'payload_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'}}}}},
     'run-status.command.json': {
         'description': 'run-status output contract.',
         'type': 'object',
@@ -494,16 +572,127 @@ def infer_schema_name(path):
     raise ValueError(f'No published schema for {path.name!r}; available: {sorted(SCHEMAS)}')
 
 
+def _twin_problems(document):
+    """Facts a shape check cannot express for the twin record shipped beside an adapter.
+
+    "valid" must mean the record is internally consistent and says which of its
+    numbers are codec-realized versus behaviour claims: the tensor counts have to
+    add up, every delivered row has to name the codec type that realized it, the
+    behaviour block has to be either MEASURED with numbers or explicitly UNMEASURED
+    with none, a claimed serve argv has to be present, and the ledger has to carry
+    both measurement classes.
+    """
+    problems = []
+    edited = document.get('edited_tensors')
+    untouched = document.get('untouched_tensors')
+    total = document.get('tensor_count')
+    if all(type(value) is int for value in (edited, untouched, total)):
+        if edited + untouched != total:
+            problems.append(f'TWIN_TENSOR_COUNTS_DISAGREE: {edited} edited + {untouched} untouched '
+                            f'!= tensor_count {total}')
+    elif not all(type(value) is int for value in (edited, untouched, total)):
+        problems.append('TWIN_TENSOR_COUNTS_DISAGREE: edited_tensors, untouched_tensors and '
+                        'tensor_count must all be integers')
+    delivered = document.get('delivered') if isinstance(document.get('delivered'), dict) else {}
+    raw_rows = delivered.get('tensors')
+    rows = raw_rows if isinstance(raw_rows, list) else []
+    raw_types = document.get('edit_type_per_tensor')
+    edit_types = raw_types if isinstance(raw_types, dict) else {}
+    if type(edited) is int and len(rows) > edited:
+        problems.append(f'TWIN_DELIVERED_OVER_EDITED: {len(rows)} delivered rows for {edited} '
+                        f'edited tensors')
+    for row in rows:
+        if not isinstance(row, dict):
+            problems.append('TWIN_DELIVERED_ROW_INVALID: delivered.tensors carries a non-object row')
+            break
+        name = row.get('name')
+        if isinstance(name, str) and name not in edit_types:
+            problems.append(f'TWIN_EDIT_TYPE_MISSING: {name} has no entry in '
+                            f'edit_type_per_tensor, so the codec that realized it is unnamed')
+            break
+    behaviour = document.get('behaviour') if isinstance(document.get('behaviour'), dict) else {}
+    status = behaviour.get('status')
+    merged = behaviour.get('merged_delta_br')
+    adapter = behaviour.get('adapter_delta_br')
+    ratio = behaviour.get('adapter_to_merged_ratio')
+    ranking = behaviour.get('ranking_valid_on_this_artifact')
+    floor = behaviour.get('ranking_validity_ratio_floor')
+    if status not in ('MEASURED', 'UNMEASURED'):
+        problems.append(f'BEHAVIOUR_EFFECT_INCONSISTENT: status is {status!r}; it must be '
+                        f'MEASURED or UNMEASURED')
+    elif status == 'MEASURED':
+        if not isinstance(merged, (int, float)) or isinstance(merged, bool):
+            problems.append('BEHAVIOUR_EFFECT_INCONSISTENT: MEASURED with no merged_delta_br')
+        if not isinstance(ratio, (int, float)) or isinstance(ratio, bool):
+            problems.append('BEHAVIOUR_EFFECT_INCONSISTENT: MEASURED with no '
+                            'adapter_to_merged_ratio')
+        if isinstance(ratio, (int, float)) and not isinstance(ratio, bool):
+            expected = isinstance(floor, (int, float)) and ratio >= floor
+            if ranking is not expected:
+                problems.append(f'BEHAVIOUR_EFFECT_INCONSISTENT: ranking_valid_on_this_artifact '
+                                f'is {ranking!r} but ratio {ratio} against floor {floor} implies '
+                                f'{expected}')
+        if isinstance(merged, (int, float)) and isinstance(adapter, (int, float)) and adapter:
+            implied = round(merged / adapter, 3)
+            if not isinstance(ratio, (int, float)) or abs(ratio - implied) > 0.002:
+                problems.append(f'BEHAVIOUR_EFFECT_INCONSISTENT: merged {merged} / adapter '
+                                f'{adapter} implies ratio {implied}, record has {ratio}; the '
+                                f'merged field may hold the adapter number')
+    else:
+        if merged is not None or ratio is not None:
+            problems.append('BEHAVIOUR_EFFECT_INCONSISTENT: UNMEASURED but the record still carries '
+                            'merged_delta_br or a ratio')
+        if ranking is not False:
+            problems.append('BEHAVIOUR_EFFECT_INCONSISTENT: UNMEASURED cannot rank as valid')
+    if behaviour.get('argv_recorded') is True and not behaviour.get('serve_argv'):
+        problems.append('SERVE_ARGV_MISSING: argv_recorded is true but serve_argv is empty')
+    classes = {entry.get('class') for entry in document.get('measurement_ledger') or []
+               if isinstance(entry, dict)}
+    for required in ('codec-realized', 'behaviour-claim'):
+        if required not in classes:
+            problems.append(f'MEASUREMENT_CLASS_UNLABELLED: measurement_ledger has no '
+                            f'{required!r} entry, so the reader cannot tell which numbers are which')
+    return problems
+
+
+def _plan_card_problems(document):
+    """The manifest beside plan-card.tar has to describe itself consistently."""
+    from .data import digest
+    problems = []
+    try:
+        from .registry import BUNDLE_FORMAT
+    except Exception:  # registry is light, but a schema check must never need torch
+        BUNDLE_FORMAT = 'b70ablator-plan-bundle-v1'
+    if document.get('format') != BUNDLE_FORMAT:
+        problems.append(f'PLAN_CARD_STRUCTURE: format {document.get("format")!r} is not '
+                        f'{BUNDLE_FORMAT!r}')
+    meta = document.get('meta') if isinstance(document.get('meta'), dict) else {}
+    payload = document.get('payload_sha256')
+    if meta.get('payload_sha256') != payload:
+        problems.append('PLAN_CARD_PAYLOAD_MISMATCH: manifest payload_sha256 disagrees with the '
+                        'signed meta payload_sha256')
+    content = {key: value for key, value in meta.items() if key != 'meta_digest'}
+    if meta.get('meta_digest') != digest(content):
+        problems.append('PLAN_CARD_META_DIGEST_MISMATCH: signed meta fails its own meta_digest')
+    return problems
+
+
 def _artifact_problems(name, document):
     """Facts that must hold for an artifact whose schema is shape-only.
 
     adapter.json is the R8 label, so "valid" has to mean more than "the keys are
     there": the merged field must not hold an adapter number and the curve claim
-    must be present and true (jdewitt.adapter_card.verify_adapter_card).
+    must be present and true (jdewitt.adapter_card.verify_adapter_card). twin.json
+    labels codec-realized numbers against behaviour claims, and plan-card.json is
+    the manifest of a digest-pinned bundle, so both get the same treatment.
     """
     if name == 'adapter.json':
         from .adapter_card import verify_adapter_card
         return verify_adapter_card(document)
+    if name == 'twin.json':
+        return _twin_problems(document)
+    if name == 'plan-card.json':
+        return _plan_card_problems(document)
     return []
 
 
@@ -515,10 +704,17 @@ def validate_artifact(path, name=None):
         raise ValueError(f'No published schema for {name!r}; available: {sorted(SCHEMAS)}')
     document = json.loads(path.read_text())
     problems = validate_against(document, SCHEMAS[name]) + _artifact_problems(name, document)
-    note = ('Shape and version only; digests and semantics are checked by release verify commands.'
-            if name != 'adapter.json' else
-            'Shape, version and the R8 card semantics: curve claim, merged-field provenance and '
-            'ratio/ranking agreement.')
+    notes = {
+        'adapter.json': 'Shape, version and the R8 card semantics: curve claim, merged-field '
+                        'provenance and ratio/ranking agreement.',
+        'twin.json': 'Shape, version and the codec-realized/behaviour split: tensor counts, per-row '
+                     'codec type, behaviour labelling and both measurement-ledger classes.',
+        'plan-card.json': 'Shape, version and the plan-card manifest semantics: signed meta digest '
+                          'and payload digest agreement. The bundle bytes are re-hashed by '
+                          'release-assemble, which reads the tar.',
+    }
+    note = notes.get(name, 'Shape and version only; digests and semantics are checked by release '
+                           'verify commands.')
     return {'file': str(path.resolve()), 'schema': name, 'valid': not problems,
             'problems': problems, 'note': note}
 
@@ -541,4 +737,6 @@ def verify_all(directory):
     return {'directory': str(directory.resolve()), 'checked': checked, 'missing_schemas': missing,
             'valid': all(row['valid'] for row in checked),
             'note': 'Shape and version only for release artifacts; adapter.json also gets its R8 '
-                    'card semantics. Digests and claim chains are checked by release verify commands.'}
+                    'card semantics, twin.json its codec-realized/behaviour split, and '
+                    'plan-card.json its signed-meta/payload agreement. Digests and claim chains '
+                    'are checked by release verify commands.'}
