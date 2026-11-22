@@ -21,6 +21,24 @@ This command only records; it produces no behaviour numbers. A twin record witho
 delivered cos, a base binding that disagrees, merged numbers that are absent
 without an explicit UNMEASURED label, or an adapter delta_br parked in a field
 that names the merged effect are all refused with a named error.
+
+The twin record's canonical shape (aliases are accepted; the facts are what
+matter)::
+
+    {"artifact_sha256": "<merged twin sha256>",
+     "base_artifact_sha256": "<base sha256>",
+     "edited_tensors": 36, "untouched_tensors": 190,
+     "edit_fingerprint": {"family": "perlayer|10-27", "scale": 1.0, "rank": 1},
+     "delivered": {"tensors": [{"name": "blk.10.attn_output.weight",
+                                "cos": 0.4407, "snr": 1.023}, ...]},
+     "behaviour": {"adapter_curve": {"delta_br": 0.215, "measured_on": "adapter"},
+                   "merged_bytes": {"delta_br": 0.119, "measured_on": "merged-bytes"}},
+     "curve_is_not_merged_bytes": true}
+
+When the merged twin has not been measured, omit ``behaviour.merged_bytes`` and
+record ``"merged_effect_status": "UNMEASURED"``: the card then writes null merged
+numbers, a null ratio and ``ranking_valid_on_this_artifact: false`` instead of
+borrowing the adapter curve.
 """
 import hashlib
 import json
@@ -169,8 +187,11 @@ def _delivered_rows(twin):
     if isinstance(raw, dict):
         raw = raw.get('tensors', raw)
         if isinstance(raw, dict):
-            raw = [dict(value, name=key) if isinstance(value, dict) else
-                   {'name': key, 'cos': value} for key, value in raw.items()]
+            # {name: {cos, snr}} is a row map; a summary dict (min_cos, sampled,
+            # instrument) is not, and must read as "no rows" rather than as one.
+            if not all(isinstance(value, dict) for value in raw.values()):
+                return []
+            raw = [dict(value, name=key) for key, value in raw.items()]
     if not isinstance(raw, list):
         return []
     rows = []

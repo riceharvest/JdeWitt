@@ -540,4 +540,5 @@ def verify_all(directory):
         checked.append({'file': str(path), 'schema': name, 'valid': not problems, 'problems': problems[:5]})
     return {'directory': str(directory.resolve()), 'checked': checked, 'missing_schemas': missing,
             'valid': all(row['valid'] for row in checked),
-            'note': 'Shape and version only; digests and semantics are checked by release verify commands.'}
+            'note': 'Shape and version only for release artifacts; adapter.json also gets its R8 '
+                    'card semantics. Digests and claim chains are checked by release verify commands.'}

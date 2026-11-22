@@ -1369,3 +1369,32 @@ so DECODE_ONLY is empty for the IQ family. Encode cost measured on 262k elements
 scaled to 4M: IQ1_M ~14 s, IQ1_S ~16 s, IQ2_S ~63 s, IQ2_XS ~71 s, IQ2_XXS ~75 s,
 IQ3_S ~39 s, IQ3_XXS ~52 s. These are explicit `--edit-type` choices; `auto` keeps
 its q6_k -> q8_0 -> f16 ladder.
+
+### The adapter release carries its R8 label (2026-11-22)
+
+Phase 6's adapter bullet landed as one command:
+`adapter-card --adapter A.gguf --base BASE.gguf --twin TWIN.json --out adapter.json`.
+The card binds the adapter to the artifact it was fitted on, records the adapter
+identity (sha256/bytes/rank/tensor entries/scale), copies the merged twin's
+per-tensor delivered cos+SNR and its edited/untouched counts and edit fingerprint,
+and puts BOTH `delta_br` readings beside each other with
+`adapter_to_merged_ratio` and `ranking_valid_on_this_artifact`, plus
+`curve_is_not_merged_bytes: true` and the R8 note. `write_adapter` now writes
+`jdewitt.base_artifact_sha256` and `tune` passes the artifact sha, so an adapter
+without a base binding is refused instead of labelled against a guessed base.
+`adapter.json` is a published schema; `verify-artifact` runs the card semantics
+too (curve claim, merged-field provenance, ratio/ranking agreement) and now exits
+1 when any artifact is invalid.
+
+Measured run (Spark 1.7B Q4_K_M sha 80ff5222…, adapter perlayer|10-27 rank 1,
+36 tensors): merged twin sha 3380d89d…, same byte size, only those 36 tensors
+differ (190 untouched). `compare_edit` on the twin — Q4_K 27 tensors cos
+0.198/0.331/0.467 min/median/max, SNR 0.938/0.979/1.044; Q6_K 9 tensors cos
+0.808/0.837/0.881, SNR 1.551/1.683/1.974 — is the codec floor of Phase 1, now
+recorded per tensor rather than sampled. Behaviour pair 0.215 adapter / 0.119
+merged gives ratio 0.553 and `ranking_valid_on_this_artifact: false`. Refusals
+exercised end-to-end (all exit 1 with their named code): unbound adapter, base
+digest mismatch, twin without delivered cos, merged numbers absent without an
+UNMEASURED label, curve claim removed or false, and the adapter number pasted
+into the merged field. The twin artifact stays outside the clone; the card
+carries its sha256.
