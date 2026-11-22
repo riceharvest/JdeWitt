@@ -26,17 +26,23 @@ Per layer, float64:
   3. the probe is a logistic regression (L2 1e-3, full-batch gradient descent,
      fixed iteration count, no shuffling) on the centered rows.
   4. ``d0`` is the normalized contrast mean; ``d`` is refined by gradient ascent
-     on the probe's own class-separation objective over the projected features,
-     ``J(d) = mean_i log sigmoid(y_i * kappa * d . x_i)``, with ``kappa`` fixed
-     from the probe's score scale. Each step uses the normalized gradient, so
-     ``--lr`` is an angular step, and ``d`` is renormalized every step. The
-     maximizer of ``J`` over unit vectors is the probe direction, so the
-     refinement moves the centroid chord onto a direction the probe ranks
-     harmfully.
-  5. good structure is protected: the top-k PCA subspace of the (centered) good
-     rows is projected out of ``d`` and ``d`` is renormalized, and the surviving
-     fraction is reported per layer (``kept_fraction``, the spanfit ``protect``
-     idea).
+     on the probe's own class-separation objective over the projected features.
+     The probe gives each row a probability ``p_i`` of being harmful; the
+     projection is scored with a rank-1 model ``q_i = sigmoid(kappa * d.x_i + b)``
+     that keeps the probe's bias and its score scale ``kappa = ||w||``, and the
+     ascent maximises ``mean_i p_i log q_i + (1-p_i) log(1-q_i)``. That objective
+     is minimized exactly at ``d = w/||w||`` (then ``q = p``), its gradient is
+     ``mean_i (p_i - q_i) x_i``, so each step takes the normalized gradient with
+     angular length ``--lr`` and renormalizes ``d``: no randomness, and the
+     returned direction is one the probe ranks harmfully rather than the centroid
+     chord. Soft labels matter: with hard labels on separable rows the logistic
+     saturates, the gradient dies on the rows the probe already ranks, and the
+     ascent drifts onto the few boundary rows.
+  5. good structure is protected: the top-k PCA subspace of the mean-centered
+     good rows is projected out of ``d`` and ``d`` is renormalized, and the
+     surviving fraction is reported per layer (``kept_fraction``, the spanfit
+     ``protect`` idea; centering the good rows is required, or their class mean --
+     which lies along the refusal direction -- becomes a "protected" direction).
 
 The probe/refinement kernel runs on torch float64 when torch is importable and
 on a numerically equivalent stdlib float64 path otherwise. The stdlib path is
@@ -161,6 +167,9 @@ class _TorchOps:
         torch = self.torch
         if isinstance(rec, dict):
             return torch.stack([self._as(rec[key]) for key in sorted(rec, key=int)])
+        if isinstance(rec, (list, tuple)):
+            # capture may hand back one row per layer rather than one [L, W] array
+            return torch.stack([self._as(item) for item in rec])
         tensor = self._as(rec)
         return tensor.unsqueeze(0) if tensor.dim() == 1 else tensor
 
@@ -325,7 +334,19 @@ def _split_families(families, holdout):
 # ---------- the fit ----------
 
 def _fit_probe(ops, rows, labels, width, steps=PROBE_STEPS, l2=PROBE_L2):
-    """Logistic regression by full-batch GD: fixed steps, no shuffling, no randomness."""
+    """Logistic regression by full-batch GD: fixed steps, no shuffling, no randomness.
+
+    The step is the global stability bound, ``0.9 / (0.25 * mean_i ||x_i||^2 +
+    2*l2)``: the logistic Hessian of the mean loss is bounded by ``0.25 * mean
+    ||x||^2``, so this step cannot diverge. A per-coordinate (Jacobi) step was
+    tried and rejected: on separable rows the diagonal is not a bound for the
+    coupled Hessian and the objective climbed instead of falling.
+
+    With ``rows << width`` and L2 1e-3 the probe is underdetermined (the
+    fixed-step solution is an early-stopped one, not the penalized MLE). The
+    report says so per layer (``probe_rows_per_dim``) rather than hiding it; the
+    ladder, not this fit, decides whether such a probe is worth having.
+    """
     n = ops.n_rows(rows)
     weights = ops.zeros(width)
     bias = 0.0
@@ -347,69 +368,54 @@ def _log_sigmoid(z: float) -> float:
     return z - math.log1p(math.exp(z))
 
 
-def _profile_scale(scores, labels, l2, kappa, iters=12):
-    """argmax_kappa mean log sigmoid(y * kappa * s) - l2*kappa^2, by damped Newton.
+def _soft_divergence(ops, rows, direction, kappa, bias, target, target_logs):
+    """Mean KL(target || sigmoid(kappa * direction.x + bias)) - the refinement objective.
 
-    This is the probe's own penalized log-likelihood along one direction,
-    profiled over the score scale. It is concave in kappa (logistic loss
-    composed with kappa*s, minus a quadratic), so Newton is safe with damping;
-    at the probe direction the maximizer is kappa = ||w||, which is why the
-    refinement needs no scale constant of its own.
+    Zero exactly when the rank-1 projected model reproduces the probe's
+    probabilities, which happens at direction = w/||w|| with kappa = ||w||.
     """
-    n = len(scores)
-    if n == 0:
-        return kappa
-
-    def objective(value):
-        total = sum(_log_sigmoid(label * value * score) for score, label in zip(scores, labels))
-        return total / n - l2 * value * value
-
-    current = objective(kappa)
-    for _ in range(iters):
-        gradient = 0.0
-        curvature = 0.0
-        for score, label in zip(scores, labels):
-            margin = label * kappa * score
-            probability = _sigmoid(margin)
-            gradient += label * score * (1.0 - probability)
-            curvature -= (label * score) ** 2 * probability * (1.0 - probability)
-        gradient = gradient / n - 2.0 * l2 * kappa
-        curvature = curvature / n - 2.0 * l2
-        if curvature >= -1e-15:
-            break
-        candidate = kappa - gradient / curvature
-        if candidate <= 0.0:
-            candidate = 0.5 * kappa
-        while candidate > 0.0 and objective(candidate) < current and abs(candidate - kappa) > 1e-12:
-            candidate = 0.5 * (candidate + kappa)
-        moved = abs(candidate - kappa)
-        kappa, current = candidate, objective(candidate)
-        if moved < 1e-10 * max(kappa, 1.0):
-            break
-    return kappa
+    projected = ops.to_floats(ops.scores(rows, direction))
+    total = 0.0
+    for value, probability, (log_p, log_not_p) in zip(projected, target, target_logs):
+        margin = kappa * value + bias
+        log_q = _log_sigmoid(margin)
+        log_not_q = _log_sigmoid(-margin)
+        total += probability * (log_p - log_q) + (1.0 - probability) * (log_not_p - log_not_q)
+    return total / len(projected)
 
 
-def _refine(ops, rows, labels, start, steps, lr, kappa0=None, l2=PROBE_L2):
-    """Gradient ascent of the probe's penalized likelihood over the unit sphere.
+def _refine(ops, rows, probe, start, steps, lr):
+    """Gradient ascent of the probe's class-separation objective over the sphere.
 
-    J(v) = mean_i log sigmoid(y_i * (v . x_i)) - l2*||v||^2 is the probe's own
-    objective; it is maximized at v = w. The refinement walks along the sphere
-    with v = kappa * d, profiling kappa out of J each step (_profile_scale), and
-    stepping d along the normalized gradient by ``lr`` (an angular step),
-    renormalizing d every step. Its stationary point is d = w/||w||, so the
-    direction it returns is one the probe ranks harmfully rather than the
-    centroid chord.
+    The probe (logistic regression on the same rows) defines a probability
+    p_i = sigmoid(w.x_i + b) that row i is harmful. The refinement scores the
+    projected feature with a rank-1 model q_i = sigmoid(kappa * (d.x_i) + b),
+    keeping the probe's bias and its score scale kappa = ||w||, and ascends the
+    negative cross-entropy
+
+        J(d) = -mean_i [ p_i log q_i + (1 - p_i) log(1 - q_i) ]
+
+    whose minimizer over the unit sphere is exactly d = w/||w|| (then q = p).
+    The step direction is the gradient sum_i (q_i - p_i) x_i, normalized, taken
+    with angular length ``lr`` and renormalized every step: deterministic, no
+    randomness, and it starts from the contrast mean rather than at the probe.
+    Soft labels are what keep it stable: with hard labels on separable rows the
+    logistic saturates, the gradient vanishes on the well-ranked rows, and the
+    ascent drifts onto the few boundary rows instead of the probe's direction.
     """
-    direction = start
-    kappa = kappa0 if kappa0 is not None else 1.0
+    weights, bias = probe
+    kappa = ops.norm(weights)
+    if kappa < EPS:
+        return start
+    target = [_sigmoid(margin + bias) for margin in ops.to_floats(ops.scores(rows, weights))]
     n = ops.n_rows(rows)
+    direction = start
     for _ in range(steps):
-        scores = ops.to_floats(ops.scores(rows, direction))
-        kappa = _profile_scale(scores, labels, l2, kappa)
-        probabilities = [_sigmoid(label * kappa * score) for score, label in zip(scores, labels)]
-        coefs = [label * (1.0 - probability) * kappa / n
-                 for probability, label in zip(probabilities, labels)]
-        grad, grad_norm = _normalize(ops, ops.weighted_sum(rows, coefs))
+        projected = ops.to_floats(ops.scores(rows, direction))
+        # d/dv of mean_i [p_i log q_i + (1-p_i) log(1-q_i)] is sum_i (p_i - q_i) x_i.
+        coefs = [(probability - _sigmoid(kappa * value + bias)) / n
+                 for value, probability in zip(projected, target)]
+        grad, _grad_norm = _normalize(ops, ops.weighted_sum(rows, coefs))
         if grad is None:
             break
         step, _ = _normalize(ops, ops.add(direction, ops.scale(grad, lr)))
@@ -420,15 +426,23 @@ def _refine(ops, rows, labels, start, steps, lr, kappa0=None, l2=PROBE_L2):
 
 
 def _good_subspace(ops, rows, k, iters=PCA_ITERS, seed=PCA_SEED):
-    """Top-k PCA directions of the good rows by orthogonal iteration.
+    """Top-k principal directions of the mean-centered good rows, by orthogonal iteration.
 
-    Deterministic: the iteration starts from a fixed-seed gaussian basis, and the
-    basis is re-orthonormalized every sweep, so the result does not depend on
-    thread count or hashing order.
+    Mean-centering is not cosmetic: the good rows carry a large class mean along
+    the refusal direction (they are the harmless side), and a PCA of the raw rows
+    would put that mean, i.e. the refusal direction itself, into the "protected"
+    subspace - the edit would then delete the direction it was asked to keep out
+    of it. spanfit.protection_subspace centers for the same reason.
+
+    Deterministic: the iteration starts from a fixed-seed gaussian basis and
+    re-orthonormalizes every sweep, so the result does not depend on thread
+    count or hashing order.
     """
     n = ops.n_rows(rows)
     width = ops.width(rows)
     k = max(1, min(int(k), width, n))
+    center = _mean(ops, rows)
+    rows = ops.stack([ops.sub(ops.row(rows, index), center) for index in range(n)])
     rng = random.Random(seed)
     start = [[rng.gauss(0.0, 1.0) for _ in range(width)] for _ in range(k)]
     basis = _gram_schmidt(ops, list(ops.stack(start)))
@@ -554,15 +568,24 @@ def fit_records(records, *, steps=200, lr=0.05, protect_k=8, holdout="families",
         contrast, contrast_norm = _normalize(ops, ops.sub(_mean(ops, bad_rows), _mean(ops, good_rows)))
         if contrast is None:
             raise SystemExit(f"layer {layer}: bad and good means coincide; no contrast direction")
-        weights, _bias = _fit_probe(ops, rows, labels, width, steps=probe_steps)
+        weights, bias = _fit_probe(ops, rows, labels, width, steps=probe_steps)
         probed, probe_norm = _normalize(ops, weights)
         if probed is None:
             probed = contrast
             probe_norm = 0.0
-        refined = _refine(ops, rows, labels, contrast, steps, lr, kappa0=probe_norm or 1.0)
+        refined = _refine(ops, rows, (weights, bias), contrast, steps, lr)
         subspace = _good_subspace(ops, good_rows, protect_k) if protect_k else []
         final, kept = _protect(ops, refined, subspace)
 
+        # The refinement objective is the KL from the probe's own ranking to the
+        # rank-1 projection; report both ends so the drop is auditable.
+        kappa = max(probe_norm, EPS)
+        margins = ops.to_floats(ops.scores(rows, probed))
+        target = [_sigmoid(margin + bias) for margin in margins]
+        target_logs = [(_log_sigmoid(margin + bias), _log_sigmoid(-(margin + bias)))
+                       for margin in margins]
+        kl_start = _soft_divergence(ops, rows, contrast, kappa, bias, target, target_logs)
+        kl_end = _soft_divergence(ops, rows, refined, kappa, bias, target, target_logs)
         axis = ops.to_floats(final)
         axes.append(axis)
         if collect is not None:
@@ -577,10 +600,14 @@ def fit_records(records, *, steps=200, lr=0.05, protect_k=8, holdout="families",
             "auc_holdout_rdo": None,
             "kept_fraction": round(kept, 6),
             "probe_cos_contrast": round(ops.dot(probed, contrast), 6),
+            "probe_cos_rdo": round(ops.dot(probed, refined), 6),
+            "kl_start": round(kl_start, 6),
+            "kl_end": round(kl_end, 6),
             "n_bad": len(train_bad),
             "n_good": len(train_good),
             "n_holdout_bad": len(hold_bad),
             "n_holdout_good": len(hold_good),
+            "probe_rows_per_dim": round((len(train_bad) + len(train_good)) / width, 4),
         }
         if hold_bad and hold_good:
             hold_bad_rows = ops.stack(hold_bad)
@@ -608,6 +635,8 @@ def fit_records(records, *, steps=200, lr=0.05, protect_k=8, holdout="families",
         "steps": steps, "lr": lr, "protect_k": protect_k,
         "probe": {"l2": PROBE_L2, "steps": probe_steps,
                   "note": "full-batch gradient descent, fixed iterations, no shuffling"},
+        "probe_underdetermined_layers": [layer["layer"] for layer in layers_report
+                                         if layer["probe_rows_per_dim"] < 1.0],
         "axes": [len(axes), width],
         "axes_sha256": axes_digest(axes),
         "layers": layers_report,
@@ -632,15 +661,19 @@ def save_axes(path, axes, meta):
 # ---------- self-check ----------
 
 def synthetic_records(*, seed=7, layers=3, width=40, families=8,
-                      per_family=(24, 16), content_dims=10):
+                      per_family=(30, 20), content_dims=10):
     """Records with a planted refusal dim r and a family-shared nuisance n.
 
     r is dim 0, n is dim 1. Within a family the nuisance mean is label-dependent
     (the length/topic confound: bad rows sit further along n), while the family
     offset c_f is the same for both labels in that family. Training families all
-    carry the same offset ``+1``; held-out families carry ``0`` or ``-1``.
-    Ten high-variance "content" dims (variance 9) dominate the good rows' PCA, so
-    protecting the top-8 good directions cannot eat r by construction.
+    carry the same offset ``+1``; held-out families carry ``0`` or ``-1``, and
+    holdout rows are scored raw (no centering, no fit rows).
+
+    Ten "content" dims at sd 1.0 carry the good rows' within-class spread, so the
+    top-8 good PCA directions are content plus the nuisance and r (sd 0.35) stays
+    out of the protected subspace: protection must not be able to eat r, and the
+    check reports kept_fraction so that assumption is visible rather than assumed.
     """
     rng = random.Random(seed)
     ordered = [f"fam{index}" for index in range(families)]
@@ -670,13 +703,20 @@ def synthetic_records(*, seed=7, layers=3, width=40, families=8,
                     row[0] = 0.65 * decay * y + 0.35 * rng.gauss(0.0, 1.0)
                     row[1] = 0.9 * decay * y + offset + 2.5 * rng.gauss(0.0, 1.0)
                     for dim in content:
-                        row[dim] = 3.0 * rng.gauss(0.0, 1.0)
+                        row[dim] = 1.0 * rng.gauss(0.0, 1.0)
                     for dim in tail:
                         row[dim] = 0.25 * rng.gauss(0.0, 1.0)
                     layer_rows.append(row)
                 meta = {"label": label, "family_id": family}
                 records.append((meta, layer_rows))
     return records, planted
+
+
+def _cos_list(a, b):
+    """Cosine between two plain float lists (the saved axes are backend-free)."""
+    na = math.sqrt(sum(value * value for value in a))
+    nb = math.sqrt(sum(value * value for value in b))
+    return sum(x * y for x, y in zip(a, b)) / max(na * nb, EPS)
 
 
 def self_check(*, seed=7, steps=200, lr=0.05, protect_k=8, probe_steps=PROBE_STEPS):
@@ -696,9 +736,8 @@ def self_check(*, seed=7, steps=200, lr=0.05, protect_k=8, probe_steps=PROBE_STE
         failures.append("two fit runs disagree on the axes sha256")
     for layer in report_one["layers"]:
         index = layer["layer"]
-        axis = axes_one[index]
-        cos_rdo = ops.dot(axis, r) / max(ops.norm(axis), EPS)
-        cos_contrast = ops.dot(collect["contrast"][index], r)
+        cos_rdo = _cos_list(axes_one[index], r)
+        cos_contrast = _cos_list(collect["contrast"][index], r)
         print(f"  layer {index}: cos(rdo, r)={cos_rdo:.4f} cos(contrast, r)={cos_contrast:.4f} "
               f"auc_holdout_rdo={layer['auc_holdout_rdo']:.4f} "
               f"auc_holdout_contrast={layer['auc_holdout_contrast']:.4f} "
