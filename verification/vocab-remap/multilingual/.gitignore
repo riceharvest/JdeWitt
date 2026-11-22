@@ -1,0 +1,3 @@
+# The stepper writes the serve log beside the rows for inspection; it carries the
+# loader argv (absolute paths), so it is regenerable, not committed evidence.
+server.log

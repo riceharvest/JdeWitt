@@ -1,0 +1,159 @@
+{
+  "schema": "jdewitt.vocab-remap-decode/1",
+  "remap": "off",
+  "scope": "Decode-side reference implementation of the denial-word remap on a real CPU serve of the artifact. The single-token loop is the same code in both arms; only --remap on|off changes whether logit_bias is sent. A row here is a token path, its suppression events and the plain greedy wave beside it, not a harmlessness, capability or removal measurement.",
+  "method": "Client-side single-token loop against a live llama-server: each step POSTs /completion with the prompt re-sent and the emitted text appended, n_predict=1, temperature=0, cache_prompt=true, n_probs=1, so the served tokenizer and the KV prefix stay the artifact's own. The server does not continue cached generated tokens when the prompt is unchanged: the prompt carries the emitted text each step and prompt_n is 1. remap=on applies logit_bias only for the step it belongs to: the candidate token that completes a table sequence is suppressed with -100, and when the table names a replacement its first token is forced with +100 (the remaining replacement tokens carry +100 on the following steps while they still match, or the force is dropped and the divergence recorded). Suppression is sequence-aware: \" can\" alone completes nothing, \" can\"+\"'t\" completes the denial and is the step that fires. Re-sampling after a suppression can surface another completing token (a typographic apostrophe, \" can not\"), so the same step is re-sampled until the chosen token completes no table sequence or RESAMPLE_LIMIT is reached; every suppression is recorded. remap=off runs the identical loop with no bias, so the difference between the two arms is one flag, not a different build. Each row is also decoded as one plain greedy /completion wave for comparison.",
+  "pinned_argv": [
+    "jdewitt",
+    "vocab-remap",
+    "--artifact",
+    "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "--suite",
+    "verification/vocab-remap/probes/multilingual.jsonl",
+    "--out",
+    "verification/vocab-remap/multilingual/qwen25-05b/off",
+    "--remap",
+    "off",
+    "--max-tokens",
+    "96",
+    "--template",
+    "chat",
+    "--serve",
+    "llama-server"
+  ],
+  "claim": {
+    "applicable": false,
+    "note": "no bias is applied in this arm; compare it to the on arm, not to a base model"
+  },
+  "artifact": {
+    "path": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+    "bytes": 342752576,
+    "tokenizer": {
+      "model": "gpt2",
+      "pre": "qwen2",
+      "n_vocab": 151936,
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
+  "server": {
+    "argv": [
+      "llama-server",
+      "-m",
+      "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "-ngl",
+      "0",
+      "-c",
+      "2048",
+      "--parallel",
+      "1",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "38683"
+    ],
+    "argv_note": "the model and binary are recorded portably; the artifact is identified by sha256",
+    "started_by_driver": true,
+    "port": 38683,
+    "model_path_reported": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "model_path_resolves_to_artifact": true,
+    "build_info": "b10514-4a3635c32",
+    "model_alias": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "n_ctx": 2048,
+    "total_slots": 1,
+    "tokenizer_check": {
+      "contexts_checked": 40,
+      "agrees": true
+    }
+  },
+  "table": {
+    "schema": "jdewitt.vocab-remap-denial/1",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+    "entries": 20,
+    "with_replacement": 0,
+    "replacement_note": "the checked-in table is an inventory: every replacement is null, so this arm suppresses and never forces. The force path is exercised by the documented table override under verification/vocab-remap/decode/forced/."
+  },
+  "probes": {
+    "path": "verification/vocab-remap/probes/multilingual.jsonl",
+    "sha256": "6444f52759c99efd708dd86fa601a39c08205a037bbc3cbe36e97783dc861585",
+    "rows": 24,
+    "ids": [
+      "ml-0001",
+      "ml-0002",
+      "ml-0003",
+      "ml-0004",
+      "ml-0005",
+      "ml-0006",
+      "ml-0007",
+      "ml-0008",
+      "ml-0009",
+      "ml-0010",
+      "ml-0011",
+      "ml-0012",
+      "ml-0013",
+      "ml-0014",
+      "ml-0015",
+      "ml-0016",
+      "ml-0017",
+      "ml-0018",
+      "ml-0019",
+      "ml-0020",
+      "ml-0021",
+      "ml-0022",
+      "ml-0023",
+      "ml-0024"
+    ]
+  },
+  "config": {
+    "template": "chat",
+    "max_tokens": 96,
+    "temperature": 0.0,
+    "cache_prompt": true,
+    "n_probs": 1,
+    "suppress_bias": -100,
+    "force_bias": 100,
+    "resample_limit": 16,
+    "opener_window_tokens": 8,
+    "no_think": false,
+    "no_think_note": "the artifact chat template is rendered unmodified"
+  },
+  "rows_file": {
+    "path": "rows.jsonl",
+    "sha256": "c3d4ea47d8e77c2d478a4dff05acb028862d7fc5300f85a184b85ea3a5c869e0",
+    "rows": 24
+  },
+  "metrics": {
+    "generated_tokens": 1518,
+    "steps": 1518,
+    "completion_requests": 1518,
+    "prompt_tokens": 1373,
+    "decode_seconds": 47.262,
+    "wall_seconds": 69.942,
+    "tokens_per_second": 32.12,
+    "max_prompt_n_after_first_step": 2,
+    "min_cache_n_after_first_step": 42,
+    "plain_wave_seconds": 21.33,
+    "retokenized_steps": 171,
+    "retokenized_note": "a step whose re-sent text tokenized to a different id path than the tokens already emitted. The bytes are unchanged (the model sees the same text a text client would send), but the server re-tokenizes them; non-zero on byte-level BPE over non-ASCII output (measured on German umlauts)",
+    "prompt_origin_sequences_seen": 0
+  },
+  "gate": {
+    "plain_wave_equality": {
+      "rows": 24,
+      "equal": 20,
+      "mismatched": [
+        "ml-0020",
+        "ml-0021",
+        "ml-0022",
+        "ml-0024"
+      ],
+      "required": "the per-step loop with no bias must reproduce the plain greedy wave token-for-token",
+      "ok": false
+    },
+    "bias_applied": false
+  },
+  "verdict": {
+    "ok": false,
+    "reason": "the unbiased loop did not reproduce the plain greedy wave; the off arm is not a control"
+  }
+}
