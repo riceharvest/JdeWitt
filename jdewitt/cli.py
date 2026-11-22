@@ -429,6 +429,8 @@ def main():
     tune.add_argument('--out',type=Path,default=None)
     tune.add_argument('--no-verify',action='store_true',help='skip the merged re-measurement')
     tune.add_argument('--merged-screen',action='store_true',help='after the merge, screen the MERGED bytes (server reload, no adapter): the only verdict that belongs to the shipped file')
+    tune.add_argument('--apply-quantized',action='store_true',help='DEFAULT deliverable: write the edit into the artifact the user runs (only touched tensors re-encoded, everything else byte-identical)')
+    tune.add_argument('--out-gguf',type=Path,default=None,help='where --apply-quantized writes the shipped artifact (default: <out>/edited-<family>@<scale>-<artifact>)')
     tune.add_argument('--serve-type',default=None,help='faithful pipeline: merge into --merge-gguf (16-bit), then requantize to this serving type while the edited tensors are held at --edit-type')
     tune.add_argument('--merge-gguf',type=Path,default=None,help='16-bit artifact to merge into (default: --gguf); the edit is exact there, unlike at 4-bit')
     tune.add_argument('--edit-type',default='q8_0',help='type held for the tensors that carry the edit in the requantized serving file')

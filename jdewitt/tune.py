@@ -590,6 +590,7 @@ def tune_command(args):
     confirmed = []
     pruned_by_codec = []
     searched = []
+    codec_refusal = None
     screens_path = out_dir / 'screens.json'
     screen_identity = dict(identity)
     screen_identity['records'] = {'path': str(Path(args.records).resolve()),
@@ -640,7 +641,10 @@ def tune_command(args):
                     if name not in picks:
                         picks.append(name)
             picks = picks[:3]
-            key = f'fid|{family["key"]}|{scale}'
+            gate_type = None
+            if args.apply_quantized or args.serve_type:
+                gate_type = 'q8_0' if str(args.edit_type).lower() == 'auto' else args.edit_type
+            key = f'fid|{family["key"]}|{scale}|{gate_type}'
             if key in cache:
                 return cache[key]
             edits = {}
@@ -648,7 +652,7 @@ def tune_command(args):
                 layer = int(name.split('.')[1])
                 edits[name] = (axes_by_shape[family['shape']][layer].numpy(), args.axis_space)
             reading = preview_edit(args.gguf, edits, scale=scale,
-                                   renormalize=args.renormalize)
+                                   renormalize=args.renormalize, target_type=gate_type)
             cache[key] = reading
             atomic_json(ladder_path, {'identity': identity, 'readings': cache})
             return reading
@@ -805,7 +809,13 @@ def tune_command(args):
                     searched.append({'family': families[0]['key'], 'scale': best_scale,
                                      'floor': args.min_edit_cos})
                     arm = measure_arm(families[0], best_scale, index)
-                    if arm is not None and edit_survives(arm, args.min_edit_cos):
+                    too_damaging = arm is not None and (damage(arm) or 0) > drift_budget
+                    if too_damaging:
+                        # The strength the codec needs is past the damage budget: the
+                        # file can hold the edit only at a cost that is not shippable.
+                        searched[-1]['damage'] = round(damage(arm), 3)
+                        searched[-1]['rejected'] = 'damage exceeds drift budget'
+                    elif arm is not None and edit_survives(arm, args.min_edit_cos):
                         arms.append(arm)
                         arm['screen'] = screen_one(arm, args.probe_rows)
                         screened.append(arm)
@@ -815,9 +825,20 @@ def tune_command(args):
                 break
 
         screened_arms = [arm for arm in arms if arm.get('screen')]
-        clean_arms = [arm for arm in screened_arms if arm_is_clean(arm)]
+        clean_arms = [arm for arm in screened_arms if arm_is_clean(arm)
+                      and damage(arm) is not None and damage(arm) <= drift_budget]
         if clean_arms:
             winner = min(clean_arms, key=lambda arm: arm['drift_ln'])
+        elif any(arm_is_clean(arm) for arm in screened_arms):
+            # An arm clears the screen only at a strength that costs more damage than
+            # the budget allows (the codec floor pushed it there). Shipping it would
+            # ship a collapsed model, so refuse and name the reason.
+            over_budget = [arm for arm in screened_arms if arm_is_clean(arm)]
+            worst = min(over_budget, key=lambda arm: damage(arm))
+            codec_refusal = {'family': worst['family'], 'scale': worst['scale'],
+                             'damage': round(damage(worst), 3),
+                             'budget': drift_budget}
+            winner = None
         elif screened_arms:
             winner = min(screened_arms,
                          key=lambda arm: (arm['screen']['verdicts']['refusal'],
@@ -899,6 +920,7 @@ def tune_command(args):
         'min_edit_cos': args.min_edit_cos,
         'pruned_by_codec': pruned_by_codec,
         'strength_searched_for_codec': searched,
+        'codec_refusal': codec_refusal,
         'shipping_options': ({'adapter': {'path': adapters[winner['family']]['path'],
                                           'scale': winner['scale'],
                                           'note': 'the exact fp32 edit; serve with --lora-scaled '
@@ -1018,6 +1040,47 @@ def tune_command(args):
     start, end = winner['layers']
     winner_axes[:start] = 0
     winner_axes[end + 1:] = 0
+
+    if args.apply_quantized:
+        # The deliverable: the edit inside the artifact the user already runs. Only
+        # the tensors the edit touches are re-encoded (type chosen by measured
+        # fidelity); every other tensor and the whole metadata section stay
+        # byte-identical, so their calibration survives.
+        from .rewrite import rewrite_with_edits
+
+        override_names = [name for layer in range(start, end + 1)
+                          for name in discovered['targets'].get(layer, [])]
+        edits = {}
+        for name in override_names:
+            layer = int(name.split('.')[1])
+            edits[name] = (axes_by_shape[winner['shape']][layer].numpy(), args.axis_space)
+        target_path = (args.out_gguf if args.out_gguf
+                       else out_dir / f"edited-{winner['family'].replace('|', '-')}"
+                                      f"@{winner['scale']}-{Path(args.gguf).name}")
+        rewrite = rewrite_with_edits(str(args.gguf), str(target_path), edits,
+                                     scale=winner['scale'], axis_space=args.axis_space,
+                                     edit_type=args.edit_type,
+                                     renormalize=args.renormalize)
+        edited_ppl = {}
+        for label, corpus in corpora.items():
+            edited_ppl[label] = perplexity(args.perplexity, str(target_path), corpus,
+                                           ctx=args.ctx, threads=args.threads)
+        metrics = (_arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
+                                 'ppl': edited_ppl}, base)
+                   if all('ppl' in reading for reading in edited_ppl.values()) else {})
+        from .ggufio import compare_edit
+
+        sample = override_names[:1] + override_names[-1:]
+        report['quantized_edit'] = {
+            'rewrite': rewrite, 'metrics': metrics,
+            'delivered_edit': compare_edit(str(args.gguf), str(target_path),
+                                           {name: edits[name] for name in sample},
+                                           renormalize=args.renormalize)}
+        report['next'] = [f'# shipped artifact: {target_path}',
+                          f'llama-server -m {target_path} -c 4096 --parallel 4  '
+                          f'# then one cert wave over its answers (R2/R9)']
+        atomic_json(out_dir / 'tune.json', report)
+        return report
 
     if args.serve_type:
         # The faithful pipeline: merge into a 16-bit artifact (the edit is stored

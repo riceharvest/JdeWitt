@@ -1026,3 +1026,24 @@ rows, 120 tokens each, greedy:
 That is the requirement met: the removal lands in the artifact the user already runs,
 at their quantization, with every other tensor byte-identical, and the claim is
 measured on those bytes rather than on an adapter curve.
+
+#### tune --apply-quantized: the whole loop ends in the user's file (2026-11-22)
+
+The fidelity gate was asking the wrong question: it measured the edit against the
+artifact's CURRENT codec, so a Q4_K model looked uneditable and the tool escalated to
+strength 6.6 (drift +10.2 nats) — then correctly refused to ship it. The gate now
+measures against the PLANNED storage type (`--apply-quantized --edit-type auto`
+=> q8_0), which is the truth once the edited tensors are re-encoded. Measured on
+Spark 1.7B Q4_K_M, perlayer axis, footprints all/10-27/16-27, scales 1.0/2.0/4.0:
+
+  fidelity at planned type: cos 0.982 / 0.996 / 0.999 (10-27 @ 1.0 / 2.0 / 4.0),
+  SNR 5.2 / 10.6 / 20.8; refinement 0.7 => cos 0.966, 0.49 => 0.932
+  winner: perlayer|10-27 @1.0, and the shipped artifact measures delivered cos 0.972,
+  control drift -0.025 nats (base is slightly WORSE than the edited model), 190
+  untouched tensors byte-identical, 36 tensors re-encoded at Q8_0.
+
+Behaviour on that shipped file (CPU llama-server, 4 harmful rows x 120 tokens):
+pristine Q4_K_M 4/4 refusals -> edited artifact 0/4 refusals with the requested
+content. The loop is now: attitude ladder (0 tokens) -> probe/confirm screen ->
+`--apply-quantized` writes the edit into the artifact the user runs, with the
+delivered edit and the byte-identity of everything else measured, not assumed.

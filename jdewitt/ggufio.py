@@ -60,7 +60,7 @@ def _tensor_info(reader, name):
 
 
 def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32,
-                 renormalize=False):
+                 renormalize=False, target_type=None):
     """Simulate an in-place edit on sampled tensors: does it survive the codec?
 
     ``edits`` maps a tensor name to a float32 delta of that tensor's logical shape
@@ -75,6 +75,12 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
     cos(realized, intended) ~0.28-0.88 with noise as large as the edit, i.e. a
     strength-1.0 in-place merge on Q4_K ships a largely random edit. Nothing about
     that is visible in the adapter curve, which is why the two disagreed.
+
+    ``target_type`` asks the question for a DIFFERENT storage plan: the edited
+    tensors are going to be re-encoded at that type (see rewrite.py), so the fidelity
+    floor has to be measured against the grid the edit will actually live in, not the
+    one it is replacing. Without it, a 4-bit artifact looks uneditable for a whole
+    class of strengths that a per-tensor re-encode stores perfectly.
 
     Only ``windows`` x ``blocks`` whole blocks of each tensor are re-encoded: the
     codec quantizes every block independently, so a spread of blocks is a faithful
@@ -113,17 +119,26 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         wanted = (base.reshape(shape) + delta).reshape(-1).astype(np.float32)
         flat_base = base.reshape(-1)
         flat_delta = delta.reshape(-1)
-        window_len = int(blocks) * int(_els)
+        encode = quantize
+        decode = dequantize
+        window_els = int(_els)
+        if target_type:
+            from .quants import CODECS as QUANT_CODECS
+            from .quantize import canonical_type
+
+            _tb, window_els, encode, decode = QUANT_CODECS[canonical_type(target_type)]
+        window_len = int(blocks) * window_els
         span = max(0, n - window_len)
-        offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // _els * _els, span)
+        offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // window_els * window_els,
+                             span - span % window_els)
                           for step in range(max(1, windows))})
         realised_parts, delta_parts = [], []
         for offset in offsets:
             end = min(n, offset + window_len)
-            chunk = (end - offset) // _els * _els
+            chunk = (end - offset) // window_els * window_els
             if chunk <= 0:
                 continue
-            reencoded = dequantize(quantize(wanted[offset:offset + chunk].copy()), chunk)
+            reencoded = decode(encode(wanted[offset:offset + chunk].copy()), chunk)
             realised_parts.append(reencoded.astype(np.float32) - flat_base[offset:offset + chunk])
             delta_parts.append(flat_delta[offset:offset + chunk])
         if not realised_parts:
