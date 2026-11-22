@@ -1,258 +1,313 @@
 # Roadmap to the best refusal-removal tool
 
-North star: the tool whose abliterated releases you can trust more than
-anyone else's, because every claim is gated, falsified or labelled. The
-moat is method breadth plus verifiable honesty; everyone else overclaims.
+v2, 2026-11-22. Supersedes the 2026-11-21 phases for ordering; the CODE/GATED
+discipline and the ordering rule are unchanged.
 
-Ordering rule (2026-11-21, `docs/AGENT-FIRST.md`): the user is an AI agent
-working on a model it did not choose. Work is judged first by whether an agent
-can drive it without writing code (one command per step, one JSON, next command
-included), whether it works by discovery on an architecture this repo has never
-seen (no tables, no hand-typed tensor names), and whether it edits the artifact
-in place instead of re-quantizing the model. Research that fails those three is a
-measurement, not a feature.
+North star: the tool whose removal actually lands in the artifact you serve, and
+whose every number survives someone else re-running it. Not the tool with the
+most methods, and not the one with the most downloads — the one whose release
+you can check.
+
+The claim that decides whether we are the best: **equal removal at less
+capability loss, measured on the same artifact class at one pinned serve
+config**. Today that claim is not established, and the gap is one row wide
+(maths 159 -> 148 for us against 159 -> 159 for the published same-base build,
+on a held-out 120/120 against its 120/120 with zero discordant rows). Everything
+below is ordered by how directly it closes that row or makes the row cheaper to
+measure.
+
+Ordering rule (docs/AGENT-FIRST.md): an agent working on a model it did not
+choose must be able to drive every step with one command and one JSON, on an
+architecture this repo has never seen, editing the artifact in place.
 
 Work is tagged:
 - CODE — CPU-verifiable, no model, no B70. Ship by running the command.
-- GATED — needs real B70 / real checkpoints before any claim changes.
+- GATED — needs real weights / the B70 before any claim changes.
 
-Status: every CODE item on this roadmap is landed and pushed. Highlights:
-quant-native editing (GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16 gguf-edit,
-MXFP4/NVFP4 fp4-edit for safetensors), method breadth (nullspace,
-answer-mean rEF capture, family-weighted whitened-SVD, multi-objective
-TPE with Pareto-front finalists), evidence chain (chained claims ledger,
-ed25519 release signing with repro index, published artifact +
-command-output JSON Schemas enforced at emit time, sha-bound fitted-plan
-registry with gate labels), agent ops (stable error codes,
-about/studies/study-metrics/run-cancel/run-events/describe-run,
---set/--preset, abliterate flow, events, injectable clock, GPU lock,
-per-job budgets), and offline evaluation (Wilson + bootstrap + paired
-permutation stats, score-compare, judge-ensemble, score-sensitivity,
-robustness-report, family-decay, suite-stats/suite-diff/suite-near-dup,
-corpus-cache, curated jailbreak-slice import spec). Still GATED (needs
-real B70 / real checkpoints, by design): method-winner claims,
-quant-edited model behaviour, judge calibration gains, throughput claims,
-per-family preset profiles (the preset mechanism ships; presets without
-evidence references are refused at load time).
+The resource is generated tokens, never throughput. Speed numbers do not enter
+a cost argument. THE DELIVERABLE IS AN EDIT ON THE ARTIFACT THE USER ALREADY
+SERVES: their quant, their calibration, no requant of the model, no download
+from us.
 
-No CI and no new test suites on this roadmap. Verification is: run it,
-read the artifact, keep the honest claims table current. The existing CPU
-suite stays as-is.
+## Where the field actually is (fetched 2026-11-22, re-fetch before quoting)
 
-The next queue of code-only work lives in `docs/PLAN-NEXT.md` (2026-11-16):
-checkpoint content diff, FP8 codecs/editing, Q2_K/Q3_K completion,
-verdict-audit, a direction interchange format, and the rest.
+Every line about a competitor is their claim until we measure it. Do not copy
+their comparison tables, including ours.
 
-## Phase 0 — Operations surface (CODE)
+Heretic 2.1.0 (2026-11-08; master pushed 2026-11-19). Ships two modifiers:
+arbitrary-rank ablation (ARA, the default) and directional ablation with
+projected + norm-preserving (MPOA) variants under a bell-curve weight kernel
+over the layers. Plugin APIs for both modifiers and scorers, so any behaviour
+pair and any number of co-optimised scores; shipped configs for no-slop,
+no-humor, no-sycophancy, emotions, terse. `bnb_4bit` loading for models that do
+not fit at 16 bit. CoT-block skipping, auto batch sizing. And the thing we still
+do not answer: `--reproduce` (byte-exact reproduction manifests), the Grimoire
+library of manifests, thousands of published models, and third-party MMLU/GSM8K
+comparisons it cites on its own README. Its search is not prefill-only; on the
+order of a hundred full evaluations per run is their cost shape.
 
-Everything here makes the tool drivable by an agent at scale, which is
-how breadth happens later.
+OBLITERATUS. 15 analysis modules plus an `informed` pipeline that configures the
+obliteration from them: whitened SVD, bias-term projection, iterative re-probe,
+expert-granular ablation for MoE, CoT-aware orthogonalisation, COSMIC layer
+selection, parametric kernel optimisation, gradient-based refusal-direction
+optimisation (RDO), KL co-optimisation that restores the layers that blew the
+budget, component-specific scaling, LoRA-reversible ablation. Distribution is a
+Gradio Space + Colab, and telemetry is harvested into a crowd dataset. Its own
+docs state the artefact-level truth: peak VRAM is the BF16 size of the model and
+the output is saved as BF16, with re-quantization left to the user
+(`llm-compressor`/`modelopt`). That is the gap the whole jdewitt thesis sits on.
 
-- Stable machine-readable error codes for every expected failure
-  (errors.py already separates them; give them codes, document the table).
-- Published JSON schemas for run-status, studies, describe-run, validate-auto/
-  abliterate dry-run, methods and architectures output; the CLI enforces them
-  at emit time, so a writer that drifts fails the command instead of a test
-  harness. Artifact schemas (files/evidence/signature/scoring-manifest) ship
-  under `schemas` / `verify-artifact`.
-- `describe-run CONFIG`: static budget report — trial accounting,
-  family-disjointness matrix, projected generation volume, suite slices.
-  Pure config arithmetic; refuse anything validate-run would refuse.
-- `studies list` / `study-metrics` reading the optuna sqlite directly;
-  `run-cancel` writing a durable cancel flag honoured at trial boundaries.
-- `--version` and `about`: tool hash, NOTICE-pinned upstreams, dependency
-  versions, asset digests (the provenance auto.py already assembles).
-- Agent ergonomics: `commands` self-describes the whole CLI (flags, exit
-  codes, error-code table, schema enforcement), `explain-error CODE`
-  explains one stable code and the right response, and `run-ls OUTPUT`
-  inventories a run directory against the artifact contract without
-  hiding anything the pipeline did not name.
-- `suite-diff`, `suite-stats`, corpus-cache `gc/prune`.
-- transport: cap generate_batch fanout (unbounded today), bounded retry
-  with backoff for idempotent count/models calls only.
-- atomic-write sweep over every artifact path; one clock injected into
-  pipeline/chat/release.
+abliterator. TransformerLens notebooks: cache at many hook sites, test a
+direction through a temporary hook before touching weights, blacklist layers,
+MSE-harmless loss. Its real contribution is the selector — score a candidate
+axis by token-logit margin (`Sure` vs `cannot`) on prefill, zero generation.
 
-## Phase 1 — Break the VRAM wall: quantized-native editing
+What none of them have, and we do: editing the Quantized artifact in place,
+per-tensor minimum surgery, every other tensor byte-identical, exact revert,
+and a codec layer proved byte-exact against the compiled C for all 35 GGML
+types. They all edit 16-bit and hand the user a requantization problem they
+then measure nothing about.
 
-The single biggest differentiator. Today the original-precision model
-plus workspace must fit one B70, NF4 trial weights are rejected, and
-several published MoEs are simply uneditable regardless of adapter. No
-public refusal-removal tool edits quantized sources natively.
+## Where we lead (measured, checkable in this clone)
 
-- Streaming quantized source edits: dequant-tile, apply the exact FP32
-  addition and final cast used by search/export, requant with the pinned
-  importance matrix. Q4_K/Q5_K first, then NVFP4/MXFP4 safetensors.
-  Same tensor-verification contract as merged-resident: every stored
-  finalist checked against the operator that produced it.
-  Landed: `gguf-edit` (tile-wise, GGML Q4_0/Q8_0/Q4_K/Q5_K/Q6_K/F32/BF16)
-  and `fp4-edit` (MXFP4 E8M0-block32 / NVFP4 E4M3-block16 + global scale,
-  E2M1 RNE ties-to-even, safetensors byte-verbatim outside the edited
-  tensor pair). `gguf-meta` edits GGUF v3 header metadata (chat templates,
-  tokenizer fields) with the tensor blob copied intact and the data base
-  re-aligned on grow/shrink. Editing the merged-resident model inside a live
-  run stays GATED behind a real B70 edit+load proof.
-- This reopens NF4/quant trial weights honestly: the guarantee comes from
-  the requant round-trip check, not from pretending a dequantized base
-  equals the source.
-- Consequence: 27B+ editable on a B70 or a 16 GB card; quantized-model
-  abliteration with measured quantization damage instead of hope.
-- MoE router interventions and shared/fused-expert aware edit placement
-  (upstream-unresolved list includes routers). GATED after the CODE part
-  lands, since router damage is real.
+- Quant-native editing: `edit-quantized` applies a fitted axis to ANY quantized
+  GGUF, re-encoding only the edited tensors; `gguf-revert` restores exact bytes;
+  `preview_edit` reports cos(realized, intended) per tensor in ~7 s, zero tokens.
+- Byte-exact codecs for every GGML type against the pinned C (`scripts/ggml_ref/`),
+  including the IQ family and Q2_0, which published gguf cannot even open.
+- Token economy: prefill-only ppl ladder ranks arms at ZERO generated tokens;
+  `tune` finishes an arm choice in ~1,940/2,000 tokens and 70 s on a 1.7B;
+  row-halving (eliminate on one row, confirm the survivor) took the same
+  decision from 1,940 to 1,280 tokens; a cascade screen settles rows inside a
+  K-token window and pays full decode only for escalations.
+- Certification by shape, not wording: the word check is screening; removal is
+  a content verdict from an agent reading an evidence packet. The retraction in
+  the README exists because we ran that instrument on our own best arm.
+- Honesty gates nobody else has: `/props` identity before a wave, adapter-vs-
+  merged ratio with an explicit validity flag, drift gate calibrated to the
+  instrument's noise, evidence map that fails a claim with no file behind it,
+  chained claims ledger, ed25519 release signing.
+- Discovery: capture finds the decoder stack and the residual-write projections
+  from the module tree; `spanfit targets` reads the artifact's real suffixes.
+  No tensor tables, no hand-typed names.
 
-## Phase 2 — Method space
+## Where we are short (measured, or provable by inspection)
 
-Today: directional, SVD, projected, MPOA, whitened-SVD, SOM, LEACE,
-dense ARA, trained SFT/DPO edit factors. To be the best, cover the ideas
-that beat plain last-token SVD and make the searcher arbitrate them.
+1. The codec floor. On Spark 1.7B Q4_K_M a rank-1 removal at strength 1.0
+   realizes cos 0.454 on attention and 0.938 on FFN; SNR ~1, i.e. requant noise
+   as large as the edit. Today `--min-edit-cos` refuses those arms or bisects
+   the scale upward (which landed at 6.61 and +10.2 nats of control PPL — a
+   collapsed model). A grid limit is being reported as an axis verdict.
+2. The cheap loop has the kernel but not the component split. `auto` searches
+   per-group (attn/mlp) strength plus center/width/floor; `tune` has footprints,
+   shapes, rank and a flat/bell/manual profile, all at zero tokens, but one
+   global scale across every target, and it classifies targets by kind without
+   ever searching a separate strength per kind. Heretic co-optimises per
+   component; that is where its retention advantage is plausibly earned.
+3. Ranking happens on adapter curves. Measured on Spark 1.7B: identical
+   coverage, delta_br 0.215 on the adapter against 0.119 on merged bytes
+   (ratio 0.553), and an arm the adapter screen cleared refused on the merged
+   artifact's first row. The merged screen exists but costs ~9 min per arm.
+4. Sizeable method gaps: RDO, SAE feature ablation and router/pre-bias
+   interventions are researched-not-implemented; bias-term projection is absent
+   entirely. Layer selection is a searched bell or a measured profile, never a
+   causality score.
+5. The behaviour axis is unestablished for the whole class. On a hand read of
+   the same 24 held-out families our arm delivers the asked-for content on 5/24
+   and the published build on 4/24; the unedited base itself reaches 1/24; on a
+   20-family sample of the wider screen both sit at 0/20; sampling does not
+   unlock it. Rank-1 direction removal moves the sentence that says no, not the
+   content.
+6. Evidence volume. Thousands of third-party-benchmarked Heretic builds against
+   a handful of our certified artifacts. Our instruments are better; our count
+   is not, and count is what a stranger uses to decide.
 
-- Null-space projection family (refusal-direction removal / concept-null
-  space) as a first-class method with fit metadata.
-- Multi-token / mean-difference directions (RepEng-style rEF): directions
-  fitted on answer-position means rather than a single final token.
-- Automatic layer localization via clean/corrupted residual patching
-  using the existing lens/hook infrastructure, feeding per-layer
-  strength bounds instead of hand-picked ranges.
-- ICA/whitening variants where SVD is known to mix features.
-- Direction quality upstream: contrast-pair mining that enforces topic-
-  matched families across more languages; whitening already exists,
-  extend to per-family weighting.
-- Plan library: fitted plans live in a local registry keyed by run
-  provenance and sha256-bound to the exact checkpoint payload.
-  `plan-register RUN_OUTPUT [--gates EVIDENCE|--allow-unmeasured]` refuses
-  unprovenanced or tampered fits, `plan-list`/`plan-show`/`plan-load` carry
-  gate state and refuse geometry mismatches on transfer. Unmeasured entries
-  are labelled forever. Runs consume the registry through the
-  `warm_start_registry` run-config field: a fit transfers only when method,
-  options, suite digest and every weight-geometry key (checkpoint fingerprint
-  minus model/revision) match; ineligible or fingerprint-less candidates are
-  recorded in `direction-stability.json` and the run fits from scratch.
-  Proving a real cross-revision transfer on B70 checkpoints stays GATED.
-- GATED: which of these actually wins is decided by the searcher on real
-  checkpoints, never by prose.
+## The gates every phase must pass
 
-## Phase 3 — Objective and search economics
+One arm = one edited artifact, both axes, one pinned serve config each: removal
+on harmful rows under both inventories plus the shape audit, retention on the
+241-row authored suite with paired stats and median answer length, realized
+fidelity from `preview_edit`/`--min-edit-cos`, drift against the instrument's
+noise. A probe-only pass is not a pass. An all-invalid screen is UNMEASURED.
+Any arm that clears by narrowing the suite, raising the scale past the grid or
+grading at a smaller cap is a bug in the measurement, not a result.
 
-The objective is what makes results better, and judge cost is an
-explicit unresolved limit in the README.
+## Phase 1 — Make the edit survive the codec (CODE, highest payoff)
 
-- Multi-objective search: compliance, full-reply KL, paired task
-  regressions, refusal margin, answer length/damage. Optuna MO-TPE,
-  Pareto front surfaced in run-status; the existing single minimize
-  becomes one configured point on it.
-  Landed: run-config field `objectives` (2-4 unique metrics from
-  search_rate/full_reply_kl/answer_kl/capability_drop, first is primary),
-  keyed-mo-tpe-v1 study contract that refuses cross-contract resumes,
-  vector objective returning the same already-computed trial metrics,
-  Pareto-front finalist selection ordered by the primary metric, and the
-  front surfaced in run-status. Plumbing is CPU-proved with a stub
-  objective; the real objective on a B70 study is GATED like every other
-  claim.
-- Judge economics, in order of payoff: cheap prefilter (screening and
-  refusal-margin already exist — extend to candidate ranking),
-  judge-size sweeps per model family to answer the open cost question,
-  offline ensemble aggregation over saved verdict files (pure CODE).
-- Partial-answer early stopping: kill trials after a stratified answer subset
-  if they cannot reach the gate; reuse the durable answer cache so no
-  generation is wasted.
-  Landed (CODE): `search_stages` run field — deterministic family-stratified
-  short-decode probe of harmful rows plus a successive-halving keep line,
-  before full-budget evaluation (`docs/fast-search.md`). Landed (CODE) with
-  it: `candidate_probe` — hundreds of strength sets scored by that same
-  stage-1 signal in one model load, top sets enqueued as ordinary trials.
-  Trial token-level early stop inside stage 3 stays open; probe-vs-finalist
-  correlation is GATED.
-- Significance without ceremony: one stats module (Wilson intervals,
-  family-level bootstrap, paired permutation test). Spot-checked against
-  scipy once.
+The root cause of both the R8 disagreement and the false refusal on merged
+bytes. Three parts, in this order:
 
-## Phase 4 — Evaluation breadth (the trust moat)
+- Per-tensor type choice by measured realized cos, not by hope: the arm
+  identity carries (tensor, intended delta, chosen type, cos, byte cost). `auto`
+  already walks q6_k -> q8_0 -> f16; it must be driven by the measured cos and
+  the byte budget, and a tensor that cannot hold the edit is reported, never
+  silently accepted at a raised scale.
+- Codec-aware delta. Solve for the delta the grid can store: iterate
+  `d <- d + proj(target - realized)` two or three times per tensor (CPU, the
+  requantizer we already have), and floor it at the unedited value when it
+  diverges. This is a capability no competitor has, because no competitor edits
+  a quantized file.
+- Stop conflating grid and axis. A low realized cos fails the arm as a CODEC
+  event with its own label; it never becomes evidence that the fitted direction
+  is wrong.
 
-Breadth of honest evidence is what "best tool" means in practice.
+Done gate (GATED, Spark 1.7B Q4_K_M): every edited tensor at >= 0.90 realized
+cos at the strength that clears a one-row probe, control drift inside noise,
+untouched bytes identical, revert exact, and one recorded case where the
+codec-aware delta beats plain scale-up on removal at equal-or-lower drift.
 
-- Importer already covers Hub/CSV/JSON corpora; add curated jailbreak
-  and capability slices as first-class suites: StrongREJECT, JailbreakBench,
-  HarmBench-style held-outs, code exec tasks via the existing ast-based
-  executor, long-context math. Family-ID discipline unchanged: authored
-  families, no invented groupings.
-  Landed: `examples/jailbreak-slices/import.json` — revision-pinned
-  StrongREJECT (Machlovi mirror of the gated walledai original),
-  JailbreakBench harmful behaviors, HarmBench behaviors (huihui-ai
-  mirror of the official CSV) and a harmless-alpaca overrefusal control,
-  cross-source jaccard dedupe (StrongREJECT recycles AdvBench/DAN
-  prompts), authored row-group families, disjoint selection/holdout by
-  offset; imported live once (409 selection / 421 holdout tasks,
-  per-file sha256 provenance). The jailbreak "benign" CSVs in these
-  corpora are duplicates of the harmful list, so the harmless control
-  comes from a separate corpus.
-- Adversarial robustness reporting: `family-decay --fitted SUITE SCORES --held
-  SUITE SCORES` reports pass-rate decay on authored families the fitted run
-  never saw and warns loudly when families leak between the two suites;
-  report decay, don't hide it.
-- Judge calibration growth: `calibration-report SUITE DIRS... [--ledger FILE]`
-  aggregates independently saved judge runs into per-judge agreement with
-  Wilson-bounded majority consensus plus pairwise agreement matrices, shown
-  next to the authored ledger. Consensus is not ground truth and no accuracy
-  is claimed; authoring the ledger from those numbers stays human, and
-  running multiple judges live in one run stays GATED.
-- Claims ledger: every release directory carries a machine-readable
-  evidence summary (gates run, failures, holdout results, judge
-  calibration state). Consumers can diff claims between tools: `release-diff A B`
-  reports file/claim/signature differences between two release directories by
-  digest only, and `verify-artifact --all DIR` schema-checks every published
-  artifact in a directory. This is
-  the competitive differentiator nobody else will copy.
+## Phase 2 — Merged bytes as the decision stage, at ladder cost (CODE)
 
-## Phase 5 — Architecture coverage (steady-state loop)
+The adapter curve ranks; the merged artifact ships. Make the shipping verdict
+cheap instead of rare:
 
-Not a phase, a rhythm: the July-October census model.
+- Fold the two dequant passes (deltas in `build_merged`, application in the
+  in-place writer) into one.
+- Content-address the dequantized bases per artifact (sha256, like the ladder
+  cache) so the second and third arm pay apply+requant only.
+- `tune` ends on merged bytes for the chosen arm by default; the top-2 merges
+  when the adapter ranking is marginal (`adapter_to_merged_ratio` near the
+  validity threshold).
+- Report `ranking_valid_on_this_artifact` beside every ranked table, and never
+  quote an adapter delta_br as the edit's effect.
 
-- Quarterly Hub census -> adapter worklist: `hub-census` queries the live
-  Hub for new text-generation repositories from the tracked publishers,
-  labels them by config.json model_type against the adapter table, and
-  emits the worklist ordered by downloads (GGUF/MLX conversions counted
-  separately as derived artifacts). The 2026-11-16 run surfaced lfm3,
-  mimo_v2, dory, bolmo, ernie5_5_moe, llada2_moe, kimi_k3 and
-  nemotron_labs_sigma as adapter candidates. The human-curated gap list
-  (DeepSeek V4.1, custom Ling VL, draft-only Muse assistant, Qwen Drive
-  planning models) ships in the same JSON; nothing here claims support.
-- GGUF converter compatibility matrix per architecture: an export that
-  llama.cpp cannot actually run is not a release. Smoke-load each
-  exported quant on the B70 before the release entry says so. GATED.
-- Hybrid recurrent blocks (already handled cache-free in tree_hf) and
-  MTP/draft weight preservation (export streams the full tensor
-  inventory) stay covered as upstream models drift.
-- Vision/audio towers: out until demand; when in, ablate the LM side and
-  report the tower interaction honestly.
+Done gate: four merged arms screened in under 3 minutes on a 1.1 GB Q4_K_M
+artifact, zero generated tokens, exact revert verified, and one documented
+disagreement where the merged verdict overturned the adapter ranking.
 
-## Phase 6 — Release and UX
+## Phase 3 — Put the kernel and the rank in the cheap loop (CODE)
 
-- Preset profiles per model family (safe / standard / aggressive) with
-  measured ranges only; presets without evidence are refused.
-- One-command flow on top of `auto`: abliterate MODEL targeting
-  CONSISTENCY POLICY, with the global-winner discipline already there.
-- Release signing: Ed25519 (openssl) over a machine-readable reproduction
-  index (file hashes, evaluation/readme digests, ledger digest);
-  `release-keygen`/`release-sign`/`release-verify-signature`, with
-  `--public` to pin authenticity to a known key.
-- Job queue hardening: generation and judging already own separate GPU
-  lifetimes; add priority and budget caps per job.
+Phase 2 makes merged ranking affordable; this makes the space worth ranking.
 
-## Long bets
+- Arm space becomes footprint x shape x rank (1..k) x per-kind scale (attn vs
+  mlp) x per-kind profile (flat | bell). `tune` already classifies targets by
+  kind, so per-kind scale is one more adapter file and one more entry in the
+  scale vector: zero generated tokens, and it is the exact dimension Heretic
+  co-optimises. Only the Pareto front reaches the screen.
+- Profiles and norms are compared, never assumed: a bell scored better than flat
+  in a single run means nothing until a paired, mean-matched comparison at equal
+  clearance decides it, and the loser is reported as the loser. Same rule for
+  `--renormalize` and for rank-k against rank-1.
+- The profile REPLACES the layer profile, never multiplies it (two compound
+  shapes are not a measurement). Reject profiles on methods that carry their own
+  covariance or learned factors (LEACE, ARA) at validation time.
+- Norm preservation gets its own derivation per side: row-wise cancels on the
+  read side (W(I - sD'D)), full normalization rescales final rounded rows and
+  must reject collapsed nonzero rows. Prove both against closed forms on
+  rectangular/GQA weights before any model run.
+- Rank-k exists in the fitter (svd/whitened/nullspace/SOM) but the cheap loop
+  scores rank 1; wire per-direction adapters and per-direction strengths, and
+  let Phase 1 decide which tensors can store them.
+- Bias-term projection where the layout has biases (OBLITERATUS's claim, cheap
+  to test, free on the ladder to evaluate).
 
-- SAE-based feature ablation: train or reuse small SAEs per family,
-  remove refusal features directly. Biggest potential quality jump,
-  biggest compute. Do the CODE parts (contracts, fit metadata, scoring
-  hooks) only when the compute plan is real.
-- Cross-model universal directions via activation transplant between
-  same-arch checkpoints.
-- RL-free preference editing: closed-loop direction training against the
-  full-reply objective (training.py has the base).
+Done gate (GATED, q3-4B): an arm with removal equal to the published build
+(McNemar not significant on 40 in-sample and 120 held-out families) and maths
+retention at or above 159/241 at the same pinned config. That row is the
+objective; a loss must be reported as a loss.
+
+## Phase 4 — Zero-generation selection (CODE, then GATED verification)
+
+Stop choosing axes and layers by contrast mean alone.
+
+- Token-logit margin selector (Sure vs cannot, prefill only) scores a candidate
+  axis and a layer footprint before any weight is touched. It targets causality
+  instead of contrast geometry, and it costs nothing to add to `capture`.
+- RDO: refine the fitted direction against a linear refusal probe by gradient
+  descent on the same captured tensors. `methods.py` already lists it as
+  researched; implementation is CPU-side.
+- A separability layer score (harmful vs harmless cosine per layer, COSMIC-
+  style) computed from the capture records we already store, so layer footprints
+  stop being searched blind.
+- Every selector is arbitrated by the ppl ladder and then by merged bytes; a
+  selector that loses the ladder is dropped, not kept for elegance.
+
+Done gate: one fitted arm whose drift at equal removal is lower than the
+contrast-mean arm on the same lineage, selected reproducibly from saved records
+with no extra generation.
+
+## Phase 5 — The delivery axis (GATED; the only thing that would make this class
+of tool new)
+
+Measured starting point: 0/24 delivered (ours), 4/24 hand-read (published
+build), 1/24 (unedited base), sampling does not unlock it. Tone is solved;
+content is not. Ordered by yield per token:
+
+- Fit data, not decode policy. Jailbreak-pair contrasts where the difference IS
+  delivery of the same request; pinned public response mirrors; GCG-style
+  adversarial suffixes. Every compliant side is agent-read before it enters a
+  fit; word and shape screens alone false-pass seeded refusals.
+- SAE feature ablation: train or reuse small per-family SAEs, remove refusal
+  features directly. Biggest quality jump, biggest compute; do the CODE
+  contracts only when a compute plan exists.
+- Trained factors: `train` already produces SFT/DPO edit factors and labels
+  them unvalidated. Validate against the same two axes before anything ships.
+
+Done gate: content-rate delivery on the hand-read 24-family set at >= 3x the
+base's rate, with retention inside the same gate as every other arm. Below that
+it is a tone result and is reported as one.
+
+## Phase 6 — Delivery formats that do not fight the codec (CODE, GATED for claims)
+
+- Adapter release as a first-class artifact: rank-1 files apply exactly on any
+  quantized runtime, with the honest label that the adapter curve is not the
+  merged bytes (R8), plus the codec-realized numbers for the merged twin.
+- Plan cards: `plan-bundle` already produces a digest-pinned signed plan. Make
+  the card the unit of distribution — a stranger reproduces the edit on THEIR
+  quant in one command, without our search, and `release-diff` tells them
+  whether our claims still hold.
+- Non-GGUF export for vLLM/SGLang users stays open until a fitted plan can be
+  served and round-tripped through that runtime; until then it is a roadmap
+  line, not a promise. No pre-quantized model releases.
+
+## Phase 7 — Evidence volume and reproducibility (CODE + GATED runs)
+
+Heretic's real moat is that thousands of builds exist and a manifest recreates
+any of them. Ours must be fewer artifacts with claims nobody can argue with:
+
+- Certified release matrix across at least five lineages at pinned configs, each
+  with removal under both inventories, the shape audit, retention with paired
+  stats and length, held-out families, drift, and realized fidelity.
+- A portable reproduction index per release (plan bundle + suite digests + serve
+  argv + codec choices) that reproduces the artifact without re-running the
+  search, and a check that fails when any operand moved.
+- `release-diff` and `verify-artifact` aimed at third parties: anyone can diff
+  our claims against another tool's release directory by digest.
+- The honest table published including the losses. A roadmap that only lists
+  wins is marketing, and the README already treats marketing as a bug.
+
+Done gate: five lineages certified, one third-party reproduction of a plan card
+on different hardware, every README number resolving through `evidence_map`.
+
+## Phase 8 — Steady-state rhythm (not a phase)
+
+- Quarterly `hub-census` -> adapter worklist, ordered by downloads; the human
+  gap list stays in the same JSON.
+- Per-architecture export smoke: a GGUF llama.cpp cannot serve is not a release.
+- `capture`/`tune` keep working on architectures never seen: discovery, not
+  tables, and a typed refusal when a layout has no verified adapter.
+- Agent ops stay one-command/one-JSON/next-command; the CLI self-describes and
+  every command stays model-free on its help path.
+
+## Long bets (unchanged, unordered)
+
+Cross-model universal directions via activation transplant between same-arch
+checkpoints. Closed-loop preference editing against the full-reply objective.
+Learned arbitrary-rank ablation where the rank is a searched matrix, not a
+truncated SVD.
+
+## What would prove this roadmap wrong
+
+If per-component profiles, codec-aware fitting and norm preservation still lose
+the retention row at equal removal, then the ceiling belongs to the static-
+projection method class and not to our implementation — and the next roadmap
+starts at learned factors (SAE, training), not at more search. Say that out
+loud before spending the next thousand GPU minutes on tuning.
 
 ## Explicit non-goals
 
-Diffusion samplers, MLX/Apple, Windows, multi-GPU, remote uploads,
-claiming certification of pretrained checkpoints the tool never actually
-ran on. Marketing-version name guessing stays banned. Any published
-result must survive the same consistency policy as local ones.
+Diffusion samplers, MLX/Apple, Windows, multi-GPU, remote uploads of models,
+cloud/Space hosting, telemetry or crowd-harvested datasets, pre-quantized model
+releases, claiming certification of checkpoints the tool never ran on,
+marketing-version name guessing, and quoting a number whose artifact is not in
+the clone. No CI. No new test suites.
