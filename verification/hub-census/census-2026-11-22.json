@@ -1,0 +1,152 @@
+{
+  "scope": "Live Hub text-generation census; adapter labels come from config.json model_type, downloads are a demand proxy, nothing here is a support claim.",
+  "window": {
+    "since": "2026-08-01",
+    "authors": [
+      "Qwen",
+      "zai-org",
+      "meta-models",
+      "LiquidAI",
+      "nvidia",
+      "deepseek-ai",
+      "mistralai",
+      "google",
+      "moonshotai",
+      "stepfun-ai",
+      "MiniMaxAI",
+      "allenai",
+      "HuggingFaceTB",
+      "openai",
+      "EssentialAI",
+      "XiaomiMiMo",
+      "tencent",
+      "inclusionAI",
+      "baidu",
+      "LG-AI-EXAONE",
+      "OpenBMB"
+    ],
+    "per_author_cap": 40
+  },
+  "repositories_checked": 134,
+  "derived_artifact_repositories": 13,
+  "model_types_seen": {
+    "glm_moe_dsa": 1682773,
+    "qwen3_5": 338793,
+    "no-model-type": 214731,
+    "lfm3": 212493,
+    "mimo_v2": 121714,
+    "dory": 61627,
+    "lfm2_moe": 51626,
+    "deepseek_v4": 44544,
+    "bailing_hybrid": 42358,
+    "qwen3_5_moe_text": 41799,
+    "gemma4": 36439,
+    "qwen3": 32762,
+    "hy_v4": 23609,
+    "ernie5_5_moe": 7449,
+    "lfm2": 6876,
+    "nemotron_labs_sigma": 6277,
+    "hy_v3": 5819,
+    "bolmo": 4408,
+    "nemotron_h": 2537,
+    "qwen3_5_text": 2103,
+    "llada2_moe": 1827,
+    "llama": 511
+  },
+  "adapter_worklist": [
+    {
+      "model_type": "no-model-type",
+      "downloads": 214731,
+      "example_models": [
+        "nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB-DFlash",
+        "nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB",
+        "nvidia/NVIDIA-Nemotron-Labs-3-Competitive-Coding-550B-A55B-NVFP4"
+      ]
+    },
+    {
+      "model_type": "lfm3",
+      "downloads": 212493,
+      "example_models": [
+        "LiquidAI/LFM3-1.7B-MLX-5bit",
+        "LiquidAI/LFM3-1.7B-MLX-4bit",
+        "LiquidAI/LFM3-1.7B-MLX-6bit"
+      ]
+    },
+    {
+      "model_type": "mimo_v2",
+      "downloads": 121714,
+      "example_models": [
+        "XiaomiMiMo/MiMo-V2.6-Flash-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Pro-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Flash-RL"
+      ]
+    },
+    {
+      "model_type": "dory",
+      "downloads": 61627,
+      "example_models": [
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4",
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-MXFP8",
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-BF16"
+      ]
+    },
+    {
+      "model_type": "ernie5_5_moe",
+      "downloads": 7449,
+      "example_models": [
+        "baidu/ERNIE-5.5-Flash-Base",
+        "baidu/ERNIE-5.5-Flash-Base-BF16"
+      ]
+    },
+    {
+      "model_type": "nemotron_labs_sigma",
+      "downloads": 6277,
+      "example_models": [
+        "nvidia/Nemotron-Labs-Sigma-distill-spec-3B",
+        "nvidia/Nemotron-Labs-Sigma-distill-8B-nfe16",
+        "nvidia/Nemotron-Labs-Sigma-distill-8B-nfe8"
+      ]
+    },
+    {
+      "model_type": "bolmo",
+      "downloads": 4408,
+      "example_models": [
+        "allenai/Llama-3-Blama-8B",
+        "allenai/Llama-3-Blama-8B-Stage1",
+        "allenai/Bwen-8B"
+      ]
+    },
+    {
+      "model_type": "llada2_moe",
+      "downloads": 1827,
+      "example_models": [
+        "inclusionAI/LLaDA2.2-mini"
+      ]
+    }
+  ],
+  "supported_model_types": [
+    "bailing_hybrid",
+    "deepseek_v4",
+    "gemma4",
+    "glm_moe_dsa",
+    "hy_v3",
+    "hy_v4",
+    "lfm2",
+    "lfm2_moe",
+    "llama",
+    "nemotron_h",
+    "qwen3",
+    "qwen3_5",
+    "qwen3_5_moe_text",
+    "qwen3_5_text"
+  ],
+  "unresolved_gaps": [
+    "DeepSeek V4.1 loaders",
+    "Kimi K3 loaders",
+    "MiMo V2.6 / Bolmo / Youtu wrappers",
+    "custom Ling VL",
+    "draft-only Muse assistant",
+    "Qwen Drive planning models"
+  ],
+  "author_errors": []
+}
