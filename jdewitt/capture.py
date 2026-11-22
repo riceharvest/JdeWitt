@@ -34,6 +34,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import statistics
 import time
 from pathlib import Path
 
@@ -43,6 +44,7 @@ from torch import nn
 from .answers import atomic_json
 from .chat import render_chat
 from .errors import NoVerifiedAdapter
+from .margin import MarginRefused, MarginUnavailable, margin_at_position, resolved_pairs, token_table
 from .refusal_shape import classify, screen_short
 
 LOCI = ("answer", "last-prompt", "first-answer")
@@ -225,12 +227,19 @@ def read_answers(path):
 
 def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
                 ctx_size, system, raw, device, settle=True, settle_min_tokens=24,
-                answer_text=None):
+                answer_text=None, margin_pairs=None):
     """Generate one row (or reuse a banked answer) and return (meta, [L, W]).
 
     ``answer_text`` is the zero-output-token path: when a wave has already
     generated this row against this same model, the answer is scored by
     re-tokenizing the prompt plus that text, so the only cost is one prefill.
+
+    ``margin_pairs`` are the resolved (sure_id, cannot_id) pairs. The margin is
+    read from the SAME forward pass that already captures the residual stream, at
+    index ``prompt_tokens - 1`` (the distribution that emitted the first answer
+    token), so it costs one subtraction per pair: no extra pass, no generated
+    token. A model that returns no logits records ``margin=None`` and
+    ``margin_available=False`` instead of failing the capture.
     """
     text, rendered = render_prompt(tokenizer, row["prompt"], system, raw)
     ids = tokenizer(text, return_tensors="pt", add_special_tokens=False)["input_ids"]
@@ -282,13 +291,23 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
     else:
         position, span_end = start, end
     hooks = []
+    margin, margin_available = None, False
+    margin_position = start - 1
     try:
         for layer in layers:
             hook = _hook_factory(width, position, span_end)
             hooks.append((hook, layer.register_forward_hook(hook)))
         with torch.inference_mode():
-            model(sequence[:, : end], attention_mask=torch.ones((1, end), dtype=torch.long, device=device),
-                  use_cache=False)
+            output = model(sequence[:, : end], attention_mask=torch.ones((1, end), dtype=torch.long, device=device),
+                           use_cache=False)
+            logits = getattr(output, "logits", None)
+            if margin_pairs:
+                try:
+                    margin = margin_at_position(logits, margin_position, margin_pairs)
+                    margin_available = True
+                except (MarginUnavailable, IndexError):
+                    margin = None
+            del output, logits
     finally:
         for _, handle in hooks:
             handle.remove()
@@ -304,6 +323,9 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
             "rendered": rendered, "prompt": row["prompt"], "prompt_rendered": text,
             "complete": complete, "locus": locus,
             "answer_source": source,
+            "margin": margin, "margin_available": margin_available,
+            "margin_position": margin_position if margin_available else None,
+            "margin_pairs": list(margin_pairs or []),
             "answer": answer}
     return (meta, residual), None
 
@@ -387,6 +409,15 @@ def capture_command(args):
     settled = 0
     reused = 0
     answers = read_answers(args.answers) if args.answers else {}
+    # Resolution happens once per capture: a spelling that is not exactly one id
+    # refuses the statistic (a sequence margin is a different measurement). The
+    # refusal never fails the capture; rows then carry margin=None.
+    margin_resolution = token_table(tokenizer)
+    margin_available, margin_refusal, margin_pairs = True, None, []
+    try:
+        margin_pairs = resolved_pairs(margin_resolution)
+    except MarginRefused as error:
+        margin_available, margin_refusal = False, str(error)
     for row in rows:
         try:
             captured, reason = capture_one(
@@ -394,7 +425,7 @@ def capture_command(args):
                 max_tokens=args.max_tokens, ctx_size=args.ctx_size,
                 system=args.system, raw=args.raw_prompt, device=device,
                 settle=args.settle, settle_min_tokens=args.settle_min_tokens,
-                answer_text=answers.get(row.get("id")))
+                answer_text=answers.get(row.get("id")), margin_pairs=margin_pairs)
         except (ValueError, RuntimeError) as error:
             discarded[str(error)[:200]] = discarded.get(str(error)[:200], 0) + 1
             continue
@@ -424,6 +455,8 @@ def capture_command(args):
         "suite_sha256": hashlib.sha256(Path(args.suite).read_bytes()).hexdigest(),
         "targets": {index: [name for name, _ in found] for index, found in targets.items()},
         "compute_backend": {"type": backend["type"], "rank": backend["rank"], "name": backend["name"]},
+        "margin": {"resolution": margin_resolution, "pairs": margin_pairs,
+                   "available": margin_available, "refusal": margin_refusal},
     }
     torch.save({"records": records, "capture": identity}, out)
     report = {
@@ -453,6 +486,39 @@ def capture_command(args):
             "agent read (METHODOLOGY R2).",
         ],
     }
+    # The margin is read out of the pass that was already run, so it is ambient
+    # evidence on every capture: report it per label and keep the honest ceiling.
+    margin_rows = [(meta["label"], meta["margin"]) for meta, _ in records if meta.get("margin") is not None]
+
+    def margin_stats(label):
+        values = [value for mark, value in margin_rows if mark == label]
+        if not values:
+            return {"n": 0, "mean": None, "median": None}
+        return {"n": len(values), "mean": round(sum(values) / len(values), 6),
+                "median": round(statistics.median(values), 6)}
+
+    bad_margin, good_margin = margin_stats("bad"), margin_stats("good")
+    report["margin"] = identity["margin"]
+    report["margin_summary"] = {
+        "bad": bad_margin, "good": good_margin,
+        "delta_bad_minus_good": (round(bad_margin["mean"] - good_margin["mean"], 6)
+                                 if bad_margin["n"] and good_margin["n"] else None),
+        "rows_with_margin": len(margin_rows),
+        "rows_without_margin": len(records) - len(margin_rows),
+        "note": "delta_bad_minus_good is the prefill margin (Sure minus cannot) on harmful rows "
+                "minus the same on harmless rows; it ranks candidate axes and never certifies "
+                "(METHODOLOGY R2/R6).",
+    }
+    report["margin_available"] = bool(margin_available and len(margin_rows) == len(records))
+    if not report["margin_available"]:
+        report["notes"].append(
+            "the token-logit margin is unavailable for this capture: "
+            + (margin_refusal or f"{len(records) - len(margin_rows)} row(s) returned no logits") +
+            ". The capture itself is unaffected; do not substitute a word list for a token margin.")
+    report["notes"].append(
+        "the margin ranks candidate axes and never certifies (METHODOLOGY R2/R6): a lower prefill "
+        "margin is evidence the axis points at the mechanism, not that the edited artifact still "
+        "behaves; only a merged serve decides that.")
     # A fit needs BOTH halves of the contrast, and a missing half is a property of
     # the base model, not a capture defect: fitting a label set the model does not
     # exhibit yields a null edit that still merges cleanly.
