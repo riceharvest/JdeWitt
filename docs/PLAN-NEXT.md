@@ -980,3 +980,28 @@ Conclusion, and the doctrine this repo should follow:
 
 Also landed: F16 codec support (the tool previously could not edit an F16 gguf at
 all — `F16` was missing from `quants.CODECS`), so the 16-bit merge path is real.
+
+### edit-quantized: the edit lands in the user's own artifact (2026-11-22)
+
+The requirement is a removal inside the model people already run, at their own
+quantization — not a 16-bit release they would have to re-quantize. Two measurements
+shape the design: a raw Q4_K byte patch stores cos 0.454 of a strength-1.0 rank-1
+projection (preview_edit), and raising the strength until Q4_K can hold it costs +10
+nats of control PPL. So the minimum surgery is per-tensor precision: re-encode only
+the tensors the edit touches, copy everything else byte for byte.
+
+`jdewitt edit-quantized --gguf <their.q4_k_m> --out <edited> --records R.pt --edit-type
+q6_k` writes a new container (ggufwrite.py: KV section copied verbatim, tensor infos
+re-emitted, offsets realigned; gguf-py's writer rejects tensors whose row length is not
+a whole number of blocks — `blk.0.attn_gate.weight` is [2048, 8] Q4_K, a flat run of
+blocks). Measured on Spark 1.7B Q4_K_M, 36 edited tensors at Q6_K:
+
+  untouched 190 tensors verified BYTE-IDENTICAL (their calibration is preserved),
+  file 1,108 MB -> 1,159 MB, 423 s,
+  delivered edit cos 0.849 / 0.875 against the intended projection, SNR ~1.8
+  (versus 0.454 for the same edit patched into Q4_K directly).
+
+Q6_K is still marginal at strength 1.0 — the tolerance for a 6-bit grid is about the
+same size as a rank-1 delta — so the per-tensor type is a knob to be chosen by
+measurement (q8_0 next), not a constant. That choice is the capability no competitor
+has: they emit 16-bit weights and leave quantization to the user, blind.

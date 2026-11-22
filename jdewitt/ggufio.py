@@ -30,7 +30,11 @@ def _plan(reader, deltas):
             raise ValueError(f'delta for {name} contains NaN/Inf')
         if n != int(np.prod(shape)):
             raise ValueError(f'tensor {name}: {n} values for shape {shape}')
-        plans.append((name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta.reshape(-1)))
+        # Both consumers (copy and in-place) unpack (name, tensor, dtype, bs, els, n,
+        # quantize, dequantize, offset, n_bytes, shape, delta); a plan without the
+        # tensor object crashed edit_tensors with an 11-vs-12 unpack.
+        plans.append((name, tensor, dtype, bs, els, n, quantize, dequantize, offset,
+                      n_bytes, shape, delta.reshape(-1)))
     return plans
 
 
@@ -55,7 +59,8 @@ def _tensor_info(reader, name):
     return tensor, dtype, block_bytes, block_els, n, quantize, dequantize, offset, n_bytes, shape
 
 
-def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32):
+def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32,
+                 renormalize=False):
     """Simulate an in-place edit on sampled tensors: does it survive the codec?
 
     ``edits`` maps a tensor name to a float32 delta of that tensor's logical shape
@@ -98,6 +103,11 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
                 delta = -scale * (axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix))
             else:
                 delta = -scale * ((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix.T)).T)
+            if renormalize:
+                edited = matrix + delta
+                before = np.linalg.norm(matrix, axis=1, keepdims=True)
+                after = np.linalg.norm(edited, axis=1, keepdims=True)
+                delta = edited * (before / np.maximum(after, 1e-12)) - matrix
         else:
             delta = np.asarray(edit, dtype=np.float32).reshape(shape)
         wanted = (base.reshape(shape) + delta).reshape(-1).astype(np.float32)
@@ -139,6 +149,54 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
             'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
             'min_snr': min((row['snr'] for row in rows), default=None),
             'note': 'a low cos here means the codec, not the axis, decides what ships'}
+
+
+def compare_edit(source, edited, edits, names=None, limit=None, renormalize=False):
+    """What did the SHIPPED file keep of the intended edit?
+
+    ``source`` is the pristine artifact the project started from, ``edited`` is the
+    file that will be served, and ``edits`` is {name: (axis, space)} — the projection
+    the ladder chose. The realized change is dequant(edited) - dequant(source), so
+    this is the only number that describes the delivered edit; an adapter curve
+    describes the wanted one. Use it after merge+requantize to prove the pipeline
+    kept the edit and to name the tensors that lost it.
+    """
+    chosen = [name for name in (names or edits) if name in edits]
+    if limit:
+        chosen = chosen[:limit]
+    rows = []
+    for name in chosen:
+        base = np.asarray(dequantize_tensor(source, name), dtype=np.float32)
+        final = np.asarray(dequantize_tensor(edited, name), dtype=np.float32)
+        if base.shape != final.shape:
+            rows.append({'name': name, 'error': f'shape changed: {base.shape} -> {final.shape}'})
+            continue
+        axis, space = edits[name]
+        axis = np.asarray(axis, dtype=np.float32).reshape(-1)
+        if space == 'output':
+            intended = -(axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ base))
+        else:
+            intended = -((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ base.T)).T)
+        if renormalize:
+            edited_base = base + intended
+            before = np.linalg.norm(base, axis=1, keepdims=True)
+            after = np.linalg.norm(edited_base, axis=1, keepdims=True)
+            intended = edited_base * (before / np.maximum(after, 1e-12)) - base
+        realized = final - base
+        intended_norm = float(np.linalg.norm(intended))
+        realized_norm = float(np.linalg.norm(realized))
+        noise_norm = float(np.linalg.norm(realized - intended))
+        cos = (float((realized * intended).sum() / (realized_norm * intended_norm + 1e-12))
+               if realized_norm > 0 and intended_norm > 0 else 0.0)
+        rows.append({'name': name, 'cos': round(cos, 4),
+                     'norm_ratio': round(realized_norm / (intended_norm + 1e-12), 4),
+                     'snr': round(intended_norm / (noise_norm + 1e-12), 3)})
+    cosines = [row['cos'] for row in rows if 'cos' in row]
+    return {'tensors': rows, 'sampled': len(rows),
+            'min_cos': min(cosines) if cosines else None,
+            'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
+            'note': 'delivered edit vs intended projection; low cos means the file, '
+                    'not the axis, decided what shipped'}
 
 
 def edit_tensors(path, out_path, deltas):

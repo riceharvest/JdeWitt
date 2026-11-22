@@ -647,7 +647,8 @@ def tune_command(args):
             for name in picks:
                 layer = int(name.split('.')[1])
                 edits[name] = (axes_by_shape[family['shape']][layer].numpy(), args.axis_space)
-            reading = preview_edit(args.gguf, edits, scale=scale)
+            reading = preview_edit(args.gguf, edits, scale=scale,
+                                   renormalize=args.renormalize)
             cache[key] = reading
             atomic_json(ladder_path, {'identity': identity, 'readings': cache})
             return reading
@@ -1011,18 +1012,75 @@ def tune_command(args):
         atomic_json(out_dir / 'tune.json', report)
         return report
 
-    # R8: re-measure the winner on the merged bytes, then put the artifact back
-    # unless the caller asked to keep the edit.
     # The axes are masked to the winning footprint: build_merged skips zero-norm
     # layers, so a footprint edit never touches bytes outside its own range.
     winner_axes = axes_by_shape[winner['shape']].clone()
     start, end = winner['layers']
     winner_axes[:start] = 0
     winner_axes[end + 1:] = 0
+
+    if args.serve_type:
+        # The faithful pipeline: merge into a 16-bit artifact (the edit is stored
+        # exactly there), then requantize for serving while the tensors that carry
+        # the edit are HELD at a type where it survives. This is the answer to the
+        # codec floor measured by preview_edit: at 4-bit the edit is at the quantizer's
+        # noise, at 16-bit it is exact, and after requantizing with a per-tensor type
+        # map the delivered edit is a measurement (compare_edit), not a hope.
+        from .ggufio import compare_edit
+        from .quantize import quantize_file
+
+        source = Path(args.merge_gguf or args.gguf)
+        if not source.is_file():
+            raise ValueError(f'--merge-gguf {source} does not exist')
+        stem = winner['family'].replace('|', '-')
+        edited_path = out_dir / f'edited-{stem}@{winner["scale"]}-{source.stem}.gguf'
+        name_map = {name: name for layer in covered for name in discovered['targets'][layer]}
+        build = build_merged(str(source), str(edited_path), winner_axes, [],
+                             name_map=name_map, scale=winner['scale'],
+                             axis_space=args.axis_space, in_place=False,
+                             renormalize=args.renormalize)
+        override_names = [name for layer in range(start, end + 1)
+                          for name in discovered['targets'].get(layer, [])]
+        overrides = [f'{name}={args.edit_type}' for name in override_names]
+        served_path = out_dir / f'served-{args.serve_type}.gguf'
+        quant = quantize_file(edited_path, served_path, args.serve_type,
+                             binary=args.quantize_binary, overrides=overrides,
+                             threads=args.threads)
+        sample = override_names[:1] + override_names[-1:]
+        edits = {}
+        for name in sample:
+            layer = int(name.split('.')[1])
+            edits[name] = (axes_by_shape[winner['shape']][layer].numpy(), args.axis_space)
+        delivered = compare_edit(str(source), str(served_path), edits,
+                                 renormalize=args.renormalize)
+        served_ppl = {}
+        for label, corpus in corpora.items():
+            served_ppl[label] = perplexity(args.perplexity, str(served_path), corpus,
+                                           ctx=args.ctx, threads=args.threads)
+        metrics = (_arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
+                                 'ppl': served_ppl}, base)
+                   if all('ppl' in reading for reading in served_ppl.values()) else {})
+        report['pipeline'] = {
+            'merge': {'source': str(source), 'out': str(edited_path),
+                      'tensors_changed': build.get('tensors_changed'),
+                      'changed_blocks_total': build.get('changed_blocks_total'),
+                      'elapsed_s': build.get('elapsed_s')},
+            'quantize': quant,
+            'delivered_edit': delivered,
+            'metrics': metrics,
+            'note': 'delivered_edit is measure on the SERVED file against the pristine '
+                    'source, so it is the edit that ships, not the edit that was wanted',
+        }
+        report['next'] = [f'# served artifact: {served_path}',
+                          f'llama-server -m {served_path} -c 4096 --parallel 4  '
+                          f'# then one cert wave over its answers (R2/R9)']
+        atomic_json(out_dir / 'tune.json', report)
+        return report
     merged = build_merged(str(args.gguf), str(args.gguf), winner_axes,
                           [], name_map={name: name for layer in covered
                                         for name in discovered['targets'][layer]},
-                          scale=winner['scale'], axis_space=args.axis_space, in_place=True)
+                          scale=winner['scale'], axis_space=args.axis_space, in_place=True,
+                          renormalize=args.renormalize)
     merged_ppl, merged_metrics = {}, {}
     for label, corpus in corpora.items():
         reading = perplexity(args.perplexity, args.gguf, corpus, ctx=args.ctx, threads=args.threads)

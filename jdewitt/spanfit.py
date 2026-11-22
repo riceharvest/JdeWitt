@@ -66,12 +66,25 @@ def load_records(path: str) -> list[tuple]:
 # ---------- edit ----------
 
 def removal_delta(weight: torch.Tensor, axis: torch.Tensor,
-                  strength: float = 1.0) -> torch.Tensor:
+                  strength: float = 1.0, renormalize: bool = False) -> torch.Tensor:
     """-(a (a^T W)); axis acts on dim 0 of W ([out, in]), i.e. the layer's
     residual-write side. Caller supplies matching layouts (torch params or
-    ggufio logical [out, in] dequantized arrays)."""
+    ggufio logical [out, in] dequantized arrays).
+
+    ``renormalize`` preserves each row's magnitude (Heretic's ``full`` mode): the
+    projection shortens rows, and a shortened row changes the module's output scale,
+    which shows up as perplexity damage that has nothing to do with refusal. Row
+    magnitudes are rescaled to their original values, so the direction is removed and
+    the scale is kept.
+    """
     a = axis.reshape(-1, 1).to(weight.dtype)
-    return -(strength * (a @ (a.T @ weight)))
+    delta = -(strength * (a @ (a.T @ weight)))
+    if not renormalize:
+        return delta
+    edited = weight + delta
+    before = weight.norm(dim=1, keepdim=True).clamp_min(1e-12)
+    after = edited.norm(dim=1, keepdim=True).clamp_min(1e-12)
+    return edited * (before / after) - weight
 
 
 def shared_axis(records: list[tuple], label_bad: str = "bad",
@@ -137,7 +150,8 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None, scale: float = 1.0,
-                 axis_space: str = "input", in_place: bool = False) -> dict:
+                 axis_space: str = "input", in_place: bool = False,
+                 renormalize: bool = False) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
     source_keys are HF-style names ('model.layers.<L>.<suffix>') or, through
@@ -195,7 +209,17 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
             continue
         w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
         a = axis.reshape(-1, 1).numpy()
-        if axis_space == "output":
+        if renormalize:
+            # Row magnitudes restored: the projection is kept, the output scale is
+            # not. Done here (not in the writer) so the in-place and out-of-place
+            # paths compute the same delta.
+            edited = w + (-(scale * (a @ (a.T @ w))) if axis_space == "output"
+                          else -(scale * (a @ (a.T @ w.T))).T)
+            rows_before = np.linalg.norm(w, axis=1, keepdims=True)
+            rows_after = np.linalg.norm(edited, axis=1, keepdims=True)
+            edited = edited * (rows_before / np.maximum(rows_after, 1e-12))
+            deltas[base] = (edited - w).astype(np.float32)
+        elif axis_space == "output":
             # axis lives in the space W writes into (the residual stream):
             # dW = -s * u (u^T W). This is the form a residual-stream capture
             # gives you, and the only one usable when the module's input dim

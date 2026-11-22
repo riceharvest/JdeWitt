@@ -429,6 +429,11 @@ def main():
     tune.add_argument('--out',type=Path,default=None)
     tune.add_argument('--no-verify',action='store_true',help='skip the merged re-measurement')
     tune.add_argument('--merged-screen',action='store_true',help='after the merge, screen the MERGED bytes (server reload, no adapter): the only verdict that belongs to the shipped file')
+    tune.add_argument('--serve-type',default=None,help='faithful pipeline: merge into --merge-gguf (16-bit), then requantize to this serving type while the edited tensors are held at --edit-type')
+    tune.add_argument('--merge-gguf',type=Path,default=None,help='16-bit artifact to merge into (default: --gguf); the edit is exact there, unlike at 4-bit')
+    tune.add_argument('--edit-type',default='q8_0',help='type held for the tensors that carry the edit in the requantized serving file')
+    tune.add_argument('--quantize-binary',default=None,help='llama-quantize binary (default: first known build or JDEWITT_QUANTIZE)')
+    tune.add_argument('--renormalize',action='store_true',help='preserve each edited row magnitude (Heretic "full" mode): remove the direction, keep the output scale')
     tune.add_argument('--keep-merged',action='store_true',help='leave the winning edit on the artifact')
     tune.add_argument('--token-budget',type=int,default=0,help='output tokens the screen stage may spend (0 = prefill-only ladder; the ladder itself always costs zero tokens)')
     tune.add_argument('--serve',default=None,help='llama-server binary used by the screen stage (default: the repo CUDA build)')
@@ -446,6 +451,24 @@ def main():
     tune.add_argument('--refine-factor',type=float,default=0.75,help='multiplier for each strength-reduction step')
     tune.add_argument('--settle-chars',type=int,default=300,help='at the window cap, a non-declining row with at least this many characters becomes a delivery CANDIDATE (still agent-read, never a pass)')
     tune.add_argument('--refine-floor',type=float,default=0.1,help='the strength reduction stops here')
+    requant=sub.add_parser('requant',help='Requantize an artifact, holding the tensors that carry an edit at a type where the edit survives (fidelity-driven per-tensor types)')
+    requant.add_argument('--gguf',type=Path,required=True)
+    requant.add_argument('--out',type=Path,required=True)
+    requant.add_argument('--type',required=True,help='serving type for everything not overridden (q4_k_m, q6_k, q8_0, f16, ...)')
+    requant.add_argument('--keep-tensor',action='append',default=[],help='NAME=TYPE for a tensor that must stay high-precision (repeatable)')
+    requant.add_argument('--binary',default=None,help='llama-quantize binary (default: first known local build, or JDEWITT_QUANTIZE)')
+    requant.add_argument('--threads',type=int,default=None)
+    editq=sub.add_parser('edit-quantized',help='Apply a fitted axis to YOUR quantized artifact: only the edited tensors are re-encoded (default q6_k), every other tensor is copied byte for byte so your calibration survives')
+    editq.add_argument('--gguf',type=Path,required=True)
+    editq.add_argument('--out',type=Path,required=True)
+    editq.add_argument('--records',type=Path,required=True)
+    editq.add_argument('--shape',choices=('perlayer','shared'),default='perlayer')
+    editq.add_argument('--scale',type=float,default=1.0)
+    editq.add_argument('--layers',default=None,help="footprint 'a-b' (default: every discovered layer)")
+    editq.add_argument('--edit-type',default='q6_k',help='type the edited tensors are re-encoded at (q6_k/q8_0/f16/...)')
+    editq.add_argument('--axis-space',choices=('output','input'),default='output')
+    editq.add_argument('--renormalize',action='store_true')
+    editq.add_argument('--no-verify',action='store_true',help='skip the byte-identity check of untouched tensors')
     revert=sub.add_parser('gguf-revert',help='Restore the pre-patch bytes an --in-place merge saved; refuses if the artifact changed since')
     revert.add_argument('artifact',type=Path)
     revert.add_argument('sidecar',type=Path)
@@ -696,6 +719,39 @@ def main():
         elif args.command=='capture':
             from .capture import capture_command
             result=capture_command(args)
+        elif args.command=='edit-quantized':
+            from .spanfit import load_records,parse_layer_ids,per_layer_axes,shared_axis
+            from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes
+            from .ggufio import compare_edit
+            from .rewrite import rewrite_with_edits
+            records=load_records(args.records)
+            axes=(shared_axis(records)[0] if args.shape=='shared' else per_layer_axes(records))
+            width=int(axes.shape[1])
+            discovered=discover_writeback_targets(gguf_weight_shapes(str(args.gguf)),width)
+            layers=sorted(discovered['targets'])
+            if not layers:
+                raise ValueError(f'{args.gguf} carries no residual-write projection at width {width}')
+            if args.layers:
+                wanted=set(parse_layer_ids(args.layers))
+                layers=[layer for layer in layers if layer in wanted]
+            edits={}
+            for layer in layers[:int(axes.shape[0])]:
+                for name in discovered['targets'][layer]:
+                    edits[name]=(axes[layer].numpy(),args.axis_space)
+            if not edits:
+                raise ValueError('the footprint selects no tensor this artifact carries')
+            result=rewrite_with_edits(args.gguf,args.out,edits,scale=args.scale,
+                                      axis_space=args.axis_space,edit_type=args.edit_type,
+                                      renormalize=args.renormalize,
+                                      verify_untouched=not args.no_verify)
+            sample=list(edits)[:1]+list(edits)[-1:]
+            result['delivered_edit']=compare_edit(str(args.gguf),str(args.out),
+                                                  {name:edits[name] for name in sample},
+                                                  renormalize=args.renormalize)
+        elif args.command=='requant':
+            from .quantize import quantize_file
+            result=quantize_file(args.gguf,args.out,args.type,binary=args.binary,
+                                 overrides=args.keep_tensor,threads=args.threads)
         elif args.command=='gguf-revert':
             from .ggufio import revert_inplace
             result=revert_inplace(args.artifact,args.sidecar)

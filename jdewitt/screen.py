@@ -68,6 +68,7 @@ class Server:
         self.log = None
         self.props = None
         self.load_seconds = None
+        self.gpu_fallback = None
 
     # ---------- lifecycle ----------
     def _command(self):
@@ -89,6 +90,26 @@ class Server:
         return False
 
     def start(self):
+        """Start the server, falling back to fewer GPU layers on a CUDA OOM.
+
+        The card is shared: a 3.2 GB f16 artifact does not fit beside another job, and
+        'out of memory' on the device is a property of the moment, not of the model.
+        Two retries (half the layers, then zero) turn a dead screen into a slower one.
+        """
+        attempts = [self.ngl]
+        if self.ngl > 0:
+            attempts += [self.ngl // 2, 0]
+        for index, layers in enumerate(attempts):
+            self.ngl = layers
+            try:
+                return self._start_once()
+            except RuntimeError as error:
+                if 'out of memory' not in str(error).lower() or index == len(attempts) - 1:
+                    raise
+                self.gpu_fallback = f'ngl {attempts[index]} -> {attempts[index + 1]} on CUDA OOM'
+        return self
+
+    def _start_once(self):
         started = time.monotonic()
         if self.log_path:
             self.log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -98,8 +119,11 @@ class Server:
         deadline = started + self.wait
         while time.monotonic() < deadline:
             if self.proc.poll() is not None:
+                tail = ''
+                if self.log_path and self.log_path.is_file():
+                    tail = self.log_path.read_text(errors='replace')[-800:]
                 raise RuntimeError(f'llama-server exited during startup (code {self.proc.returncode}); '
-                                   f'see {self.log_path}')
+                                   f'see {self.log_path} {tail}')
             props = self._get('/props', timeout=5)
             if props:
                 self.props = props
