@@ -460,7 +460,7 @@ def main():
     requant.add_argument('--keep-tensor',action='append',default=[],help='NAME=TYPE for a tensor that must stay high-precision (repeatable)')
     requant.add_argument('--binary',default=None,help='llama-quantize binary (default: first known local build, or JDEWITT_QUANTIZE)')
     requant.add_argument('--threads',type=int,default=None)
-    editq=sub.add_parser('edit-quantized',help='Apply a fitted axis to YOUR quantized artifact: only the edited tensors are re-encoded (default q6_k), every other tensor is copied byte for byte so your calibration survives')
+    editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)
     editq.add_argument('--records',type=Path,required=True)

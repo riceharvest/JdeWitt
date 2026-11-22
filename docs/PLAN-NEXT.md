@@ -1047,3 +1047,20 @@ pristine Q4_K_M 4/4 refusals -> edited artifact 0/4 refusals with the requested
 content. The loop is now: attitude ladder (0 tokens) -> probe/confirm screen ->
 `--apply-quantized` writes the edit into the artifact the user runs, with the
 delivered edit and the byte-identity of everything else measured, not assumed.
+
+### Quant breadth: any source format, twelve writable targets (2026-11-22)
+
+Reading the user's artifact must not depend on their quant choice. `ggufio.decode_values`
+uses our byte-exact codecs where they exist and falls back to gguf-py's reference
+dequantizer for everything else (IQ1/IQ2/IQ3/IQ4, TQ1/TQ2, Q3_K, ...). Only the type we
+WRITE has to be one this build encodes: BF16, F16, F32, Q2_K, Q4_0, Q4_1, Q4_K, Q5_0,
+Q5_1, Q5_K, Q6_K, Q8_0 — an unsupported target errors with that list.
+
+Verified: hiding our own Q4_K codec still produced identical fidelity through the
+gguf-py fallback (cos 0.9915 both ways on blk.20.attn_output), and a Q3_K_S artifact
+(Q3_K, which this build cannot encode) edited cleanly with Q8_0 tensors: delivered cos
+0.977-0.985, every untouched tensor byte-identical.
+
+`rewrite_with_edits` now also emits an edit fingerprint (edit sha over the axes, edited
+and untouched tensor counts, per-layer axis norms, scale, axis space, write type), so a
+release can claim "N matrices changed, M tensors untouched" and anyone can recompute it.

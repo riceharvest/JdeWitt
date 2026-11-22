@@ -59,6 +59,34 @@ def _tensor_info(reader, name):
     return tensor, dtype, block_bytes, block_els, n, quantize, dequantize, offset, n_bytes, shape
 
 
+def decode_values(raw, qtype_name, n_values=None):
+    """Dequantize one tensor from ANY gguf quant type this build can read.
+
+    Our own codecs are used when they exist (byte-exact, proven against the compiled
+    C); anything else — IQ1/IQ2/IQ3/IQ4, TQ1/TQ2, Q3_K and friends — falls back to
+    gguf-py's reference dequantizer. Reading the user's artifact must never depend on
+    which quant they chose; only the type we WRITE has to be one we can encode.
+    """
+    raw = np.asarray(raw, dtype=np.uint8).reshape(-1)
+    codec = CODECS.get(str(qtype_name))
+    if codec is not None:
+        block_bytes, block_els, _quantize, dequantize = codec
+        count = (n_values if n_values is not None
+                 else raw.size // block_bytes * block_els)
+        return np.asarray(dequantize(raw, count), dtype=np.float32).reshape(-1)
+    from gguf import GGML_QUANT_SIZES, GGMLQuantizationType, dequantize
+
+    quantization = GGMLQuantizationType[str(qtype_name)]
+    block_els, block_bytes = GGML_QUANT_SIZES[quantization]
+    return np.asarray(dequantize(raw.reshape(-1, block_bytes), quantization),
+                      dtype=np.float32).reshape(-1)
+
+
+def encodable_types():
+    """Quant types this build can WRITE (a subset of what it can read)."""
+    return sorted(CODECS)
+
+
 def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32,
                  renormalize=False, target_type=None):
     """Simulate an in-place edit on sampled tensors: does it survive the codec?
@@ -95,11 +123,19 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         chosen = chosen[:limit]
     rows = []
     for name in chosen:
-        _tensor, dtype, _bs, _els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+        tensor = next((item for item in reader.tensors if item.name == name), None)
+        if tensor is None:
+            raise ValueError(f'no tensor {name!r} in file')
+        dtype = tensor.tensor_type.name
+        n_bytes = int(tensor.n_bytes)
+        shape = tuple(int(x) for x in np.asarray(tensor.shape).ravel())[::-1]
+        offset = int(tensor.data_offset)
         with open(path, 'rb') as handle:
             handle.seek(offset)
             raw = np.frombuffer(handle.read(n_bytes), dtype=np.uint8)
-        base = dequantize(raw, n).astype(np.float32)
+        # ANY source quant decodes (decode_values falls back to gguf-py for IQ/TQ/Q3_K);
+        # only the type we WRITE has to be one of our encoders.
+        base = decode_values(raw, dtype)
         edit = edits[name]
         if isinstance(edit, tuple):
             axis, space = edit
@@ -119,14 +155,18 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         wanted = (base.reshape(shape) + delta).reshape(-1).astype(np.float32)
         flat_base = base.reshape(-1)
         flat_delta = delta.reshape(-1)
-        encode = quantize
-        decode = dequantize
-        window_els = int(_els)
         if target_type:
-            from .quants import CODECS as QUANT_CODECS
             from .quantize import canonical_type
+            from .quants import CODECS as QUANT_CODECS
 
             _tb, window_els, encode, decode = QUANT_CODECS[canonical_type(target_type)]
+        else:
+            codec = CODECS.get(dtype)
+            if codec is None:
+                raise ValueError(f'{name} is {dtype}, which this build has no ENCODER for; '
+                                 f'pass target_type to preview the re-encode that would ship')
+            _bb, window_els, encode, decode = codec
+        n = base.size
         window_len = int(blocks) * window_els
         span = max(0, n - window_len)
         offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // window_els * window_els,
@@ -176,13 +216,29 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
     describes the wanted one. Use it after merge+requantize to prove the pipeline
     kept the edit and to name the tensors that lost it.
     """
+    from gguf import GGUFReader
+
+    def load(path, name):
+        # Any quant type decodes: the source may be IQ/Q3_K/whatever the user runs,
+        # and the edited side may hold the re-encoded type.
+        reader = GGUFReader(str(path))
+        tensor = next((item for item in reader.tensors if item.name == name), None)
+        if tensor is None:
+            raise ValueError(f'no tensor {name!r} in {path}')
+        raw = np.memmap(str(path), dtype=np.uint8, mode='r', offset=int(tensor.data_offset),
+                        shape=(int(tensor.n_bytes),))
+        dtype = tensor.tensor_type.name
+        shape = tuple(int(x) for x in np.asarray(tensor.shape).ravel())[::-1]
+        values = decode_values(np.array(raw), dtype)
+        return values.astype(np.float32).reshape(shape), dtype
+
     chosen = [name for name in (names or edits) if name in edits]
     if limit:
         chosen = chosen[:limit]
     rows = []
     for name in chosen:
-        base = np.asarray(dequantize_tensor(source, name), dtype=np.float32)
-        final = np.asarray(dequantize_tensor(edited, name), dtype=np.float32)
+        base, source_type = load(source, name)
+        final, edited_type = load(edited, name)
         if base.shape != final.shape:
             rows.append({'name': name, 'error': f'shape changed: {base.shape} -> {final.shape}'})
             continue
@@ -204,6 +260,7 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
         cos = (float((realized * intended).sum() / (realized_norm * intended_norm + 1e-12))
                if realized_norm > 0 and intended_norm > 0 else 0.0)
         rows.append({'name': name, 'cos': round(cos, 4),
+                     'source_type': source_type, 'edited_type': edited_type,
                      'norm_ratio': round(realized_norm / (intended_norm + 1e-12), 4),
                      'snr': round(intended_norm / (noise_norm + 1e-12), 3)})
     cosines = [row['cos'] for row in rows if 'cos' in row]

@@ -91,6 +91,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
 
     from .ggufwrite import parse_container, tensor_nbytes, write_container
     from .quantize import canonical_type
+    from .ggufio import decode_values
     from .quants import CODECS as QUANT_CODECS
 
     src, out = Path(src), Path(out)
@@ -99,6 +100,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     if src.resolve() == out.resolve():
         raise ValueError('refusing to rewrite onto the input artifact')
     target_name = canonical_type(edit_type)
+    from .quants import CODECS as _WRITABLE
+
+    if target_name not in _WRITABLE:
+        raise ValueError(f'cannot WRITE {target_name}: this build encodes {", ".join(sorted(_WRITABLE))}. '
+                         f'The source artifact can be any type; only the re-encoded tensors '
+                         f'have to be.')
     target = GGMLQuantizationType[target_name]
     header = parse_container(src)
     header['source'] = str(src)
@@ -110,11 +117,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             if name not in edits:
                 continue
             dtype = GGMLQuantizationType(int(tensor['qtype'])).name
-            block_bytes, block_els, _quantize, dequantize = QUANT_CODECS[dtype]
             nbytes = tensor_nbytes(tensor['dims'], tensor['qtype'])
             handle.seek(header['data_base'] + tensor['offset'])
             raw = np.frombuffer(handle.read(nbytes), dtype=np.uint8)
-            values = np.asarray(dequantize(raw, nbytes // block_bytes * block_els), dtype=np.float32)
+            # ANY source quant is readable (decode_values falls back to gguf-py);
+            # only the WRITTEN type has to be one of our encoders.
+            values = decode_values(raw, dtype)
             logical = tuple(reversed(tensor['dims']))
             matrix = values.reshape(logical)
             edit = edits[name]
@@ -142,6 +150,26 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             qtypes[name] = int(target)
             edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': target.name,
                                 'bytes_before': int(nbytes), 'bytes_after': int(packed.size)})
+    # Edit fingerprint: the machine-checkable claim a release needs (changed tensors,
+    # untouched count, the axis digest and its per-layer norm). Anyone can recompute
+    # it from the two files, so "this is a fresh edit" stops being a matter of trust —
+    # the same idea as publishing "81 matrices changed, 1,111 tensors untouched".
+    import hashlib
+
+    digest = hashlib.sha256()
+    layer_norms = {}
+    for name in sorted(payloads):
+        entry = edits[name]
+        if isinstance(entry, tuple):
+            axis = np.asarray(entry[0], dtype=np.float32).reshape(-1)
+            digest.update(name.encode())
+            digest.update(np.round(axis, 6).tobytes())
+            layer = int(name.split('.')[1])
+            layer_norms[layer] = round(float(np.linalg.norm(axis)), 4)
+    fingerprint = {'edit_sha256': digest.hexdigest()[:32],
+                   'edited': len(payloads), 'untouched': len(header['tensors']) - len(payloads),
+                   'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
+                   'scale': scale, 'axis_space': axis_space, 'edit_type': target.name}
     written = write_container(out, header, payloads, qtypes)
     by_name = {entry['name']: entry for entry in written['entries']}
     report = {
@@ -150,6 +178,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
         'tensors': len(header['tensors']), 'tensors_edited': len(payloads),
         'edited': edited_rows,
         'bytes_in': src.stat().st_size, 'bytes_out': out.stat().st_size,
+        'fingerprint': fingerprint,
         'elapsed_s': round(time.monotonic() - started, 1),
     }
     if verify_untouched:
