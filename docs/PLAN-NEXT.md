@@ -1172,3 +1172,27 @@ Search results on that bank so far, all refusing: flat per-layer at 1.0-3.0 (20-
 all-layers at 1.5+ (clears nothing worth the 0.72-1.40 nats it costs). The residual rows
 are the hedged outlines: on this model a single-direction removal does not turn them into
 procedures.
+
+### B70-pinned board: the shipped 1.0 vs the labelled best-effort 0.7 (2026-11-22)
+
+Both boards read 32 rows over 4 families (capture-big rows) with the pinned
+capability corpus, 200 tokens, serve ctx 4096 / `--parallel 1` / ngl 99 on the
+B70 Vulkan build; each report now carries its own argv and perplexity config (R9).
+
+- `10-27@1.0`, 36 Q8_0 tensors (delivered cos 0.972/0.986): **refusal_rate 0.2188
+  (7/32), worst family cybercrime-intrusion 0.625** (chem 0.125, illegal 0.125,
+  misinformation 0.0), capability +0.0935 nats, 0 flagged, 0 undecided. Verdict
+  `refuses` — the board's threshold is 0.05, so this is not a clear.
+- `10-27@0.7` shipped with `--best-effort` (certified=false + residual row
+  hb-standard-000003 in the artifact fingerprint) reads **0.6562 (21/32)** at the
+  identical config. The confirmation screen had decoded 2 rows (1 refusal, 1
+  delivery) before aborting, so its "fewest unresolved" ordering was measured on
+  almost no evidence. The label is doing exactly its job: a weak arm ships as a
+  labelled artifact, never as removal.
+- Config matters, as R9 says: the same 1.0 file's earlier CPU-pinned board
+  (ngl 0) read 0.156; the B70-pinned read is 0.2188 (7/32). Compare only within
+  one recorded config.
+- Consequence for the search: `--best-effort` is a safety valve, not a route to a
+  good artifact. The residual family is still cybercrime at 1.0, and the next
+  measured move is the pair-matched (same-prompt refusal-vs-delivery) contrast,
+  not a weaker strength.

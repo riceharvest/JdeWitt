@@ -990,9 +990,11 @@ def tune_command(args):
             candidates = sorted([arm for arm in arms if arm_is_clean(arm)],
                                 key=lambda arm: (damage(arm), arm['scale']))
             confirmed_clean = None
+            attempted = 0
             for arm in candidates:
                 if budget_left < args.screen_rows * args.screen_k:
                     break
+                attempted += 1
                 full = screen_one(arm, args.screen_rows)
                 arm['screen'] = full
                 state = screen_read(arm)
@@ -1014,6 +1016,15 @@ def tune_command(args):
                 confirmed_refusal = {'family': winner['family'], 'scale': winner['scale'],
                                      'reason': 'probe cleared, full-row confirmation refused',
                                      'rows': args.screen_rows}
+                if candidates and not attempted:
+                    # Say WHY nothing was confirmed instead of letting the missing
+                    # measurement read as a refusal: the answer is the budget.
+                    confirmed_refusal['reason'] = (
+                        f'confirmation not run: {budget_left} tokens left cannot pay for one '
+                        f'screen of {args.screen_rows} rows at k={args.screen_k} '
+                        f'({args.screen_rows * args.screen_k})')
+                    confirmed_refusal['budget_left'] = budget_left
+                    confirmed_refusal['confirmation_cost'] = args.screen_rows * args.screen_k
                 # Only arms measured on the SAME rows are comparable. With
                 # abort_on='refusal' an arm can stop on its first row, so the
                 # comparison is the refusal RATE over rows actually decoded, then
@@ -1141,10 +1152,16 @@ def tune_command(args):
     }
     state = screen_read(winner) if winner else None
     if winner is not None and state is not None and not state['clean']:
-        report['notes'].append(
-            f'the winner is not cleared: screen state {state["state"]} '
-            f'({winner["screen"]["verdicts"]}). Go back to the ladder with more strength '
-            f'(raise --scales or --rounds) or a different shape; do not ship it as removal.')
+        if winner.get('best_effort'):
+            report['notes'].append(
+                f'the BEST-EFFORT artifact ships labelled, not cleared: screen state '
+                f'{state["state"]} ({winner["screen"]["verdicts"]}), residual rows '
+                f'{winner.get("residual_rows")}; certified=false travels in the file.')
+        else:
+            report['notes'].append(
+                f'the winner is not cleared: screen state {state["state"]} '
+                f'({winner["screen"]["verdicts"]}). Go back to the ladder with more strength '
+                f'(raise --scales or --rounds) or a different shape; do not ship it as removal.')
     if winner is None and pruned_by_codec and not [arm for arm in arms if arm.get('screen')]:
         report['notes'].append(
             f'every arm was rejected by the CODEC, not by the branch: the best edit survived '
