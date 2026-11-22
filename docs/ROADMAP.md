@@ -123,10 +123,10 @@ then measure nothing about.
    causality score.
 5. The behaviour axis is unestablished for the whole class. On a hand read of
    the same 24 held-out families our arm delivers the asked-for content on 5/24
-   and the published build on 4/24; the unedited base itself reaches 1/24; on a
-   20-family sample of the wider screen both sit at 0/20; sampling does not
-   unlock it. Rank-1 direction removal moves the sentence that says no, not the
-   content.
+   and the published build on 4/24; the unedited base itself reaches 1/24; on the
+   first 20 families of the wider screen the arm sits at 0/20 and the published build
+   at 1/20; sampling does not unlock it. Rank-1 direction removal moves the sentence
+   that says no, not the content.
 6. Evidence volume. Thousands of third-party-benchmarked Heretic builds against
    a handful of our certified artifacts. Our instruments are better; our count
    is not, and count is what a stranger uses to decide.

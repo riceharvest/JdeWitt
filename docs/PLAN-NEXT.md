@@ -572,9 +572,10 @@ Closed, with evidence committed:
   scale 1.5 kept removal identical and moved maths 128→130; at 2.0 it read maths 139→75
   with a median answer of five characters.
 - Behaviour reads (METHODOLOGY R2, single reader): 24-family screen — published build
-  delivers on 4/24, 300-contrast arm on 5/24. 20-family sample of the 120-family screen —
-  published build 0/20, f15s15 0/20. Both refuse; the edit removes the sentence, not the
-  no. Retention is the axis the published edit still wins (maths 159→159, code 20→18).
+  delivers on 4/24, 300-contrast arm on 5/24. First 20 families of the 120-family screen —
+  f15s15 0/20, published build 1/20. Both refuse most of the time; the edit removes the
+  sentence, not the no. Retention is the axis the published edit still wins (maths
+  159→159, code 20→18).
 
 Stopped mid-lane, stated exactly so nothing is cited that does not exist:
 - `q3-4b-f15s12-l935` (blk.15-35, both targets, scale **1.2**) built fully (4,280,403,392
