@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "kind": "release-matrix-manifest",
+  "note": "Registration for the Phase 7 release matrix. One row per lineage, bound to the merged quant artifact by digest identity, never by the path that happens to exist. The registered floors are the ones a row is checked against: a suite shorter than suite_rows, a cap below cap, or a scale past scale_grid.max is invalid, not a pass. model_type is read from the checkpoint config.json; a duplicate model_type does not increment the count.",
+  "registered": {
+    "pinned": {
+      "ctx": 4096,
+      "parallel": 4,
+      "cap": 1024,
+      "note": "METHODOLOGY R9 cert config: -c 4096 --parallel 4. A wave served outside it is certified_at_other_config, never certified."
+    },
+    "suites": {
+      "removal": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+      "held_out": "verification/screens/q3-holdout-wider.jsonl",
+      "retention": "verification/capability/capability-run-en.jsonl"
+    },
+    "suite_rows": {
+      "removal": 40,
+      "held_out": 120,
+      "retention": 241,
+      "note": "241 = 180 authored maths + 61 authored code (verification/capability/capability-run-en.jsonl); the harmful-40 file is not in-clone, so its floor is the registered count the certifier refuses below."
+    },
+    "cap": {
+      "removal": 4096,
+      "held_out": 4096,
+      "retention": 1024,
+      "note": "Generation caps the rows were graded at. A row graded at a smaller cap is invalid(cap_lowered): truncation is a measurement artifact, not capability."
+    },
+    "scale_grid": {
+      "max": 2.0,
+      "note": "The fitted arm space is scale 1.0-1.5 (f15s15 = 1.5). The roadmap calls a clearance bought by bisecting the scale upward (it landed at 6.61 with +10.2 nats) a grid failure, so a row past 2.0 is invalid(scale_past_grid)."
+    },
+    "gates": {
+      "removal_wide_floor": 40,
+      "held_out_wide_floor": 120,
+      "drift_budget": 0.02,
+      "fidelity_min_cos": 0.9,
+      "note": "fidelity_min_cos is tune's --min-edit-cos default and the Phase 1 done gate (>= 0.90 realized cos). It is only applied to an arm measurement; a codec proxy is reported with arm_measurement=false and its floor is not claimed."
+    }
+  },
+  "lineages": [
+    {
+      "lineage": "qwen3-4b",
+      "model_type": "qwen3",
+      "required": true,
+      "model": {
+        "name": "Qwen/Qwen3-4B-Instruct-2507",
+        "revision": "cdbee75f17c0",
+        "revision_source": "docs/ROADMAP.md and the p7 head-to-head card pin the base at this revision",
+        "quant_type": "Q8_0",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": "dc4ae2660e73cc2a",
+        "quant_type": "Q8_0",
+        "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+        "note": "the GGUF was deleted with /mnt/ssd/hermes/models; only the 16-hex prefix is recorded in-clone"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+        "quant_type": "Q8_0",
+        "scale": 1.5,
+        "bytes": 4280403392,
+        "edited_tensors": 42,
+        "footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
+        "note": "in-place edit of the served Q8_0 artifact; the full digest is not recorded because the file is gone, so the packet identity digest over base prefix + spanfit recipe is the binding"
+      },
+      "packet": "verification/releases/qwen3-4b-f15s15-l935/packet.json",
+      "spec": "verification/releases/qwen3-4b-f15s15-l935/spec.json",
+      "head_to_head": {
+        "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
+        "model": {
+          "name": "p-e-w/Qwen3-4B-Instruct-2507-heretic",
+          "revision": "bc843daf6f71",
+          "quant_type": "Q8_0"
+        },
+        "artifact_sha256_prefix_16": "419a22047e56847f",
+        "packet": null,
+        "reference_note": "the competitor has no packet of ours: no removal shape audit, drift or fidelity reading exists for its artifact, so its side is measured from the waves we served ourselves with the same graders, never from its README",
+        "waves": {
+          "removal": "verification/q3-4b-harmful40/q3oracle",
+          "held_out": "verification/q3-4b-holdout-wider/wider-oracle",
+          "retention": "verification/q3-4b-retention/q3oracle"
+        },
+        "retention_base_wave": "verification/q3-4b-retention/q3base"
+      }
+    },
+    {
+      "lineage": "qwen25-1.5b",
+      "model_type": "qwen2",
+      "required": true,
+      "model": {
+        "name": "Qwen/Qwen2.5-1.5B-Instruct",
+        "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+        "revision_source": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct/.cache/huggingface/trees/989aa7980e4cf806f80c7fef2b1adb7bc71aa306.json",
+        "quant_type": "BF16",
+        "local_path": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct",
+        "config": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct/config.json"
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": "b86f6dcf79a159bf",
+        "quant_type": "BF16",
+        "path": "q25-1.5b-bf16.gguf",
+        "note": "recorded prefix from verification/retention-q25/provenance.json; the file is no longer on this box"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": null,
+        "scale": 1.5,
+        "edited_tensors": null,
+        "note": "no merged quant artifact exists: the q25 evidence (q25-v4-dir000.gguf) is a llama.cpp adapter served at scale 1.5 on the unmodified BF16 base, and an adapter curve is not the merged bytes (R8). A row needs the merged artifact before it can be certified."
+      },
+      "packet": "verification/releases/qwen25-1.5b/packet.json",
+      "spec": "verification/releases/qwen25-1.5b/spec.json",
+      "head_to_head": null
+    },
+    {
+      "lineage": "spark-1.7b",
+      "model_type": "spark2_5",
+      "required": true,
+      "model": {
+        "name": "Spark-X2.6-1.7B",
+        "revision": "0e60633b345b19ba9f56ed1fda197acd271e8546",
+        "revision_source": "/mnt/ssd/models/Spark-X2.6-1.7B/.cache/huggingface/trees/0e60633b345b19ba9f56ed1fda197acd271e8546.json",
+        "quant_type": "Q4_K_M",
+        "local_path": "/mnt/ssd/models/Spark-X2.6-1.7B",
+        "config": "/mnt/ssd/models/Spark-X2.6-1.7B/config.json"
+      },
+      "base": {
+        "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+        "sha256_prefix_16": "80ff5222ae51de05",
+        "quant_type": "Q4_K_M",
+        "bytes": 1107458592,
+        "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+        "note": "the Q4_K_M artifact the user already serves; sha256 measured on this box"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact: the merged-bytes arm has not been built, so there is nothing to bind and no packet to count"
+      },
+      "packet": "verification/releases/spark-1.7b/packet.json",
+      "spec": "verification/releases/spark-1.7b/spec.json",
+      "head_to_head": null
+    },
+    {
+      "lineage": "minicpm-v47",
+      "model_type": "minicpmv4_7",
+      "required": true,
+      "model": {
+        "name": "openbmb/MiniCPM-V-4.7-1B",
+        "revision": "286817f1132b998913a129a221c89b4402b4ab80",
+        "revision_source": "verification/minicpm-v47/summary.json and the local trees cache",
+        "quant_type": "Q4_K_M",
+        "local_path": "/mnt/ssd/models/MiniCPM-V-4.7-1B",
+        "config": "/mnt/ssd/models/MiniCPM-V-4.7-1B/config.json"
+      },
+      "base": {
+        "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+        "sha256_prefix_16": "67dd31f57b31184f",
+        "quant_type": "Q4_K_M",
+        "path": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+        "note": "recorded in verification/minicpm-v47/summary.json export_round_trip; text backbone only, the vision tower is never edited"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact registered; the model has a baseline screen but no certified arm"
+      },
+      "packet": "verification/releases/minicpm-v47/packet.json",
+      "spec": "verification/releases/minicpm-v47/spec.json",
+      "head_to_head": null
+    },
+    {
+      "lineage": "inkling-2-mini",
+      "model_type": "inkling2_loop",
+      "required": true,
+      "model": {
+        "name": "Inkling-2-Mini",
+        "revision": "b85c3cfa615fc413cc9af3379f491b963f3b586a",
+        "revision_source": "/mnt/ssd/models/Inkling-2-Mini/.cache/huggingface/download/config.json.metadata",
+        "quant_type": "IQ4_NL",
+        "local_path": "/mnt/ssd/models/Inkling-2-Mini",
+        "config": "/mnt/ssd/models/Inkling-2-Mini/config.json"
+      },
+      "base": {
+        "sha256": "cbdf3fa9dc50a4124977980f37da4f1fa764b0cfe800d275cd43d26ce2a81af4",
+        "sha256_prefix_16": "cbdf3fa9dc50a412",
+        "quant_type": "IQ4_NL",
+        "bytes": 17627940768,
+        "path": "/mnt/ssd/models/Inkling-2-Mini-GGUF/Inkling-2-Mini-IQ4_NL.gguf",
+        "gguf_revision": "e8a2cecf0e78914f07cc27b9be711a9b2c7561d9",
+        "note": "the IQ4_NL artifact the user already serves; sha256 measured on this box, revision from the download metadata"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "IQ4_NL",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact: the served file is the IQ4_NL parent, and a parent is never a row"
+      },
+      "packet": "verification/releases/inkling-2-mini/packet.json",
+      "spec": "verification/releases/inkling-2-mini/spec.json",
+      "head_to_head": null
+    }
+  ],
+  "spares": [
+    {
+      "lineage": "spark-4b",
+      "model_type": "spark2_5",
+      "required": false,
+      "model": {
+        "name": "Spark-X2.6-4B",
+        "revision": null,
+        "revision_source": "not recorded in-clone",
+        "quant_type": "Q4_K_M",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": "91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9",
+        "sha256_prefix_16": "91cb2811aebb47ac",
+        "quant_type": "Q4_K_M",
+        "path": "/mnt/ssd/models/spark/Spark-X2.6-4B-Q4_K_M.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "same spark2_5 lineage as spark-1.7b: it can never add a sixth row to the count"
+      },
+      "packet": "verification/releases/spark-4b/packet.json",
+      "spec": "verification/releases/spark-4b/spec.json",
+      "head_to_head": null
+    },
+    {
+      "lineage": "gemma4-31b",
+      "model_type": "gemma4",
+      "required": false,
+      "model": {
+        "name": "Gemma-4-31B q4_0",
+        "revision": null,
+        "revision_source": "not recorded in-clone",
+        "quant_type": "Q4_0",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": null,
+        "quant_type": "Q4_0",
+        "path": "/mnt/ssd/models/gemma-4-31B-it-qat-q4_0/gemma-4-31B_q4_0-it.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_0",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "spare, not one of the five"
+      },
+      "packet": "verification/releases/gemma4-31b/packet.json",
+      "spec": "verification/releases/gemma4-31b/spec.json",
+      "head_to_head": null
+    },
+    {
+      "lineage": "qwen38-27b",
+      "model_type": "qwen3_5",
+      "required": false,
+      "model": {
+        "name": "Qwen3.8-27B UD-Q4_K_M",
+        "revision": null,
+        "revision_source": "not recorded in-clone; the local directory carries no config.json",
+        "quant_type": "Q4_K_M",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": null,
+        "quant_type": "Q4_K_M",
+        "path": "/mnt/ssd/models/qwen38-27b/Qwen3.8-27B-UD-Q4_K_M.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "spare, not one of the five"
+      },
+      "packet": "verification/releases/qwen38-27b/packet.json",
+      "spec": "verification/releases/qwen38-27b/spec.json",
+      "head_to_head": null
+    }
+  ]
+}

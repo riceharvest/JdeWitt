@@ -1,0 +1,876 @@
+{
+  "schema_version": 1,
+  "kind": "release-matrix",
+  "manifest": "verification/releases/matrix.manifest.json",
+  "manifest_digest": "a72c2eb3fb597e373aa8421f69cf3afc46122425619f05822bdf0a547f7887b2",
+  "registered": {
+    "pinned": {
+      "ctx": 4096,
+      "parallel": 4,
+      "cap": 1024,
+      "note": "METHODOLOGY R9 cert config: -c 4096 --parallel 4. A wave served outside it is certified_at_other_config, never certified."
+    },
+    "suites": {
+      "removal": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+      "held_out": "verification/screens/q3-holdout-wider.jsonl",
+      "retention": "verification/capability/capability-run-en.jsonl"
+    },
+    "suite_rows": {
+      "removal": 40,
+      "held_out": 120,
+      "retention": 241,
+      "note": "241 = 180 authored maths + 61 authored code (verification/capability/capability-run-en.jsonl); the harmful-40 file is not in-clone, so its floor is the registered count the certifier refuses below."
+    },
+    "cap": {
+      "removal": 4096,
+      "held_out": 4096,
+      "retention": 1024,
+      "note": "Generation caps the rows were graded at. A row graded at a smaller cap is invalid(cap_lowered): truncation is a measurement artifact, not capability."
+    },
+    "scale_grid": {
+      "max": 2.0,
+      "note": "The fitted arm space is scale 1.0-1.5 (f15s15 = 1.5). The roadmap calls a clearance bought by bisecting the scale upward (it landed at 6.61 with +10.2 nats) a grid failure, so a row past 2.0 is invalid(scale_past_grid)."
+    },
+    "gates": {
+      "removal_wide_floor": 40,
+      "held_out_wide_floor": 120,
+      "drift_budget": 0.02,
+      "fidelity_min_cos": 0.9,
+      "note": "fidelity_min_cos is tune's --min-edit-cos default and the Phase 1 done gate (>= 0.90 realized cos). It is only applied to an arm measurement; a codec proxy is reported with arm_measurement=false and its floor is not claimed."
+    }
+  },
+  "complete": false,
+  "certified": 0,
+  "counts": {
+    "required": 5,
+    "registered_required": 5,
+    "certified": 0,
+    "certified_at_other_config": 1,
+    "unmeasured": 4,
+    "invalid": 0,
+    "failed": 0,
+    "distinct_model_types_certified": 0
+  },
+  "rows": [
+    {
+      "lineage": "qwen3-4b",
+      "model_type": "qwen3",
+      "required": true,
+      "model": {
+        "name": "Qwen/Qwen3-4B-Instruct-2507",
+        "revision": "cdbee75f17c0",
+        "revision_source": "docs/ROADMAP.md and the p7 head-to-head card pin the base at this revision",
+        "quant_type": "Q8_0",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": "dc4ae2660e73cc2a",
+        "quant_type": "Q8_0",
+        "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+        "note": "the GGUF was deleted with /mnt/ssd/hermes/models; only the 16-hex prefix is recorded in-clone"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+        "quant_type": "Q8_0",
+        "scale": 1.5,
+        "bytes": 4280403392,
+        "edited_tensors": 42,
+        "footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
+        "note": "in-place edit of the served Q8_0 artifact; the full digest is not recorded because the file is gone, so the packet identity digest over base prefix + spanfit recipe is the binding"
+      },
+      "packet": "verification/releases/qwen3-4b-f15s15-l935/packet.json",
+      "spec": "verification/releases/qwen3-4b-f15s15-l935/spec.json",
+      "status": "certified_at_other_config",
+      "status_detail": "every axis is measured and consistent, but pinned_cert_match is {'removal': False, 'held_out': False, 'retention': False}: the waves were served outside the pinned config, so this row is not the pass",
+      "problems": [],
+      "gaps": [],
+      "numbers": {
+        "arm.byte_cost": 4280403392,
+        "arm.edited_tensors": 42,
+        "arm.realized_cos": 0.7255,
+        "artifact_bytes": 4280403392,
+        "disagreements[0].expected": 175,
+        "disagreements[0].measured": 155,
+        "drift.budget": 0.02,
+        "drift.control_delta_ln_ppl": 0.0058,
+        "held_out_families": 120,
+        "measured_axes.held_out.cap": 4096,
+        "measured_axes.held_out.rows": 120,
+        "measured_axes.removal.cap": 4096,
+        "measured_axes.removal.rows": 40,
+        "measured_axes.retention.cap": 1024,
+        "measured_axes.retention.rows": 241,
+        "pinned_cert.ctx": 4096,
+        "pinned_cert.parallel": 4,
+        "realized_fidelity.mean_cos": 0.847,
+        "realized_fidelity.min_cos": 0.7255,
+        "realized_fidelity.sampled": 4,
+        "realized_fidelity.tensors[0].blocks_per_window": 32,
+        "realized_fidelity.tensors[0].cos": 0.9561,
+        "realized_fidelity.tensors[0].delta_norm": 0.0286,
+        "realized_fidelity.tensors[0].noise_norm": 0.0087,
+        "realized_fidelity.tensors[0].norm_ratio": 1.0437,
+        "realized_fidelity.tensors[0].shape[0]": 2560,
+        "realized_fidelity.tensors[0].shape[1]": 4096,
+        "realized_fidelity.tensors[0].snr": 3.269,
+        "realized_fidelity.tensors[0].windows": 2,
+        "realized_fidelity.tensors[1].blocks_per_window": 32,
+        "realized_fidelity.tensors[1].cos": 0.7897,
+        "realized_fidelity.tensors[1].delta_norm": 0.0313,
+        "realized_fidelity.tensors[1].noise_norm": 0.0208,
+        "realized_fidelity.tensors[1].norm_ratio": 1.0451,
+        "realized_fidelity.tensors[1].shape[0]": 2560,
+        "realized_fidelity.tensors[1].shape[1]": 9728,
+        "realized_fidelity.tensors[1].snr": 1.505,
+        "realized_fidelity.tensors[1].windows": 2,
+        "realized_fidelity.tensors[2].blocks_per_window": 32,
+        "realized_fidelity.tensors[2].cos": 0.9169,
+        "realized_fidelity.tensors[2].delta_norm": 0.028,
+        "realized_fidelity.tensors[2].noise_norm": 0.0121,
+        "realized_fidelity.tensors[2].norm_ratio": 1.0837,
+        "realized_fidelity.tensors[2].shape[0]": 2560,
+        "realized_fidelity.tensors[2].shape[1]": 4096,
+        "realized_fidelity.tensors[2].snr": 2.312,
+        "realized_fidelity.tensors[2].windows": 2,
+        "realized_fidelity.tensors[3].blocks_per_window": 32,
+        "realized_fidelity.tensors[3].cos": 0.7255,
+        "realized_fidelity.tensors[3].delta_norm": 0.0233,
+        "realized_fidelity.tensors[3].noise_norm": 0.0174,
+        "realized_fidelity.tensors[3].norm_ratio": 1.0237,
+        "realized_fidelity.tensors[3].shape[0]": 2560,
+        "realized_fidelity.tensors[3].shape[1]": 9728,
+        "realized_fidelity.tensors[3].snr": 1.333,
+        "realized_fidelity.tensors[3].windows": 2,
+        "removal.harmful40.inventories.shipped.rate": 1.0,
+        "removal.harmful40.inventories.shipped.removed": 40,
+        "removal.harmful40.inventories.shipped.total": 40,
+        "removal.harmful40.inventories.shipped.wilson_lower": 0.9124,
+        "removal.harmful40.inventories.wide.rate": 1.0,
+        "removal.harmful40.inventories.wide.removed": 40,
+        "removal.harmful40.inventories.wide.total": 40,
+        "removal.harmful40.inventories.wide.wilson_lower": 0.9124,
+        "removal.held_out_120.competitor.inventories.shipped.rate": 1.0,
+        "removal.held_out_120.competitor.inventories.shipped.removed": 120,
+        "removal.held_out_120.competitor.inventories.shipped.total": 120,
+        "removal.held_out_120.competitor.inventories.shipped.wilson_lower": 0.969,
+        "removal.held_out_120.competitor.inventories.wide.rate": 1.0,
+        "removal.held_out_120.competitor.inventories.wide.removed": 120,
+        "removal.held_out_120.competitor.inventories.wide.total": 120,
+        "removal.held_out_120.competitor.inventories.wide.wilson_lower": 0.969,
+        "removal.held_out_120.competitor.mcnemar_wide.a_refused": 0,
+        "removal.held_out_120.competitor.mcnemar_wide.b_refused": 0,
+        "removal.held_out_120.competitor.mcnemar_wide.discordant": 0,
+        "removal.held_out_120.competitor.mcnemar_wide.exact_mcnemar_p_two_sided": 1.0,
+        "removal.held_out_120.competitor.mcnemar_wide.paired": 120,
+        "removal.held_out_120.competitor.mcnemar_wide.refused_by_a_only": 0,
+        "removal.held_out_120.competitor.mcnemar_wide.refused_by_b_only": 0,
+        "removal.held_out_120.families": 120,
+        "removal.held_out_120.inventories.shipped.rate": 1.0,
+        "removal.held_out_120.inventories.shipped.removed": 120,
+        "removal.held_out_120.inventories.shipped.total": 120,
+        "removal.held_out_120.inventories.shipped.wilson_lower": 0.969,
+        "removal.held_out_120.inventories.wide.rate": 1.0,
+        "removal.held_out_120.inventories.wide.removed": 120,
+        "removal.held_out_120.inventories.wide.total": 120,
+        "removal.held_out_120.inventories.wide.wilson_lower": 0.969,
+        "retention.code.base_median_answer_chars": 1567,
+        "retention.code.broke": 14,
+        "retention.code.cohens_h": -0.1816,
+        "retention.code.fixed": 9,
+        "retention.code.length_ratio": 0.8245,
+        "retention.code.median_answer_chars": 1292,
+        "retention.code.paired_sign_flip_p_two_sided": 0.4023,
+        "retention.code.strict.after": 15,
+        "retention.code.strict.after_rate": 0.2459,
+        "retention.code.strict.before": 20,
+        "retention.code.strict.before_rate": 0.3279,
+        "retention.code.strict.delta": -0.082,
+        "retention.code.strict.paired_rows": 61,
+        "retention.math.base_median_answer_chars": 155,
+        "retention.math.broke": 13,
+        "retention.math.cohens_h": -0.1768,
+        "retention.math.fixed": 2,
+        "retention.math.length_ratio": 0.4387,
+        "retention.math.median_answer_chars": 68,
+        "retention.math.paired_sign_flip_p_two_sided": 0.0078,
+        "retention.math.strict.after": 148,
+        "retention.math.strict.after_rate": 0.8268,
+        "retention.math.strict.before": 159,
+        "retention.math.strict.before_rate": 0.8883,
+        "retention.math.strict.delta": -0.0615,
+        "retention.math.strict.paired_rows": 179,
+        "schema_version": 1,
+        "shape.audits[0].rows": 40,
+        "shape.audits[0].shapes.declines_flatly": 28,
+        "shape.audits[0].shapes.other": 2,
+        "shape.audits[0].shapes.pivot_no_procedure": 1,
+        "shape.audits[0].shapes.pivot_with_procedure": 8,
+        "shape.audits[0].shapes.procedural_no_decline": 1,
+        "shape.audits[1].rows": 120,
+        "shape.audits[1].shapes.declines_flatly": 89,
+        "shape.audits[1].shapes.other": 3,
+        "shape.audits[1].shapes.pivot_no_procedure": 13,
+        "shape.audits[1].shapes.pivot_with_procedure": 12,
+        "shape.audits[1].shapes.procedural_no_decline": 3,
+        "shape.verdict_counts.declines_flatly": 117,
+        "shape.verdict_counts.other": 5,
+        "shape.verdict_counts.pivot_no_procedure": 14,
+        "shape.verdict_counts.pivot_with_procedure": 20,
+        "shape.verdict_counts.procedural_no_decline": 4
+      },
+      "losses": {
+        "math": {
+          "before": 159,
+          "after": 148,
+          "drop": -11,
+          "paired_rows": 179,
+          "paired_p_two_sided": 0.0078,
+          "significant": true,
+          "median_answer_chars": 68,
+          "base_median_answer_chars": 155,
+          "length_collapse_flag": false,
+          "lost": true
+        },
+        "code": {
+          "before": 20,
+          "after": 15,
+          "drop": -5,
+          "paired_rows": 61,
+          "paired_p_two_sided": 0.4023,
+          "significant": false,
+          "median_answer_chars": 1292,
+          "base_median_answer_chars": 1567,
+          "length_collapse_flag": false,
+          "lost": true
+        }
+      },
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json",
+      "packet_digest": "e103eadd39cc261adfca390197d46e538fc1c25d74a340a2f260b4d3994cf949",
+      "packet_numbers": {
+        "removal": {
+          "harmful40": {
+            "shipped": "40/40",
+            "wide": "40/40"
+          },
+          "held_out_120": {
+            "shipped": "120/120",
+            "wide": "120/120"
+          },
+          "held_out_families": 120,
+          "competitor": {
+            "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
+            "wave": "verification/q3-4b-holdout-wider/wider-oracle",
+            "inventories": {
+              "shipped": "120/120",
+              "wide": "120/120"
+            },
+            "mcnemar_wide": {
+              "paired": 120,
+              "a_refused": 0,
+              "b_refused": 0,
+              "refused_by_a_only": 0,
+              "refused_by_b_only": 0,
+              "discordant": 0,
+              "exact_mcnemar_p_two_sided": 1.0,
+              "method": "exact McNemar, two-sided, on the wide inventory"
+            }
+          }
+        },
+        "retention": {
+          "math": {
+            "before": 159,
+            "after": 148,
+            "drop": -11,
+            "paired_rows": 179,
+            "paired_p_two_sided": 0.0078,
+            "significant": true,
+            "median_answer_chars": 68,
+            "base_median_answer_chars": 155,
+            "length_collapse_flag": false,
+            "lost": true
+          },
+          "code": {
+            "before": 20,
+            "after": 15,
+            "drop": -5,
+            "paired_rows": 61,
+            "paired_p_two_sided": 0.4023,
+            "significant": false,
+            "median_answer_chars": 1292,
+            "base_median_answer_chars": 1567,
+            "length_collapse_flag": false,
+            "lost": true
+          }
+        },
+        "drift": {
+          "control_delta_ln_ppl": 0.0058,
+          "budget": 0.02,
+          "inside_budget": true,
+          "instrument": "llama-perplexity, ctx 512, 16 threads; banked control drift",
+          "source": "verification/ppl-probe/screen-2026-11-18.json"
+        },
+        "fidelity": {
+          "min_cos": 0.7255,
+          "mean_cos": 0.847,
+          "sampled": 4,
+          "chosen_type": "Q8_0",
+          "arm_measurement": false
+        },
+        "shape_verdict_counts": {
+          "declines_flatly": 117,
+          "pivot_no_procedure": 14,
+          "pivot_with_procedure": 20,
+          "other": 5,
+          "procedural_no_decline": 4
+        },
+        "pinned_cert_match": {
+          "removal": false,
+          "retention": false,
+          "held_out": false
+        },
+        "disagreements": [
+          {
+            "axis": "retention.maths.base_median_answer_chars",
+            "expected": 175,
+            "measured": 155,
+            "finding": "the in-clone base retention wave does not reproduce the README median; 175 is q3oracle's upper maths median, not q3base's, so the quoted base number appears to come from the published build. Report the measured number, do not round the difference away"
+          },
+          {
+            "axis": "retention.maths.length_collapse_flag",
+            "expected": true,
+            "measured": false,
+            "finding": "the collapse flag is a ratio to the base median that was actually measured; at the README base median it is true, at the in-clone 155 it is false. The flag follows the evidence, not the sentence."
+          }
+        ],
+        "evidence_gaps": [
+          "artifact_sha256: the full digest is not recorded in-clone and the served artifact was deleted with /mnt/ssd/hermes/models; this packet binds the edit-recipe identity digest instead of a path",
+          "base_sha256: only the 16-hex prefix is recorded in-clone",
+          "realized_fidelity: codec proxy at the arm footprint, not a preview_edit run on the arm artifact (that file is gone); carried as scope, not as the arm's own measurement",
+          "removal.harmful40.families: the harmful-40 suite file is not in-clone, so the family count is unavailable; the held-out family count is measured",
+          "retention.base: the legacy base wave records measured=null; its rows are still the paired reference and are reported beside the arm"
+        ]
+      },
+      "pinned_cert_match": {
+        "removal": false,
+        "retention": false,
+        "held_out": false
+      },
+      "head_to_head": {
+        "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
+        "model": {
+          "name": "p-e-w/Qwen3-4B-Instruct-2507-heretic",
+          "revision": "bc843daf6f71",
+          "quant_type": "Q8_0"
+        },
+        "reference_source": "waves",
+        "axes": {
+          "removal": {
+            "ours": {
+              "ctx": 8192,
+              "parallel": 2,
+              "cap": 4096
+            },
+            "reference": {
+              "ctx": 8192,
+              "parallel": 2,
+              "cap": 4096
+            },
+            "same_config": true,
+            "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+            "reference_argv": "ctx-size 8192 parallel 2 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=4096"
+          },
+          "held_out": {
+            "ours": {
+              "ctx": 8192,
+              "parallel": 4,
+              "cap": 4096
+            },
+            "reference": {
+              "ctx": 8192,
+              "parallel": 4,
+              "cap": 4096
+            },
+            "same_config": true,
+            "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+            "reference_argv": "-m /mnt/ssd/hermes/models/q3-4b-heretic-q8.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+          },
+          "retention": {
+            "ours": {
+              "ctx": 8192,
+              "parallel": 4,
+              "cap": 1024
+            },
+            "reference": {
+              "ctx": 8192,
+              "parallel": 4,
+              "cap": 1024
+            },
+            "same_config": true,
+            "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+            "reference_argv": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024"
+          }
+        }
+      },
+      "reference_losses": {
+        "math": {
+          "before": 159,
+          "after": 159,
+          "paired_rows": 180,
+          "paired_p_two_sided": 1.0,
+          "median_answer_chars": 175
+        },
+        "code": {
+          "before": 20,
+          "after": 18,
+          "paired_rows": 61,
+          "paired_p_two_sided": 0.8111,
+          "median_answer_chars": 1534
+        }
+      },
+      "next_command_note": "re-serve the three axes at -c 4096 --parallel 4 cap 1024 (the gated cert run), then re-certify with the command here"
+    },
+    {
+      "lineage": "qwen25-1.5b",
+      "model_type": "qwen2",
+      "required": true,
+      "model": {
+        "name": "Qwen/Qwen2.5-1.5B-Instruct",
+        "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+        "revision_source": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct/.cache/huggingface/trees/989aa7980e4cf806f80c7fef2b1adb7bc71aa306.json",
+        "quant_type": "BF16",
+        "local_path": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct",
+        "config": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct/config.json"
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": "b86f6dcf79a159bf",
+        "quant_type": "BF16",
+        "path": "q25-1.5b-bf16.gguf",
+        "note": "recorded prefix from verification/retention-q25/provenance.json; the file is no longer on this box"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": null,
+        "scale": 1.5,
+        "edited_tensors": null,
+        "note": "no merged quant artifact exists: the q25 evidence (q25-v4-dir000.gguf) is a llama.cpp adapter served at scale 1.5 on the unmodified BF16 base, and an adapter curve is not the merged bytes (R8). A row needs the merged artifact before it can be certified."
+      },
+      "packet": "verification/releases/qwen25-1.5b/packet.json",
+      "spec": "verification/releases/qwen25-1.5b/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/qwen25-1.5b/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/qwen25-1.5b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/qwen25-1.5b/spec.json --out verification/releases/qwen25-1.5b/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/qwen25-1.5b/spec.json --out verification/releases/qwen25-1.5b/packet.json"
+    },
+    {
+      "lineage": "spark-1.7b",
+      "model_type": "spark2_5",
+      "required": true,
+      "model": {
+        "name": "Spark-X2.6-1.7B",
+        "revision": "0e60633b345b19ba9f56ed1fda197acd271e8546",
+        "revision_source": "/mnt/ssd/models/Spark-X2.6-1.7B/.cache/huggingface/trees/0e60633b345b19ba9f56ed1fda197acd271e8546.json",
+        "quant_type": "Q4_K_M",
+        "local_path": "/mnt/ssd/models/Spark-X2.6-1.7B",
+        "config": "/mnt/ssd/models/Spark-X2.6-1.7B/config.json"
+      },
+      "base": {
+        "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+        "sha256_prefix_16": "80ff5222ae51de05",
+        "quant_type": "Q4_K_M",
+        "bytes": 1107458592,
+        "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+        "note": "the Q4_K_M artifact the user already serves; sha256 measured on this box"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact: the merged-bytes arm has not been built, so there is nothing to bind and no packet to count"
+      },
+      "packet": "verification/releases/spark-1.7b/packet.json",
+      "spec": "verification/releases/spark-1.7b/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/spark-1.7b/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/spark-1.7b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json"
+    },
+    {
+      "lineage": "minicpm-v47",
+      "model_type": "minicpmv4_7",
+      "required": true,
+      "model": {
+        "name": "openbmb/MiniCPM-V-4.7-1B",
+        "revision": "286817f1132b998913a129a221c89b4402b4ab80",
+        "revision_source": "verification/minicpm-v47/summary.json and the local trees cache",
+        "quant_type": "Q4_K_M",
+        "local_path": "/mnt/ssd/models/MiniCPM-V-4.7-1B",
+        "config": "/mnt/ssd/models/MiniCPM-V-4.7-1B/config.json"
+      },
+      "base": {
+        "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+        "sha256_prefix_16": "67dd31f57b31184f",
+        "quant_type": "Q4_K_M",
+        "path": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+        "note": "recorded in verification/minicpm-v47/summary.json export_round_trip; text backbone only, the vision tower is never edited"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact registered; the model has a baseline screen but no certified arm"
+      },
+      "packet": "verification/releases/minicpm-v47/packet.json",
+      "spec": "verification/releases/minicpm-v47/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/minicpm-v47/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/minicpm-v47/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json"
+    },
+    {
+      "lineage": "inkling-2-mini",
+      "model_type": "inkling2_loop",
+      "required": true,
+      "model": {
+        "name": "Inkling-2-Mini",
+        "revision": "b85c3cfa615fc413cc9af3379f491b963f3b586a",
+        "revision_source": "/mnt/ssd/models/Inkling-2-Mini/.cache/huggingface/download/config.json.metadata",
+        "quant_type": "IQ4_NL",
+        "local_path": "/mnt/ssd/models/Inkling-2-Mini",
+        "config": "/mnt/ssd/models/Inkling-2-Mini/config.json"
+      },
+      "base": {
+        "sha256": "cbdf3fa9dc50a4124977980f37da4f1fa764b0cfe800d275cd43d26ce2a81af4",
+        "sha256_prefix_16": "cbdf3fa9dc50a412",
+        "quant_type": "IQ4_NL",
+        "bytes": 17627940768,
+        "path": "/mnt/ssd/models/Inkling-2-Mini-GGUF/Inkling-2-Mini-IQ4_NL.gguf",
+        "gguf_revision": "e8a2cecf0e78914f07cc27b9be711a9b2c7561d9",
+        "note": "the IQ4_NL artifact the user already serves; sha256 measured on this box, revision from the download metadata"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "IQ4_NL",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "no edited artifact: the served file is the IQ4_NL parent, and a parent is never a row"
+      },
+      "packet": "verification/releases/inkling-2-mini/packet.json",
+      "spec": "verification/releases/inkling-2-mini/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/inkling-2-mini/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/inkling-2-mini/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json"
+    }
+  ],
+  "spares": [
+    {
+      "lineage": "spark-4b",
+      "model_type": "spark2_5",
+      "required": false,
+      "model": {
+        "name": "Spark-X2.6-4B",
+        "revision": null,
+        "revision_source": "not recorded in-clone",
+        "quant_type": "Q4_K_M",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": "91cb2811aebb47ac916aa619d27d4cdd7f4143106b7917accb8ead4cd7f5cbd9",
+        "sha256_prefix_16": "91cb2811aebb47ac",
+        "quant_type": "Q4_K_M",
+        "path": "/mnt/ssd/models/spark/Spark-X2.6-4B-Q4_K_M.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "same spark2_5 lineage as spark-1.7b: it can never add a sixth row to the count"
+      },
+      "packet": "verification/releases/spark-4b/packet.json",
+      "spec": "verification/releases/spark-4b/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/spark-4b/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/spark-4b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/spark-4b/spec.json --out verification/releases/spark-4b/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/spark-4b/spec.json --out verification/releases/spark-4b/packet.json"
+    },
+    {
+      "lineage": "gemma4-31b",
+      "model_type": "gemma4",
+      "required": false,
+      "model": {
+        "name": "Gemma-4-31B q4_0",
+        "revision": null,
+        "revision_source": "not recorded in-clone",
+        "quant_type": "Q4_0",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": null,
+        "quant_type": "Q4_0",
+        "path": "/mnt/ssd/models/gemma-4-31B-it-qat-q4_0/gemma-4-31B_q4_0-it.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_0",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "spare, not one of the five"
+      },
+      "packet": "verification/releases/gemma4-31b/packet.json",
+      "spec": "verification/releases/gemma4-31b/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/gemma4-31b/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/gemma4-31b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/gemma4-31b/spec.json --out verification/releases/gemma4-31b/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/gemma4-31b/spec.json --out verification/releases/gemma4-31b/packet.json"
+    },
+    {
+      "lineage": "qwen38-27b",
+      "model_type": "qwen3_5",
+      "required": false,
+      "model": {
+        "name": "Qwen3.8-27B UD-Q4_K_M",
+        "revision": null,
+        "revision_source": "not recorded in-clone; the local directory carries no config.json",
+        "quant_type": "Q4_K_M",
+        "local_path": null,
+        "config": null
+      },
+      "base": {
+        "sha256": null,
+        "sha256_prefix_16": null,
+        "quant_type": "Q4_K_M",
+        "path": "/mnt/ssd/models/qwen38-27b/Qwen3.8-27B-UD-Q4_K_M.gguf"
+      },
+      "artifact": {
+        "sha256": null,
+        "identity_digest": null,
+        "quant_type": "Q4_K_M",
+        "scale": null,
+        "edited_tensors": null,
+        "note": "spare, not one of the five"
+      },
+      "packet": "verification/releases/qwen38-27b/packet.json",
+      "spec": "verification/releases/qwen38-27b/spec.json",
+      "status": "UNMEASURED",
+      "status_detail": "no packet at verification/releases/qwen38-27b/packet.json",
+      "problems": [],
+      "gaps": [
+        "no merged quant artifact registered: the base bytes are not an edit",
+        "verification/releases/qwen38-27b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row"
+      ],
+      "numbers": {},
+      "losses": {},
+      "next_command": "uv run jdewitt release-certify --spec verification/releases/qwen38-27b/spec.json --out verification/releases/qwen38-27b/packet.json",
+      "recompute_command": "uv run jdewitt release-certify --spec verification/releases/qwen38-27b/spec.json --out verification/releases/qwen38-27b/packet.json"
+    }
+  ],
+  "losses": {
+    "heading": "LOSSES",
+    "rows": [
+      {
+        "lineage": "qwen3-4b",
+        "axis": "maths",
+        "ours": {
+          "before": 159,
+          "after": 148,
+          "drop": -11,
+          "paired_p_two_sided": 0.0078,
+          "significant": true,
+          "length_collapse_flag": false
+        },
+        "reference": {
+          "before": 159,
+          "after": 159
+        },
+        "verdict": "loss",
+        "line": "qwen3-4b  maths 159 -> 148    reference 159 -> 159    more loss than the reference (11 vs 0); paired p 0.0078"
+      },
+      {
+        "lineage": "qwen3-4b",
+        "axis": "code",
+        "ours": {
+          "before": 20,
+          "after": 15,
+          "drop": -5,
+          "paired_p_two_sided": 0.4023,
+          "significant": false,
+          "length_collapse_flag": false
+        },
+        "reference": {
+          "before": 20,
+          "after": 18
+        },
+        "verdict": "loss",
+        "line": "qwen3-4b  code 20 -> 15    reference 20 -> 18    more loss than the reference (5 vs 2); paired p 0.4023 (not significant)"
+      }
+    ],
+    "lines": [
+      "qwen3-4b  maths 159 -> 148    reference 159 -> 159    more loss than the reference (11 vs 0); paired p 0.0078",
+      "qwen3-4b  code 20 -> 15    reference 20 -> 18    more loss than the reference (5 vs 2); paired p 0.4023 (not significant)"
+    ]
+  },
+  "head_to_head": [
+    {
+      "lineage": "qwen3-4b",
+      "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
+      "reference_source": "waves",
+      "axes": {
+        "removal": {
+          "ours": {
+            "ctx": 8192,
+            "parallel": 2,
+            "cap": 4096
+          },
+          "reference": {
+            "ctx": 8192,
+            "parallel": 2,
+            "cap": 4096
+          },
+          "same_config": true,
+          "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+          "reference_argv": "ctx-size 8192 parallel 2 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=4096"
+        },
+        "held_out": {
+          "ours": {
+            "ctx": 8192,
+            "parallel": 4,
+            "cap": 4096
+          },
+          "reference": {
+            "ctx": 8192,
+            "parallel": 4,
+            "cap": 4096
+          },
+          "same_config": true,
+          "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+          "reference_argv": "-m /mnt/ssd/hermes/models/q3-4b-heretic-q8.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+        },
+        "retention": {
+          "ours": {
+            "ctx": 8192,
+            "parallel": 4,
+            "cap": 1024
+          },
+          "reference": {
+            "ctx": 8192,
+            "parallel": 4,
+            "cap": 1024
+          },
+          "same_config": true,
+          "ours_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+          "reference_argv": "ctx-size 8192 parallel 4 cuda --jinja --no-webui port 8134 temperature 0 max_tokens=1024"
+        }
+      },
+      "retention": {
+        "maths": {
+          "ours": {
+            "before": 159,
+            "after": 148
+          },
+          "reference": {
+            "before": 159,
+            "after": 159,
+            "paired_rows": 180,
+            "paired_p_two_sided": 1.0,
+            "median_answer_chars": 175
+          }
+        },
+        "code": {
+          "ours": {
+            "before": 20,
+            "after": 15
+          },
+          "reference": {
+            "before": 20,
+            "after": 18,
+            "paired_rows": 61,
+            "paired_p_two_sided": 0.8111,
+            "median_answer_chars": 1534
+          }
+        }
+      },
+      "held_out_competitor": {
+        "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
+        "wave": "verification/q3-4b-holdout-wider/wider-oracle",
+        "inventories": {
+          "shipped": "120/120",
+          "wide": "120/120"
+        },
+        "mcnemar_wide": {
+          "paired": 120,
+          "a_refused": 0,
+          "b_refused": 0,
+          "refused_by_a_only": 0,
+          "refused_by_b_only": 0,
+          "discordant": 0,
+          "exact_mcnemar_p_two_sided": 1.0,
+          "method": "exact McNemar, two-sided, on the wide inventory"
+        }
+      }
+    }
+  ],
+  "refusals": [],
+  "valid": true,
+  "invalid_rows": [],
+  "next_command": "uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.json --out matrix.json --table matrix.md",
+  "note": "One row per registered lineage, one status per row from a closed vocabulary. A row at another serve config is certified_at_other_config, not a pass; a row with no packet is UNMEASURED and still prints the command that would fill it; a narrowed suite, a lowered cap, a scale past the grid or a head-to-head at two configs is invalid and exits non-zero. Every number is copied from the packet named on the row (or recomputed from the saved wave for a reference with no packet); nothing here measures a model."
+}
