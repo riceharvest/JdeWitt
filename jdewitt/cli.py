@@ -401,6 +401,12 @@ def build_parser():
     signr=sub.add_parser('release-sign',help='Sign a verified release reproduction index (repro.json payload)')
     signr.add_argument('directory',type=Path)
     signr.add_argument('--secret',type=Path,required=True,help='Ed25519 private key from release-keygen')
+    repro=sub.add_parser('release-repro',help='Write or check the reproduction index over every operand (base, plan, suites, argv, codec); --check exits non-zero when one moved')
+    repro.add_argument('directory',type=Path)
+    repro_mode=repro.add_mutually_exclusive_group()
+    repro_mode.add_argument('--out',type=Path,help='Build path: write the index here (default DIRECTORY/repro.json)')
+    repro_mode.add_argument('--check',action='store_true',help='Re-hash every operand against the seal; non-zero names each moved operand by JSON path')
+    repro.add_argument('--strict-provenance',action='store_true',help='Also fail when tool/runtime provenance differs from the signing host')
     verifyr=sub.add_parser('release-verify-signature',help='Verify a release signature; --public pins it to a known key')
     verifyr.add_argument('directory',type=Path)
     verifyr.add_argument('--public',type=Path,help='Pinned public key; without this only signature math is checked')
@@ -788,6 +794,13 @@ def main():
         elif args.command=='release-sign':
             from .release import sign_release
             result=sign_release(args.directory,args.secret)
+        elif args.command=='release-repro':
+            from .release import check_repro,write_repro
+            if args.check:
+                result=check_repro(args.directory,args.strict_provenance)
+                exit_code=0 if result['valid'] else 1
+            else:
+                result=write_repro(args.directory,args.out)
         elif args.command=='release-verify-signature':
             from .release import verify_signature
             result=verify_signature(args.directory,args.public)
