@@ -240,6 +240,10 @@ def bench(args) -> tuple[dict, str]:
     records = Path(args.records) if args.records else axes_path.with_name('records.pt')
     records_sha = sha256_file(records) if records.is_file() else None
 
+    import jdewitt
+    code_root = str(Path(jdewitt.__file__).resolve().parent)
+    print(f'code: {code_root}', flush=True)
+
     name_map, layer_ids = merge_targets(str(artifact), axes, args.only_layers)
     names = sorted(name_map)
     print(f'{len(names)} tensors over layers {layer_ids[0]}-{layer_ids[-1]}: '
@@ -258,6 +262,18 @@ def bench(args) -> tuple[dict, str]:
     for index in range(args.arms):
         row = run_arm(artifact, axes, name_map, args.scale, args.axis_space, cache=cache)
         row['arm'] = index
+        if (index == 0 and cache is not None and not args.cache_keep
+                and row.get('cache_hits')):
+            # A purged directory cannot serve arm 0; if it did, something else
+            # wrote into --cache while this arm ran (the keys are content-based,
+            # so a concurrent run on the same weights lands on the same files).
+            # The dequant column then measures a warm cache, so refuse the run
+            # instead of publishing a number that is not dequant cost.
+            raise SystemExit(
+                f'arm 0 read {row["cache_hits"]} hit(s) from a purged cache directory '
+                f'{cache.root}: another process is writing the same content-addressed '
+                f'bases. Re-run with a private --cache directory (or wait for it to finish); '
+                f'dequant_s on this run is not the cold dequant cost.')
         arm_rows.append(row)
         print(f'arm {index}: dequant {row["dequant_s"]}s apply {row["apply_s"]}s '
               f'requant {row["requant_s"]}s total {row["total_s"]}s '
@@ -272,6 +288,8 @@ def bench(args) -> tuple[dict, str]:
     requant_s = sum(row['requant_s'] for row in arm_rows)
     total_s = sum(row['total_s'] for row in arm_rows)
     report = {
+        'code_root': code_root,
+        'provenance': args.provenance,
         'artifact': str(artifact),
         'artifact_bytes': artifact.stat().st_size,
         'artifact_sha_before': before,
@@ -335,6 +353,10 @@ def main(argv=None) -> int:
                                      'JSON); defaults to records.pt beside the axes file')
     ap.add_argument('--expected-sha', default=ART_SHA256,
                     help='refuse an artifact whose sha256 differs (default: the pinned spark quant)')
+    ap.add_argument('--provenance', metavar='TEXT',
+                    help='one line explaining where this artifact came from, carried into the '
+                         'JSON (e.g. "byte copy of the pinned bench.gguf: the shared path was being '
+                         'patched by another card in the same window")')
     ap.add_argument('--cache', '--dequant-cache', dest='cache', metavar='DIR',
                     help='content-addressed dequantized-base cache: arm 0 dequantizes and '
                          'stores, later arms map the saved base and make zero dequantize calls '
