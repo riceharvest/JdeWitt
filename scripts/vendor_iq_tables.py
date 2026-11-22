@@ -29,10 +29,33 @@ WANTED = {
 BEGIN = re.compile(r'GGML_TABLE_BEGIN\(\s*(uint\d+_t)\s*,\s*(\w+)\s*,\s*([^)]+)\)')
 
 
+def parse_static_u16(text, name):
+    """Parse `static const uint16_t NAME[N] = {...};` (decimal values) from a C file."""
+    match = re.search(r'static const uint16_t ' + name + r'\[(\d+)\]\s*=\s*\{(.*?)\};',
+                      text, re.DOTALL)
+    if not match:
+        raise SystemExit(f'{name} not found')
+    size, body = int(match.group(1)), match.group(2)
+    values = [int(v) for v in re.findall(r'\b\d+\b', body)]
+    if len(values) != size:
+        raise SystemExit(f'{name}: parsed {len(values)} values, declared {size}')
+    return size, values
+
+
 def main():
     path = sys.argv[1]
     text = open(path, 'r', encoding='utf-8').read()
     digest = hashlib.sha256(text.encode('utf-8')).hexdigest()
+    kgrid = {}
+    if len(sys.argv) > 2:
+        quants_path = sys.argv[2]
+        quants_text = open(quants_path, 'r', encoding='utf-8').read()
+        quants_digest = hashlib.sha256(quants_text.encode('utf-8')).hexdigest()
+        for name, size in (('kgrid_256', 256), ('kgrid_512', 512)):
+            declared, values = parse_static_u16(quants_text, name)
+            kgrid[name] = values
+    else:
+        quants_digest = None
     tables = {}
     lines = text.splitlines()
     for index, line in enumerate(lines):
@@ -68,6 +91,7 @@ def main():
            'import numpy as np',
            '',
            f'IQ_COMMON_SHA256 = {digest!r}',
+           f'IQ_QUANTS_SHA256 = {quants_digest!r}',
            'IQ1S_DELTA = 0.125',
            '']
     for name in WANTED:
@@ -78,6 +102,15 @@ def main():
             row = ', '.join(str(v) for v in values[start:start + 6])
             out.append(f'    {row},')
         out.append(f'], dtype={dtype})')
+        out.append('')
+    for name, size in (('kgrid_256', 256), ('kgrid_512', 512)):
+        if name not in kgrid:
+            continue
+        values = kgrid[name]
+        out.append(f'{name.upper()} = np.array([')
+        for start in range(0, len(values), 12):
+            out.append('    ' + ', '.join(str(v) for v in values[start:start + 12]) + ',')
+        out.append('], dtype=np.uint16)')
         out.append('')
     sys.stdout.write('\n'.join(out))
 

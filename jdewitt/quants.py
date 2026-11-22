@@ -1124,3 +1124,4 @@ DECODE_ONLY.update({
     'IQ1_S': (50, QK_K, dequantize_iq1_s),
     'IQ1_M': (56, QK_K, dequantize_iq1_m),
 })
+

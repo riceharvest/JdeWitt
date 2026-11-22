@@ -203,12 +203,20 @@ written into the item and stays GATED.
     (scripts/ggml_ref/ref_iq4.c, 10 distributions + real F32 tensors); the
     zero-block path of IQ4_NL is undefined upstream (the reference leaves the
     code buffer untouched) and we write zero codes.
-    Remaining, stated honestly: byte-exact ENCODERS for IQ1/IQ2/IQ3 need the
-    runtime-derived kmap/neighbour tables and, for IQ2_XXS/XS and IQ1, an
-    importance matrix (llama-quantize itself refuses those without one). Those
-    files are still editable: edit-quantized/rewrite re-encode the touched
-    tensors at a writable type (Q8_0/Q6_K) and copy every other tensor
-    byte-for-byte, which is the product behaviour the roadmap asked for.
+    IQ3_XXS ENCODER: `jdewitt/iq3.py` ports iq3xs_init_impl (both grid sizes),
+    iq3_find_best_neighbour and quantize_row_iq3_xxs_impl, and is byte-exact
+    against the compiled reference (scripts/ggml_ref/ref_iq3.c) on 8
+    distributions x 64 blocks and real F32 tensors. It is NOT registered in
+    CODECS: it walks 32 elements at a time in Python, so a 4M-element tensor
+    takes minutes, not seconds; the is-loop and neighbour search need
+    vectorising across blocks first. The module is kept as that falsifier
+    target and documents the exact remaining work.
+    Remaining, stated honestly: wired ENCODERS for IQ1/IQ2/IQ3 need that
+    vectorisation and, for IQ2_XXS/XS and IQ1, an importance matrix
+    (llama-quantize itself refuses those without one). Those files are still
+    editable: edit-quantized/rewrite re-encode the touched tensors at a
+    writable type (Q8_0/Q6_K) and copy every other tensor byte-for-byte,
+    which is the product behaviour the roadmap asked for.
 
 13. bitsandbytes NF4 — SINGLE-QUANT LANDED. `nf4-edit` for U8-packed
     weights + F32/F16 absmax scales: codebook pinned to bnb 0.42.0 by
