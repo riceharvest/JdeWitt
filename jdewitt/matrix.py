@@ -684,7 +684,7 @@ def _matrix_table(matrix) -> str:
             row.get('model_type'),
             model.get('name'),
             model.get('revision'),
-            (row.get('artifact') or {}).get('quant_type') or (model or {}).get('quant_type'),
+            (row.get('artifact') or {}).get('quant_type') or '-',
             row['status'],
             f'{removal.get("shipped")} / {removal.get("wide")}' if removal else '-',
             held.get('wide') or '-',

@@ -9,7 +9,7 @@ complete: false   certified: 0 of 5 required lineages   certified_at_other_confi
 | lineage | model_type | model | revision | quant | status | removal (shipped/wide) | held-out | maths | drift | fidelity min cos |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | qwen3-4b | qwen3 | Qwen/Qwen3-4B-Instruct-2507 | cdbee75f17c0 | Q8_0 | certified_at_other_config | 40/40 / 40/40 | 120/120 | 159 -> 148 (p 0.0078) | 0.0058 in 0.02 | 0.7255 |
-| qwen25-1.5b | qwen2 | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | BF16 | UNMEASURED | - | - | - | - | - |
+| qwen25-1.5b | qwen2 | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | - | UNMEASURED | - | - | - | - | - |
 | spark-1.7b | spark2_5 | Spark-X2.6-1.7B | 0e60633b345b19ba9f56ed1fda197acd271e8546 | Q4_K_M | UNMEASURED | - | - | - | - | - |
 | minicpm-v47 | minicpmv4_7 | openbmb/MiniCPM-V-4.7-1B | 286817f1132b998913a129a221c89b4402b4ab80 | Q4_K_M | UNMEASURED | - | - | - | - | - |
 | inkling-2-mini | inkling2_loop | Inkling-2-Mini | b85c3cfa615fc413cc9af3379f491b963f3b586a | IQ4_NL | UNMEASURED | - | - | - | - | - |
