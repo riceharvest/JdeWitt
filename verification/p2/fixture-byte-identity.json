@@ -1,27 +1,38 @@
 {
  "what": "out-of-place merge of the tests/test_spanfit.py fixture, byte-identical before/after the P2b writer change",
- "fixture": "tests/test_spanfit.py::test_build_merged_rewrites_targets_only (L=4, D=16, 3 target tensors, F32)",
- "method": "same script built the merge with the pre-change code (master e1ece0c) and the post-change code; cmp on the two files",
+ "fixture": "tests/test_spanfit.py fixture: L=4, D=16, 3 target tensors, F32 (np.random.default_rng(3)); fixture in.gguf sha256 6b0522d1be42878aa04b24511563109f573a921209120f4bcb42529e9a41b4ea",
+ "method": "scripts/p2b_fixture_identity.py builds the fixture and merges it in three modes. The 'before' column ran in a detached worktree at master e1ece0c (pre-P2b), the 'after' column in ab/t_35cd0a5b; cmp on the two files per mode, not a hash comparison alone.",
  "rows": [
   {
-   "mode": "default axis_space=input",
+   "mode": "input",
+   "axis_space": "input",
+   "renormalize": false,
    "sha256_before_change": "278fefe66214dfceaa066da158f6ba9b2832e7578d87b01603659ac4a5d03ac9",
    "sha256_after_change": "278fefe66214dfceaa066da158f6ba9b2832e7578d87b01603659ac4a5d03ac9",
-   "cmp": "identical"
+   "cmp": "identical",
+   "warm_run_identical": true
   },
   {
-   "mode": "axis_space=output",
+   "mode": "output",
+   "axis_space": "output",
+   "renormalize": false,
    "sha256_before_change": "d16654c338ad2c34d753d3d8530e77758d2d2e3329b4dbfd5251d0d96e339b5e",
    "sha256_after_change": "d16654c338ad2c34d753d3d8530e77758d2d2e3329b4dbfd5251d0d96e339b5e",
-   "cmp": "identical"
+   "cmp": "identical",
+   "warm_run_identical": true
   },
   {
-   "mode": "axis_space=output + renormalize",
-   "sha256_before_change": "2f69670132d4fc10b3bc6ccc48433d72aac567d631db838f1cc823a88a54c8fa",
-   "sha256_after_change": "2f69670132d4fc10b3bc6ccc48433d72aac567d631db838f1cc823a88a54c8fa",
-   "cmp": "identical"
+   "mode": "output_renormalize",
+   "axis_space": "output",
+   "renormalize": true,
+   "sha256_before_change": "8a14bc0e2e67e1a1be784bf1047385b06f193e6a2c5e87b62ff9f870dfa886f3",
+   "sha256_after_change": "8a14bc0e2e67e1a1be784bf1047385b06f193e6a2c5e87b62ff9f870dfa886f3",
+   "cmp": "identical",
+   "warm_run_identical": true
   }
  ],
- "note": "the renormalize row matters because the row-norm arithmetic moved from build_merged's precomputed delta into the writer; it emits the same bytes, including the second add that reproduces the old two-step rounding.",
- "cache": "the post-change runs also created <fixture-in>.gguf.dequant/ and the warm run (second post-change build) was identical too"
+ "all_identical": true,
+ "warm_cache": "the 'after' column also ran a second merge through a fresh --dequant-cache directory; it read the base back from the .npy memmaps and produced the same bytes as the cold pass",
+ "note": "the renormalize row matters because the row-norm arithmetic moved from build_merged's precomputed delta into the writer mode; same bytes, including the second add that reproduces the old two-step rounding. Supersedes the earlier 2f696701... row for this mode, which this script does not reproduce; the three rows above are what the committed script measures on both trees.",
+ "reproduce": "python scripts/p2b_fixture_identity.py --out-dir /tmp/base   (old tree)  &&  python scripts/p2b_fixture_identity.py --out-dir /tmp/new --compare /tmp/base   (this tree)"
 }
