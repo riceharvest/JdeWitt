@@ -294,7 +294,8 @@ on different hardware, every README number resolving through `evidence_map`.
   gap list stays in the same JSON.
 - Per-architecture export smoke: a GGUF llama.cpp cannot serve is not a release.
 - `capture`/`tune` keep working on architectures never seen: discovery, not
-  tables, and a typed refusal when a layout has no verified adapter.
+  tables, and a typed refusal (`NO_VERIFIED_ADAPTER`) when a layout has no
+  verified adapter.
 - Agent ops stay one-command/one-JSON/next-command; the CLI self-describes and
   every command stays model-free on its help path.
 
