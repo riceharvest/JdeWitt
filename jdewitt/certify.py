@@ -190,33 +190,88 @@ def _check_suite(axis, suite, wave, valid):
               f'(need >= {MIN_ROWS[axis]})')
 
 
-def _removal_inventory(valid, wide):
+_CHECKER = None
+
+
+def _checker():
+    global _CHECKER
+    if _CHECKER is None:
+        from .refusal_check import RefusalChecker
+        _CHECKER = RefusalChecker()
+    return _CHECKER
+
+
+def _grade(rows):
+    """Recompute both wording inventories over saved answers, without a model.
+
+    A stored refusal label is evidence of what the wave wrote, not of what the
+    inventory in this build says. Grading the answers here makes the count and the
+    inventory digest the same fact; where the wave stored a label, it must agree.
+    """
+    graded = []
+    for row in rows:
+        language = row.get('language') or 'en'
+        answer = row.get('answer') or ''
+        graded.append({'row': row,
+                       'shipped': _checker().check(answer, language, wide=False)['result'] == 'refusal_detected',
+                       'wide': _checker().check(answer, language, wide=True)['result'] == 'refusal_detected'})
+    return graded
+
+
+def _removal_inventory(graded, wide, require_stored=True):
     key = 'refusal_check_wide' if wide else 'refusal_check'
-    labels = []
-    for row in valid:
-        check = row.get(key)
-        if not isinstance(check, dict) or check.get('result') not in (
+    labels, mismatched, missing = [], 0, 0
+    for item in graded:
+        computed = item['wide' if wide else 'shipped']
+        stored = item['row'].get(key)
+        if isinstance(stored, dict) and stored.get('result') in (
                 'refusal_detected', 'no_explicit_refusal', 'uncertain'):
-            labels = None
-            break
-        labels.append(check['result'] != 'refusal_detected')
-    if labels is None:
+            if (stored['result'] == 'refusal_detected') != computed:
+                mismatched += 1
+        elif require_stored:
+            missing += 1
+        labels.append(not computed)
+    if missing:
         _fail('CERTIFY_ONE_INVENTORY',
-              f'removal: {len(valid) - sum(1 for row in valid if isinstance(row.get(key), dict))} '
-              f'of {len(valid)} rows carry no {key}; a removal number needs BOTH inventories')
+              f'removal: {missing} of {len(labels)} rows carry no stored {key}; a removal '
+              'number needs BOTH inventories recorded on the wave, not one inferred after the fact')
+    if mismatched:
+        _fail('CERTIFY_ONE_INVENTORY',
+              f'removal: {mismatched} of {len(labels)} stored {key} labels disagree with the '
+              f'recorded {key} inventory; the count and the digest would describe different graders')
     removed = sum(1 for value in labels if value)
     interval = wilson_interval(removed, len(labels))
     return {'removed': removed, 'total': len(labels), 'n_m': f'{removed}/{len(labels)}',
             'rate': round(removed / len(labels), 4) if labels else None,
             'wilson_lower': round(interval['lower'], 4) if labels else None,
-            'inventory': 'wide' if wide else 'shipped'}
+            'inventory': 'wide' if wide else 'shipped',
+            'graded_from': 'answer text with the shipped RefusalChecker'}
 
 
-def _removal_block(valid, digests):
-    shipped = _removal_inventory(valid, wide=False)
-    wide = _removal_inventory(valid, wide=True)
+def _removal_block(graded, digests, require_stored=True):
+    shipped = _removal_inventory(graded, wide=False, require_stored=require_stored)
+    wide = _removal_inventory(graded, wide=True, require_stored=require_stored)
     return {'inventories': {'shipped': {**shipped, 'digest': digests['shipped']},
                             'wide': {**wide, 'digest': digests['wide']}}}
+
+
+def _exact_mcnemar(a, b):
+    """Exact McNemar on paired refusal labels; identical screens give p = 1.0."""
+    from math import comb
+    ids = sorted(set(a) & set(b))
+    a_only = sum(1 for pid in ids if a[pid] and not b[pid])
+    b_only = sum(1 for pid in ids if b[pid] and not a[pid])
+    discordant = a_only + b_only
+    if discordant == 0:
+        p = 1.0
+    else:
+        k = min(a_only, b_only)
+        p = min(1.0, 2 * sum(comb(discordant, j) for j in range(k + 1)) / 2 ** discordant)
+    return {'paired': len(ids), 'a_refused': sum(1 for pid in ids if a[pid]),
+            'b_refused': sum(1 for pid in ids if b[pid]),
+            'refused_by_a_only': a_only, 'refused_by_b_only': b_only,
+            'discordant': discordant, 'exact_mcnemar_p_two_sided': round(p, 4),
+            'method': 'exact McNemar, two-sided, on the wide inventory'}
 
 
 def _suite_path(entry):
@@ -431,14 +486,35 @@ def release_certify(spec_path, out_path=None):
         waves[axis]['valid'] = valid
         _check_suite(axis, suites.get(axis), waves[axis]['wave'], valid)
 
-    removal = _removal_block(waves['removal']['valid'], digests)
-    held_out = _removal_block(waves['held_out']['valid'], digests)
+    removal = _removal_block(_grade(waves['removal']['valid']), digests)
+    held_out = _removal_block(_grade(waves['held_out']['valid']), digests)
     family_count, _ = _families(
         _suite_path(suites.get('held_out')), waves['held_out']['valid'])
     if family_count is None:
         _fail('CERTIFY_MISSING_AXIS',
               'held_out: the suite file is absent, so the family count cannot be computed')
     held_out['families'] = family_count
+    competitor_path = inputs['held_out'].get('competitor_wave')
+    if competitor_path:
+        competitor = _wave(competitor_path, 'held_out.competitor')
+        competitor_valid = [row for row in competitor['rows'] if row.get('status') == 'ok']
+        if not competitor_valid:
+            _fail('CERTIFY_UNMEASURED', 'held_out.competitor: 0 valid rows')
+        competitor_block = _removal_block(_grade(competitor_valid), digests, require_stored=False)
+        arm_wide = {item['row']['id']: item['wide']
+                    for item in _grade(waves['held_out']['valid'])}
+        comp_wide = {item['row']['id']: item['wide']
+                     for item in _grade(competitor_valid)}
+        if not set(arm_wide) & set(comp_wide):
+            _fail('CERTIFY_ONE_INVENTORY',
+                  'held_out.competitor: the competitor wave shares no prompt id with the arm, '
+                  'so it is not a paired comparison')
+        held_out['competitor'] = {
+            'label': inputs['held_out'].get('competitor_label') or competitor_path,
+            'wave': str(competitor_path),
+            'inventories': competitor_block['inventories'],
+            'mcnemar_wide': _exact_mcnemar(arm_wide, comp_wide),
+        }
 
     retention = inputs['retention']
     if not retention.get('base_wave'):
