@@ -1,0 +1,537 @@
+{
+  "format": "jdewitt-public-corpora/1",
+  "generated": "2026-11-22",
+  "harvest": "verification/public-corpus-census/harvest.py",
+  "vendored_rows": 10047,
+  "unique_prompts": 9160,
+  "cross_source_duplicate_groups": 867,
+  "sources": [
+    {
+      "id": "strongreject",
+      "dataset": "walledai/StrongREJECT",
+      "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+      "license": "mit",
+      "license_url": "https://huggingface.co/datasets/walledai/StrongREJECT",
+      "url": "https://huggingface.co/datasets/walledai/StrongREJECT",
+      "rows": 313,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "harmful evaluation",
+      "referenced_by": [
+        "Blackfrost-AI/Qwen3.8-27B-ABLITERATED-BF16 model card: \"450-case source set contains 150 AdvBench, 150 StrongREJECT, 150 XSTest\"",
+        "walledai/StrongREJECT dataset card"
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "data/train-00000-of-00001.parquet",
+          "sha256": "603aa76bc6d546fc66da1dd5f170e775daa14cbba92ff32d56261987f1eb80e4",
+          "rows": 313
+        }
+      ],
+      "rows_harvested": 313,
+      "dataset_sha256": "df54272b395ce9e584d2f8140519935425d8549f"
+    },
+    {
+      "id": "xstest",
+      "dataset": "Paul/XSTest",
+      "revision": "f600c994b256f12867dfa5b3eb3d545a3e62f8b5",
+      "license": "cc-by-4.0",
+      "license_url": "https://huggingface.co/datasets/Paul/XSTest",
+      "url": "https://huggingface.co/datasets/Paul/XSTest",
+      "rows": 450,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "safe/unsafe label per row",
+      "role": "over-refusal (safe) + harmful evaluation",
+      "referenced_by": [
+        "Blackfrost-AI/Qwen3.8-27B-ABLITERATED-BF16 model card (150 XSTest cases)",
+        "Paul/XSTest dataset card"
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "xstest_prompts.csv",
+          "sha256": "11783fb294ed017473ee53c207d71f2161c7672c8d0b037501e78387f801cb5a",
+          "rows": 450
+        }
+      ],
+      "rows_harvested": 450,
+      "dataset_sha256": "f600c994b256f12867dfa5b3eb3d545a3e62f8b5"
+    },
+    {
+      "id": "semantic-harmful",
+      "dataset": "heretic-org/Semantic-Harmful",
+      "revision": "001ca2ceaef94a748235e0ba1366aee48436e286",
+      "license": "cc-by-4.0",
+      "license_url": "https://huggingface.co/datasets/heretic-org/Semantic-Harmful",
+      "url": "https://huggingface.co/datasets/heretic-org/Semantic-Harmful",
+      "rows": 416,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "one-to-one with semantic-harmless (matched_pairs.json)",
+      "role": "harmful side of the heretic semantic contrast",
+      "referenced_by": [
+        "heretic-org/Semantic-Harmful card: built from mlabonne/harmful_behaviors for p-e-w/heretic",
+        "AEON-7/Gemma-4-12B-it-AEON-Abliterated-K4-BF16 card: \"heretic compute_refusal_directions\""
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "data/train-00000-of-00001.parquet",
+          "sha256": "160c858efc15ffc8ffbfb641f998fa886f7b36c33f96f21a275091c71c09b26e",
+          "rows": 416
+        }
+      ],
+      "rows_harvested": 416,
+      "dataset_sha256": "001ca2ceaef94a748235e0ba1366aee48436e286"
+    },
+    {
+      "id": "semantic-harmless",
+      "dataset": "heretic-org/Semantic-Harmless",
+      "revision": "7e9f2b01272da85f2be7a3437f31ac46698e8735",
+      "license": "cc-by-4.0",
+      "license_url": "https://huggingface.co/datasets/heretic-org/Semantic-Harmless",
+      "url": "https://huggingface.co/datasets/heretic-org/Semantic-Harmless",
+      "rows": 416,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "one-to-one with semantic-harmful (matched_pairs.json)",
+      "role": "harmless side of the heretic semantic contrast",
+      "referenced_by": [
+        "heretic-org/Semantic-Harmless card: semantic match of mlabonne/harmless_alpaca"
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "data/train-00000-of-00001.parquet",
+          "sha256": "949c8c60d4d869f8d645d822e411c97ea08fad9cd1437cbf9ea21e3ce07f1420",
+          "rows": 416
+        }
+      ],
+      "rows_harvested": 416,
+      "dataset_sha256": "7e9f2b01272da85f2be7a3437f31ac46698e8735"
+    },
+    {
+      "id": "multilingual-harmless-harmful",
+      "dataset": "heretic-org/Multilingual-Harmless-Harmful",
+      "revision": "f5a870a407217f5c4087d6a669b668bcf5da9b4d",
+      "license": "cc-by-sa-4.0",
+      "license_url": "https://huggingface.co/datasets/heretic-org/Multilingual-Harmless-Harmful",
+      "url": "https://huggingface.co/datasets/heretic-org/Multilingual-Harmless-Harmful",
+      "rows": 8320,
+      "languages": [
+        "en",
+        "bn",
+        "fr",
+        "hi",
+        "it",
+        "ja",
+        "ko",
+        "mr",
+        "ru",
+        "ta"
+      ],
+      "structure": "prompt-only",
+      "pairing": "416 harmful + 416 harmless per language",
+      "role": "multilingual harmful/harmless contrast",
+      "referenced_by": [
+        "heretic-org/Multilingual-Harmless-Harmful card (config.multilingual.toml)"
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "content/english/csv/english.csv",
+          "sha256": "d4ac004d4362354e4509ccc52cf26b2b93121cd1b042f30c2393d3eea914b7d1",
+          "rows": 832
+        },
+        {
+          "path": "content/bengali/csv/bengali.csv",
+          "sha256": "047394ee49a3417c0629bc5903777e4730ffe9e05e419723f942bf23143bb419",
+          "rows": 832
+        },
+        {
+          "path": "content/french/csv/french.csv",
+          "sha256": "6b0070780c99d30b78370d9ca58f02fb3ae9f9e0ca0954d6b61b64cda613a4d1",
+          "rows": 832
+        },
+        {
+          "path": "content/hindi/csv/hindi.csv",
+          "sha256": "6516a0916a2a7496a35687f5fa505e6b7a0b79603653b99f2c58e4af282f87a3",
+          "rows": 832
+        },
+        {
+          "path": "content/italian/csv/italian.csv",
+          "sha256": "2f0753a165710f9dcb12d9b49909e8f40647567ecea323314b62433f2305a883",
+          "rows": 832
+        },
+        {
+          "path": "content/japanese/csv/japanese.csv",
+          "sha256": "557964ffa6d411b542ed38be60fab037f9e7fa0ff98e064cf60d96bca31bd1e2",
+          "rows": 832
+        },
+        {
+          "path": "content/korean/csv/korean.csv",
+          "sha256": "19b6d7016bf53d94cd115884b7396a7e2ffdb77355f654c92674cfcfe269b40a",
+          "rows": 832
+        },
+        {
+          "path": "content/marathi/csv/marathi.csv",
+          "sha256": "b2bc789a53173c5eb6fb10c65a8c63fb6875eca721a1052abaa2979cee791aae",
+          "rows": 832
+        },
+        {
+          "path": "content/russian/csv/russian.csv",
+          "sha256": "3fbe7e58903e3bd31e73f2e14c5865c7a99af8fbcd45c7ee91eb94c7fa7d6ffb",
+          "rows": 832
+        },
+        {
+          "path": "content/tamil/csv/tamil.csv",
+          "sha256": "9238cf272c83a65338da5ef26db704745eee951c8c0eae183a04c1f4e9c70cee",
+          "rows": 832
+        }
+      ],
+      "rows_harvested": 8320,
+      "dataset_sha256": "f5a870a407217f5c4087d6a669b668bcf5da9b4d"
+    },
+    {
+      "id": "deccp",
+      "dataset": "augmxnt/deccp",
+      "revision": "2c964c6957c5b1692992eb0d0409633155417056",
+      "license": "apache-2.0",
+      "license_url": "https://huggingface.co/datasets/augmxnt/deccp",
+      "url": "https://huggingface.co/datasets/augmxnt/deccp",
+      "rows": 132,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only (censored topics posed in English)",
+      "pairing": "censored set 95 / uncensored set 37",
+      "role": "Chinese-censorship refusal contrast (DECCP)",
+      "referenced_by": [
+        "augmxnt/Qwen2-7B-Instruct-deccp release card",
+        "augmxnt/deccp dataset card"
+      ],
+      "vendored": true,
+      "file_digests": [
+        {
+          "path": "data/censored-00000-of-00001.parquet",
+          "sha256": "a6d1f342cdab1a44605234287e2955196cc7144ae537fb019d3406d99c3b405a",
+          "rows": 95
+        },
+        {
+          "path": "data/uncensored-00000-of-00001.parquet",
+          "sha256": "befe269c020608a6980623ee86dd4b02db0f10a5caaf869209e85ddcc64ac2ae",
+          "rows": 37
+        }
+      ],
+      "rows_harvested": 132,
+      "dataset_sha256": "2c964c6957c5b1692992eb0d0409633155417056"
+    },
+    {
+      "id": "heretic-harmful",
+      "dataset": "heretic-org/harmful_behaviors",
+      "revision": "55eeb6b587ea43b579197db191183be93c653bea",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/heretic-org/harmful_behaviors",
+      "rows": 520,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "heretic default harmful prompts",
+      "referenced_by": [
+        "p-e-w/heretic src/heretic/config.py: response_prefix_test_prompts dataset=\"mlabonne/harmful_behaviors\"",
+        "heretic-org/harmful_behaviors card: mirror of mlabonne/harmful_behaviors (\"just in case\")",
+        "AEON-7 abliterated cards (heretic framework)"
+      ],
+      "vendored": false,
+      "license_note": "Dataset card states no licence and no upstream licence; mirror of mlabonne/harmful_behaviors (also unstated). AdvBench upstream is MIT but that is not restated here.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "heretic-harmless",
+      "dataset": "heretic-org/harmless_alpaca",
+      "revision": "50f4f3fb105af89081223619eb9d431710f5829e",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/heretic-org/harmless_alpaca",
+      "rows": 31323,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "heretic default harmless prompts",
+      "referenced_by": [
+        "p-e-w/heretic src/heretic/config.py: batch_size_test_prompts dataset=\"mlabonne/harmless_alpaca\"",
+        "heretic-org/harmless_alpaca card: mirror of mlabonne/harmless_alpaca"
+      ],
+      "vendored": false,
+      "license_note": "Card states no licence; mirror of mlabonne/harmless_alpaca (unstated). tatsu-lab/alpaca upstream is Apache-2.0 but the mirror does not restate it.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "advbench-harmful",
+      "dataset": "mlabonne/harmful_behaviors",
+      "revision": "01cead01398926d81f7c52bdb790ee8cf77ebba7",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/mlabonne/harmful_behaviors",
+      "rows": 520,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "AdvBench harmful behaviours, the shared harmful list",
+      "referenced_by": [
+        "p-e-w/heretic config.py",
+        "examples/public-corpus/import.json (our own previous import)",
+        "Blackfrost 450-case bench (150 AdvBench)"
+      ],
+      "vendored": false,
+      "license_note": "No licence on the dataset card; AdvBench (llm-attacks) is MIT upstream.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "alpaca-harmless",
+      "dataset": "mlabonne/harmless_alpaca",
+      "revision": "02c6a92cfcf11bb0c387334f8146d149d65b587f",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/mlabonne/harmless_alpaca",
+      "rows": 31323,
+      "languages": [
+        "en"
+      ],
+      "structure": "instruction-only",
+      "pairing": "none",
+      "role": "Alpaca harmless instructions",
+      "referenced_by": [
+        "p-e-w/heretic config.py",
+        "FailSpy/abliterator get_harmless_instructions -> tatsu-lab/alpaca"
+      ],
+      "vendored": false,
+      "license_note": "No licence on the mirror card; tatsu-lab/alpaca is Apache-2.0.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "josie-prompts-300",
+      "dataset": "Goekdeniz-Guelmez/JOSIE-Prompts-Only-Corpus-300",
+      "revision": "9a5ffe35a18ee2c33f3b828d32c39d2219124bc8",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/Goekdeniz-Guelmez/JOSIE-Prompts-Only-Corpus-300",
+      "rows": 300,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "Josiefied / JOSIE prompt corpus (300)",
+      "referenced_by": [
+        "Goekdeniz-Guelmez/Josiefied-Qwen2.5-*-abliterated-v* model cards (fine-tuned on a custom JOSIE dataset)",
+        "Goekdeniz-Guelmez/JOSIE-Prompts-Only-Corpus-300 card"
+      ],
+      "vendored": false,
+      "license_note": "No licence field on the dataset card.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "josiefication-prompts",
+      "dataset": "Goekdeniz-Guelmez/Josiefication-prompts-online-po",
+      "revision": "0006ee4cfb49a2b72ad4bd8974db1286eb40c83c",
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/datasets/Goekdeniz-Guelmez/Josiefication-prompts-online-po",
+      "rows": 4019573,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "large scraped Josiefication prompt corpus",
+      "referenced_by": [
+        "Goekdeniz-Guelmez Josiefied model family; dataset card"
+      ],
+      "vendored": false,
+      "license_note": "No licence field; 4.0M rows, not vendorable and not needed for a wave.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "g0dm0d3",
+      "dataset": "pliny-the-prompter/g0dm0d3",
+      "revision": "f8055e2243597c86c49abbbf8765ccd400728c37",
+      "license": "agpl-3.0",
+      "license_url": "https://huggingface.co/datasets/pliny-the-prompter/g0dm0d3",
+      "url": "https://huggingface.co/datasets/pliny-the-prompter/g0dm0d3",
+      "rows": null,
+      "languages": [
+        "en"
+      ],
+      "structure": "sharded jsonl telemetry/prompts",
+      "pairing": "none",
+      "role": "Pliny the Prompter's harvested prompt corpus",
+      "referenced_by": [
+        "pliny-the-prompter/g0dm0d3 dataset card (30,424 files: incoming_v2/ + telemetry/)",
+        "OBLITERATUS model cards: \"Built by Pliny the Prompter\""
+      ],
+      "vendored": false,
+      "rows_note": "30,424 sharded jsonl files; the dataset card gives no row total and the viewer has no parquet, so no row count is claimed here.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "obliteratus-telemetry",
+      "dataset": "pliny-the-prompter/OBLITERATUS-TELEMETRY",
+      "revision": "30ecd955180b6914fa0ffde54df15ea8521a1b6a",
+      "license": "agpl-3.0",
+      "license_url": "https://huggingface.co/datasets/pliny-the-prompter/OBLITERATUS-TELEMETRY",
+      "url": "https://huggingface.co/datasets/pliny-the-prompter/OBLITERATUS-TELEMETRY",
+      "rows": null,
+      "languages": [
+        "en"
+      ],
+      "structure": "run telemetry (not a prompt corpus)",
+      "pairing": "none",
+      "role": "OBLITERATUS crowd telemetry",
+      "referenced_by": [
+        "elder-plinius/OBLITERATUS README: \"--contribute feeds the community dataset\"",
+        "pliny-the-prompter/OBLITERATUS-TELEMETRY card"
+      ],
+      "vendored": false,
+      "rows_note": "Telemetry records, not prompt/response pairs; no row total claimed.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "advbench-official",
+      "dataset": "llm-attacks/advbench",
+      "revision": null,
+      "license": "mit",
+      "license_url": "https://github.com/llm-attacks/llm-attacks",
+      "url": "https://huggingface.co/datasets/llm-attacks/advbench",
+      "rows": 520,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only",
+      "pairing": "none",
+      "role": "AdvBench harmful behaviours (official)",
+      "referenced_by": [
+        "FailSpy/abliterator abliterator.py get_harmful_instructions() -> load_dataset(hf_path) with [\"goal\"] column, test split",
+        "Blackfrost 450-case bench (150 AdvBench)"
+      ],
+      "vendored": false,
+      "reference_only_reason": "HF dataset repo is gated (HTTP 401 without an accepted gate); cited from the llm-attacks repo (MIT).",
+      "revision_note": "No pinned revision reachable without accepting the gate; the importer must not use this entry until a revision is recorded.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "alpaca-official",
+      "dataset": "tatsu-lab/alpaca",
+      "revision": "dce01c9b08f87459cf36a430d809084718273017",
+      "license": "cc-by-nc-4.0",
+      "license_url": "https://huggingface.co/datasets/tatsu-lab/alpaca",
+      "url": "https://huggingface.co/datasets/tatsu-lab/alpaca",
+      "rows": 52002,
+      "languages": [
+        "en"
+      ],
+      "structure": "instruction+input+output",
+      "pairing": "none",
+      "role": "abliterator harmless instructions",
+      "referenced_by": [
+        "FailSpy/abliterator abliterator.py get_harmless_instructions() -> tatsu-lab/alpaca train, instruction where input is empty"
+      ],
+      "vendored": false,
+      "license_note": "Card declares cc-by-nc-4.0 (non-commercial); referenced, never vendored.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "orca-abliterated",
+      "dataset": null,
+      "revision": null,
+      "license": "unstated",
+      "license_url": null,
+      "url": "https://huggingface.co/orcarouter",
+      "rows": null,
+      "languages": [
+        "en"
+      ],
+      "structure": "unknown",
+      "pairing": "unknown",
+      "role": "ORCA / OrcaRouter abliterated release family",
+      "referenced_by": [
+        "orcarouter/*-abliterated model repos (e.g. orcarouter/Flint-abliterated-GGUF, orcarouter/Hy4-flash-abliterated-GGUF)",
+        "orcarouter model cards are gated (HTTP 401 without an accepted gate) at census time"
+      ],
+      "vendored": false,
+      "reference_only_reason": "The release publishes no dataset id; its model cards are gated, so no corpus can be cited. Recorded as unresolved rather than guessed.",
+      "rows_harvested": 0
+    },
+    {
+      "id": "blackfrost-bench-450",
+      "dataset": null,
+      "revision": null,
+      "license": "composite (see parts)",
+      "license_url": "https://huggingface.co/Blackfrost-AI/Qwen3.8-27B-ABLITERATED-BF16",
+      "url": "https://huggingface.co/Blackfrost-AI/Qwen3.8-27B-ABLITERATED-BF16",
+      "rows": 450,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only composite: 150 AdvBench + 150 StrongREJECT + 150 XSTest",
+      "pairing": "none",
+      "role": "Blackfrost release refusal bench (R1-HARMFUL-BENCH-450)",
+      "referenced_by": [
+        "Blackfrost-AI/Qwen3.8-27B-ABLITERATED-BF16 card: \"450-case source set contains 150 AdvBench, 150 StrongREJECT, and 150 XSTest prompts\"",
+        "Blackfrost-AI/Qwen3.8-27B-ABLITERATED-GGUF card: \"11 residual refusals from 450 original cases\""
+      ],
+      "vendored": false,
+      "composite_of": [
+        "advbench-harmful",
+        "strongreject",
+        "xstest"
+      ],
+      "license_note": "Blackfrost publishes the composition, not a dataset id; the parts carry their own licences (AdvBench MIT, StrongREJECT MIT, XSTest CC-BY-4.0).",
+      "rows_harvested": 0
+    },
+    {
+      "id": "aeon-heretic-defaults",
+      "dataset": null,
+      "revision": null,
+      "license": "composite (heretic defaults)",
+      "license_url": "https://huggingface.co/AEON-7/Gemma-4-12B-it-AEON-Abliterated-K4-BF16",
+      "url": "https://huggingface.co/AEON-7/Gemma-4-12B-it-AEON-Abliterated-K4-BF16",
+      "rows": null,
+      "languages": [
+        "en"
+      ],
+      "structure": "prompt-only contrast pair via heretic defaults",
+      "pairing": "heretic harmful/harmless contrast",
+      "role": "AEON-7 abliterated family",
+      "referenced_by": [
+        "AEON-7/Gemma-4-12B-it-AEON-Abliterated-K4-BF16 card: \"Extract per-layer refusal directions from base via heretic's compute_refusal_directions\"",
+        "p-e-w/heretic config.py defaults (mlabonne/harmful_behaviors + harmless_alpaca)"
+      ],
+      "vendored": false,
+      "composite_of": [
+        "heretic-harmful",
+        "heretic-harmless"
+      ],
+      "license_note": "AEON ships no prompt corpus of its own; it uses heretic defaults.",
+      "rows_harvested": 0
+    }
+  ]
+}

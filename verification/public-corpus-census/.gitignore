@@ -1,0 +1,3 @@
+# The raw import-provenance.json records the HF cache symlink target, which is a
+# machine-local absolute path. The sanitised copy is import-run/provenance.json.
+import-run/import-provenance.json

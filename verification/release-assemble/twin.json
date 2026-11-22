@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "kind": "merged-twin",
+  "generated_by": "jdewitt release-assemble",
+  "artifact": {
+    "file": "model-merged.gguf",
+    "sha256": "a0addce463ae405e5497ecc1793546c25b09fd14bb05830d11a3a8e52643d64e",
+    "bytes": 416,
+    "arch": "twinfixture"
+  },
+  "base": {
+    "sha256": "b1a6dfd6e419ab2a1b5208f2cbf80d425fc73563f33e69c5cfc63a4081e65d2c",
+    "arch": "twinfixture",
+    "tensor_count": 2
+  },
+  "tensor_count": 2,
+  "edited_tensors": 1,
+  "untouched_tensors": 1,
+  "edit_fingerprint": {
+    "family": "perlayer|0",
+    "shape": "perlayer",
+    "layers": [
+      0
+    ],
+    "scale": 1.0,
+    "rank": 1,
+    "edited_tensors": 1
+  },
+  "edit_type_per_tensor": {
+    "blk.0.attn_output.weight": "F32"
+  },
+  "delivered": {
+    "measurement_class": "codec-realized",
+    "measured_where": "CPU byte-level: cos/SNR are the requant-fidelity numbers the adapter card copied from a ggufio.compare_edit full-tensor decode that names this artifact by sha256; not a behaviour measurement",
+    "tensors": [
+      {
+        "name": "blk.0.attn_output.weight",
+        "cos": 0.4407,
+        "snr": 1.023,
+        "edited_type": "F32",
+        "edit": {
+          "shape": "perlayer",
+          "scale": 1.0,
+          "rank": 1
+        },
+        "measurement_class": "codec-realized"
+      }
+    ],
+    "sampled": 1,
+    "min_cos": 0.4407,
+    "min_snr": 1.023
+  },
+  "behaviour": {
+    "status": "MEASURED",
+    "measurement_class": "behaviour-claim",
+    "measured_where": "merged bytes, reported by adapter.json as merged_measured_on=merged-bytes; release-assemble does not run generation, so these are behaviour claims, not codec-realized numbers",
+    "serve_argv": [
+      "llama-server",
+      "-m",
+      "model-merged.gguf",
+      "-ngl",
+      "0",
+      "-c",
+      "512"
+    ],
+    "argv_recorded": true,
+    "adapter_delta_br": 0.215,
+    "merged_delta_br": 0.119,
+    "adapter_to_merged_ratio": 0.553,
+    "ranking_valid_on_this_artifact": false,
+    "ranking_validity_ratio_floor": 0.7,
+    "curve_is_not_merged_bytes": true,
+    "curve_note": "R8: the adapter curve is a screening number; merged_delta_br is the edit's effect on the released bytes"
+  },
+  "provenance": {
+    "adapter_file": "adapter.gguf",
+    "adapter_sha256": "962f2200ff69844698f01c2a262a6774e4bb3266cb1052cc58e92f2e30c9d445",
+    "adapter_card_file": "adapter.json",
+    "adapter_card_sha256": "7a54deb8dd0663ab00eb82edbf4d79de52f9c86f575a91216fcaf22ef55053c1",
+    "adapter_card_twin_record_sha256": "c166fadbaddef008e75c488969c8f83626758e3c3c96662134b9d5aa15bf2133",
+    "plan_card_file": "plan-card.tar",
+    "plan_card_key": "fixture-plan",
+    "plan_card_payload_sha256": "f5b1201c23e378a8fe38c7e46df56f8ff9357960fdc9c5e2ee7335bff31e9347",
+    "plan_card_bundle_sha256": "fb733aa96e89482bd5f1fcfdcd3e73d90414e76549b0f3bb026e6ab2ec7cf4d8"
+  },
+  "measurement_ledger": [
+    {
+      "numbers": [
+        "artifact.sha256",
+        "artifact.bytes",
+        "tensor_count",
+        "edited_tensors",
+        "untouched_tensors",
+        "delivered.tensors[].cos",
+        "delivered.tensors[].snr",
+        "delivered.tensors[].edited_type"
+      ],
+      "class": "codec-realized",
+      "basis": "CPU byte-level",
+      "where": "released twin header + full-tensor decode of the shipped bytes; cos/SNR are requant fidelity copied from the adapter card, which names this artifact by sha256"
+    },
+    {
+      "numbers": [
+        "behaviour.adapter_delta_br",
+        "behaviour.merged_delta_br",
+        "behaviour.adapter_to_merged_ratio",
+        "behaviour.ranking_valid_on_this_artifact"
+      ],
+      "class": "behaviour-claim",
+      "basis": "generation-scored",
+      "where": "merged bytes, reported by adapter.json as merged_measured_on=merged-bytes; release-assemble does not run generation, so these are behaviour claims, not codec-realized numbers; serve argv: recorded in evaluation.json and pinned here"
+    }
+  ],
+  "note": "The adapter ranks, this twin ships. codec-realized numbers name these bytes by sha256 and were measured on CPU; behaviour numbers are claims carried from adapter.json and are marked as such."
+}

@@ -1,0 +1,128 @@
+{
+  "note": "Every scenario is a real CLI run on the fixture built by fixture.py. A refusal must exit non-zero, name its code, and leave no published directory behind (staging dirs are kept for inspection, the same contract as create_release).",
+  "release_identity": "ed6dd6bfa3b1ccd374bb117a566515ef349d9a0a634f9ec32302bb61a7f5e77e",
+  "scenarios": [
+    {
+      "case": "twin-only",
+      "argv": [
+        "release-assemble",
+        "/tmp/rasfx-ev/refused-twin-only",
+        "--twin",
+        "/tmp/rasfx-ev/twin.gguf"
+      ],
+      "exit_code": 1,
+      "code": "NO_PREQUANTIZED_MODEL_RELEASE",
+      "message": "NO_PREQUANTIZED_MODEL_RELEASE: --twin twin.gguf with no adapter and no plan card is a bare pre-quantized model release; ship the adapter, the merged twin and the plan card together",
+      "directory_created": false,
+      "staging_dirs": []
+    },
+    {
+      "case": "safetensors-twin",
+      "argv": [
+        "release-assemble",
+        "/tmp/rasfx-ev/refused-safetensors-twin",
+        "--adapter",
+        "/tmp/rasfx-ev/adapter.gguf",
+        "--twin",
+        "/tmp/rasfx-ev/twin.safetensors",
+        "--plan",
+        "/tmp/rasfx-ev/plan.tar",
+        "--adapter-card",
+        "/tmp/rasfx-ev/adapter.json",
+        "--evaluation",
+        "/tmp/rasfx-ev/evaluation.json",
+        "--readme",
+        "/tmp/rasfx-ev/README.md"
+      ],
+      "exit_code": 1,
+      "code": "NON_GGUF_EXPORT_ROADMAP",
+      "message": "NON_GGUF_EXPORT_ROADMAP: --twin twin.safetensors: non-GGUF export is a roadmap line until a fitted plan can be served and round-tripped through vLLM/SGLang",
+      "directory_created": false,
+      "staging_dirs": []
+    },
+    {
+      "case": "doctored-base-sha",
+      "argv": [
+        "release-assemble",
+        "/tmp/rasfx-ev/refused-doctored-base-sha",
+        "--adapter",
+        "/tmp/rasfx-ev/adapter.gguf",
+        "--twin",
+        "/tmp/rasfx-ev/twin.gguf",
+        "--plan",
+        "/tmp/rasfx-ev/plan.tar",
+        "--adapter-card",
+        "/tmp/rasfx-ev/adapter-doctored-base.json",
+        "--evaluation",
+        "/tmp/rasfx-ev/evaluation.json",
+        "--readme",
+        "/tmp/rasfx-ev/README.md"
+      ],
+      "exit_code": 1,
+      "code": "ADAPTER_CARD_BASE_SHA_MISMATCH",
+      "message": "ADAPTER_CARD_BASE_SHA_MISMATCH: adapter card base sha256 000000000000\u2026 does not equal the base the adapter is bound to (b1a6dfd6e419\u2026); the card would label bytes it was not fitted on",
+      "directory_created": false,
+      "staging_dirs": []
+    },
+    {
+      "case": "card-names-other-twin",
+      "argv": [
+        "release-assemble",
+        "/tmp/rasfx-ev/refused-card-names-other-twin",
+        "--adapter",
+        "/tmp/rasfx-ev/adapter.gguf",
+        "--twin",
+        "/tmp/rasfx-ev/twin.gguf",
+        "--plan",
+        "/tmp/rasfx-ev/plan.tar",
+        "--adapter-card",
+        "/tmp/rasfx-ev/adapter-doctored-twin.json",
+        "--evaluation",
+        "/tmp/rasfx-ev/evaluation.json",
+        "--readme",
+        "/tmp/rasfx-ev/README.md"
+      ],
+      "exit_code": 1,
+      "code": "TWIN_ARTIFACT_SHA_MISMATCH",
+      "message": "TWIN_ARTIFACT_SHA_MISMATCH: adapter card names merged twin 111111111111\u2026 but --twin is a0addce463ae\u2026; the codec-realized numbers were not measured on these bytes",
+      "directory_created": false,
+      "staging_dirs": []
+    },
+    {
+      "case": "plan-payload-tampered",
+      "argv": [
+        "release-assemble",
+        "/tmp/rasfx-ev/refused-plan-payload-tampered",
+        "--adapter",
+        "/tmp/rasfx-ev/adapter.gguf",
+        "--twin",
+        "/tmp/rasfx-ev/twin.gguf",
+        "--plan",
+        "/tmp/rasfx-ev/plan-doctored.tar",
+        "--adapter-card",
+        "/tmp/rasfx-ev/adapter.json",
+        "--evaluation",
+        "/tmp/rasfx-ev/evaluation.json",
+        "--readme",
+        "/tmp/rasfx-ev/README.md"
+      ],
+      "exit_code": 1,
+      "code": "PLAN_CARD_PAYLOAD_MISMATCH",
+      "message": "PLAN_CARD_PAYLOAD_MISMATCH: plan-doctored.tar manifest names payload f5b1201c23e3\u2026 but the bundle payload is e66600bf010d\u2026; the card does not describe these bytes",
+      "directory_created": false,
+      "staging_dirs": []
+    },
+    {
+      "case": "extra-file-after-release",
+      "argv": [
+        "verify-release",
+        "/tmp/rasfx-ev/release",
+        "(+ unexpected.bin)"
+      ],
+      "exit_code": 1,
+      "code": "INPUT_ERROR",
+      "message": "Release file set/hash mismatch",
+      "exit_code_after_removal": 0
+    }
+  ]
+}

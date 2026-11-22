@@ -1,0 +1,41 @@
+{
+  "directory": "/tmp/rasfx-ev/release",
+  "checked": [
+    {
+      "file": "/tmp/rasfx-ev/release/adapter.json",
+      "schema": "adapter.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/tmp/rasfx-ev/release/evidence.json",
+      "schema": "evidence.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/tmp/rasfx-ev/release/files.json",
+      "schema": "files.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/tmp/rasfx-ev/release/plan-card.json",
+      "schema": "plan-card.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/tmp/rasfx-ev/release/twin.json",
+      "schema": "twin.json",
+      "valid": true,
+      "problems": []
+    }
+  ],
+  "missing_schemas": [
+    "scoring-manifest.json",
+    "signature.json"
+  ],
+  "valid": true,
+  "note": "Shape and version only for release artifacts; adapter.json also gets its R8 card semantics, twin.json its codec-realized/behaviour split, and plan-card.json its signed-meta/payload agreement. Digests and claim chains are checked by release verify commands."
+}

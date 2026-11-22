@@ -1,0 +1,4186 @@
+{
+  "scope": "Denial-word surfaces resolved against GGUF tokenizers: ids and splits, no model forward. This is a token inventory, not a served or weight result.",
+  "method": "Byte-level BPE over the artifact vocabulary, using the artifact merge ranks. Token text is the GGUF vocabulary string: a leading space is written as the byte-level marker, and a non-ASCII character appears as the byte-level characters of its UTF-8 bytes. Single-word forms are resolved bare; forms with an internal space are resolved with the leading space they carry in running text. Both contexts are reported. single_token is true only when the form is one token in both contexts. representable is false when a byte-level symbol has no vocabulary id.",
+  "table": {
+    "schema": "jdewitt.vocab-remap-denial/1",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+    "entries": 20,
+    "languages": [
+      "de",
+      "en",
+      "nl"
+    ],
+    "kinds": [
+      "apology",
+      "denial_word",
+      "refusal_opener"
+    ],
+    "scopes": [
+      "any",
+      "opener_window"
+    ]
+  },
+  "artifacts": [
+    {
+      "label": "gpt2:qwen2:151936",
+      "identity": {
+        "model": "gpt2",
+        "pre": "qwen2",
+        "n_vocab": 151936,
+        "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+      },
+      "n_vocab": 151936,
+      "lexemes": [
+        {
+          "id": "en-cannot",
+          "language": "en",
+          "form": "cannot",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            33260
+          ],
+          "split": [
+            [
+              33260,
+              "cannot"
+            ]
+          ],
+          "single_token": true,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                33260,
+                "cannot"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                4157,
+                "\u0120cannot"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-can-not",
+          "language": "en",
+          "form": "can not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            646,
+            537
+          ],
+          "split": [
+            [
+              646,
+              "\u0120can"
+            ],
+            [
+              537,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                4814,
+                "can"
+              ],
+              [
+                537,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                646,
+                "\u0120can"
+              ],
+              [
+                537,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-cant",
+          "language": "en",
+          "form": "can't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            4814,
+            944
+          ],
+          "split": [
+            [
+              4814,
+              "can"
+            ],
+            [
+              944,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                4814,
+                "can"
+              ],
+              [
+                944,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                646,
+                "\u0120can"
+              ],
+              [
+                944,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-wont",
+          "language": "en",
+          "form": "won't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            54667,
+            944
+          ],
+          "split": [
+            [
+              54667,
+              "won"
+            ],
+            [
+              944,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                54667,
+                "won"
+              ],
+              [
+                944,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                2765,
+                "\u0120won"
+              ],
+              [
+                944,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-will-not",
+          "language": "en",
+          "form": "will not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            686,
+            537
+          ],
+          "split": [
+            [
+              686,
+              "\u0120will"
+            ],
+            [
+              537,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                14387,
+                "will"
+              ],
+              [
+                537,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                686,
+                "\u0120will"
+              ],
+              [
+                537,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-unable",
+          "language": "en",
+          "form": "unable",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            45928
+          ],
+          "split": [
+            [
+              45928,
+              "unable"
+            ]
+          ],
+          "single_token": true,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                45928,
+                "unable"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                11889,
+                "\u0120unable"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-not-able",
+          "language": "en",
+          "form": "not able",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            537,
+            2952
+          ],
+          "split": [
+            [
+              537,
+              "\u0120not"
+            ],
+            [
+              2952,
+              "\u0120able"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1921,
+                "not"
+              ],
+              [
+                2952,
+                "\u0120able"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                537,
+                "\u0120not"
+              ],
+              [
+                2952,
+                "\u0120able"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-im-sorry",
+          "language": "en",
+          "form": "I'm sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            358,
+            2776,
+            14589
+          ],
+          "split": [
+            [
+              358,
+              "\u0120I"
+            ],
+            [
+              2776,
+              "'m"
+            ],
+            [
+              14589,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                2776,
+                "'m"
+              ],
+              [
+                14589,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                358,
+                "\u0120I"
+              ],
+              [
+                2776,
+                "'m"
+              ],
+              [
+                14589,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-am-sorry",
+          "language": "en",
+          "form": "I am sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            358,
+            1079,
+            14589
+          ],
+          "split": [
+            [
+              358,
+              "\u0120I"
+            ],
+            [
+              1079,
+              "\u0120am"
+            ],
+            [
+              14589,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                1079,
+                "\u0120am"
+              ],
+              [
+                14589,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                358,
+                "\u0120I"
+              ],
+              [
+                1079,
+                "\u0120am"
+              ],
+              [
+                14589,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-apologize",
+          "language": "en",
+          "form": "I apologize",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            358,
+            36879
+          ],
+          "split": [
+            [
+              358,
+              "\u0120I"
+            ],
+            [
+              36879,
+              "\u0120apologize"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                36879,
+                "\u0120apologize"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                358,
+                "\u0120I"
+              ],
+              [
+                36879,
+                "\u0120apologize"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-niet",
+          "language": "nl",
+          "form": "kan niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            13422,
+            20791
+          ],
+          "split": [
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                8656,
+                "kan"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                13422,
+                "\u0120kan"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-ik-niet",
+          "language": "nl",
+          "form": "kan ik niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            13422,
+            13361,
+            20791
+          ],
+          "split": [
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              13361,
+              "\u0120ik"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                8656,
+                "kan"
+              ],
+              [
+                13361,
+                "\u0120ik"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                13422,
+                "\u0120kan"
+              ],
+              [
+                13361,
+                "\u0120ik"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-niet-mogelijk",
+          "language": "nl",
+          "form": "niet mogelijk",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            20791,
+            74411
+          ],
+          "split": [
+            [
+              20791,
+              "\u0120niet"
+            ],
+            [
+              74411,
+              "\u0120mogelijk"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                77,
+                "n"
+              ],
+              [
+                3891,
+                "iet"
+              ],
+              [
+                74411,
+                "\u0120mogelijk"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                20791,
+                "\u0120niet"
+              ],
+              [
+                74411,
+                "\u0120mogelijk"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-het-spijt-me",
+          "language": "nl",
+          "form": "het spijt me",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            9017,
+            978,
+            3172,
+            83,
+            752
+          ],
+          "split": [
+            [
+              9017,
+              "\u0120het"
+            ],
+            [
+              978,
+              "\u0120sp"
+            ],
+            [
+              3172,
+              "ij"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              752,
+              "\u0120me"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                13803,
+                "het"
+              ],
+              [
+                978,
+                "\u0120sp"
+              ],
+              [
+                3172,
+                "ij"
+              ],
+              [
+                83,
+                "t"
+              ],
+              [
+                752,
+                "\u0120me"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                9017,
+                "\u0120het"
+              ],
+              [
+                978,
+                "\u0120sp"
+              ],
+              [
+                3172,
+                "ij"
+              ],
+              [
+                83,
+                "t"
+              ],
+              [
+                752,
+                "\u0120me"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-ik-kan-niet",
+          "language": "nl",
+          "form": "ik kan niet",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            13361,
+            13422,
+            20791
+          ],
+          "split": [
+            [
+              13361,
+              "\u0120ik"
+            ],
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1579,
+                "ik"
+              ],
+              [
+                13422,
+                "\u0120kan"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                13361,
+                "\u0120ik"
+              ],
+              [
+                13422,
+                "\u0120kan"
+              ],
+              [
+                20791,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-nicht",
+          "language": "de",
+          "form": "kann nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            15719,
+            8793
+          ],
+          "split": [
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                1020,
+                "ann"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                15719,
+                "\u0120kann"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-ich-nicht",
+          "language": "de",
+          "form": "kann ich nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            15719,
+            10638,
+            8793
+          ],
+          "split": [
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              10638,
+              "\u0120ich"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                1020,
+                "ann"
+              ],
+              [
+                10638,
+                "\u0120ich"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                15719,
+                "\u0120kann"
+              ],
+              [
+                10638,
+                "\u0120ich"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-nicht-moeglich",
+          "language": "de",
+          "form": "nicht m\u00f6glich",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            8793,
+            50837
+          ],
+          "split": [
+            [
+              8793,
+              "\u0120nicht"
+            ],
+            [
+              50837,
+              "\u0120m\u00c3\u00b6glich"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                77,
+                "n"
+              ],
+              [
+                4865,
+                "icht"
+              ],
+              [
+                50837,
+                "\u0120m\u00c3\u00b6glich"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                8793,
+                "\u0120nicht"
+              ],
+              [
+                50837,
+                "\u0120m\u00c3\u00b6glich"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-es-tut-mir-leid",
+          "language": "de",
+          "form": "es tut mir leid",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            1531,
+            18060,
+            8652,
+            512,
+            307
+          ],
+          "split": [
+            [
+              1531,
+              "\u0120es"
+            ],
+            [
+              18060,
+              "\u0120tut"
+            ],
+            [
+              8652,
+              "\u0120mir"
+            ],
+            [
+              512,
+              "\u0120le"
+            ],
+            [
+              307,
+              "id"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                288,
+                "es"
+              ],
+              [
+                18060,
+                "\u0120tut"
+              ],
+              [
+                8652,
+                "\u0120mir"
+              ],
+              [
+                512,
+                "\u0120le"
+              ],
+              [
+                307,
+                "id"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                1531,
+                "\u0120es"
+              ],
+              [
+                18060,
+                "\u0120tut"
+              ],
+              [
+                8652,
+                "\u0120mir"
+              ],
+              [
+                512,
+                "\u0120le"
+              ],
+              [
+                307,
+                "id"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-ich-kann-nicht",
+          "language": "de",
+          "form": "ich kann nicht",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            10638,
+            15719,
+            8793
+          ],
+          "split": [
+            [
+              10638,
+              "\u0120ich"
+            ],
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                713,
+                "ich"
+              ],
+              [
+                15719,
+                "\u0120kann"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                10638,
+                "\u0120ich"
+              ],
+              [
+                15719,
+                "\u0120kann"
+              ],
+              [
+                8793,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "gpt2:qwen35:248094",
+      "identity": {
+        "model": "gpt2",
+        "pre": "qwen35",
+        "n_vocab": 248094,
+        "tokens_sha256": "1e7ae2a2606397d634c7580915f463d8fa0d0da1caa13ad125e770d244625fee"
+      },
+      "n_vocab": 248094,
+      "lexemes": [
+        {
+          "id": "en-cannot",
+          "language": "en",
+          "form": "cannot",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            32157
+          ],
+          "split": [
+            [
+              32157,
+              "cannot"
+            ]
+          ],
+          "single_token": true,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                32157,
+                "cannot"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                4021,
+                "\u0120cannot"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-can-not",
+          "language": "en",
+          "form": "can not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            628,
+            524
+          ],
+          "split": [
+            [
+              628,
+              "\u0120can"
+            ],
+            [
+              524,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                4660,
+                "can"
+              ],
+              [
+                524,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                628,
+                "\u0120can"
+              ],
+              [
+                524,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-cant",
+          "language": "en",
+          "form": "can't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            4660,
+            914
+          ],
+          "split": [
+            [
+              4660,
+              "can"
+            ],
+            [
+              914,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                4660,
+                "can"
+              ],
+              [
+                914,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                628,
+                "\u0120can"
+              ],
+              [
+                914,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-wont",
+          "language": "en",
+          "form": "won't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            52830,
+            914
+          ],
+          "split": [
+            [
+              52830,
+              "won"
+            ],
+            [
+              914,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                52830,
+                "won"
+              ],
+              [
+                914,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                2677,
+                "\u0120won"
+              ],
+              [
+                914,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-will-not",
+          "language": "en",
+          "form": "will not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            668,
+            524
+          ],
+          "split": [
+            [
+              668,
+              "\u0120will"
+            ],
+            [
+              524,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                13974,
+                "will"
+              ],
+              [
+                524,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                668,
+                "\u0120will"
+              ],
+              [
+                524,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-unable",
+          "language": "en",
+          "form": "unable",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            44396
+          ],
+          "split": [
+            [
+              44396,
+              "unable"
+            ]
+          ],
+          "single_token": true,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                44396,
+                "unable"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                11550,
+                "\u0120unable"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-not-able",
+          "language": "en",
+          "form": "not able",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            524,
+            2858
+          ],
+          "split": [
+            [
+              524,
+              "\u0120not"
+            ],
+            [
+              2858,
+              "\u0120able"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1856,
+                "not"
+              ],
+              [
+                2858,
+                "\u0120able"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                524,
+                "\u0120not"
+              ],
+              [
+                2858,
+                "\u0120able"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-im-sorry",
+          "language": "en",
+          "form": "I'm sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            353,
+            2688,
+            14169
+          ],
+          "split": [
+            [
+              353,
+              "\u0120I"
+            ],
+            [
+              2688,
+              "'m"
+            ],
+            [
+              14169,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                2688,
+                "'m"
+              ],
+              [
+                14169,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                353,
+                "\u0120I"
+              ],
+              [
+                2688,
+                "'m"
+              ],
+              [
+                14169,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-am-sorry",
+          "language": "en",
+          "form": "I am sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            353,
+            1044,
+            14169
+          ],
+          "split": [
+            [
+              353,
+              "\u0120I"
+            ],
+            [
+              1044,
+              "\u0120am"
+            ],
+            [
+              14169,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                1044,
+                "\u0120am"
+              ],
+              [
+                14169,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                353,
+                "\u0120I"
+              ],
+              [
+                1044,
+                "\u0120am"
+              ],
+              [
+                14169,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-apologize",
+          "language": "en",
+          "form": "I apologize",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            353,
+            35658
+          ],
+          "split": [
+            [
+              353,
+              "\u0120I"
+            ],
+            [
+              35658,
+              "\u0120apologize"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                35658,
+                "\u0120apologize"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                353,
+                "\u0120I"
+              ],
+              [
+                35658,
+                "\u0120apologize"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-niet",
+          "language": "nl",
+          "form": "kan niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            13035,
+            20157
+          ],
+          "split": [
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                8392,
+                "kan"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                13035,
+                "\u0120kan"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-ik-niet",
+          "language": "nl",
+          "form": "kan ik niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            13035,
+            12974,
+            20157
+          ],
+          "split": [
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              12974,
+              "\u0120ik"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                8392,
+                "kan"
+              ],
+              [
+                12974,
+                "\u0120ik"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                13035,
+                "\u0120kan"
+              ],
+              [
+                12974,
+                "\u0120ik"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-niet-mogelijk",
+          "language": "nl",
+          "form": "niet mogelijk",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            20157,
+            71879
+          ],
+          "split": [
+            [
+              20157,
+              "\u0120niet"
+            ],
+            [
+              71879,
+              "\u0120mogelijk"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                77,
+                "n"
+              ],
+              [
+                3760,
+                "iet"
+              ],
+              [
+                71879,
+                "\u0120mogelijk"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                20157,
+                "\u0120niet"
+              ],
+              [
+                71879,
+                "\u0120mogelijk"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-het-spijt-me",
+          "language": "nl",
+          "form": "het spijt me",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            8745,
+            947,
+            232026,
+            728
+          ],
+          "split": [
+            [
+              8745,
+              "\u0120het"
+            ],
+            [
+              947,
+              "\u0120sp"
+            ],
+            [
+              232026,
+              "ijt"
+            ],
+            [
+              728,
+              "\u0120me"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                13407,
+                "het"
+              ],
+              [
+                947,
+                "\u0120sp"
+              ],
+              [
+                232026,
+                "ijt"
+              ],
+              [
+                728,
+                "\u0120me"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                8745,
+                "\u0120het"
+              ],
+              [
+                947,
+                "\u0120sp"
+              ],
+              [
+                232026,
+                "ijt"
+              ],
+              [
+                728,
+                "\u0120me"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-ik-kan-niet",
+          "language": "nl",
+          "form": "ik kan niet",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            12974,
+            13035,
+            20157
+          ],
+          "split": [
+            [
+              12974,
+              "\u0120ik"
+            ],
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1524,
+                "ik"
+              ],
+              [
+                13035,
+                "\u0120kan"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                12974,
+                "\u0120ik"
+              ],
+              [
+                13035,
+                "\u0120kan"
+              ],
+              [
+                20157,
+                "\u0120niet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-nicht",
+          "language": "de",
+          "form": "kann nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            15258,
+            8528
+          ],
+          "split": [
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                985,
+                "ann"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                15258,
+                "\u0120kann"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-ich-nicht",
+          "language": "de",
+          "form": "kann ich nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            15258,
+            10323,
+            8528
+          ],
+          "split": [
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              10323,
+              "\u0120ich"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                985,
+                "ann"
+              ],
+              [
+                10323,
+                "\u0120ich"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                15258,
+                "\u0120kann"
+              ],
+              [
+                10323,
+                "\u0120ich"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-nicht-moeglich",
+          "language": "de",
+          "form": "nicht m\u00f6glich",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            8528,
+            49127
+          ],
+          "split": [
+            [
+              8528,
+              "\u0120nicht"
+            ],
+            [
+              49127,
+              "\u0120m\u00c3\u00b6glich"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                205173,
+                "nicht"
+              ],
+              [
+                49127,
+                "\u0120m\u00c3\u00b6glich"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                8528,
+                "\u0120nicht"
+              ],
+              [
+                49127,
+                "\u0120m\u00c3\u00b6glich"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-es-tut-mir-leid",
+          "language": "de",
+          "form": "es tut mir leid",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            1477,
+            17521,
+            8388,
+            183316
+          ],
+          "split": [
+            [
+              1477,
+              "\u0120es"
+            ],
+            [
+              17521,
+              "\u0120tut"
+            ],
+            [
+              8388,
+              "\u0120mir"
+            ],
+            [
+              183316,
+              "\u0120leid"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                287,
+                "es"
+              ],
+              [
+                17521,
+                "\u0120tut"
+              ],
+              [
+                8388,
+                "\u0120mir"
+              ],
+              [
+                183316,
+                "\u0120leid"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                1477,
+                "\u0120es"
+              ],
+              [
+                17521,
+                "\u0120tut"
+              ],
+              [
+                8388,
+                "\u0120mir"
+              ],
+              [
+                183316,
+                "\u0120leid"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-ich-kann-nicht",
+          "language": "de",
+          "form": "ich kann nicht",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            10323,
+            15258,
+            8528
+          ],
+          "split": [
+            [
+              10323,
+              "\u0120ich"
+            ],
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                693,
+                "ich"
+              ],
+              [
+                15258,
+                "\u0120kann"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                10323,
+                "\u0120ich"
+              ],
+              [
+                15258,
+                "\u0120kann"
+              ],
+              [
+                8528,
+                "\u0120nicht"
+              ]
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "label": "gpt2:gpt-2:50257",
+      "identity": {
+        "model": "gpt2",
+        "pre": "gpt-2",
+        "n_vocab": 50257,
+        "tokens_sha256": "f787d1030340a08b46d7e095467ca0b3471433978b6068cea82e9cb970c75d9f"
+      },
+      "n_vocab": 50257,
+      "lexemes": [
+        {
+          "id": "en-cannot",
+          "language": "en",
+          "form": "cannot",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            66,
+            34574
+          ],
+          "split": [
+            [
+              66,
+              "c"
+            ],
+            [
+              34574,
+              "annot"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                66,
+                "c"
+              ],
+              [
+                34574,
+                "annot"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                2314,
+                "\u0120cannot"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-can-not",
+          "language": "en",
+          "form": "can not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            460,
+            407
+          ],
+          "split": [
+            [
+              460,
+              "\u0120can"
+            ],
+            [
+              407,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                5171,
+                "can"
+              ],
+              [
+                407,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                460,
+                "\u0120can"
+              ],
+              [
+                407,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-cant",
+          "language": "en",
+          "form": "can't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            5171,
+            470
+          ],
+          "split": [
+            [
+              5171,
+              "can"
+            ],
+            [
+              470,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                5171,
+                "can"
+              ],
+              [
+                470,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                460,
+                "\u0120can"
+              ],
+              [
+                470,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-wont",
+          "language": "en",
+          "form": "won't",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            26502,
+            470
+          ],
+          "split": [
+            [
+              26502,
+              "won"
+            ],
+            [
+              470,
+              "'t"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                26502,
+                "won"
+              ],
+              [
+                470,
+                "'t"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                1839,
+                "\u0120won"
+              ],
+              [
+                470,
+                "'t"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-will-not",
+          "language": "en",
+          "form": "will not",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            481,
+            407
+          ],
+          "split": [
+            [
+              481,
+              "\u0120will"
+            ],
+            [
+              407,
+              "\u0120not"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                10594,
+                "will"
+              ],
+              [
+                407,
+                "\u0120not"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                481,
+                "\u0120will"
+              ],
+              [
+                407,
+                "\u0120not"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-unable",
+          "language": "en",
+          "form": "unable",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            403,
+            540
+          ],
+          "split": [
+            [
+              403,
+              "un"
+            ],
+            [
+              540,
+              "able"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "bare",
+          "contexts": {
+            "bare": [
+              [
+                403,
+                "un"
+              ],
+              [
+                540,
+                "able"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                5906,
+                "\u0120unable"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-not-able",
+          "language": "en",
+          "form": "not able",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            407,
+            1498
+          ],
+          "split": [
+            [
+              407,
+              "\u0120not"
+            ],
+            [
+              1498,
+              "\u0120able"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1662,
+                "not"
+              ],
+              [
+                1498,
+                "\u0120able"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                407,
+                "\u0120not"
+              ],
+              [
+                1498,
+                "\u0120able"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-im-sorry",
+          "language": "en",
+          "form": "I'm sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            314,
+            1101,
+            7926
+          ],
+          "split": [
+            [
+              314,
+              "\u0120I"
+            ],
+            [
+              1101,
+              "'m"
+            ],
+            [
+              7926,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                1101,
+                "'m"
+              ],
+              [
+                7926,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                314,
+                "\u0120I"
+              ],
+              [
+                1101,
+                "'m"
+              ],
+              [
+                7926,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-am-sorry",
+          "language": "en",
+          "form": "I am sorry",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            314,
+            716,
+            7926
+          ],
+          "split": [
+            [
+              314,
+              "\u0120I"
+            ],
+            [
+              716,
+              "\u0120am"
+            ],
+            [
+              7926,
+              "\u0120sorry"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                716,
+                "\u0120am"
+              ],
+              [
+                7926,
+                "\u0120sorry"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                314,
+                "\u0120I"
+              ],
+              [
+                716,
+                "\u0120am"
+              ],
+              [
+                7926,
+                "\u0120sorry"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "en-i-apologize",
+          "language": "en",
+          "form": "I apologize",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            314,
+            16521
+          ],
+          "split": [
+            [
+              314,
+              "\u0120I"
+            ],
+            [
+              16521,
+              "\u0120apologize"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                40,
+                "I"
+              ],
+              [
+                16521,
+                "\u0120apologize"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                314,
+                "\u0120I"
+              ],
+              [
+                16521,
+                "\u0120apologize"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-niet",
+          "language": "nl",
+          "form": "kan niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            43998,
+            299,
+            1155
+          ],
+          "split": [
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                27541,
+                "kan"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                43998,
+                "\u0120kan"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-kan-ik-niet",
+          "language": "nl",
+          "form": "kan ik niet",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            43998,
+            220,
+            1134,
+            299,
+            1155
+          ],
+          "split": [
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              1134,
+              "ik"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                27541,
+                "kan"
+              ],
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                1134,
+                "ik"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                43998,
+                "\u0120kan"
+              ],
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                1134,
+                "ik"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-niet-mogelijk",
+          "language": "nl",
+          "form": "niet mogelijk",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            299,
+            1155,
+            32985,
+            417,
+            45961
+          ],
+          "split": [
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ],
+            [
+              32985,
+              "\u0120mog"
+            ],
+            [
+              417,
+              "el"
+            ],
+            [
+              45961,
+              "ijk"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                77,
+                "n"
+              ],
+              [
+                1155,
+                "iet"
+              ],
+              [
+                32985,
+                "\u0120mog"
+              ],
+              [
+                417,
+                "el"
+              ],
+              [
+                45961,
+                "ijk"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ],
+              [
+                32985,
+                "\u0120mog"
+              ],
+              [
+                417,
+                "el"
+              ],
+              [
+                45961,
+                "ijk"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-het-spijt-me",
+          "language": "nl",
+          "form": "het spijt me",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            339,
+            83,
+            599,
+            2926,
+            83,
+            502
+          ],
+          "split": [
+            [
+              339,
+              "\u0120he"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              599,
+              "\u0120sp"
+            ],
+            [
+              2926,
+              "ij"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              502,
+              "\u0120me"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                3202,
+                "het"
+              ],
+              [
+                599,
+                "\u0120sp"
+              ],
+              [
+                2926,
+                "ij"
+              ],
+              [
+                83,
+                "t"
+              ],
+              [
+                502,
+                "\u0120me"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                339,
+                "\u0120he"
+              ],
+              [
+                83,
+                "t"
+              ],
+              [
+                599,
+                "\u0120sp"
+              ],
+              [
+                2926,
+                "ij"
+              ],
+              [
+                83,
+                "t"
+              ],
+              [
+                502,
+                "\u0120me"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "nl-ik-kan-niet",
+          "language": "nl",
+          "form": "ik kan niet",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            220,
+            1134,
+            43998,
+            299,
+            1155
+          ],
+          "split": [
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              1134,
+              "ik"
+            ],
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                1134,
+                "ik"
+              ],
+              [
+                43998,
+                "\u0120kan"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                1134,
+                "ik"
+              ],
+              [
+                43998,
+                "\u0120kan"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                1155,
+                "iet"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-nicht",
+          "language": "de",
+          "form": "kann nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            479,
+            1236,
+            299,
+            30830
+          ],
+          "split": [
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                479,
+                "\u0120k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-kann-ich-nicht",
+          "language": "de",
+          "form": "kann ich nicht",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            479,
+            1236,
+            220,
+            488,
+            299,
+            30830
+          ],
+          "split": [
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              488,
+              "ich"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                74,
+                "k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                488,
+                "ich"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                479,
+                "\u0120k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                488,
+                "ich"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-nicht-moeglich",
+          "language": "de",
+          "form": "nicht m\u00f6glich",
+          "kind": "denial_word",
+          "scope": "any",
+          "replacement": null,
+          "ids": [
+            299,
+            30830,
+            285,
+            9101,
+            4743,
+            488
+          ],
+          "split": [
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ],
+            [
+              285,
+              "\u0120m"
+            ],
+            [
+              9101,
+              "\u00c3\u00b6"
+            ],
+            [
+              4743,
+              "gl"
+            ],
+            [
+              488,
+              "ich"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                77,
+                "n"
+              ],
+              [
+                30830,
+                "icht"
+              ],
+              [
+                285,
+                "\u0120m"
+              ],
+              [
+                9101,
+                "\u00c3\u00b6"
+              ],
+              [
+                4743,
+                "gl"
+              ],
+              [
+                488,
+                "ich"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ],
+              [
+                285,
+                "\u0120m"
+              ],
+              [
+                9101,
+                "\u00c3\u00b6"
+              ],
+              [
+                4743,
+                "gl"
+              ],
+              [
+                488,
+                "ich"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-es-tut-mir-leid",
+          "language": "de",
+          "form": "es tut mir leid",
+          "kind": "apology",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            1658,
+            9732,
+            5720,
+            443,
+            312
+          ],
+          "split": [
+            [
+              1658,
+              "\u0120es"
+            ],
+            [
+              9732,
+              "\u0120tut"
+            ],
+            [
+              5720,
+              "\u0120mir"
+            ],
+            [
+              443,
+              "\u0120le"
+            ],
+            [
+              312,
+              "id"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                274,
+                "es"
+              ],
+              [
+                9732,
+                "\u0120tut"
+              ],
+              [
+                5720,
+                "\u0120mir"
+              ],
+              [
+                443,
+                "\u0120le"
+              ],
+              [
+                312,
+                "id"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                1658,
+                "\u0120es"
+              ],
+              [
+                9732,
+                "\u0120tut"
+              ],
+              [
+                5720,
+                "\u0120mir"
+              ],
+              [
+                443,
+                "\u0120le"
+              ],
+              [
+                312,
+                "id"
+              ]
+            ]
+          }
+        },
+        {
+          "id": "de-ich-kann-nicht",
+          "language": "de",
+          "form": "ich kann nicht",
+          "kind": "refusal_opener",
+          "scope": "opener_window",
+          "replacement": null,
+          "ids": [
+            220,
+            488,
+            479,
+            1236,
+            299,
+            30830
+          ],
+          "split": [
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              488,
+              "ich"
+            ],
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ],
+          "single_token": false,
+          "representable": true,
+          "context": "leads_with_space",
+          "contexts": {
+            "bare": [
+              [
+                488,
+                "ich"
+              ],
+              [
+                479,
+                "\u0120k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ],
+            "leads_with_space": [
+              [
+                220,
+                "\u0120"
+              ],
+              [
+                488,
+                "ich"
+              ],
+              [
+                479,
+                "\u0120k"
+              ],
+              [
+                1236,
+                "ann"
+              ],
+              [
+                299,
+                "\u0120n"
+              ],
+              [
+                30830,
+                "icht"
+              ]
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "disagreements": {
+    "tokenizers": [
+      "gpt2:qwen2:151936",
+      "gpt2:qwen35:248094",
+      "gpt2:gpt-2:50257"
+    ],
+    "note": "same form, different token-text sequence under the primary context; ids differ across vocabularies by construction and are not by themselves a disagreement",
+    "rows": [
+      {
+        "form": "cannot",
+        "language": "en",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              33260,
+              "cannot"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              32157,
+              "cannot"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              66,
+              "c"
+            ],
+            [
+              34574,
+              "annot"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "unable",
+        "language": "en",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              45928,
+              "unable"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              44396,
+              "unable"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              403,
+              "un"
+            ],
+            [
+              540,
+              "able"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "kan niet",
+        "language": "nl",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "kan ik niet",
+        "language": "nl",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              13361,
+              "\u0120ik"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              12974,
+              "\u0120ik"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              1134,
+              "ik"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "niet mogelijk",
+        "language": "nl",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              20791,
+              "\u0120niet"
+            ],
+            [
+              74411,
+              "\u0120mogelijk"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              20157,
+              "\u0120niet"
+            ],
+            [
+              71879,
+              "\u0120mogelijk"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ],
+            [
+              32985,
+              "\u0120mog"
+            ],
+            [
+              417,
+              "el"
+            ],
+            [
+              45961,
+              "ijk"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "het spijt me",
+        "language": "nl",
+        "distinct_splits": 3,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              9017,
+              "\u0120het"
+            ],
+            [
+              978,
+              "\u0120sp"
+            ],
+            [
+              3172,
+              "ij"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              752,
+              "\u0120me"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              8745,
+              "\u0120het"
+            ],
+            [
+              947,
+              "\u0120sp"
+            ],
+            [
+              232026,
+              "ijt"
+            ],
+            [
+              728,
+              "\u0120me"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              339,
+              "\u0120he"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              599,
+              "\u0120sp"
+            ],
+            [
+              2926,
+              "ij"
+            ],
+            [
+              83,
+              "t"
+            ],
+            [
+              502,
+              "\u0120me"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "ik kan niet",
+        "language": "nl",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              13361,
+              "\u0120ik"
+            ],
+            [
+              13422,
+              "\u0120kan"
+            ],
+            [
+              20791,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              12974,
+              "\u0120ik"
+            ],
+            [
+              13035,
+              "\u0120kan"
+            ],
+            [
+              20157,
+              "\u0120niet"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              1134,
+              "ik"
+            ],
+            [
+              43998,
+              "\u0120kan"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              1155,
+              "iet"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "kann nicht",
+        "language": "de",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "kann ich nicht",
+        "language": "de",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              10638,
+              "\u0120ich"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              10323,
+              "\u0120ich"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              488,
+              "ich"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "nicht m\u00f6glich",
+        "language": "de",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              8793,
+              "\u0120nicht"
+            ],
+            [
+              50837,
+              "\u0120m\u00c3\u00b6glich"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              8528,
+              "\u0120nicht"
+            ],
+            [
+              49127,
+              "\u0120m\u00c3\u00b6glich"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ],
+            [
+              285,
+              "\u0120m"
+            ],
+            [
+              9101,
+              "\u00c3\u00b6"
+            ],
+            [
+              4743,
+              "gl"
+            ],
+            [
+              488,
+              "ich"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "es tut mir leid",
+        "language": "de",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              1531,
+              "\u0120es"
+            ],
+            [
+              18060,
+              "\u0120tut"
+            ],
+            [
+              8652,
+              "\u0120mir"
+            ],
+            [
+              512,
+              "\u0120le"
+            ],
+            [
+              307,
+              "id"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              1477,
+              "\u0120es"
+            ],
+            [
+              17521,
+              "\u0120tut"
+            ],
+            [
+              8388,
+              "\u0120mir"
+            ],
+            [
+              183316,
+              "\u0120leid"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              1658,
+              "\u0120es"
+            ],
+            [
+              9732,
+              "\u0120tut"
+            ],
+            [
+              5720,
+              "\u0120mir"
+            ],
+            [
+              443,
+              "\u0120le"
+            ],
+            [
+              312,
+              "id"
+            ]
+          ]
+        }
+      },
+      {
+        "form": "ich kann nicht",
+        "language": "de",
+        "distinct_splits": 2,
+        "splits": {
+          "gpt2:qwen2:151936": [
+            [
+              10638,
+              "\u0120ich"
+            ],
+            [
+              15719,
+              "\u0120kann"
+            ],
+            [
+              8793,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:qwen35:248094": [
+            [
+              10323,
+              "\u0120ich"
+            ],
+            [
+              15258,
+              "\u0120kann"
+            ],
+            [
+              8528,
+              "\u0120nicht"
+            ]
+          ],
+          "gpt2:gpt-2:50257": [
+            [
+              220,
+              "\u0120"
+            ],
+            [
+              488,
+              "ich"
+            ],
+            [
+              479,
+              "\u0120k"
+            ],
+            [
+              1236,
+              "ann"
+            ],
+            [
+              299,
+              "\u0120n"
+            ],
+            [
+              30830,
+              "icht"
+            ]
+          ]
+        }
+      }
+    ]
+  }
+}

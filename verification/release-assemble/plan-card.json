@@ -1,0 +1,15 @@
+{
+  "format": "b70ablator-plan-bundle-v1",
+  "key": "fixture-plan",
+  "meta": {
+    "key": "fixture-plan",
+    "measured": false,
+    "meta_digest": "0c63d7d304c770e3c77050f214834834025bbad6d50399839b1c4a4154e024b2",
+    "method": "fixture",
+    "payload_sha256": "f5b1201c23e378a8fe38c7e46df56f8ff9357960fdc9c5e2ee7335bff31e9347"
+  },
+  "payload_sha256": "f5b1201c23e378a8fe38c7e46df56f8ff9357960fdc9c5e2ee7335bff31e9347",
+  "bundle_file": "plan-card.tar",
+  "bundle_sha256": "fb733aa96e89482bd5f1fcfdcd3e73d90414e76549b0f3bb026e6ab2ec7cf4d8",
+  "note": "manifest of plan-card.tar, shipped beside the bundle so verify-artifact can check the card without unpacking it"
+}
