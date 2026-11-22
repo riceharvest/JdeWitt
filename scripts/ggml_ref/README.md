@@ -45,5 +45,8 @@ quantize_row_q2_K_ref byte-exact (13 distributions incl. 4 real F32 checkpoint t
 — the first falsifier run exposed that make_qkx2_quants uses the CALLER's weights:
 q2_K passes plain |x| while q4_K/q5_K pass av_x+|x| (the port had hardcoded the latter,
 which is why q2_K quantized 0.0% byte-exact initially).
-quantize_row_q3_K_ref: port attempted but NOT byte-exact (~16% blocks on gaussian;
-zero/near-zero/subnormal cases exact). Not wired; Q3_K stays decode-only.
+quantize_row_q3_K_ref: byte-exact (100%) on 12 distributions (gaussian x2, zeros+impulse,
+uniform-tiny, subnormal-mix, neg-dominant, near-eps, 1e6-range, all-equal-neg, bimodal,
+flat-subblocks, exact-half) and 6 real F32 tensors of the minicpm Q4_K_M. The first port
+diverged ~16% of gaussian blocks because its running sums were accumulated in double;
+keeping every product in f32 order fixed it. Q3_K is in CODECS, so gguf-edit can requant it.

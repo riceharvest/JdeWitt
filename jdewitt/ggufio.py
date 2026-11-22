@@ -77,7 +77,7 @@ def decode_values(raw, qtype_name, n_values=None):
     """Dequantize one tensor from ANY gguf quant type this build can read.
 
     Our own codecs are used when they exist (byte-exact, proven against the compiled
-    C); anything else — IQ1/IQ2/IQ3/IQ4, TQ1/TQ2, Q3_K and friends — falls back to
+    C); anything else — IQ1/IQ2/IQ3/IQ4, TQ1/TQ2 and friends — falls back to
     gguf-py's reference dequantizer. Reading the user's artifact must never depend on
     which quant they chose; only the type we WRITE has to be one we can encode.
     """
@@ -147,7 +147,7 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         with open(path, 'rb') as handle:
             handle.seek(offset)
             raw = np.frombuffer(handle.read(n_bytes), dtype=np.uint8)
-        # ANY source quant decodes (decode_values falls back to gguf-py for IQ/TQ/Q3_K);
+        # ANY source quant decodes (decode_values falls back to gguf-py for IQ/TQ);
         # only the type we WRITE has to be one of our encoders.
         base = decode_values(raw, dtype)
         edit = edits[name]
@@ -230,7 +230,7 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
     from gguf import GGUFReader
 
     def load(path, name):
-        # Any quant type decodes: the source may be IQ/Q3_K/whatever the user runs,
+        # Any quant type decodes: the source may be IQ/TQ/whatever the user runs,
         # and the edited side may hold the re-encoded type.
         reader = GGUFReader(str(path))
         tensor = next((item for item in reader.tensors if item.name == name), None)

@@ -56,7 +56,7 @@ written into the item and stays GATED.
    GGMLQuantizationType enum has no FP8 entries, so a GGUF-side codec
    could not be read or proven until the package moves.
 
-3. K-quant completion. — PARTLANDED: Q2_K/Q3_K dequant landed.
+3. K-quant completion. — LANDED (Q2_K + Q3_K quantizers and dequantizers).
    `dequantize_q2_k`/`dequantize_q3_k` in quants.py: numpy ports of
    ggml_dequantize_row_q2k/q3k, 0/770,048 mismatches vs the independent
    HF gguf.quants port on random blocks and uniform-byte edge fills
@@ -64,9 +64,13 @@ written into the item and stays GATED.
    decode-only path (quants.DECODE_ONLY): self-diff of a written Q2_K
    +Q3_K GGUF is bit-identical, a 1-byte flip in a Q3_K block is caught
    (rel_rms 6.9e-05), and such files no longer crash the diff. Remaining:
-   the legacy 1-bit-fraction quants Q4_1/Q5_0/Q5_1/Q8_1, the Q2_K/Q3_K
-   quantizers (gguf-edit refuses them honestly until ported), then a
-   real zero-delta edit through gguf-edit.
+   Q3_K's quantizer landed 2026-11-22: 100% byte-exact vs the compiled C on
+   12 distributions and six real F32 tensors, once `make_q3_quants` kept its
+   refinement sums in float32 order (that double accumulation was the whole
+   16%-mismatch). Q3_K is in CODECS, `quants-audit` now requants it, and a
+   real zero-delta edit through `rewrite_with_edits` wrote a Q3_K tensor whose
+   re-encode matches the compiled C bit-for-bit. The legacy 1-bit-fraction
+   quants Q4_1/Q5_0/Q5_1/Q8_1 landed earlier.
 
 4. `verdict-audit DIR`. — LANDED.
    Compares every saved LLM-judge verdict against the deterministic
@@ -141,11 +145,14 @@ written into the item and stays GATED.
    dequantize an evenly spaced bounded block sample from the real file and
    requantize with the same port, reporting tensors, total/sampled blocks,
    byte-identity rate, max absolute and max/std value drift. Decode-only
-   dtypes (Q2_K/Q3_K) are reported as not requant-auditable, unsupported
-   dtypes by count. Proven on the 672 MB Q4_K_M (F32 256/256, Q4_K 256/256
-   byte-identical; Q6_K 219/256 byte-identical, zero value change — scale
-   tie edges) and on the Q2_K/Q3_K fixture (decode-only listed, none
-   silently skipped). Run after any quants.py change. Emit schema falsified.
+   dtypes Q2_K/Q3_K were decode-only at first; both quantizers landed since,
+   so they are now requant-audited like the rest (the IQ4_* family stays
+   decode-only / pinned-port labelled). Proven on the 672 MB Q4_K_M (F32
+   256/256, Q4_K 256/256 byte-identical; Q6_K 219/256 byte-identical, zero
+   value change — scale tie edges) and on a Q3_K tensor written by
+   rewrite_with_edits (1 tensor, 64 sampled blocks, re-encode matches the
+   compiled C bit-for-bit). Run after any quants.py change. Emit schema
+   falsified.
 
 10. `commands --completions bash|zsh`. — LANDED.
     Completion scripts generated from the live parser tree, so they cannot
@@ -247,7 +254,7 @@ written into the item and stays GATED.
   the real IQ4_XS checkpoint Q5_1 moved from port_decode_only to audited, and the
   IQ4_XS<->IQ3_M diff dropped port-labelled rows 69->21 with byte-identical rel_rms.
 
-## Q2_K quantizer landed / Q3_K quantizer open (this run)
+## Q2_K and Q3_K quantizers landed
 - quantize_q2_k: byte-exact vs compiled ggml quantize_row_q2_K_ref on 13
   distributions (gaussian x2, zeros+impulse, uniform-tiny, subnormal-mix,
   neg-dominant, near-eps, huge-range, all-equal-neg, bimodal, flat-subblocks,
@@ -257,14 +264,15 @@ written into the item and stays GATED.
   Real bug caught by the C harness: make_qkx2_quants consumes CALLER-provided
   weights — q2_K uses plain |x|, q4_K/q5_K use av_x+|x|; the port had hardcoded
   the av variant, so the first q2_K run was 0.0% byte-exact.
-- quantize_q3_k: attempt NOT released. Structural layout, hmask (8 phases of 32,
-  not 4), scale packing and the zero-path L (C returns L=0 with NO +nmax baked
-  in — first port added nmax and broke zero/eps blocks) are all now understood
-  and fixed, but the make_q3_quants refinement loop still diverges (~16% blocks
-  byte-exact on gaussian data; exact on zeros/subnormals/near-eps). Prime
-  suspect: running-sum tie behaviour in the per-acceptance test
-  (slx*slx*suml2 > sumlx*sumlx*sl2) under f32. Q3_K stays DECODE_ONLY.
-  Reproduce: scripts/ggml_ref/ref_23k.c vs quantize_q3_k (removed pending fix).
+- quantize_q3_k: LANDED 2026-11-22, byte-exact vs the compiled C on 12
+  distributions (0/512 blocks differ on every one) and six real F32 tensors of
+  the minicpm Q4_K_W checkpoint. The last bug was the one suspected: the
+  refinement's running sums were promoted to double, so the per-acceptance test
+  (slx*slx*suml2 > sumlx*sumlx*sl2) rounded differently from C. Element-order
+  fold accumulators plus float32 products fixed it; the zero-path L=0 (no +nmax)
+  and the hmask/scale packing were already right. Wired into CODECS, so
+  gguf-edit/edit-quantized can requant Q3_K and quants-audit audits it.
+  Reproduce: scripts/ggml_ref/ref_23k.c vs quantize_q3_k.
 
 ## CUDA as a second-rank test backend (landed this run)
 - `hf.py` now resolves compute backends by rank instead of hard-refusing everything that is

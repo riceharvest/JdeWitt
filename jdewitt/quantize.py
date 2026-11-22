@@ -107,9 +107,10 @@ def quantize_file(src, out, kind, *, binary=None, overrides=(), threads=None,
     binary = resolve_binary(binary)
     target = canonical_type(kind)
     override_list = parse_overrides(overrides)
-    command = [binary, str(src), str(out), target]
-    if threads:
-        command.append(str(int(threads)))
+    # llama-quantize's usage is [flags] model out type [nthreads]: a flag placed after
+    # the positionals is read as the nthread number ('invalid nthread'), which is how
+    # --allow-requantize silently stopped working on newer builds.
+    command = [binary]
     if allow_requantize:
         command.append('--allow-requantize')
     if keep_output_tensor:
@@ -122,6 +123,9 @@ def quantize_file(src, out, kind, *, binary=None, overrides=(), threads=None,
         command += ['--imatrix', str(imatrix)]
     for override in override_list:
         command += ['--tensor-type', override]
+    command += [str(src), str(out), target]
+    if threads:
+        command.append(str(int(threads)))
     started = time.monotonic()
     # llama-quantize writes progress bars with raw bytes: decoding as utf-8 strictly
     # raises in the middle of a working run and looks like a quantizer failure.

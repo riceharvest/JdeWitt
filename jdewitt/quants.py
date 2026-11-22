@@ -635,20 +635,121 @@ def quantize_q2_k(x):
     return out.reshape(-1)
 
 
-# Q2_K joins CODECS here (not the literal above) because its quantizer is defined
-# after CODECS; Q3_K stays decode-only: a quantize_row_q3_K_ref port was written
-# and compiled-C falsified but is only ~16% byte-exact on gaussian data (zero and
-# near-zero cases pass) — kept out of CODECS until byte-exact. See docs/PLAN-NEXT.
+# Q2_K and Q3_K join CODECS here (not the literal above) because their quantizers
+# are defined after it. Both are byte-exact mirrors of the compiled upstream scalar
+# quantizers (scripts/ggml_ref/ref_23k.c); the Q3_K port first diverged ~16% of
+# gaussian blocks until the refinement's running sums were kept in f32 order.
 CODECS['Q2_K'] = (84, QK_K, quantize_q2_k, dequantize_q2_k)
+
+
+def _make_q3_quants(x, nmax=4):
+    """x: [m, 16] float32 -> scale [m], L int8 [m, 16] (nmax offset applied).
+
+    Mirror of make_q3_quants(n, nmax, x, L, do_rmse=true) from ggml-quants.c
+    (bcda336). The refinement updates running sums in element order, so the
+    16-element loop stays sequential and only the m subblocks are vectorised;
+    every product is kept in float32 so the acceptance test rounds exactly as C.
+    """
+    ax = np.abs(x)
+    idx = np.argmax(ax, axis=-1, keepdims=True)
+    amax = np.take_along_axis(ax, idx, axis=-1)
+    maxv = np.take_along_axis(x, idx, axis=-1)
+    zero = amax < np.float32(GROUP_MAX_EPS)
+    iscale = -np.float32(nmax) / np.where(zero, np.float32(1.0), maxv)
+    L = np.clip(_rint(iscale * x), -nmax, nmax - 1).astype(np.float32)
+    w = x * x
+    zeros = np.zeros(L.shape[:-1] + (1,), dtype=np.float32)
+    sumlx = _fold_last(w * x * L, zeros.copy())
+    suml2 = _fold_last(w * L * L, zeros.copy())
+    for _ in range(5):
+        changed = np.zeros(L.shape[:-1], dtype=bool)
+        for i in range(x.shape[-1]):
+            xi = x[..., i:i + 1]
+            wi = w[..., i:i + 1]
+            li = L[..., i:i + 1]
+            slx = sumlx - wi * xi * li
+            pos = slx > 0
+            sl2 = suml2 - wi * li * li
+            denom = np.where(pos, slx, np.float32(1.0))
+            new_l = np.clip(_rint(xi * sl2 / denom), -nmax, nmax - 1)
+            moved = pos & (new_l != li)
+            slx2 = slx + wi * xi * new_l
+            sl2 = sl2 + wi * new_l * new_l
+            accept = moved & (sl2 > 0) & (slx2 * slx2 * suml2 > sumlx * sumlx * sl2)
+            L[..., i:i + 1] = np.where(accept, new_l, li)
+            sumlx = np.where(accept, slx2, sumlx)
+            suml2 = np.where(accept, sl2, suml2)
+            changed |= accept[..., 0]
+        if not changed.any():
+            break
+    scale = np.where(suml2 > 0, sumlx / np.where(suml2 > 0, suml2, np.float32(1.0)),
+                     np.float32(0.0))
+    L = np.where(zero, np.float32(0.0), L + np.float32(nmax))
+    return scale, L.astype(np.int8)
+
+
+def quantize_q3_k(x):
+    """Byte-reproducible mirror of ggml quantize_row_q3_K_ref.
+
+    Per 16-element subblock make_q3_quants (n=16, nmax=4, rmse refinement), a
+    6-bit scale packing (low nibbles + two high bits), the f16 super-scale
+    round-trip, then the requant `nearest_int(x/d)` with the fourth bit moved
+    into hmask and the qs packed 2 bits x 4 groups per byte.
+    """
+    x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, QK_K)
+    nb = x.shape[0]
+    scales, L = _make_q3_quants(x.reshape(-1, 16))
+    scales = scales.reshape(nb, 16)
+    L = L.reshape(nb, QK_K).astype(np.int32)
+    pick = np.argmax(np.abs(scales), axis=1)
+    max_scale = np.take_along_axis(scales, pick[:, None], axis=1)[:, 0]
+    max_scale = np.where(np.abs(max_scale) > 0, max_scale, np.float32(0.0))
+    live = max_scale != 0
+    sc = np.zeros((nb, 12), dtype=np.uint8)
+    d16 = np.zeros((nb,), dtype=np.float16)
+    if live.any():
+        iscale = np.float32(-32.0) / np.where(live, max_scale, np.float32(1.0))
+        for j in range(16):
+            lv = (np.clip(_rint(iscale * scales[:, j]), -32, 31).astype(np.int64) + 32)
+            if j < 8:
+                sc[live, j] = (lv & 0xF)[live].astype(np.uint8)
+            else:
+                sc[live, j - 8] |= ((lv & 0xF) << 4)[live].astype(np.uint8)
+            sc[live, j % 4 + 8] |= ((lv >> 4) << (2 * (j // 4)))[live].astype(np.uint8)
+        d16[live] = (np.float32(1.0) / iscale[live]).astype(np.float16)
+    d32 = d16.astype(np.float32)
+    for j in range(16):
+        low = sc[:, j] & 0xF if j < 8 else (sc[:, j - 8] >> 4) & 0xF
+        high = (sc[:, 8 + (j % 4)] >> (2 * (j // 4))) & 3
+        scj = (low | (high << 4)).astype(np.int32) - 32
+        dval = d32 * scj.astype(np.float32)
+        keep = dval != 0
+        safe = np.where(keep, dval, np.float32(1.0))
+        lq = np.clip(_rint(x[:, 16 * j:16 * j + 16] / safe[:, None]), -4, 3).astype(np.int32) + 4
+        L[:, 16 * j:16 * j + 16] = np.where(keep[:, None], lq, L[:, 16 * j:16 * j + 16])
+    hm = np.zeros((nb, 32), dtype=np.uint8)
+    for j in range(QK_K):
+        hi = L[:, j] > 3
+        hm[hi, j % 32] |= np.uint8(1 << (j // 32))
+        L[hi, j] -= 4
+    out = np.empty((nb, 110), dtype=np.uint8)
+    out[:, 0:32] = hm
+    out[:, 32:96] = _pack_2bit_qk(L.astype(np.uint64)).astype(np.uint8)
+    out[:, 96:108] = sc
+    out[:, 108:110] = np.ascontiguousarray(d16).view(np.uint16).view(np.uint8).reshape(nb, 2)
+    return out.reshape(-1)
+
+
+CODECS['Q3_K'] = (110, QK_K, quantize_q3_k, dequantize_q3_k)
 
 
 # Q2_K's quantizer above is a byte-exact mirror of ggml quantize_row_q2_K_ref
 # (compiled-C falsified, scripts/ggml_ref/ref_23k.c, 13 distributions incl. 4
 # real F32 checkpoint tensors). It exposed a latent caller-weights issue in
 # _make_qkx2: q2_K passes plain |x| weights while q4_K/q5_K pass av_x+|x|; the
-# dequantizers below remain the previously proven ports. Q3_K stays decode-only
-# — see the quantize_q2_k docstring region and docs/PLAN-NEXT.md for the
-# falsifier verdict.
+# dequantizers below remain the previously proven ports. Q3_K's quantizer is the
+# same harness, 12 distributions + 6 real F32 tensors, 100% byte-exact once the
+# refinement kept its running sums in f32 order.
 # IQ4_XS: 256 elements per 136 bytes. Layout (ggml-common.h block_iq4_xs):
 #   d (f16) | scales_h (u16) | scales_l[4] | qs[128]
 # per 32-element sub-block ib: ls = low nibble pair | 2 high bits from scales_h,
@@ -701,6 +802,5 @@ def dequantize_iq4_nl(raw: np.ndarray, n: int) -> np.ndarray:
 
 DECODE_ONLY = {
     'IQ4_XS': (136, QK_K, dequantize_iq4_xs),
-    'Q3_K': (110, QK_K, dequantize_q3_k),
     'IQ4_NL': (18, 32, dequantize_iq4_nl),
 }
