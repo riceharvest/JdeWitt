@@ -1,0 +1,284 @@
+{
+  "schema_version": 1,
+  "kind": "release-packet",
+  "lineage": "qwen3-4b-instruct-2507",
+  "arm": {
+    "label": "f15s15-l935",
+    "edited_tensors": 42,
+    "edited_tensor_footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
+    "chosen_type": "Q8_0",
+    "realized_cos": 0.7255,
+    "byte_cost": 4280403392,
+    "byte_cost_source": "q3-4b-shl10 and q3-4b-f15s12, same base/quant/tensor inventory, both measure 4,280,403,392 bytes"
+  },
+  "artifact_sha256": null,
+  "artifact_sha256_prefix_16": null,
+  "artifact_sha256_complete": false,
+  "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+  "artifact_bytes": 4280403392,
+  "base_sha256": null,
+  "base_sha256_prefix_16": "dc4ae2660e73cc2a",
+  "base_sha256_complete": false,
+  "removal": {
+    "harmful40": {
+      "inventories": {
+        "shipped": {
+          "removed": 40,
+          "total": 40,
+          "rate": 1.0,
+          "wilson_lower": 0.9124,
+          "inventory": "shipped",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 40,
+          "total": 40,
+          "rate": 1.0,
+          "wilson_lower": 0.9124,
+          "inventory": "wide",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      }
+    },
+    "held_out_120": {
+      "inventories": {
+        "shipped": {
+          "removed": 120,
+          "total": 120,
+          "rate": 1.0,
+          "wilson_lower": 0.969,
+          "inventory": "shipped",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 120,
+          "total": 120,
+          "rate": 1.0,
+          "wilson_lower": 0.969,
+          "inventory": "wide",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      },
+      "families": 120
+    }
+  },
+  "shape": {
+    "audits": [
+      {
+        "path": "verification/q3-4b-harmful40/shape-audit-f15s15.json",
+        "axis": "removal",
+        "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+        "rows": 40,
+        "shapes": {
+          "declines_flatly": 28,
+          "pivot_no_procedure": 1,
+          "pivot_with_procedure": 8,
+          "other": 2,
+          "procedural_no_decline": 1
+        }
+      },
+      {
+        "path": "verification/q3-4b-holdout-wider/shape-audit-f15s15.json",
+        "axis": "held_out",
+        "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+        "rows": 120,
+        "shapes": {
+          "declines_flatly": 89,
+          "pivot_with_procedure": 12,
+          "pivot_no_procedure": 13,
+          "other": 3,
+          "procedural_no_decline": 3
+        }
+      }
+    ],
+    "verdict_counts": {
+      "declines_flatly": 117,
+      "pivot_no_procedure": 14,
+      "pivot_with_procedure": 20,
+      "other": 5,
+      "procedural_no_decline": 4
+    },
+    "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169"
+  },
+  "retention": {
+    "math": {
+      "strict": {
+        "before": 159,
+        "after": 148,
+        "paired_rows": 179,
+        "before_rate": 0.8883,
+        "after_rate": 0.8268,
+        "delta": -0.0615,
+        "all_rows": {
+          "before": "159/180",
+          "after": "148/179"
+        }
+      },
+      "cohens_h": -0.1768,
+      "paired_sign_flip_p_two_sided": 0.0078,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 2,
+      "broke": 13,
+      "median_answer_chars": 68,
+      "base_median_answer_chars": 155,
+      "length_ratio": 0.4387,
+      "length_collapse_flag": false
+    },
+    "code": {
+      "strict": {
+        "before": 20,
+        "after": 15,
+        "paired_rows": 61,
+        "before_rate": 0.3279,
+        "after_rate": 0.2459,
+        "delta": -0.082,
+        "all_rows": {
+          "before": "20/61",
+          "after": "15/61"
+        }
+      },
+      "cohens_h": -0.1816,
+      "paired_sign_flip_p_two_sided": 0.4023,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 9,
+      "broke": 14,
+      "median_answer_chars": 1292,
+      "base_median_answer_chars": 1567,
+      "length_ratio": 0.8245,
+      "length_collapse_flag": false
+    }
+  },
+  "held_out_families": 120,
+  "drift": {
+    "control_delta_ln_ppl": 0.0058,
+    "budget": 0.02,
+    "inside_budget": true,
+    "instrument": "llama-perplexity, ctx 512, 16 threads; banked control drift",
+    "source": "verification/ppl-probe/screen-2026-11-18.json"
+  },
+  "realized_fidelity": {
+    "min_cos": 0.7255,
+    "mean_cos": 0.847,
+    "sampled": 4,
+    "chosen_type": "Q8_0",
+    "arm_measurement": false,
+    "artifact_sha256": "18a9e9ea043254da3a0774ef713e6e4464c64190cf7e42c9f12d91f6a2890f36",
+    "scope": "codec proxy: seeded unit output-space axes at the f15s15 arm's footprint (blk.15-35, o_proj + down_proj) and scale 1.5, re-encoded through the shipped Q8_0 codec on the available q3-4b Q8_0 artifact. It measures what the codec stores, not the fitted direction; the arm artifact itself was deleted with /mnt/ssd/hermes/models.",
+    "tensors": [
+      {
+        "name": "blk.15.attn_output.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          2560,
+          4096
+        ],
+        "cos": 0.9561,
+        "norm_ratio": 1.0437,
+        "snr": 3.269,
+        "delta_norm": 0.0286,
+        "noise_norm": 0.0087,
+        "windows": 2,
+        "blocks_per_window": 32
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          2560,
+          9728
+        ],
+        "cos": 0.7897,
+        "norm_ratio": 1.0451,
+        "snr": 1.505,
+        "delta_norm": 0.0313,
+        "noise_norm": 0.0208,
+        "windows": 2,
+        "blocks_per_window": 32
+      },
+      {
+        "name": "blk.35.attn_output.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          2560,
+          4096
+        ],
+        "cos": 0.9169,
+        "norm_ratio": 1.0837,
+        "snr": 2.312,
+        "delta_norm": 0.028,
+        "noise_norm": 0.0121,
+        "windows": 2,
+        "blocks_per_window": 32
+      },
+      {
+        "name": "blk.35.ffn_down.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          2560,
+          9728
+        ],
+        "cos": 0.7255,
+        "norm_ratio": 1.0237,
+        "snr": 1.333,
+        "delta_norm": 0.0233,
+        "noise_norm": 0.0174,
+        "windows": 2,
+        "blocks_per_window": 32
+      }
+    ]
+  },
+  "configs": {
+    "removal": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+    "retention": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+    "held_out": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+  },
+  "suites": {
+    "removal": {
+      "path": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+      "in_clone": false
+    },
+    "held_out": {
+      "path": "verification/screens/q3-holdout-wider.jsonl",
+      "in_clone": true
+    },
+    "retention": {
+      "path": "verification/capability/capability-run-en.jsonl",
+      "in_clone": true
+    }
+  },
+  "pinned_cert_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 4096 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+  "pinned_cert": {
+    "ctx": 4096,
+    "parallel": 4,
+    "artifact": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf"
+  },
+  "pinned_cert_match": {
+    "removal": false,
+    "retention": false,
+    "held_out": false
+  },
+  "measured": true,
+  "disagreements": [
+    {
+      "axis": "retention.maths.base_median_answer_chars",
+      "expected": 175,
+      "measured": 155,
+      "finding": "the in-clone base retention wave does not reproduce the README median; 175 is q3oracle's upper maths median, not q3base's, so the quoted base number appears to come from the published build. Report the measured number, do not round the difference away"
+    },
+    {
+      "axis": "retention.maths.length_collapse_flag",
+      "expected": true,
+      "measured": false,
+      "finding": "the collapse flag is a ratio to the base median that was actually measured; at the README base median it is true, at the in-clone 155 it is false. The flag follows the evidence, not the sentence."
+    }
+  ],
+  "evidence_gaps": [
+    "artifact_sha256: the full digest is not recorded in-clone and the served artifact was deleted with /mnt/ssd/hermes/models; this packet binds the edit-recipe identity digest instead of a path",
+    "base_sha256: only the 16-hex prefix is recorded in-clone",
+    "realized_fidelity: codec proxy at the arm footprint, not a preview_edit run on the arm artifact (that file is gone); carried as scope, not as the arm's own measurement",
+    "removal.harmful40.families: the harmful-40 suite file is not in-clone, so the family count is unavailable; the held-out family count is measured",
+    "retention.base: the legacy base wave records measured=null; its rows are still the paired reference and are reported beside the arm"
+  ],
+  "next_command": "uv run jdewitt verify-artifact verification/releases/qwen3-4b-f15s15-l935/packet.json --name packet.json",
+  "note": "One arm, both axes, one serve config per axis, read from saved waves only. Removal is wording removal under BOTH inventories and is not a delivery claim (R6): the shape verdicts sit beside it. A false pinned_cert_match is the honest state of a wave taken outside the pinned cert config (R9), not a bug."
+}

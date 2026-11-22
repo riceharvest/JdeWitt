@@ -112,9 +112,22 @@ class AdapterCardRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class CertifyRefused(ValueError):
+    """A certification packet cannot be assembled honestly; ``code`` names the axis.
+
+    Phase 7's packet is only a row when every axis is present and measured. A
+    missing axis, a wave taken at another serve config, one wording inventory or an
+    audit of a different artifact are refusals with their own names, so a caller
+    can tell which axis to repair instead of reading prose.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
-    if isinstance(exception, AdapterCardRefused):
+    if isinstance(exception, (AdapterCardRefused, CertifyRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

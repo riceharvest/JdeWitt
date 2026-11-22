@@ -1,0 +1,12 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen3-4b-instruct-2507",
+ "label": "f15s15-l935",
+ "measured": true,
+ "instrument": "llama-perplexity, ctx 512, 16 threads; banked control drift",
+ "control_delta_ln_ppl": 0.0058,
+ "budget": 0.02,
+ "source": "verification/ppl-probe/screen-2026-11-18.json",
+ "source_pointer": "artifacts.f15s15.delta_control",
+ "note": "the control corpus drift is inside the 0.02 budget; a BR move is not generic drift"
+}

@@ -388,6 +388,9 @@ def build_parser():
     verify.add_argument('--expected-identity')
     claims=sub.add_parser('release-claims',help='Read a release evidence ledger (claims, evidence, chain digest)')
     claims.add_argument('directory',type=Path)
+    certify=sub.add_parser('release-certify',help='Assemble one Phase 7 certification packet per arm from saved waves; no model')
+    certify.add_argument('--spec',type=Path,required=True,help='Spec naming the arm, artifact identity, serve argv per axis and evidence inputs')
+    certify.add_argument('--out',type=Path,help='Write the packet JSON here as well as printing it')
     claimadd=sub.add_parser('claim-add',help='Append an evidence-backed claim to a release evidence ledger')
     claimadd.add_argument('directory',type=Path)
     claimadd.add_argument('--claim',required=True,help='What is asserted')
@@ -779,6 +782,9 @@ def main():
         elif args.command=='release-claims':
             from .release import evidence_summary
             result=evidence_summary(args.directory)
+        elif args.command=='release-certify':
+            from .certify import release_certify
+            result=release_certify(args.spec,args.out)
         elif args.command=='claim-add':
             from .release import add_claim
             result=add_claim(args.directory,args.claim,args.evidence,args.verified_by,args.expected_identity,args.successes,args.total)

@@ -1,0 +1,100 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen3-4b-instruct-2507",
+ "arm": {
+  "label": "f15s15-l935",
+  "edited_tensors": 42,
+  "edited_tensor_footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
+  "chosen_type": "Q8_0",
+  "realized_cos": 0.7255,
+  "byte_cost": 4280403392,
+  "byte_cost_source": "q3-4b-shl10 and q3-4b-f15s12, same base/quant/tensor inventory, both measure 4,280,403,392 bytes"
+ },
+ "artifact": {
+  "path": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf",
+  "sha256": null,
+  "sha256_prefix_16": null,
+  "bytes": 4280403392,
+  "recipe": {
+   "command": "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf --axes /mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5",
+   "base_sha256_prefix_16": "dc4ae2660e73cc2a",
+   "edit": "shared sign-aligned axis, output space, o_proj + mlp.down_proj, blk.15-35, scale 1.5",
+   "note": "the GGUF was deleted with /mnt/ssd/hermes/models; the packet binds this recipe against the recorded base prefix, never a path"
+  }
+ },
+ "base": {
+  "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+  "sha256": null,
+  "sha256_prefix_16": "dc4ae2660e73cc2a",
+  "bytes": null
+ },
+ "suites": {
+  "removal": {
+   "path": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+   "in_clone": false
+  },
+  "held_out": {
+   "path": "verification/screens/q3-holdout-wider.jsonl",
+   "in_clone": true
+  },
+  "retention": {
+   "path": "verification/capability/capability-run-en.jsonl",
+   "in_clone": true
+  }
+ },
+ "configs": {
+  "removal": {
+   "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+  },
+  "retention": {
+   "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+  },
+  "held_out": {
+   "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134"
+  }
+ },
+ "pinned_cert_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 4096 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "inputs": {
+  "removal": {
+   "wave": "verification/q3-4b-harmful40/f15s15-l935",
+   "suite": "harmful-40.jsonl"
+  },
+  "held_out": {
+   "wave": "verification/q3-4b-holdout-wider/w15-f15s15",
+   "suite": "verification/screens/q3-holdout-wider.jsonl"
+  },
+  "retention": {
+   "wave": "verification/q3-4b-retention/f15s15-l935",
+   "base_wave": "verification/q3-4b-retention/q3base",
+   "suite": "verification/capability/capability-run-en.jsonl"
+  },
+  "shape_audit": [
+   {
+    "path": "verification/q3-4b-harmful40/shape-audit-f15s15.json",
+    "axis": "removal",
+    "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169"
+   },
+   {
+    "path": "verification/q3-4b-holdout-wider/shape-audit-f15s15.json",
+    "axis": "held_out",
+    "artifact_identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169"
+   }
+  ],
+  "wording_inventory": {
+   "shipped": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472",
+   "wide": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+  },
+  "drift": "verification/releases/qwen3-4b-f15s15-l935/drift.json",
+  "fidelity": "verification/releases/qwen3-4b-f15s15-l935/fidelity.json"
+ },
+ "expected": {
+  "removal": 40,
+  "held_out": 120,
+  "maths_after": 148,
+  "maths_p": 0.0078,
+  "median_maths": 68,
+  "base_median_maths": 175,
+  "length_collapse": true,
+  "source": "README.md section IV"
+ }
+}
