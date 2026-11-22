@@ -465,7 +465,8 @@ def main():
     editq.add_argument('--shape',choices=('perlayer','shared'),default='perlayer')
     editq.add_argument('--scale',type=float,default=1.0)
     editq.add_argument('--layers',default=None,help="footprint 'a-b' (default: every discovered layer)")
-    editq.add_argument('--edit-type',default='q6_k',help='type the edited tensors are re-encoded at (q6_k/q8_0/f16/...)')
+    editq.add_argument('--edit-type',default='auto',help='type the edited tensors are re-encoded at: auto picks the smallest type whose delivered cos clears --min-cos (q6_k -> q8_0 -> f16), or name one')
+    editq.add_argument('--min-cos',type=float,default=0.95,help='delivered-edit fidelity floor used by --edit-type auto')
     editq.add_argument('--axis-space',choices=('output','input'),default='output')
     editq.add_argument('--renormalize',action='store_true')
     editq.add_argument('--no-verify',action='store_true',help='skip the byte-identity check of untouched tensors')
@@ -740,14 +741,31 @@ def main():
                     edits[name]=(axes[layer].numpy(),args.axis_space)
             if not edits:
                 raise ValueError('the footprint selects no tensor this artifact carries')
-            result=rewrite_with_edits(args.gguf,args.out,edits,scale=args.scale,
-                                      axis_space=args.axis_space,edit_type=args.edit_type,
-                                      renormalize=args.renormalize,
-                                      verify_untouched=not args.no_verify)
             sample=list(edits)[:1]+list(edits)[-1:]
-            result['delivered_edit']=compare_edit(str(args.gguf),str(args.out),
-                                                  {name:edits[name] for name in sample},
-                                                  renormalize=args.renormalize)
+            probe={name:edits[name] for name in sample}
+            attempts=['q6_k','q8_0','f16'] if args.edit_type=='auto' else [args.edit_type]
+            result,chosen=None,None
+            for index,kind in enumerate(attempts):
+                candidate=args.out if len(attempts)==1 else args.out.with_name(
+                    f'{args.out.stem}-{kind}{args.out.suffix}')
+                attempt=rewrite_with_edits(args.gguf,candidate,edits,scale=args.scale,
+                                           axis_space=args.axis_space,edit_type=kind,
+                                           renormalize=args.renormalize,
+                                           verify_untouched=not args.no_verify)
+                delivered=compare_edit(str(args.gguf),str(candidate),probe,
+                                       renormalize=args.renormalize)
+                attempt['delivered_edit']=delivered
+                attempt['path']=str(candidate)
+                if result is not None and candidate != args.out:
+                    candidate.unlink(missing_ok=True)
+                chosen=(attempt,candidate)
+                if (delivered.get('min_cos') or 0.0)>=args.min_cos or index==len(attempts)-1:
+                    break
+            result,chosen_path=chosen
+            if chosen_path != args.out:
+                chosen_path.replace(args.out)
+            result['path']=str(args.out)
+            result['edit_type_chosen']=result['edit_type']
         elif args.command=='requant':
             from .quantize import quantize_file
             result=quantize_file(args.gguf,args.out,args.type,binary=args.binary,
