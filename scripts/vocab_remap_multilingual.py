@@ -527,10 +527,16 @@ def report(args) -> int:
                   'A row is a token path; a suppressed denial word is not a removed capability, and nothing here '
                   'is a harmlessness, compliance or removal measurement.'),
         'method': ('the stepper is one code path; --remap on|off is the only difference. The off arm is the plain '
-                   'greedy wave token-for-token (§ the off run\'s gate). Every table surface is resolved against '
-                   'each artifact tokenizer header, and every suppression event is checked against the resolved '
-                   'split tail. Shape labels come from jdewitt.refusal_shape.classify; the content verdict is the '
-                   'mechanical two-axis rule of scripts/vocab_remap_audit.py.'),
+                   'greedy wave token-for-token where the re-sent text re-tokenizes to the emitted path (§ each '
+                   'language block carries the per-row equality). Every table surface is resolved against each '
+                   'artifact tokenizer header, and every suppression event is checked against the resolved split '
+                   'tail. Shape labels come from jdewitt.refusal_shape.classify; the content verdict is the '
+                   'mechanical two-axis rule of scripts/vocab_remap_audit.py, with the per-language decline screen '
+                   'documented under instruments.'),
+        'reproduce': ('see verification/vocab-remap/multilingual/README.md; the arms are written by '
+                      'jdewitt vocab-remap --remap off|on and this report is one command: '
+                      'python scripts/vocab_remap_multilingual.py report --run LABEL=DIR --artifact LABEL=GGUF '
+                      '--out verification/vocab-remap/multilingual.json'),
         'probes': {'path': _portable(suite), 'sha256': suite_sha, 'rows': len(suite_ids),
                    'by_language': {language: [row_id for row_id in suite_ids
                                               if pairs[labels[0]]['off_rows'][row_id].get('language') == language]
@@ -564,10 +570,12 @@ def report(args) -> int:
         },
         'runs': {label: {'off': {'path': _portable(Path(specs[label]) / 'off'),
                                  'run_sha256': _sha256_file(Path(specs[label]) / 'off' / 'run.json'),
-                                 'rows_sha256': _sha256_file(Path(specs[label]) / 'off' / 'rows.jsonl')},
+                                 'rows_sha256': _sha256_file(Path(specs[label]) / 'off' / 'rows.jsonl'),
+                                 'pinned_argv': pairs[label]['off_run']['pinned_argv']},
                          'on': {'path': _portable(Path(specs[label]) / 'on'),
                                 'run_sha256': _sha256_file(Path(specs[label]) / 'on' / 'run.json'),
-                                'rows_sha256': _sha256_file(Path(specs[label]) / 'on' / 'rows.jsonl')},
+                                'rows_sha256': _sha256_file(Path(specs[label]) / 'on' / 'rows.jsonl'),
+                                'pinned_argv': pairs[label]['on_run']['pinned_argv']},
                          'config': pairs[label]['on_run']['config'],
                          'metrics': {arm: pairs[label][f'{arm}_run']['metrics'] for arm in ('off', 'on')},
                          'gate': {arm: pairs[label][f'{arm}_run']['gate'] for arm in ('off', 'on')}}

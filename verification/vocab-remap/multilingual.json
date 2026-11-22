@@ -303,7 +303,7 @@
       "used_for": "denial-word rate per arm"
     }
   },
-  "method": "the stepper is one code path; --remap on|off is the only difference. The off arm is the plain greedy wave token-for-token (\u00a7 the off run's gate). Every table surface is resolved against each artifact tokenizer header, and every suppression event is checked against the resolved split tail. Shape labels come from jdewitt.refusal_shape.classify; the content verdict is the mechanical two-axis rule of scripts/vocab_remap_audit.py.",
+  "method": "the stepper is one code path; --remap on|off is the only difference. The off arm is the plain greedy wave token-for-token where the re-sent text re-tokenizes to the emitted path (\u00a7 each language block carries the per-row equality). Every table surface is resolved against each artifact tokenizer header, and every suppression event is checked against the resolved split tail. Shape labels come from jdewitt.refusal_shape.classify; the content verdict is the mechanical two-axis rule of scripts/vocab_remap_audit.py, with the per-language decline screen documented under instruments.",
   "per_language": {
     "de": {
       "minicpm-v47": {
@@ -4801,6 +4801,7 @@
     "rows": 24,
     "sha256": "6444f52759c99efd708dd86fa601a39c08205a037bbc3cbe36e97783dc861585"
   },
+  "reproduce": "see verification/vocab-remap/multilingual/README.md; the arms are written by jdewitt vocab-remap --remap off|on and this report is one command: python scripts/vocab_remap_multilingual.py report --run LABEL=DIR --artifact LABEL=GGUF --out verification/vocab-remap/multilingual.json",
   "runs": {
     "minicpm-v47": {
       "config": {
@@ -4908,11 +4909,49 @@
       },
       "off": {
         "path": "verification/vocab-remap/multilingual/minicpm-v47/off",
+        "pinned_argv": [
+          "jdewitt",
+          "vocab-remap",
+          "--artifact",
+          "minicpm-v47-Q4_K_M.gguf",
+          "--suite",
+          "verification/vocab-remap/probes/multilingual.jsonl",
+          "--out",
+          "verification/vocab-remap/multilingual/minicpm-v47/off",
+          "--remap",
+          "off",
+          "--max-tokens",
+          "96",
+          "--template",
+          "chat",
+          "--serve",
+          "llama-server",
+          "--no-think"
+        ],
         "rows_sha256": "56b3f2e0d41c4ee639037b0d7e44aea28968dae52c6fe9d36ccdd6e9b4d9bf89",
         "run_sha256": "7acb5c7358c1cd794d2935fb2b71afba27cb845e4466e824f2d628852b0ab87b"
       },
       "on": {
         "path": "verification/vocab-remap/multilingual/minicpm-v47/on",
+        "pinned_argv": [
+          "jdewitt",
+          "vocab-remap",
+          "--artifact",
+          "minicpm-v47-Q4_K_M.gguf",
+          "--suite",
+          "verification/vocab-remap/probes/multilingual.jsonl",
+          "--out",
+          "verification/vocab-remap/multilingual/minicpm-v47/on",
+          "--remap",
+          "on",
+          "--max-tokens",
+          "96",
+          "--template",
+          "chat",
+          "--serve",
+          "llama-server",
+          "--no-think"
+        ],
         "rows_sha256": "bdd3272ef3cc7302a08319c5ee0d41017cad89e5cd912a1d896bd76025cc2193",
         "run_sha256": "e8dcbbed70861f12e406d540fa607bc8dfea3b851287187994880af10f8c2108"
       }
@@ -5035,11 +5074,47 @@
       },
       "off": {
         "path": "verification/vocab-remap/multilingual/qwen25-05b/off",
+        "pinned_argv": [
+          "jdewitt",
+          "vocab-remap",
+          "--artifact",
+          "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+          "--suite",
+          "verification/vocab-remap/probes/multilingual.jsonl",
+          "--out",
+          "verification/vocab-remap/multilingual/qwen25-05b/off",
+          "--remap",
+          "off",
+          "--max-tokens",
+          "96",
+          "--template",
+          "chat",
+          "--serve",
+          "llama-server"
+        ],
         "rows_sha256": "c3d4ea47d8e77c2d478a4dff05acb028862d7fc5300f85a184b85ea3a5c869e0",
         "run_sha256": "133520f38ddfae34aa90c4eea62ffea9b8808810bcad84c3839b01d61916b43c"
       },
       "on": {
         "path": "verification/vocab-remap/multilingual/qwen25-05b/on",
+        "pinned_argv": [
+          "jdewitt",
+          "vocab-remap",
+          "--artifact",
+          "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+          "--suite",
+          "verification/vocab-remap/probes/multilingual.jsonl",
+          "--out",
+          "verification/vocab-remap/multilingual/qwen25-05b/on",
+          "--remap",
+          "on",
+          "--max-tokens",
+          "96",
+          "--template",
+          "chat",
+          "--serve",
+          "llama-server"
+        ],
         "rows_sha256": "7e3afb33e87640a59d013f3b4bd5e954c4c6da152b314fd6f519d5c57b05e9ac",
         "run_sha256": "5261da6e1d5aaafd4af38dd60b524247f741fc08a484617eaf147334a6dfd2a1"
       }
