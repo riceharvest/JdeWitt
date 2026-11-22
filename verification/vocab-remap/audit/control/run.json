@@ -50,11 +50,11 @@
       "--host",
       "127.0.0.1",
       "--port",
-      "44599"
+      "50507"
     ],
     "argv_note": "the model and binary are recorded portably; the artifact is identified by sha256",
     "started_by_driver": true,
-    "port": 44599,
+    "port": 50507,
     "model_path_reported": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
     "model_path_resolves_to_artifact": true,
     "build_info": "b9550-f0156d140",
@@ -94,7 +94,7 @@
   },
   "rows_file": {
     "path": "rows.jsonl",
-    "sha256": "03fc2059e01bd7c6877a522c90eef177ec3af18ba05d9b8ff24fe4bd6af3a1a6",
+    "sha256": "02979923a10c0a3671d55f5a8707fa24f83e1fae7bf8545b7c21bf081cda8666",
     "rows": 1
   },
   "metrics": {
@@ -102,12 +102,12 @@
     "steps": 3,
     "completion_requests": 3,
     "prompt_tokens": 49,
-    "decode_seconds": 0.346,
-    "wall_seconds": 2.866,
-    "tokens_per_second": 8.67,
+    "decode_seconds": 0.341,
+    "wall_seconds": 2.853,
+    "tokens_per_second": 8.8,
     "max_prompt_n_after_first_step": 1,
     "min_cache_n_after_first_step": 49,
-    "plain_wave_seconds": 0.096,
+    "plain_wave_seconds": 0.088,
     "retokenized_steps": 0,
     "prompt_origin_sequences_seen": 0
   },
