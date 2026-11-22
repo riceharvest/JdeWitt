@@ -14,6 +14,7 @@ weights (serve space == edit space, for lineages with no local llama.cpp support
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import time
@@ -61,6 +62,227 @@ def per_layer_axes(records: list[tuple], label_bad: str = "bad",
 def load_records(path: str) -> list[tuple]:
     st = torch.load(path, map_location="cpu", weights_only=False)
     return st["records"] if isinstance(st, dict) and "records" in st else st
+
+
+# ---------- separability: which layers carry the harmful/harmless split ----------
+#
+# A footprint is a band of layers an edit is applied to, and `tune --footprints` tests
+# bands (all, 10-27, 16-27) with nothing behind the choice. The capture already stores
+# (meta, [L, W]) rows per label, so a layer's separation is a closed-form read of a file
+# that exists: how far apart the two label means point (cosine) and how big that gap is
+# next to the spread of each label's own rows (snr). A layer gains snr only when the
+# harmful rows and the harmless rows sit in different places at this width; a layer
+# where both labels cover the same cloud carries nothing to remove, however large the
+# raw activation is.
+
+MIN_ROWS_PER_LABEL = 3
+MIN_LAYERS = 8
+DEFAULT_KEEP = 0.5
+
+
+def _footprint_refusal(detail: str) -> None:
+    """Exit non-zero on a capture that cannot support a footprint, always in the same words.
+
+    ``"a footprint over two rows is noise"`` is the fixed sentence so a caller can tell a
+    capture that is too small (or too flat) from a crash: no band, no half-band, no
+    silent zero.
+    """
+    raise SystemExit(f"layers: {detail}; a footprint over two rows is noise")
+
+
+def _residual_array(rec) -> np.ndarray:
+    """One stored row as a [L, W] float64 array (capture's tensor, or a {layer: vec} dict)."""
+    if isinstance(rec, dict):
+        arr = np.stack([np.asarray(rec[k], dtype=np.float64) for k in sorted(rec, key=int)])
+    elif torch.is_tensor(rec):
+        arr = rec.detach().cpu().double().numpy()
+    else:
+        arr = np.asarray(rec, dtype=np.float64)
+    if arr.ndim != 2:
+        raise SystemExit(
+            f"layers: a residual row is {arr.ndim}-D {tuple(arr.shape)}; capture stores one "
+            f"[L, W] tensor per row, so a bare vector cannot say which layer it came from")
+    return arr
+
+
+def _label_rows(records: list[tuple], label: str) -> np.ndarray:
+    """Stack every row whose meta label is ``label`` into an [N, L, W] float64 array."""
+    rows = [_residual_array(rec) for meta, rec in records if _label(meta) == label]
+    if not rows:
+        return np.zeros((0, 0, 0), dtype=np.float64)
+    shapes = {row.shape for row in rows}
+    if len(shapes) != 1:
+        raise SystemExit(
+            f"layers: the {label!r} rows disagree on shape {sorted(shapes)}; rows from more "
+            f"than one capture or layer set cannot be scored as one footprint")
+    return np.stack(rows)
+
+
+def layer_separability(records: list[tuple], keep: float = DEFAULT_KEEP,
+                       label_bad: str = "bad", label_good: str = "good") -> dict:
+    """Per-layer harmful-vs-harmless separability from saved capture rows (COSMIC-style).
+
+    For each layer L (float64, ascending, no sampling):
+
+    * ``mu_bad``/``mu_good`` are the label means over that layer's [W] residual;
+    * ``cosine = cos(mu_bad, mu_good)`` -- anti-aligned means are what a removal axis
+      can exploit; two means pointing the same way are a topic/length confound, not an
+      edit site;
+    * ``snr = ||mu_bad - mu_good|| / (mean_bad_dist + mean_good_dist)`` -- the gap in
+      units of each label's own mean distance to its centre, so a wide harmless cloud
+      cannot buy a layer a high score just by being wide;
+    * the footprint is ``min-max`` over the layers whose snr clears ``keep`` times the
+      strongest layer's snr, i.e. exactly the ``a-b`` string ``tune --footprints`` takes;
+    * a uniform score sets ``flat: true``: the band then covers the whole capture and
+      is not a target, so the flat flag exists instead of pretending the band located
+      something.
+
+    The returned payload holds no timestamps and nothing sampled, so the same records
+    always produce the same bytes and the same sha256.
+    """
+    if not 0.0 < keep <= 1.0:
+        raise SystemExit(f"layers: --keep {keep} is outside (0, 1]; the keep line is a "
+                         f"fraction of the strongest layer's snr")
+    bad = _label_rows(records, label_bad)
+    good = _label_rows(records, label_good)
+    for label, rows in ((label_bad, bad), (label_good, good)):
+        if len(rows) < MIN_ROWS_PER_LABEL:
+            _footprint_refusal(
+                f"{len(rows)} row(s) labelled {label!r} (need >= {MIN_ROWS_PER_LABEL})")
+    if bad.shape[1:] != good.shape[1:]:
+        raise SystemExit(f"layers: label {label_bad!r} is [L,W] {bad.shape[1:]}, label "
+                         f"{label_good!r} is {good.shape[1:]}; the two labels were not "
+                         f"captured over the same layers and width")
+    n_layers, width = int(bad.shape[1]), int(bad.shape[2])
+    if n_layers < MIN_LAYERS:
+        _footprint_refusal(f"the capture holds {n_layers} layers (need >= {MIN_LAYERS})")
+
+    mu_bad, mu_good = bad.mean(axis=0), good.mean(axis=0)
+    scored = []
+    for index in range(n_layers):
+        b, g = mu_bad[index], mu_good[index]
+        norm_b, norm_g = float(np.linalg.norm(b)), float(np.linalg.norm(g))
+        cosine = (float(np.clip(b @ g / (norm_b * norm_g), -1.0, 1.0))
+                  if norm_b and norm_g else 0.0)
+        bad_dist = float(np.linalg.norm(bad[:, index, :] - b, axis=1).mean())
+        good_dist = float(np.linalg.norm(good[:, index, :] - g, axis=1).mean())
+        gap = float(np.linalg.norm(b - g))
+        spread = bad_dist + good_dist
+        scored.append({"layer": index, "snr": gap / spread if spread else 0.0,
+                       "cosine": cosine, "gap": gap,
+                       "bad_dist": bad_dist, "good_dist": good_dist})
+
+    snrs = np.array([row["snr"] for row in scored], dtype=np.float64)
+    peak = float(snrs.max())
+    if peak <= 0.0:
+        _footprint_refusal(
+            f"every layer scores snr 0 over {n_layers} layers: the two label means are the "
+            f"same point at each label's own spread, so no layer separates them")
+
+    keep_line = keep * peak
+    in_band = [row["layer"] for row in scored if row["snr"] >= keep_line]
+    ranked = sorted(range(n_layers), key=lambda index: (-snrs[index], index))
+    for rank, index in enumerate(ranked, start=1):
+        scored[index]["rank"] = rank
+    return {
+        "rows": {label_bad: int(len(bad)), label_good: int(len(good))},
+        "n_layers": n_layers,
+        "width": width,
+        "keep": float(keep),
+        "max_snr": peak,
+        "min_snr": float(snrs.min()),
+        "spread": peak - float(snrs.min()),
+        "keep_line": keep_line,
+        "footprint": f"{min(in_band)}-{max(in_band)}",
+        "flat": bool(np.allclose(snrs, snrs[0], rtol=1e-9, atol=1e-15)),
+        "ranked": ranked,
+        "layers": scored,
+    }
+
+
+def _print_layer_scores(payload: dict, digest: str, out: str | None = None) -> None:
+    """The human read: the band, every layer's snr/cosine/rank, and the payload sha256."""
+    note = ("  (flat: the score is uniform, so the band is the whole capture, not a target)"
+            if payload["flat"] else "")
+    print(f"footprint {payload['footprint']}{note}")
+    print(f"{'layer':>5} {'snr':>10} {'cosine':>8} {'rank':>5}  in-band")
+    for row in payload["layers"]:
+        print(f"{row['layer']:>5} {row['snr']:>10.6f} {row['cosine']:>8.4f} "
+              f"{row['rank']:>5}  {'yes' if row['snr'] >= payload['keep_line'] else 'no'}")
+    rows = payload["rows"]
+    print(f"rows bad {rows['bad']} good {rows['good']}; layers {payload['n_layers']} "
+          f"width {payload['width']}; keep {payload['keep']:g} x max snr "
+          f"{payload['max_snr']:.6f} = keep line {payload['keep_line']:.6f}")
+    print(f"snr min {payload['min_snr']:.6f} max {payload['max_snr']:.6f} "
+          f"spread {payload['spread']:.6f}; ranked {payload['ranked']}")
+    print(f"sha256 {digest}" + (f"  (payload written to {out})" if out else ""))
+
+
+def _synthetic_capture(amps: list[float], n_layers: int = 24, width: int = 16,
+                       n_rows: int = 6, spread: float = 0.01,
+                       label_bad: str = "bad", label_good: str = "good") -> list[tuple]:
+    """Deterministic capture with a known answer: ``amps[L]`` pushes the two label means
+    apart along layer L's own unit axis, and every row carries the same symmetric spread.
+
+    No RNG. The per-row offsets are symmetric halves, so their mean is exactly zero and
+    the spread term cancels out of each label mean: snr[L] is exactly
+    ``amps[L] / (mean|offset| * spread)``, which makes a self-check failure a math
+    failure rather than a dice roll.
+    """
+    offsets = np.arange(n_rows, dtype=np.float64) - (n_rows - 1) / 2.0
+    spread_axis = np.arange(1.0, width + 1.0)
+    spread_axis /= np.linalg.norm(spread_axis)
+    records = []
+    for label, sign in ((label_bad, 1.0), (label_good, -1.0)):
+        for row_index, offset in enumerate(offsets):
+            row = np.zeros((n_layers, width), dtype=np.float64)
+            for layer, amp in enumerate(amps):
+                direction = np.zeros(width, dtype=np.float64)
+                direction[layer % width] = 1.0
+                row[layer] = sign * amp * direction + offset * spread * spread_axis
+            records.append(({"label": label, "row": row_index}, row))
+    return records
+
+
+def self_check() -> None:
+    """Two synthetic captures with known answers; no records file read, no model, no GPU.
+
+    (a) bad/good means anti-aligned only on layers 5-7: the footprint must be exactly
+        ``5-7`` and every other layer must sit below the keep line;
+    (b) equal snr on every layer: the band is the whole capture (``0-<last>``) and
+        ``flat`` is true, so a uniform score cannot masquerade as a located band.
+
+    A third check scores (a) twice and compares the payloads, because the score is a
+    closed-form read: two runs over the same rows must be byte-identical.
+    """
+    n_layers = 24
+    planted = [1.0 if 5 <= layer <= 7 else 0.0 for layer in range(n_layers)]
+    report = layer_separability(_synthetic_capture(planted), keep=DEFAULT_KEEP)
+    above = [row["layer"] for row in report["layers"] if row["snr"] >= report["keep_line"]]
+    off_band = [row["snr"] for row in report["layers"] if not 5 <= row["layer"] <= 7]
+    repeat = layer_separability(_synthetic_capture(planted), keep=DEFAULT_KEEP)
+    checks = [
+        ("planted layers 5-7 are the only ones over the keep line", above == [5, 6, 7]),
+        ("footprint is exactly 5-7", report["footprint"] == "5-7"),
+        ("every other layer is below the keep line", max(off_band) < report["keep_line"]),
+        ("a planted band is not flagged flat", report["flat"] is False),
+        ("two runs over the same rows produce the same payload",
+         json.dumps(report, sort_keys=True) == json.dumps(repeat, sort_keys=True)),
+    ]
+    uniform = layer_separability(_synthetic_capture([1.0] * n_layers), keep=DEFAULT_KEEP)
+    checks += [
+        ("a uniform score covers the whole capture",
+         uniform["footprint"] == f"0-{n_layers - 1}"),
+        ("a uniform score is flagged flat", uniform["flat"] is True),
+    ]
+    failed = [name for name, ok in checks if not ok]
+    for name, ok in checks:
+        print(f"self-check {'PASS' if ok else 'FAIL'} {name}")
+    if failed:
+        raise SystemExit(f"layers --self-check: {len(failed)} check(s) failed: {failed}")
+    print(f"self-check PASS planted footprint {report['footprint']} "
+          f"(keep line {report['keep_line']:.6f}, other layers 0.0), "
+          f"uniform footprint {uniform['footprint']} flat={uniform['flat']}")
 
 
 # ---------- edit ----------
@@ -481,9 +703,37 @@ def main(argv=None):
     r.add_argument("--min-norm", type=float, default=0.15,
                    help="zero a layer's axis if less than this fraction survives")
     r.add_argument("--out", required=True)
+    s = sub.add_parser("layers",
+                       help="score harmful-vs-harmless separability per layer from saved "
+                            "capture records; emits the band `tune --footprints` can take")
+    s.add_argument("--records", help="saved capture records (spanfit record format)")
+    s.add_argument("--out", help="write the scored payload here (JSON); the sha256 printed "
+                                 "is of exactly these bytes")
+    s.add_argument("--keep", type=float, default=DEFAULT_KEEP,
+                   help=f"keep line as a fraction of the strongest layer's snr "
+                        f"(default {DEFAULT_KEEP:g})")
+    s.add_argument("--self-check", action="store_true",
+                   help="synthetic captures with known answers: a planted 5-7 band must be "
+                        "found, and a uniform score must come back flat")
     for p in (a, m, r):
         p.add_argument("--time-log", help="JSONL ledger; logs fit/merge phases")
     args = ap.parse_args(argv)
+
+    if args.cmd == "layers":
+        if args.self_check:
+            return self_check()
+        if not args.records:
+            raise SystemExit(
+                "layers needs --records PATH (a saved capture) or --self-check: the score is a "
+                "read of records already on disk, not a model run")
+        payload = layer_separability(load_records(args.records), keep=args.keep)
+        blob = (json.dumps(payload, indent=1) + "\n").encode()
+        if args.out:
+            os.makedirs(os.path.dirname(os.path.abspath(args.out)), exist_ok=True)
+            with open(args.out, "wb") as handle:
+                handle.write(blob)
+        _print_layer_scores(payload, hashlib.sha256(blob).hexdigest(), args.out)
+        return
 
     if args.cmd == "targets":
         print(json.dumps(gguf_targets(args.gguf_in), indent=1))
