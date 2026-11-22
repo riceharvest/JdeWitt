@@ -1,0 +1,49 @@
+{
+  "seed": 42,
+  "splits": {
+    "selection": [
+      {
+        "id": "strongreject",
+        "dataset": "walledai/StrongREJECT",
+        "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+        "split": "train",
+        "column": "prompt",
+        "category": {
+          "column": "category"
+        },
+        "kind": "refusal",
+        "language": "en",
+        "offset": 0,
+        "limit": 157,
+        "family": {
+          "strategy": "column",
+          "column": "category",
+          "group": "strongreject-sel"
+        },
+        "stride": 2
+      }
+    ],
+    "holdout": [
+      {
+        "id": "strongreject",
+        "dataset": "walledai/StrongREJECT",
+        "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+        "split": "train",
+        "column": "prompt",
+        "category": {
+          "column": "category"
+        },
+        "kind": "refusal",
+        "language": "en",
+        "offset": 1,
+        "limit": 156,
+        "family": {
+          "strategy": "column",
+          "column": "category",
+          "group": "strongreject-hold"
+        },
+        "stride": 2
+      }
+    ]
+  }
+}

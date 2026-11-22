@@ -129,6 +129,21 @@ def build_parser():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
+    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --remap on|off decodes with the bias applied or withheld')
+    vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
+    vremap.add_argument('--dry-run',action='store_true',help='Plan per-step suppression/forced replacement over probes with a live llama-server /tokenize; audits declining base answers')
+    vremap.add_argument('--suite',type=Path,help='Probe JSONL for --dry-run (one row per line with id and prompt)')
+    vremap.add_argument('--probes',type=Path,help='Directory of probe JSONL files for --dry-run')
+    vremap.add_argument('--base-answers',type=Path,action='append',default=[],help='Prediction JSONL to audit for coverage (repeatable; default is the in-clone base waves)')
+    vremap.add_argument('--port',type=int,action='append',default=[],help='llama-server port, paired with each --artifact in order')
+    vremap.add_argument('--table',type=Path,help='Table JSON override; default is the packaged assets/vocab-remap-denial.json')
+    vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
+    vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
+    vremap.add_argument('--remap',choices=['on','off'],help='Decode driver: apply the table bias (on) or run the identical loop with no bias (off); writes rows.jsonl and run.json under --out')
+    vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log)')
+    vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
+    vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
+    vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -376,8 +391,10 @@ def build_parser():
     import_suite=sub.add_parser('import-suite',help='Build suites from public prompt corpora with recorded provenance')
     import_suite.add_argument('spec',type=Path)
     import_suite.add_argument('--output',type=Path,required=True)
+    import_suite.add_argument('--provenance',type=Path,help='Canonical public-corpora census; stamps every row with its source and licence')
     validate_import_parser=sub.add_parser('validate-import',help='Check an import spec and local files; no downloads, no writes')
     validate_import_parser.add_argument('spec',type=Path)
+    validate_import_parser.add_argument('--provenance',type=Path,help='Canonical public-corpora census to resolve every source against')
     run=sub.add_parser('run',help='Run a resumable experiment through sealed quantized certification')
     run.add_argument('config',type=Path)
     run.add_argument('--set',action='append',default=[],metavar='FIELD=VALUE',
@@ -387,6 +404,14 @@ def build_parser():
     verify=sub.add_parser('verify-release',help='Verify a finished release using only file reads, no models')
     verify.add_argument('directory',type=Path)
     verify.add_argument('--expected-identity')
+    assemble=sub.add_parser('release-assemble',help='Assemble the phase-6 release (adapter + merged twin + plan card + their labels); refuses a bare pre-quantized model')
+    assemble.add_argument('directory',type=Path)
+    assemble.add_argument('--adapter',type=Path,help='shipped LoRA adapter GGUF, a first-class release file')
+    assemble.add_argument('--twin',type=Path,required=True,help='merged twin GGUF: the bytes that ship, not the adapter curve')
+    assemble.add_argument('--plan',type=Path,help='digest-pinned plan-bundle tar for the fitted plan (plan-bundle output)')
+    assemble.add_argument('--adapter-card',type=Path,help='adapter.json: the R8 label for --adapter')
+    assemble.add_argument('--evaluation',type=Path,help='evaluation record JSON (one half of the release identity)')
+    assemble.add_argument('--readme',type=Path,help='README.md shipped in the release (the other identity half)')
     claims=sub.add_parser('release-claims',help='Read a release evidence ledger (claims, evidence, chain digest)')
     claims.add_argument('directory',type=Path)
     certify=sub.add_parser('release-certify',help='Assemble one Phase 7 certification packet per arm from saved waves; no model')
@@ -659,6 +684,10 @@ def main():
         elif args.command=='adapter-card':
             from .adapter_card import build_adapter_card
             result=build_adapter_card(args.adapter,args.base,args.twin,args.out,args.scale)
+        elif args.command=='release-assemble':
+            from .release import assemble_release
+            result=assemble_release(args.directory,args.adapter,args.twin,args.plan,
+                                    args.adapter_card,args.evaluation,args.readme)
         elif args.command=='verify':
             from .verify import verify_files
             result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)
@@ -767,13 +796,34 @@ def main():
         elif args.command in {'import-suite','validate-import'}:
             from .sources import import_suites,validate_import
             spec=json.loads(args.spec.read_text())
-            result=validate_import(spec) if args.command=='validate-import' else import_suites(spec,args.output)
+            result=validate_import(spec,args.provenance) if args.command=='validate-import' else import_suites(spec,args.output,args.provenance)
         elif args.command=='methods':
             from .methods import method_catalog
             result=method_catalog()
         elif args.command=='architectures':
             from .architectures import architecture_catalog
             result=architecture_catalog()
+        elif args.command=='vocab-remap':
+            modes=[bool(args.list),bool(args.dry_run),args.remap is not None]
+            if sum(modes)!=1:
+                raise ValueError('pass exactly one of --list, --dry-run or --remap on|off')
+            if args.remap is not None:
+                from .vocabremap import vocab_remap_decode
+                if len(args.artifact)!=1:
+                    raise ValueError('--remap needs exactly one --artifact GGUF')
+                result=vocab_remap_decode(table=args.table,artifact=args.artifact[0],suite=args.suite,out=args.out,
+                                          remap=args.remap,max_tokens=args.max_tokens,serve=args.serve,
+                                          port=(args.port[0] if args.port else None),template=args.template)
+                exit_code=0 if result['verdict']['ok'] else 1
+            elif args.dry_run:
+                from .vocabremap import vocab_remap_dry_run
+                result=vocab_remap_dry_run(table=args.table,suite=args.suite,probes=args.probes,
+                                           artifacts=args.artifact,ports=args.port,json_out=args.json,
+                                           base_answers=args.base_answers or None)
+                exit_code=0 if not result['rules_that_can_never_fire'] else 1
+            else:
+                from .vocabremap import vocab_remap_list
+                result=vocab_remap_list(table=args.table,artifacts=args.artifact,list_mode=args.list,json_out=args.json)
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)

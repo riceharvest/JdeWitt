@@ -1,0 +1,9 @@
+{
+  "artifact": "ggml-vocab-gpt-2.gguf",
+  "kind": "vocab-only GGUF tokenizer fixture",
+  "source": "llama.cpp test vocabulary file models/ggml-vocab-gpt-2.gguf",
+  "sha256": "cedc56ca6e2e89f63e781696d1fd76b4b1d49e6720dee86463e915f6e90016ac",
+  "size_bytes": 1766807,
+  "license": "The fixture is distributed with llama.cpp, which is MIT-licensed; it carries the GPT-2 byte-level BPE vocabulary and merges (OpenAI GPT-2 tokenizer files) and no model weights.",
+  "purpose": "Third tokenizer for vocab-remap: a 50257-token byte-level BPE whose vocabulary splits 'cannot' as 'c' + 'annot', unlike the two model artifacts where the word is one token."
+}

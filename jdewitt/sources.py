@@ -458,6 +458,9 @@ def source_rows(source, split):
         raise ValueError('offset must be a nonnegative integer')
     if limit is not None and (type(limit) is not int or limit < 1):
         raise ValueError('limit must be a positive integer or omitted')
+    stride = source.get('stride', 1)
+    if type(stride) is not int or stride < 1:
+        raise ValueError('stride must be a positive integer or omitted')
     if kind == 'direction' and source.get('label') not in {'good', 'bad'}:
         raise ValueError('Direction sources require an explicit good/bad label')
     if kind in {'math', 'code'} and 'dataset' in source:
@@ -475,7 +478,8 @@ def source_rows(source, split):
         raise ValueError('Each source needs either a dataset or a path')
     if 'where' in source:
         records = apply_where(records, source['where'])
-    selected = records[offset:] if limit is None else records[offset:offset + limit]
+    window = records[offset:][::stride]
+    selected = window if limit is None else window[:limit]
     if not selected:
         raise ValueError(f'Source {source["id"]!r} selected no rows')
     if 'template' in source:
@@ -519,13 +523,71 @@ def source_rows(source, split):
         rows.append(row)
     family_count = len({family for family in families if family})
     provenance = {**provenance, 'id': source['id'], 'kind': kind, 'split': split, 'offset': offset,
-                  'limit': limit, 'rows_used': len(rows), 'duplicates_dropped': dropped,
+                  'limit': limit, **({'stride': stride} if stride != 1 else {}),
+                  'rows_used': len(rows), 'duplicates_dropped': dropped,
                   'family_strategy': source['family']['strategy'] if origin else None,
                   'family_origin': origin, 'family_count': family_count}
     return rows, provenance
 
 
-def import_suites(spec, output):
+CENSUS_FORMAT = 'jdewitt-public-corpora/1'
+
+
+def load_census(path):
+    """Read the canonical public-corpora inventory.
+
+    The census is the only place a source's licence and revision are declared.
+    ``--provenance`` makes every imported row carry that declaration, so a wave
+    can be re-run against exactly the prompts a competitor used and the licence
+    travels with the artifact instead of living in a README.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise ValueError(f'Missing provenance census: {path}')
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as error:
+        raise ValueError(f'Provenance census is not valid JSON: {error}') from error
+    if not isinstance(data, dict) or data.get('format') != CENSUS_FORMAT:
+        raise ValueError(f'Provenance census must declare format {CENSUS_FORMAT!r}')
+    sources = data.get('sources')
+    if not isinstance(sources, list) or not sources:
+        raise ValueError('Provenance census needs a nonempty sources list')
+    entries = {}
+    for entry in sources:
+        if not isinstance(entry, dict) or not isinstance(entry.get('id'), str) or not entry['id'].strip():
+            raise ValueError('Every census source needs a nonempty id')
+        if entry['id'] in entries:
+            raise ValueError(f'Duplicate census source id {entry["id"]!r}')
+        if not isinstance(entry.get('license'), str) or not entry['license'].strip():
+            raise ValueError(f'Census source {entry["id"]!r} states no licence; '
+                             f'it cannot be imported until one is recorded')
+        entries[entry['id']] = entry
+    return {'path': str(path), 'sha256': _file_sha256(path),
+            'generated': data.get('generated'), 'sources': entries}
+
+
+def _census_entry(census, source):
+    entry = census['sources'].get(source['id']) if census else None
+    if census is not None and entry is None:
+        raise ValueError(f'Source {source["id"]!r} is not in the provenance census; '
+                         f'every imported row needs a recorded source and licence')
+    if entry is None:
+        return None
+    if 'dataset' in source:
+        if entry.get('dataset') != source['dataset']:
+            raise ValueError(f'Census dataset for {source["id"]!r} is {entry.get("dataset")!r}, '
+                             f'spec says {source["dataset"]!r}')
+        if entry.get('revision') != source.get('revision'):
+            raise ValueError(f'Census revision for {source["id"]!r} is {entry.get("revision")!r}, '
+                             f'spec says {source.get("revision")!r}')
+    elif not source.get('passthrough'):
+        raise ValueError(f'Census source {source["id"]!r} cannot be imported from a local path '
+                         f'unless it is an authored passthrough')
+    return entry
+
+
+def import_suites(spec, output, provenance_path=None):
     """Write the declared splits. The operator chooses every split, never the tool."""
     if not isinstance(spec, dict) or set(spec) - {'seed', 'splits', 'dedupe'} or not {'seed', 'splits'} <= set(spec):
         raise ValueError('Import spec requires exactly seed and splits, plus optional dedupe')
@@ -534,11 +596,13 @@ def import_suites(spec, output):
     declared = spec['splits']
     if not isinstance(declared, dict) or not declared or set(declared) - set(SPLITS):
         raise ValueError(f'splits must be a nonempty mapping using {list(SPLITS)}')
+    census = load_census(provenance_path) if provenance_path else None
     output = Path(output)
     if output.exists() and any(output.iterdir()):
         raise FileExistsError(f'Import output must be empty: {output}')
     output.mkdir(parents=True, exist_ok=True)
     collected, provenance = {}, []
+    unlicensed = []
     for split in SPLITS:
         if split not in declared:
             continue
@@ -547,7 +611,23 @@ def import_suites(spec, output):
             raise ValueError(f'Split {split!r} needs a nonempty source list')
         rows = []
         for source in sources:
+            entry = _census_entry(census, source)
             produced, record = source_rows(source, split)
+            if entry is not None:
+                licence = entry['license']
+                for row in produced:
+                    row['source'] = source['id']
+                    row['license'] = licence
+                record['license'] = licence
+                if licence == 'unstated':
+                    unlicensed.append(source['id'])
+                record['census'] = {key: entry.get(key) for key in
+                                    ('dataset', 'revision', 'license', 'license_url', 'url',
+                                     'languages', 'structure', 'pairing', 'referenced_by', 'vendored')}
+            elif source.get('passthrough') and census is not None:
+                for row in produced:
+                    row['source'] = source['id']
+                    row['license'] = 'authored'
             rows.extend(produced)
             provenance.append(record)
         collected[split] = rows
@@ -583,16 +663,22 @@ def import_suites(spec, output):
               'not_checked': ['that a synthetic row grouping is a genuine topic family',
                               'that the imported prompts are harmful to this model',
                               'token budgets', 'model fit', 'refusal wording in the imported corpus']}
+    if census is not None:
+        report['census'] = {'path': census['path'], 'sha256': census['sha256'],
+                            'generated': census['generated'],
+                            'sources': len(census['sources'])}
+        report['unlicensed_sources'] = sorted(set(unlicensed))
     atomic_json(output / 'import-provenance.json', report)
     return report
 
 
-def validate_import(spec):
+def validate_import(spec, provenance_path=None):
     """Spec-shape and local-file checks only. No downloads, no writes."""
     if not isinstance(spec, dict) or set(spec) - {'seed', 'splits', 'dedupe'} or not {'seed', 'splits'} <= set(spec):
         raise ValueError('Import spec requires exactly seed and splits, plus optional dedupe')
     if type(spec['seed']) is not int:
         raise ValueError('Import spec seed must be an integer')
+    census = load_census(provenance_path) if provenance_path else None
     dedupe = spec.get('dedupe')
     if dedupe is not None and (not isinstance(dedupe, dict) or set(dedupe) - {'jaccard', 'min_family_size'}
                                or 'jaccard' not in dedupe or not 0 < dedupe['jaccard'] <= 1):
@@ -623,12 +709,25 @@ def validate_import(spec):
             if (not source.get('passthrough') and 'column' not in source and 'template' not in source
                     and 'list_column' not in source):
                 raise ValueError('Each corpus source needs a prompt column, list_column or template')
+            if 'offset' in source and (type(source['offset']) is not int or source['offset'] < 0):
+                raise ValueError('offset must be a nonnegative integer')
+            if 'limit' in source and (type(source['limit']) is not int or source['limit'] < 1):
+                raise ValueError('limit must be a positive integer')
+            if 'stride' in source and (type(source['stride']) is not int or source['stride'] < 1):
+                raise ValueError('stride must be a positive integer')
+            entry = _census_entry(census, source)
             checked.append({'split': split, 'id': source.get('id'), 'kind': source.get('kind'),
                             'remote': 'dataset' in source, 'passthrough': bool(source.get('passthrough')),
-                            'category': 'category' in source})
+                            'category': 'category' in source,
+                            'license': entry['license'] if entry else
+                                       ('authored' if source.get('passthrough') else None)})
     return {'status': 'metadata-valid', 'splits': sorted(declared), 'sources': len(checked),
             'remote_sources': sum(entry['remote'] for entry in checked),
             'categorised_sources': sum(entry['category'] for entry in checked),
+            'provenance_census': None if census is None else {
+                'path': census['path'], 'sha256': census['sha256'],
+                'sources': len(census['sources'])},
+            'every_source_licensed': all(entry['license'] for entry in checked),
             'dedupe': dedupe, 'sources_checked': checked,
             'downloads_performed': False, 'output_created': False,
             'not_checked': ['dataset availability and file layout', 'prompt harmfulness',

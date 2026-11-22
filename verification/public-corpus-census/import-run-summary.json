@@ -1,0 +1,67 @@
+{
+  "command": "jdewitt import-suite examples/public-corpus/census-strongreject.json --output verification/public-corpus-census/import-run --provenance verification/public-corpus-census/sources.json",
+  "census": {
+    "path": "verification/public-corpus-census/sources.json",
+    "sha256": "df69d2b3312c1efee7ec135f6126aa815959e84aa21adbf69fd4a1e333c9981e",
+    "sources": 19
+  },
+  "splits": {
+    "selection": {
+      "path": "verification/public-corpus-census/import-run/selection.jsonl",
+      "tasks": 157,
+      "digest": "2078b7e91cff3046625fd08aac28507bbcdd60f2baf5c5177b8ff53422ab849a"
+    },
+    "holdout": {
+      "path": "verification/public-corpus-census/import-run/holdout.jsonl",
+      "tasks": 156,
+      "digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a"
+    }
+  },
+  "sources": [
+    {
+      "id": "strongreject",
+      "dataset": "walledai/StrongREJECT",
+      "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "603aa76bc6d546fc66da1dd5f170e775daa14cbba92ff32d56261987f1eb80e4",
+      "license": "mit",
+      "kind": "refusal",
+      "split": "selection",
+      "offset": 0,
+      "limit": 157,
+      "stride": 2,
+      "rows_used": 157,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 6
+    },
+    {
+      "id": "strongreject",
+      "dataset": "walledai/StrongREJECT",
+      "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+      "file": "data/train-00000-of-00001.parquet",
+      "file_sha256": "603aa76bc6d546fc66da1dd5f170e775daa14cbba92ff32d56261987f1eb80e4",
+      "license": "mit",
+      "kind": "refusal",
+      "split": "holdout",
+      "offset": 1,
+      "limit": 156,
+      "stride": 2,
+      "rows_used": 156,
+      "duplicates_dropped": 0,
+      "family_strategy": "column",
+      "family_origin": "source-column",
+      "family_count": 6
+    }
+  ],
+  "every_row_has_source_and_license": true,
+  "unlicensed_sources": [],
+  "not_checked": [
+    "that a synthetic row grouping is a genuine topic family",
+    "that the imported prompts are harmful to this model",
+    "token budgets",
+    "model fit",
+    "refusal wording in the imported corpus"
+  ]
+}
