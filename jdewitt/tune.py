@@ -42,6 +42,39 @@ DEFAULT_SERVE = '/mnt/ssd/dev workspace/llama.cpp-dspark/build-cuda/bin/llama-se
 SCREEN_TOKENS_PER_ROW = 280
 
 
+def parse_footprints(spec, first, last):
+    """'all' or comma-separated 'start-end' ranges, clamped to the editable layers.
+
+    The layer footprint is the strongest damage lever measured on this repo's
+    lineages (an edit that reaches the first blocks collapses generation), and it
+    costs ZERO generated tokens to search: each footprint is just another adapter.
+    """
+    ranges = []
+    for piece in (spec or 'all').split(','):
+        piece = piece.strip()
+        if not piece:
+            continue
+        if piece == 'all':
+            ranges.append((first, last))
+            continue
+        try:
+            start_text, end_text = piece.split('-')
+            start, end = int(start_text), int(end_text)
+        except ValueError as error:
+            raise ValueError(f'--footprints wants "all" or start-end ranges, got {piece!r}') from error
+        if start > end:
+            raise ValueError(f'--footprints range {piece!r} starts after it ends')
+        ranges.append((max(start, first), min(end, last)))
+    unique = sorted({item for item in ranges if item[0] <= item[1]})
+    if not unique:
+        raise ValueError(f'--footprints {spec!r} selects no layer inside the edit {first}-{last}')
+    return unique
+
+
+def footprint_label(layers, first, last):
+    return 'all' if (layers[0], layers[1]) == (first, last) else f'{layers[0]}-{layers[1]}'
+
+
 def derive_corpora(args, records, out_dir):
     """The three probe corpora, DERIVED from the model being edited.
 
@@ -281,18 +314,23 @@ def tune_command(args):
     layers = sorted(discovered['targets'])
     covered = layers[: int(axes_by_shape[shapes_requested[0]].shape[0])]
     arch = _read_arch(args.gguf)
+    first_layer, last_layer = covered[0], covered[-1]
+    footprints = parse_footprints(args.footprints, first_layer, last_layer)
+    families = [{'shape': shape, 'layers': list(footprint),
+                 'key': f'{shape}|{footprint_label(footprint, first_layer, last_layer)}'}
+                for shape in shapes_requested for footprint in footprints]
 
-    # One dequant pass over the artifact feeds every shape's adapter. One reused
+    # One dequant pass over the artifact feeds every family's adapter. One reused
     # GGUFReader, not one per tensor: 48 fresh header parses cost ~400 s on the
     # 4B artifacts where a reused reader costs ~11 s. The adapters themselves are
     # cached: they are a deterministic function of (artifact bytes, records bytes,
-    # shapes, axes width), so an iteration pays the dequant pass ONCE per model.
+    # families, axes width), so an iteration pays the dequant pass ONCE per model.
     fit_identity = {'artifact_bytes': Path(args.gguf).stat().st_size,
                     'artifact_mtime': int(Path(args.gguf).stat().st_mtime),
                     'records_bytes': Path(args.records).stat().st_size,
                     'records_mtime': int(Path(args.records).stat().st_mtime),
-                    'shapes': shapes_requested, 'width': width, 'layers': len(covered),
-                    'arch': arch}
+                    'families': [family['key'] for family in families],
+                    'width': width, 'layers': len(covered), 'arch': arch}
     adapters_path = out_dir / 'adapters.json'
     adapters = {}
     if adapters_path.is_file():
@@ -301,9 +339,9 @@ def tune_command(args):
         except (json.JSONDecodeError, OSError):
             cached = {}
         if cached.get('identity') == fit_identity:
-            for shape, entry in (cached.get('adapters') or {}).items():
+            for key, entry in (cached.get('adapters') or {}).items():
                 if Path(entry['path']).is_file():
-                    adapters[shape] = entry
+                    adapters[key] = entry
     if not adapters:
         reader = None
         try:
@@ -311,21 +349,25 @@ def tune_command(args):
             reader = GGUFReader(str(args.gguf))
         except Exception:
             reader = None
-        pairs = {shape: [] for shape in shapes_requested}
+        pairs = {family['key']: [] for family in families}
         for layer in covered:
             for name in discovered['targets'][layer]:
                 weight = torch.as_tensor(dequantize_tensor(args.gguf, name, reader=reader)).float()
-                for shape in shapes_requested:
-                    axis = axes_by_shape[shape][layer]
+                for family in families:
+                    start, end = family['layers']
+                    if not start <= layer <= end:
+                        continue
+                    axis = axes_by_shape[family['shape']][layer]
                     if float(axis.norm()) == 0.0:
                         continue
                     a, b = serve_factors(axis.reshape(1, -1), weight, 1.0)
-                    pairs[shape].append((name, a, b))
+                    pairs[family['key']].append((name, a, b))
                 del weight
-        for shape in shapes_requested:
-            if not pairs[shape]:
+        for family in families:
+            if not pairs[family['key']]:
                 continue
-            adapters[shape] = write_adapter(out_dir / f'adapter-{shape}.gguf', pairs[shape], arch)
+            name = 'adapter-' + family['key'].replace('|', '-') + '.gguf'
+            adapters[family['key']] = write_adapter(out_dir / name, pairs[family['key']], arch)
         atomic_json(adapters_path, {'identity': fit_identity, 'adapters': adapters})
 
     base = {}
@@ -368,9 +410,9 @@ def tune_command(args):
             atomic_json(ladder_path, {'identity': identity, 'readings': cache})
         return {job['key']: cache.get(job['key']) or {} for job in jobs}
 
-    def arm_jobs(shape, scale):
-        return [{'key': f'{shape}|{scale}|{label}', 'corpus': corpus,
-                 'lora': adapters[shape]['path'], 'scale': scale, 'ctx': args.ctx}
+    def arm_jobs(family, scale):
+        return [{'key': f"{family['key']}|{scale}|{label}", 'corpus': corpus,
+                 'lora': adapters[family['key']]['path'], 'scale': scale, 'ctx': args.ctx}
                 for label, corpus in corpora.items()]
 
     # Prefetch base + adapter blast + every arm any round can reach, in one batch.
@@ -378,9 +420,11 @@ def tune_command(args):
                    for index in range(args.rounds) for scale in scales})
     fetch([{'key': f'base|{label}', 'corpus': corpus, 'lora': None, 'scale': None,
             'ctx': args.ctx} for label, corpus in corpora.items()]
-          + [{'key': f'blast|{shape}', 'corpus': corpora['control'], 'lora': adapter['path'],
-              'scale': 50.0, 'ctx': args.ctx} for shape, adapter in adapters.items()]
-          + [job for shape in adapters for scale in grid for job in arm_jobs(shape, scale)])
+          + [{'key': f"blast|{family['key']}", 'corpus': corpora['control'],
+              'lora': adapters[family['key']]['path'], 'scale': 50.0, 'ctx': args.ctx}
+             for family in families if family['key'] in adapters]
+          + [job for family in families if family['key'] in adapters
+             for scale in grid for job in arm_jobs(family, scale)])
 
     for label in corpora:
         reading = cache.get(f'base|{label}') or {}
@@ -401,15 +445,18 @@ def tune_command(args):
     # Blast test before the ladder: a huge scale must move the control PPL. An
     # adapter that silently fails to apply makes every arm identical to the base,
     # which reads as a flat, confident "no effect" table -- a fake measurement.
-    for shape, adapter in adapters.items():
-        blast = cache.get(f'blast|{shape}') or {}
+    for family in families:
+        if family['key'] not in adapters:
+            raise ValueError(f"no adapter was built for {family['key']}: the axes and the "
+                             f"artifact disagree on that footprint")
+        blast = cache.get(f"blast|{family['key']}") or {}
         if 'ppl' not in blast:
-            raise ValueError(f'adapter blast test failed for {shape}: {blast}')
+            raise ValueError(f"adapter blast test failed for {family['key']}: {blast}")
         if abs(ln(blast['ppl']) - ln(base['control']['ppl'])) < 1e-6:
             raise ValueError(
-                f'the {shape} adapter changes nothing at scale 50 (control PPL '
-                f'{blast["ppl"]} vs base {base["control"]["ppl"]}): this binary is not applying '
-                f'the adapter, so a ladder over it would be a fake measurement')
+                f"the {family['key']} adapter changes nothing at scale 50 (control PPL "
+                f"{blast['ppl']} vs base {base['control']['ppl']}): this binary is not applying "
+                f"the adapter, so a ladder over it would be a fake measurement")
 
     screen_rows = []
     served = Path(args.serve or DEFAULT_SERVE) if args.token_budget > 0 else None
@@ -428,7 +475,7 @@ def tune_command(args):
         if not screen_rows:
             raise ValueError(f'{args.records} carries no harmful (bad/ambiguous) rows with a '
                              f'rendered prompt to screen; capture with --kinds refusal first')
-        adapter_ids = {shape: index for index, shape in enumerate(adapters)}
+        adapter_ids = {family['key']: index for index, family in enumerate(families)}
 
     arms, failures, rounds = [], [], []
     refined = []
@@ -469,15 +516,17 @@ def tune_command(args):
                     f'the screen server answers the same text at adapter scale 0 and 50 '
                     f'(k={blast["k"]}, {blast["tokens"]} tokens): the scale POST is not '
                     f'applying, so every arm verdict would be the UNEDITED model')
-        def measure_arm(shape, scale, round_index=0):
-            readings = fetch(arm_jobs(shape, scale))
-            row = {'shape': shape, 'scale': scale, 'round': round_index + 1, 'ppl': {}}
+        def measure_arm(family, scale, round_index=0):
+            readings = fetch(arm_jobs(family, scale))
+            row = {'shape': family['shape'], 'layers': list(family['layers']),
+                   'family': family['key'], 'scale': scale, 'round': round_index + 1,
+                   'ppl': {}}
             for label in corpora:
-                reading = readings.get(f'{shape}|{scale}|{label}') or {}
+                reading = readings.get(f"{family['key']}|{scale}|{label}") or {}
                 if 'ppl' in reading:
                     row['ppl'][label] = reading
                 else:
-                    failures.append({'shape': shape, 'scale': scale, 'corpus': label,
+                    failures.append({'family': family['key'], 'scale': scale, 'corpus': label,
                                      'error': reading.get('error'), 'tail': reading.get('tail')})
                     return None
             return _arm_metrics(row, base)
@@ -486,18 +535,18 @@ def tune_command(args):
             """Decode `rows` rows for one arm: initial window, then doubling on the
             rows still undecided, then the candidate rule at the cap.
 
-            Cached per (artifact, records, shape, scale, rows, k, cap, settle chars)
+            Cached per (artifact, records, family, scale, rows, k, cap, settle chars)
             so iterating with a bigger budget never pays twice for a decided arm.
             """
             nonlocal spent, budget_left
             key = '|'.join(str(piece) for piece in (
-                arm['shape'], arm['scale'], rows, args.screen_k, args.escalate_to,
+                arm['family'], arm['scale'], rows, args.screen_k, args.escalate_to,
                 args.settle_chars))
             if key in screens:
                 hits['screen'] += 1
                 cached_spend['tokens'] += screens[key].get('tokens') or 0
                 return screens[key]
-            adapter_id = adapter_ids[arm['shape']]
+            adapter_id = adapter_ids[arm['family']]
             reset = {index: 0.0 for index in adapter_ids.values()}
             result = screen_arm(server, screen_rows[:rows], args.screen_k,
                                 adapter_id=adapter_id, scale=arm['scale'],
@@ -536,8 +585,9 @@ def tune_command(args):
         for index in range(args.rounds):
             scale_list = [round(scale * (args.grow ** index), 3) for scale in scales]
             before_failures = len(failures)
-            round_arms = [measure_arm(shape, scale, index)
-                          for shape in adapters for scale in scale_list]
+            round_arms = [measure_arm(family, scale, index)
+                          for family in families if family['key'] in adapters
+                          for scale in scale_list]
             round_arms = [arm for arm in round_arms if arm is not None]
             round_failures = len(failures) - before_failures
             front = pareto_front(round_arms + arms, drift_budget, limit=args.front)
@@ -547,7 +597,7 @@ def tune_command(args):
                 movers = [arm for arm in round_arms + arms if (arm.get('delta_br') or 0) > 0]
                 if movers:
                     front = [min(movers, key=lambda arm: abs(arm['drift_ln']))]
-                    widened.append({'round': index + 1, 'shape': front[0]['shape'],
+                    widened.append({'round': index + 1, 'family': front[0]['family'],
                                     'scale': front[0]['scale'],
                                     'drift_ln': front[0]['drift_ln'],
                                     'budget': drift_budget})
@@ -570,12 +620,12 @@ def tune_command(args):
             arms.extend(round_arms)
             rounds.append({'round': index + 1, 'scales': scale_list,
                            'arms': len(round_arms), 'failures': round_failures,
-                           'front': [{'shape': arm['shape'], 'scale': arm['scale'],
+                           'front': [{'family': arm['family'], 'scale': arm['scale'],
                                       'drift_ln': arm['drift_ln'], 'delta_br': arm['delta_br']}
                                      for arm in front],
                            'screened': len(screened),
                            'tokens': spent,
-                           'front_states': [{'shape': arm['shape'], 'scale': arm['scale'],
+                           'front_states': [{'family': arm['family'], 'scale': arm['scale'],
                                              'screen': screen_read(arm)}
                                             for arm in arms if arm.get('screen')]})
             if screened and any(arm_is_clean(arm) for arm in screened):
@@ -611,13 +661,15 @@ def tune_command(args):
                     break
                 if budget_left < len(screen_rows) * args.screen_k:
                     break
-                arm = measure_arm(best['shape'], candidate_scale)
+                arm = measure_arm({'key': best['family'], 'shape': best['shape'],
+                                  'layers': best['layers']}, candidate_scale)
                 if arm is None:
                     break
                 arms.append(arm)
                 arm['screen'] = screen_one(arm, args.probe_rows)
                 state = screen_read(arm)
-                refined.append({'shape': arm['shape'], 'scale': arm['scale'],
+                refined.append({'family': arm['family'], 'scale': arm['scale'],
+                                'layers': arm['layers'],
                                 'drift_ln': arm['drift_ln'], 'delta_br': arm['delta_br'],
                                 'screen': state, 'tokens': arm['screen']['tokens'],
                                 'budget_left': budget_left})
@@ -642,7 +694,8 @@ def tune_command(args):
                 full = screen_one(arm, args.screen_rows)
                 arm['screen'] = full
                 state = screen_read(arm)
-                confirmed.append({'shape': arm['shape'], 'scale': arm['scale'],
+                confirmed.append({'family': arm['family'], 'scale': arm['scale'],
+                                  'layers': arm['layers'],
                                   'state': state['state'] if state else 'unknown',
                                   'tokens': full['tokens']})
                 if state and state['clean']:
@@ -656,6 +709,8 @@ def tune_command(args):
     report = {
         'artifact': str(args.gguf), 'records': str(args.records), 'arch': arch,
         'width': width, 'layers_covered': len(covered), 'shapes': shapes_requested,
+        'footprints': [list(item) for item in footprints],
+        'families': [family['key'] for family in families],
         'scales': scales, 'drift_budget': args.drift_budget,
         'drift_budget_used': drift_budget, 'drift_noise_ln': round(noise_ln, 4),
         'front_widened': widened, 'ctx_used': args.ctx,
@@ -683,7 +738,7 @@ def tune_command(args):
             'probe_rows': args.probe_rows,
             'screen_k': args.screen_k,
             'escalate_to': args.escalate_to,
-            'per_arm': {f"{arm['shape']}@{arm['scale']}": (arm.get('screen') or {}).get('tokens')
+            'per_arm': {f"{arm['family']}@{arm['scale']}": (arm.get('screen') or {}).get('tokens')
                         for arm in arms if arm.get('screen')},
             'server_load_seconds': getattr(server, 'load_seconds', None) if server else None,
             'screen_blast': blast,
@@ -717,17 +772,46 @@ def tune_command(args):
             'budget for, and a tone-only table means the edit does not target the branch.')
     atomic_json(out_dir / 'tune.json', report)
 
-    merge_command = (f'python -m jdewitt.spanfit build --gguf-in {args.gguf} --in-place '
-                     f'--records {args.records} --shape <shape> --scale <scale> --gguf-targets auto')
+    def merge_command(arm=None):
+        layers_flag = ''
+        if arm is not None and arm['layers'] != [first_layer, last_layer]:
+            layers_flag = f" --only-layers {arm['layers'][0]}-{arm['layers'][1]}"
+        return (f"python -m jdewitt.spanfit build --gguf-in {args.gguf} --in-place "
+                f"--records {args.records} --shape {arm['shape'] if arm else '<shape>'} "
+                f"--scale {arm['scale'] if arm else '<scale>'}{layers_flag} --gguf-targets auto")
+
+    def cert_steps(arm):
+        """What turns this pick into a claim: the merge, then ONE cert wave.
+
+        tune ranks; it never certifies. The screen verdict on the shipped arm is a
+        candidate list, so the next steps are the merge and a short cascade over the
+        merged bytes at ONE pinned serve config -- the agent reads those answers
+        (R2/R8/R9), and the reversed rows are the ones the screen left open.
+        """
+        state = screen_read(arm) or {}
+        return [
+            f'# screen verdict on {arm["family"]}@arm scale {arm["scale"]}: '
+            f'{state.get("state")} ({arm["screen"]["verdicts"]})',
+            f'python scripts/cascade_verify.py --gguf {args.gguf} --suite '
+            f'verification/harsh-suites/holdout.jsonl --k 150 --cap 600  # agent reads the '
+            f'escalations; certify at ONE serve config and record the argv',
+        ]
     if winner is None or args.no_verify:
-        report['next'] = [merge_command.replace('<shape>', str(winner['shape'])).replace(
-            '<scale>', str(winner['scale'])) if winner else merge_command]
+        report['next'] = [merge_command(winner)]
+        if winner is not None:
+            report['next'] += cert_steps(winner)
         atomic_json(out_dir / 'tune.json', report)
         return report
 
     # R8: re-measure the winner on the merged bytes, then put the artifact back
     # unless the caller asked to keep the edit.
-    merged = build_merged(str(args.gguf), str(args.gguf), axes_by_shape[winner['shape']],
+    # The axes are masked to the winning footprint: build_merged skips zero-norm
+    # layers, so a footprint edit never touches bytes outside its own range.
+    winner_axes = axes_by_shape[winner['shape']].clone()
+    start, end = winner['layers']
+    winner_axes[:start] = 0
+    winner_axes[end + 1:] = 0
+    merged = build_merged(str(args.gguf), str(args.gguf), winner_axes,
                           [], name_map={name: name for layer in covered
                                         for name in discovered['targets'][layer]},
                           scale=winner['scale'], axis_space=args.axis_space, in_place=True)
@@ -748,15 +832,14 @@ def tune_command(args):
     revert = merged.get('revert_sidecar')
     if args.keep_merged:
         report['next'] = [
-            f'# artifact now carries {winner["shape"]} axis at scale {winner["scale"]}',
+            f'# artifact now carries {winner["family"]} at scale {winner["scale"]}',
             'python scripts/cascade_verify.py ... (agent shape read is the certification, R2)',
         ]
     else:
         if revert:
             revert_inplace(args.gguf, revert)
             report['merged_verification']['reverted'] = True
-        report['next'] = [merge_command.replace('<shape>', str(winner['shape'])).replace(
-            '<scale>', str(winner['scale']))]
+        report['next'] = [merge_command(winner)]
     report['cert_token_estimate'] = {
         'rows': 200, 'per_row': SCREEN_TOKENS_PER_ROW,
         'total': 200 * SCREEN_TOKENS_PER_ROW,

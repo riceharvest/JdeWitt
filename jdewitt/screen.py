@@ -197,10 +197,25 @@ def rows_to_screen(records, kinds=('refusal',), limit=None):
         if not prompt:
             continue
         rows.append({'id': meta.get('id'), 'prompt': prompt,
-                     'label': meta.get('label'), 'shape': meta.get('shape')})
-        if limit and len(rows) >= limit:
-            break
-    return rows
+                     'label': meta.get('label'), 'shape': meta.get('shape'),
+                     'family_id': meta.get('family_id')})
+    # Row ORDER is a measurement choice: the elimination probe decodes ONE row, so
+    # that row must not be one arbitrary family. Interleave families (round robin,
+    # deterministic) so any prefix of the screen spans as many families as the fit
+    # records hold -- a one-row probe then reads as a sample, not a coincidence.
+    buckets, order = {}, []
+    for row in rows:
+        key = row.get('family_id') or row['id']
+        if key not in buckets:
+            buckets[key] = []
+            order.append(key)
+        buckets[key].append(row)
+    interleaved = []
+    while any(buckets[key] for key in order):
+        for key in order:
+            if buckets[key]:
+                interleaved.append(buckets[key].pop(0))
+    return interleaved[:limit] if limit else interleaved
 
 
 def mark_candidates(result, chars=300):

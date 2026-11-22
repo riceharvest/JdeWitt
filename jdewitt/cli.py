@@ -416,6 +416,7 @@ def main():
     tune.add_argument('--delivery',default=None,help='delivery-continuation corpus (default: derived from the model\'s own compliant answers)')
     tune.add_argument('--corpus-chars',type=int,default=1500,help='characters per derived corpus: this is what keeps one reading at a few seconds, so the loop iterates in about a minute')
     tune.add_argument('--shapes',default='perlayer,shared')
+    tune.add_argument('--footprints',default='all',help="layer footprints to search, 'all' or a-b ranges (e.g. 'all,10-27,16-27'): the footprint is the strongest damage lever and costs ZERO generated tokens to test")
     tune.add_argument('--scales',default='1.0,1.5')
     tune.add_argument('--drift-budget',type=float,default=0.02,help='max |control ln-PPL drift| an arm may cost')
     tune.add_argument('--axis-space',choices=('output','input'),default='output')

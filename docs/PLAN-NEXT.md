@@ -902,3 +902,21 @@ Result on the same artefact: winner moved from perlayer@0.7 to perlayer@0.49
 (control drift -0.040 nats, 4 delivery candidates, 0 refusals on 4 rows), fresh
 spend 1,280 tokens (was 1,940, -34%), wall clock 47 s cold (was 70 s), 14 s fully
 cached. Probe/refine/confirm split: 180 (1 row) + 180 + 180 + 720 (4 rows).
+
+### Third pass: layer footprint and row order (2026-11-22)
+
+Two levers that cost ZERO generated tokens to add, plus the confirmation safety net:
+- `--footprints` searches the layer range the edit reaches, which is the repo's
+  strongest measured damage lever. Each footprint is one more adapter, so the ladder
+  scores it for free. Measured on Spark 1.7B (28 layers) with footprints all / 10-27 /
+  16-27 at scales 1.0 and 1.5: drift -0.070 / -0.030 / -0.012 nats, delta_br +0.370 /
+  +0.215 / +0.112. The narrowest footprint was eliminated on its FIRST row (one refusal,
+  60 tokens), the 10-27 one cleared on the probe row.
+- Rows are now interleaved by family, so a one-row elimination probe is a family
+  sample instead of whichever family the suite happens to list first.
+- Confirmation is what makes a one-row probe honest: 10-27@0.7 and @0.49 both looked
+  clean on one row, and both were refused on the four-row confirmation (1 refusal
+  each, 240 tokens), so the run fell back to 10-27@1.0, confirmed clean in 720 tokens.
+  That is the intended behaviour: the probe prunes cheaply, the confirmation decides.
+- Ledger for the run: 1,820 fresh tokens, 36 s cold with `--parallel 6`; the report's
+  `next` now prints the merge command WITH `--only-layers` and the cert-wave command.

@@ -152,15 +152,18 @@ you already serve: same file, same size, same offsets, only the changed tiles
 written, pre-patch bytes kept in a sidecar so `gguf-revert` puts the model back
 exactly. Nothing is re-quantized to get an edit, because the artifact was
 already the artifact. `tune` then answers which edit to ship by alternating two
-costs rather than guessing at one: a shape × strength ladder is scored by
-perplexity with the arm as a LoRA adapter, so the whole ladder generates ZERO
-tokens, and only the least-damaging arms that still move the refusal branch are
-decoded — short windows, doubled only on rows that stay undecided, until the
-weakest clearing strength is found and re-measured on the merged bytes. Measured
-on a 1.7B Q4_K_M: 38 labelled rows, three probe corpora derived from the model's
-own answers, three strengths, and an arm eliminated on ONE row before the
-survivor is confirmed on four: 1,280 generated tokens and 47 s cold, 14 s once
-the readings, adapters and screens are cached.
+costs rather than guessing at one. A shape × layer-footprint × strength ladder is
+scored by perplexity with each candidate as a LoRA adapter, so the whole ladder
+generates ZERO tokens; probe corpora are derived from the model's own answers; the
+drift gate is the instrument's own noise. Only the least-damaging arms that still
+move the refusal branch are decoded — one row to eliminate an arm, short windows
+doubled only on rows that stay undecided, and the survivor confirmed on the full
+row set, stepping to the next candidate whenever confirmation refuses. A measured
+run on a 1.7B Q4_K_M (38 labelled rows, three footprints, two strengths, 1,820
+generated tokens, 36 s cold): the whole-model footprint cleared, a 16-27 footprint
+was eliminated on its first row, refinement found 1.0 was the weakest strength the
+four-row confirmation still accepted, and the next command printed is the merge
+plus one cert wave.
 
 Search inside, train inside, judge inside: `auto` selects the best
 measured candidate under one explicit trial budget; `train` runs local
