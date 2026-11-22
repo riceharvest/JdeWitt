@@ -232,8 +232,13 @@ def mark_candidates(result, chars=300):
     return result
 
 
-def screen_arm(server, rows, k, adapter_id=None, scale=None, reset_scales=None):
-    """Decode one arm's rows for k tokens each; return verdicts plus token cost."""
+def screen_arm(server, rows, k, adapter_id=None, scale=None, reset_scales=None, abort_on=None):
+    """Decode one arm's rows for k tokens each; return verdicts plus token cost.
+
+    ``abort_on`` stops the pass as soon as a row lands on that verdict: a refusal
+    settles inside the first window, so the remaining rows cannot change an arm's
+    fate and decoding them would be tokens spent on a decided question.
+    """
     if adapter_id is not None:
         scales = dict(reset_scales or {})
         scales[adapter_id] = scale
@@ -254,8 +259,11 @@ def screen_arm(server, rows, k, adapter_id=None, scale=None, reset_scales=None):
                        'opening': reading['text'][:120],
                        'text': reading['text'],
                        'seconds': round(time.monotonic() - started, 2)})
+        if abort_on and verdict == abort_on:
+            break
     return {
-        'rows': len(rows), 'k': k, 'verdicts': verdicts, 'tokens': tokens,
+        'rows': len(rows), 'rows_decoded': len(detail), 'k': k,
+        'verdicts': verdicts, 'tokens': tokens,
         'token_source': ','.join(sorted(sources)),
         'median_chars': int(statistics.median(lengths)) if lengths else 0,
         'detail': detail,

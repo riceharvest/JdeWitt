@@ -284,30 +284,49 @@ def tune_command(args):
 
     # One dequant pass over the artifact feeds every shape's adapter. One reused
     # GGUFReader, not one per tensor: 48 fresh header parses cost ~400 s on the
-    # 4B artifacts where a reused reader costs ~11 s.
-    reader = None
-    try:
-        from gguf import GGUFReader
-        reader = GGUFReader(str(args.gguf))
-    except Exception:
-        reader = None
-    pairs = {shape: [] for shape in shapes_requested}
-    for layer in covered:
-        for name in discovered['targets'][layer]:
-            weight = torch.as_tensor(dequantize_tensor(args.gguf, name, reader=reader)).float()
-            for shape in shapes_requested:
-                axis = axes_by_shape[shape][layer]
-                if float(axis.norm()) == 0.0:
-                    continue
-                a, b = serve_factors(axis.reshape(1, -1), weight, 1.0)
-                pairs[shape].append((name, a, b))
-            del weight
+    # 4B artifacts where a reused reader costs ~11 s. The adapters themselves are
+    # cached: they are a deterministic function of (artifact bytes, records bytes,
+    # shapes, axes width), so an iteration pays the dequant pass ONCE per model.
+    fit_identity = {'artifact_bytes': Path(args.gguf).stat().st_size,
+                    'artifact_mtime': int(Path(args.gguf).stat().st_mtime),
+                    'records_bytes': Path(args.records).stat().st_size,
+                    'records_mtime': int(Path(args.records).stat().st_mtime),
+                    'shapes': shapes_requested, 'width': width, 'layers': len(covered),
+                    'arch': arch}
+    adapters_path = out_dir / 'adapters.json'
     adapters = {}
-    for shape in shapes_requested:
-        if not pairs[shape]:
-            continue
-        path = out_dir / f'adapter-{shape}.gguf'
-        adapters[shape] = write_adapter(path, pairs[shape], arch)
+    if adapters_path.is_file():
+        try:
+            cached = json.loads(adapters_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            cached = {}
+        if cached.get('identity') == fit_identity:
+            for shape, entry in (cached.get('adapters') or {}).items():
+                if Path(entry['path']).is_file():
+                    adapters[shape] = entry
+    if not adapters:
+        reader = None
+        try:
+            from gguf import GGUFReader
+            reader = GGUFReader(str(args.gguf))
+        except Exception:
+            reader = None
+        pairs = {shape: [] for shape in shapes_requested}
+        for layer in covered:
+            for name in discovered['targets'][layer]:
+                weight = torch.as_tensor(dequantize_tensor(args.gguf, name, reader=reader)).float()
+                for shape in shapes_requested:
+                    axis = axes_by_shape[shape][layer]
+                    if float(axis.norm()) == 0.0:
+                        continue
+                    a, b = serve_factors(axis.reshape(1, -1), weight, 1.0)
+                    pairs[shape].append((name, a, b))
+                del weight
+        for shape in shapes_requested:
+            if not pairs[shape]:
+                continue
+            adapters[shape] = write_adapter(out_dir / f'adapter-{shape}.gguf', pairs[shape], arch)
+        atomic_json(adapters_path, {'identity': fit_identity, 'adapters': adapters})
 
     base = {}
     # Ladder readings are cached per artifact+corpora+arm: a run that dies after
@@ -326,7 +345,7 @@ def tune_command(args):
             stored = {}
         if stored.get('identity') == identity:
             cache = stored.get('readings') or {}
-    hits = {'base': 0, 'arm': 0}
+    hits = {'base': 0, 'arm': 0, 'screen': 0}
     errors = {}
 
     def fetch(jobs):
@@ -400,6 +419,8 @@ def tune_command(args):
             raise ValueError('--token-budget needs at least one adapter to screen')
         if args.screen_rows < 1 or args.screen_k < 1:
             raise ValueError('--screen-rows and --screen-k must be >= 1')
+        if not 1 <= args.probe_rows <= args.screen_rows:
+            raise ValueError('--probe-rows must be between 1 and --screen-rows')
         if not served.is_file():
             raise ValueError(f'llama-server not found at {served}; pass --serve PATH or use '
                              f'--token-budget 0 to leave the ladder prefill-only')
@@ -412,6 +433,21 @@ def tune_command(args):
     arms, failures, rounds = [], [], []
     refined = []
     widened = []
+    confirmed = []
+    screens_path = out_dir / 'screens.json'
+    screen_identity = dict(identity)
+    screen_identity['records'] = {'path': str(Path(args.records).resolve()),
+                                  'bytes': Path(args.records).stat().st_size,
+                                  'mtime': int(Path(args.records).stat().st_mtime)}
+    screens = {}
+    cached_spend = {'tokens': 0}
+    if screens_path.is_file():
+        try:
+            stored = json.loads(screens_path.read_text())
+        except (json.JSONDecodeError, OSError):
+            stored = {}
+        if stored.get('identity') == screen_identity:
+            screens = stored.get('screens') or {}
     spent, budget_left = 0, int(args.token_budget)
     server, blast = None, None
     try:
@@ -446,44 +482,55 @@ def tune_command(args):
                     return None
             return _arm_metrics(row, base)
 
-        def screen_one(arm):
+        def screen_one(arm, rows):
+            """Decode `rows` rows for one arm: initial window, then doubling on the
+            rows still undecided, then the candidate rule at the cap.
+
+            Cached per (artifact, records, shape, scale, rows, k, cap, settle chars)
+            so iterating with a bigger budget never pays twice for a decided arm.
+            """
             nonlocal spent, budget_left
+            key = '|'.join(str(piece) for piece in (
+                arm['shape'], arm['scale'], rows, args.screen_k, args.escalate_to,
+                args.settle_chars))
+            if key in screens:
+                hits['screen'] += 1
+                cached_spend['tokens'] += screens[key].get('tokens') or 0
+                return screens[key]
             adapter_id = adapter_ids[arm['shape']]
             reset = {index: 0.0 for index in adapter_ids.values()}
-            before = spent
-            result = screen_arm(server, screen_rows, args.screen_k, adapter_id=adapter_id,
-                                scale=arm['scale'], reset_scales=reset)
+            result = screen_arm(server, screen_rows[:rows], args.screen_k,
+                                adapter_id=adapter_id, scale=arm['scale'],
+                                reset_scales=reset, abort_on='refusal')
             spent += result['tokens']
             budget_left -= result['tokens']
-            arm['screen'] = result
+            result['rows_requested'] = rows
             # Spend the remaining budget where it can still decide something: the
-            # undecided rows, window doubling, until the row settles or the window
-            # cap is reached. One fixed escalation leaves budget unused while rows
-            # are still undecided, which is the wrong end of the token trade-off.
+            # undecided rows, window doubling, until a row settles or the cap is hit.
             window = int(args.screen_k)
-            while arm['screen']['verdicts']['escalate'] and budget_left > 0:
+            while result['verdicts']['escalate'] and budget_left > 0:
                 next_window = min(int(args.escalate_to), window * 2)
                 if next_window <= window:
                     break
                 # Never open a window the budget cannot pay for: an interrupted
-                # escalation leaves a row undecided anyway, and the overspend hides
+                # escalation leaves the row undecided anyway, and an overspend hides
                 # itself in the ledger.
-                need = arm['screen']['verdicts']['escalate'] * (next_window - window)
+                need = result['verdicts']['escalate'] * (next_window - window)
                 if need > budget_left:
-                    arm['screen']['stopped_on_budget'] = True
+                    result['stopped_on_budget'] = True
                     break
-                extra = escalate_screen(server, arm, rows_by_id, adapter_id, arm['scale'],
-                                        reset, next_window - window)
+                extra = escalate_screen(server, {'screen': result}, rows_by_id, adapter_id,
+                                        arm['scale'], reset, next_window - window)
                 spent += extra
                 budget_left -= extra
                 window = next_window
-                arm['screen']['window'] = window
-            if arm['screen']['verdicts']['escalate'] and window >= int(args.escalate_to):
-                mark_candidates(arm['screen'], args.settle_chars)
-            arm['screen_tokens'] = arm['screen']['tokens']
-            arm['tokens_spent_before'] = before
-            arm['budget_left'] = budget_left
-            return arm
+                result['window'] = window
+            if result['verdicts']['escalate'] and window >= int(args.escalate_to):
+                mark_candidates(result, args.settle_chars)
+            result['tokens_total_spent'] = spent
+            screens[key] = result
+            atomic_json(screens_path, {'identity': screen_identity, 'screens': screens})
+            return result
 
         rows_by_id = {row['id']: row for row in screen_rows}
         for index in range(args.rounds):
@@ -516,7 +563,8 @@ def tune_command(args):
                 for arm in weakest_first(pool)[:args.front]:
                     if budget_left <= 0:
                         break
-                    screened.append(screen_one(arm))
+                    arm['screen'] = screen_one(arm, args.probe_rows)
+                    screened.append(arm)
                     if arm_is_clean(arm):
                         break
             arms.extend(round_arms)
@@ -567,11 +615,11 @@ def tune_command(args):
                 if arm is None:
                     break
                 arms.append(arm)
-                screen_one(arm)
+                arm['screen'] = screen_one(arm, args.probe_rows)
                 state = screen_read(arm)
                 refined.append({'shape': arm['shape'], 'scale': arm['scale'],
                                 'drift_ln': arm['drift_ln'], 'delta_br': arm['delta_br'],
-                                'screen': state, 'tokens': arm['screen_tokens'],
+                                'screen': state, 'tokens': arm['screen']['tokens'],
                                 'budget_left': budget_left})
                 if state and state['clean']:
                     best = arm
@@ -579,6 +627,27 @@ def tune_command(args):
                     low = candidate_scale
                     break
             winner = best
+
+        # Confirm on the FULL row set: stage A decided arms on --probe-rows rows,
+        # which is what makes elimination cheap; the arm that is about to ship is
+        # paid for once at --screen-rows, and if it refuses there the next clean
+        # candidate is confirmed instead.
+        if (server is not None and winner is not None and budget_left > 0
+                and args.screen_rows > args.probe_rows):
+            candidates = sorted([arm for arm in arms if arm_is_clean(arm)],
+                                key=lambda arm: (damage(arm), arm['scale']))
+            for arm in candidates:
+                if budget_left < args.screen_rows * args.screen_k:
+                    break
+                full = screen_one(arm, args.screen_rows)
+                arm['screen'] = full
+                state = screen_read(arm)
+                confirmed.append({'shape': arm['shape'], 'scale': arm['scale'],
+                                  'state': state['state'] if state else 'unknown',
+                                  'tokens': full['tokens']})
+                if state and state['clean']:
+                    winner = arm
+                    break
     finally:
         if server is not None:
             server.stop()
@@ -601,16 +670,20 @@ def tune_command(args):
         'arms': arms, 'arm_failures': failures,
         'rounds': rounds,
         'refinement': refined,
+        'confirmation': confirmed,
         'winner': winner,
         'tokens': {
             'search': 0,
             'screen': spent,
+            'screen_cached': cached_spend['tokens'],
+            'evidence_tokens': sum((entry.get('tokens') or 0) for entry in screens.values()),
             'budget': args.token_budget,
             'budget_left': max(budget_left, 0),
             'screen_rows': len(screen_rows),
+            'probe_rows': args.probe_rows,
             'screen_k': args.screen_k,
             'escalate_to': args.escalate_to,
-            'per_arm': {f"{arm['shape']}@{arm['scale']}": arm.get('screen_tokens')
+            'per_arm': {f"{arm['shape']}@{arm['scale']}": (arm.get('screen') or {}).get('tokens')
                         for arm in arms if arm.get('screen')},
             'server_load_seconds': getattr(server, 'load_seconds', None) if server else None,
             'screen_blast': blast,

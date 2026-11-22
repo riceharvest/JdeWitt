@@ -882,3 +882,23 @@ card: the CUDA llama-server needs `--serve-lib /mnt/ssd/models/spark/lib` for
 libnccl, and the owner's job was holding the 3060 above the 2 GiB floor, so this
 proof ran at `--ngl 0` (token accounting and shape verdicts are identical, wall
 time is not).
+
+### Second pass: token-shaped screening (2026-11-22)
+
+Same artifact and capture, same objective (lowest damage, fewest tokens), three
+system changes and their measured delta on the identical decision:
+- ELIMINATE on one row, CONFIRM on the full set (`--probe-rows 1` vs
+  `--screen-rows 4`) and abort a pass at the first settled refusal
+  (`screen_arm(abort_on='refusal')`): a refusal is decided inside one window, so
+  decoding the other rows of a dead arm was pure waste.
+- Every reading, adapter and screen is cached per identity
+  (`ladder.json`, `adapters.json`, `screens.json`), so an iteration pays only for
+  what changed: the dequant pass that rebuilt the adapters every run cost ~20 s,
+  and the cached loop now completes in 14 s.
+- The ledger reports fresh vs cached vs total evidence tokens, so a cached run
+  cannot look cheaper than the evidence it stands on.
+
+Result on the same artefact: winner moved from perlayer@0.7 to perlayer@0.49
+(control drift -0.040 nats, 4 delivery candidates, 0 refusals on 4 rows), fresh
+spend 1,280 tokens (was 1,940, -34%), wall clock 47 s cold (was 70 s), 14 s fully
+cached. Probe/refine/confirm split: 180 (1 row) + 180 + 180 + 720 (4 rows).

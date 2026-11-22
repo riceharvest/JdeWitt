@@ -158,8 +158,9 @@ tokens, and only the least-damaging arms that still move the refusal branch are
 decoded — short windows, doubled only on rows that stay undecided, until the
 weakest clearing strength is found and re-measured on the merged bytes. Measured
 on a 1.7B Q4_K_M: 38 labelled rows, three probe corpora derived from the model's
-own answers, three shapes of strength, 1,940 generated tokens and 70 s for a
-full pick.
+own answers, three strengths, and an arm eliminated on ONE row before the
+survivor is confirmed on four: 1,280 generated tokens and 47 s cold, 14 s once
+the readings, adapters and screens are cached.
 
 Search inside, train inside, judge inside: `auto` selects the best
 measured candidate under one explicit trial budget; `train` runs local
