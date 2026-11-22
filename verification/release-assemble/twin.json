@@ -31,7 +31,7 @@
   },
   "delivered": {
     "measurement_class": "codec-realized",
-    "measured_where": "CPU byte-level: full-tensor decode of this twin GGUF against the projection the adapter encodes (ggufio.compare_edit); requant fidelity, not behaviour",
+    "measured_where": "CPU byte-level: cos/SNR are the requant-fidelity numbers the adapter card copied from a ggufio.compare_edit full-tensor decode that names this artifact by sha256; not a behaviour measurement",
     "tensors": [
       {
         "name": "blk.0.attn_output.weight",
@@ -111,5 +111,5 @@
       "where": "merged bytes, reported by adapter.json as merged_measured_on=merged-bytes; release-assemble does not run generation, so these are behaviour claims, not codec-realized numbers; serve argv: recorded in evaluation.json and pinned here"
     }
   ],
-  "note": "The adapter ranks, this twin ships. codec-realized numbers were measured on these bytes on CPU; behaviour numbers are claims carried from adapter.json and are marked as such."
+  "note": "The adapter ranks, this twin ships. codec-realized numbers name these bytes by sha256 and were measured on CPU; behaviour numbers are claims carried from adapter.json and are marked as such."
 }

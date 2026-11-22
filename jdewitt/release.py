@@ -917,9 +917,10 @@ def build_twin_record(twin, architecture, header_types, card, evaluation, card_s
         'edit_fingerprint': merged.get('edit_fingerprint') or {},
         'edit_type_per_tensor': {row['name']: row['edited_type'] for row in rows},
         'delivered': {'measurement_class': 'codec-realized',
-                      'measured_where': ('CPU byte-level: full-tensor decode of this twin GGUF '
-                                         'against the projection the adapter encodes '
-                                         '(ggufio.compare_edit); requant fidelity, not behaviour'),
+                      'measured_where': ('CPU byte-level: cos/SNR are the requant-fidelity numbers '
+                                         'the adapter card copied from a ggufio.compare_edit '
+                                         'full-tensor decode that names this artifact by sha256; '
+                                         'not a behaviour measurement'),
                       'tensors': rows, 'sampled': len(rows),
                       'min_cos': min(cosines) if cosines else None,
                       'min_snr': min(snrs) if snrs else None},
@@ -944,9 +945,9 @@ def build_twin_record(twin, architecture, header_types, card, evaluation, card_s
                          'behaviour.ranking_valid_on_this_artifact'],
              'class': 'behaviour-claim', 'basis': 'generation-scored',
              'where': f'{behaviour["measured_where"]}; serve argv: {argv_note}'}],
-        'note': ('The adapter ranks, this twin ships. codec-realized numbers were measured on these '
-                 'bytes on CPU; behaviour numbers are claims carried from adapter.json and are '
-                 'marked as such.'),
+        'note': ('The adapter ranks, this twin ships. codec-realized numbers name these bytes by '
+                 'sha256 and were measured on CPU; behaviour numbers are claims carried from '
+                 'adapter.json and are marked as such.'),
     }
 
 
