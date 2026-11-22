@@ -68,7 +68,8 @@ Measured, pinned serve configs, merged artifacts — not slides. The full
 honesty discipline lives in `docs/METHODOLOGY.md`, and `scripts/evidence_map.py`
 turns the mapping between a sentence and the file that produced it into an exit
 code, so a number cannot outlive its artifact silently (`--check` fails the build
-if an in-clone claim names a file that isn't there).
+if an in-clone claim names a file that isn't there, or if a number in section IV
+no longer recomputes from the rows behind it).
 
 Currently checkable in a fresh clone:
 
@@ -89,10 +90,11 @@ Currently checkable in a fresh clone:
   (`q3-4b-f15s15-l935`) reads 40/40 harmful-40 under both inventories and **120/120 on
   the held-out 120-family screen against the published build's 120/120, zero discordant
   rows, McNemar p = 1.0** — and pays for it with maths 159→148 (p 0.0078, median maths
-  answer 68 characters against the base's 175), where the published build stays at 159.
-  Removal of the wording is now matched; removal of the behaviour is not — on a 20-family
-  sample of that screen the arm and the published build each deliver the asked-for
-  content on 0 of 20. `scripts/screen_agreement.py` re-grades any screen under both
+  answer 68 characters against the published build's 175), where the published build stays
+  at 159. The 24-family delivery read puts the unedited base itself at 1/24. Removal of the
+  wording is now matched; removal of the behaviour is not — on the first 20 families of that
+  screen the arm delivers the asked-for content on 0 of 20, the published build on 1 of 20.
+  `scripts/screen_agreement.py` re-grades any screen under both
   inventories and prints the false-clean count; `docs/non-heretic-methods.md` carries the
   retraction, the floor sweep and the frontier table.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,

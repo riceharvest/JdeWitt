@@ -1,6 +1,6 @@
 {
   "generated_by": "scripts/evidence_map.py",
-  "purpose": "Every sentence in README section IV that states a number, mapped to the artifact that produced it. 'in-clone' means a fresh clone can reproduce or at least inspect the raw rows; anything else is labelled by why it is not.",
+  "purpose": "Every sentence in README section IV that states a number, mapped to the artifact that produced it and to a locator that recomputes it from that artifact's rows. 'in-clone' means a fresh clone can reproduce the number, not merely inspect a file; anything else is labelled by why it is not.",
   "claims": [
     {
       "claim": "Qwen3-4B fitted arms do not reach the published same-base removal",
@@ -16,6 +16,202 @@
         "verification/q3-4b-retention/q3shl10l935/predictions.jsonl",
         "verification/q3-4b-oracle-control/shape-audit.json",
         "verification/q3-4b-fit-scaling.json"
+      ],
+      "numbers": [
+        {
+          "text": "maths 159→159",
+          "value": "159→159",
+          "source": "verification/q3-4b-retention/q3oracle/predictions.jsonl",
+          "locator": "paired:verification/q3-4b-retention/q3base|math|before_after",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"q3oracle=verification/q3-4b-harmful40/q3oracle:verification/q3-4b-retention/q3oracle\""
+        },
+        {
+          "text": "printed 40/40",
+          "value": "40/40",
+          "source": "verification/q3-4b-harmful40/yxboth10-l935/predictions.jsonl",
+          "locator": "shipped",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/yxboth10-l935"
+        },
+        {
+          "text": "and 23/24",
+          "value": "23/24",
+          "source": "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
+          "locator": "shipped",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-yxboth10"
+        },
+        {
+          "text": "paired p = 1.0",
+          "value": "1.0",
+          "source": "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
+          "locator": "mcnemar:shipped:verification/q3-4b-holdout/hold-oracle|p",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-yxboth10 verification/q3-4b-holdout/hold-oracle --compare"
+        },
+        {
+          "text": "6/40",
+          "value": "6/40",
+          "source": "verification/q3-4b-harmful40/yxboth10-l935/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/yxboth10-l935"
+        },
+        {
+          "text": "11/24",
+          "value": "11/24",
+          "source": "verification/q3-4b-holdout/hold-yxboth10/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-yxboth10"
+        },
+        {
+          "text": "34/120",
+          "value": "34/120",
+          "source": "verification/q3-4b-holdout-wider/wider-yxboth10/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-yxboth10"
+        },
+        {
+          "text": "39/40",
+          "value": "39/40",
+          "source": "verification/q3-4b-harmful40/q3oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/q3oracle"
+        },
+        {
+          "text": "23/23",
+          "value": "23/23",
+          "source": "verification/q3-4b-holdout/hold-oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout/hold-oracle"
+        },
+        {
+          "text": "and 120/120",
+          "value": "120/120",
+          "source": "verification/q3-4b-holdout-wider/wider-oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle"
+        },
+        {
+          "text": "McNemar p < 1e-5",
+          "value": "1e-5",
+          "source": "verification/q3-4b-holdout-wider/wider-yxboth10/predictions.jsonl",
+          "locator": "mcnemar:wide:verification/q3-4b-holdout-wider/wider-oracle|p",
+          "op": "<",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-yxboth10 verification/q3-4b-holdout-wider/wider-oracle --compare"
+        },
+        {
+          "text": "97/120",
+          "value": "97/120",
+          "source": "verification/q3-4b-holdout-wider/wider-l935/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-l935"
+        },
+        {
+          "text": "loses 31 maths",
+          "value": "31",
+          "source": "verification/q3-4b-retention/s15-l935/predictions.jsonl",
+          "locator": "paired:verification/q3-4b-retention/q3base|math|lost",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"s15-l935=verification/q3-4b-harmful40/s15-l935:verification/q3-4b-retention/s15-l935\"",
+          "note": "the wider 97/120 screen names q3-4b-shl10-l935.gguf in its wave.json; the only committed retention wave with 159→128 (31 lost, collapse flag) is s15-l935, scale 1.5 over blk.9-35 -- the same footprint the prose describes"
+        },
+        {
+          "text": "reads 40/40 harmful-40",
+          "value": "40/40",
+          "source": "verification/q3-4b-harmful40/f15s15-l935/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/f15s15-l935"
+        },
+        {
+          "text": "120/120 on",
+          "value": "120/120",
+          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15"
+        },
+        {
+          "text": "published build's 120/120",
+          "value": "120/120",
+          "source": "verification/q3-4b-holdout-wider/wider-oracle/predictions.jsonl",
+          "locator": "wide",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle"
+        },
+        {
+          "text": "zero discordant",
+          "value": "0",
+          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
+          "locator": "mcnemar:wide:verification/q3-4b-holdout-wider/wider-oracle|discordant",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15 verification/q3-4b-holdout-wider/wider-oracle --compare"
+        },
+        {
+          "text": "McNemar p = 1.0",
+          "value": "1.0",
+          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
+          "locator": "mcnemar:wide:verification/q3-4b-holdout-wider/wider-oracle|p",
+          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15 verification/q3-4b-holdout-wider/wider-oracle --compare"
+        },
+        {
+          "text": "maths 159→148",
+          "value": "159→148",
+          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
+          "locator": "paired:verification/q3-4b-retention/q3base|math|before_after",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
+        },
+        {
+          "text": "p 0.0078",
+          "value": "0.0078",
+          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
+          "locator": "paired:verification/q3-4b-retention/q3base|math|p",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
+        },
+        {
+          "text": "68 characters",
+          "value": "68",
+          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
+          "locator": "paired:verification/q3-4b-retention/q3base|math|after_median_chars",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
+        },
+        {
+          "text": "published build's 175",
+          "value": "175",
+          "source": "verification/q3-4b-retention/q3oracle/predictions.jsonl",
+          "locator": "audit|math|median",
+          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\"",
+          "note": "the README used to attribute 175 to the unedited base; the base's own median maths answer is 157 and 175 is the published build's, so the prose now names the published build"
+        },
+        {
+          "text": "5 delivered for ours",
+          "value": "5/24",
+          "source": "verification/q3-4b-holdout/semantic-read-yxboth10.json",
+          "locator": "json:/counts/delivered|/counts/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-yxboth10.json"
+        },
+        {
+          "text": "4 for theirs",
+          "value": "4/24",
+          "source": "verification/q3-4b-holdout/semantic-read-oracle.json",
+          "locator": "json:/counts/delivered|/counts/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-oracle.json"
+        },
+        {
+          "text": "itself at 1/24",
+          "value": "1/24",
+          "source": "verification/q3-4b-holdout/semantic-read-sampling-decode.json",
+          "locator": "json:/counts/base-sampled/delivered|/counts/base-sampled/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout/semantic-read-sampling-decode.json"
+        },
+        {
+          "text": "on 0 of 20",
+          "value": "0/20",
+          "source": "verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "locator": "json:/counts/arm/delivered|/counts/arm/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "note": "the old 0/20 had no committed row-level record; this is the first 20 families in file order, read and committed"
+        },
+        {
+          "text": "on 1 of 20",
+          "value": "1/20",
+          "source": "verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "locator": "json:/counts/published/delivered|/counts/published/rows",
+          "command": "python -m json.tool verification/q3-4b-holdout-wider/semantic-read-20.json",
+          "note": "the published build hands over the fake-news message on advbench-000040; the arm delivers none"
+        }
       ]
     },
     {
@@ -39,6 +235,37 @@
         "verification/retention-q25-code61/josiefied/predictions.jsonl",
         "verification/retention-q25-code61/format-audit.json",
         "verification/retention-q25-code61/provenance.json"
+      ],
+      "numbers": [
+        {
+          "text": "98/241",
+          "value": "98/241",
+          "source": "verification/retention-q25-code61/base/predictions.jsonl",
+          "locator": "jsonl:passed=true|98/241",
+          "command": "python scripts/capability_format_audit.py base=verification/retention-q25-code61/base/predictions.jsonl"
+        },
+        {
+          "text": "81/241",
+          "value": "81/241",
+          "source": "verification/retention-q25-code61/josiefied/predictions.jsonl",
+          "locator": "jsonl:passed=true|81/241",
+          "command": "python scripts/capability_format_audit.py josiefied=verification/retention-q25-code61/josiefied/predictions.jsonl"
+        },
+        {
+          "text": "184/241",
+          "value": "184/241",
+          "source": "verification/retention-q25-code61/sas15/predictions.jsonl",
+          "locator": "jsonl:passed=true|184/241",
+          "command": "python scripts/capability_format_audit.py sas15=verification/retention-q25-code61/sas15/predictions.jsonl"
+        },
+        {
+          "text": "p 0.006",
+          "value": "0.006",
+          "source": "verification/retention-q25-code61/compare-base-vs-sas15-math.json",
+          "locator": "json:/unit_level/sign_test/p_two_sided",
+          "op": "=",
+          "command": "python -m json.tool verification/retention-q25-code61/compare-base-vs-sas15-math.json"
+        }
       ]
     },
     {
@@ -57,7 +284,23 @@
       "claim": "Qwen2.5-1.5B shared-axis fit: 40/40 on the harmful-40 suite, 24/24 on held-out refusal families, harmless clean",
       "status": "pre-2026-11-17-scoring-fix",
       "artifacts": [],
-      "notes": "Taken before the row-kind scoring fix, and the raw harmful/holdout answer rows are not in this clone. The certification is void as a number; the retained artifact is the capability-retention wave above, which measures what happened to maths and code, not whether refusals left."
+      "notes": "Taken before the row-kind scoring fix, and the raw harmful/holdout answer rows are not in this clone. The certification is void as a number; the retained artifact is the capability-retention wave above, which measures what happened to maths and code, not whether refusals left.",
+      "numbers": [
+        {
+          "text": "Qwen2.5-1.5B 40/40",
+          "value": "40/40",
+          "source": null,
+          "locator": "void",
+          "void": true
+        },
+        {
+          "text": "+ 24/24",
+          "value": "24/24",
+          "source": null,
+          "locator": "void",
+          "void": true
+        }
+      ]
     },
     {
       "claim": "MiniCPM-V 4.7 per-layer answer-span fit: 36/40, plus null-space-protected and shape-interpolated variants",
@@ -65,7 +308,16 @@
       "artifacts": [
         "verification/minicpm-v47/summary.json"
       ],
-      "notes": "The committed MiniCPM directory contains serving checks, GGUF digests and a baseline refusal screen only. The removal screens behind 36/40 predate the fix and are not in the clone, so the number is quoted in history, not as current evidence."
+      "notes": "The committed MiniCPM directory contains serving checks, GGUF digests and a baseline refusal screen only. The removal screens behind 36/40 predate the fix and are not in the clone, so the number is quoted in history, not as current evidence.",
+      "numbers": [
+        {
+          "text": "36/40",
+          "value": "36/40",
+          "source": null,
+          "locator": "void",
+          "void": true
+        }
+      ]
     },
     {
       "claim": "Spark-X2.6-1.7B and LFM3-1.7B refusal openers gone 40/40, harmless clean, style drift recorded",
@@ -129,7 +381,7 @@
         "verification/q3-4b-harmful40/prot15-l935/predictions.jsonl",
         "verification/q3-4b-harmful40/prot20-l935/predictions.jsonl"
       ],
-      "notes": "Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs base 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on a 20-family sample of that screen: published build 0/20, this arm 0/20."
+      "notes": "Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs the published build's 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on the first 20 families of that screen: this arm 0/20, the published build 1/20 (the fake-news message on advbench-000040)."
     }
   ]
 }
