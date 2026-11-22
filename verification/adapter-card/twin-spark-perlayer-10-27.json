@@ -1,0 +1,332 @@
+{
+  "version": 1,
+  "artifact_sha256": "3380d89d360c47115fc0b5e8507a4a7c2797e294cb38f0e0ea005fab57fc388f",
+  "base_artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "arch": "spark2_5",
+  "edit_fingerprint": {
+    "family": "perlayer|10-27",
+    "shape": "perlayer",
+    "layers": [
+      10,
+      27
+    ],
+    "scale": 1.0,
+    "rank": 1,
+    "edited_tensors": 36,
+    "adapter_sha256": "f2b36536d606646603a8bc4977518828de29c54c4de680c71ef9d1828a6a3479",
+    "source_adapter": "A.gguf",
+    "base_artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+  },
+  "edited_tensors": 36,
+  "untouched_tensors": 190,
+  "delivered": {
+    "tensors": [
+      {
+        "name": "blk.10.attn_output.weight",
+        "cos": 0.4407,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.8263,
+        "snr": 1.023
+      },
+      {
+        "name": "blk.10.ffn_down.weight",
+        "cos": 0.4669,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.8352,
+        "snr": 1.044
+      },
+      {
+        "name": "blk.11.attn_output.weight",
+        "cos": 0.3687,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.758,
+        "snr": 0.992
+      },
+      {
+        "name": "blk.11.ffn_down.weight",
+        "cos": 0.8809,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0597,
+        "snr": 1.974
+      },
+      {
+        "name": "blk.12.attn_output.weight",
+        "cos": 0.3821,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.775,
+        "snr": 0.996
+      },
+      {
+        "name": "blk.12.ffn_down.weight",
+        "cos": 0.4192,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7939,
+        "snr": 1.018
+      },
+      {
+        "name": "blk.13.attn_output.weight",
+        "cos": 0.3718,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7642,
+        "snr": 0.992
+      },
+      {
+        "name": "blk.13.ffn_down.weight",
+        "cos": 0.3621,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7532,
+        "snr": 0.989
+      },
+      {
+        "name": "blk.14.attn_output.weight",
+        "cos": 0.3312,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7263,
+        "snr": 0.978
+      },
+      {
+        "name": "blk.14.ffn_down.weight",
+        "cos": 0.861,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.065,
+        "snr": 1.823
+      },
+      {
+        "name": "blk.15.attn_output.weight",
+        "cos": 0.3382,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7341,
+        "snr": 0.979
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "cos": 0.3357,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7267,
+        "snr": 0.98
+      },
+      {
+        "name": "blk.16.attn_output.weight",
+        "cos": 0.3543,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7508,
+        "snr": 0.984
+      },
+      {
+        "name": "blk.16.ffn_down.weight",
+        "cos": 0.2868,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6919,
+        "snr": 0.961
+      },
+      {
+        "name": "blk.17.attn_output.weight",
+        "cos": 0.3034,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7028,
+        "snr": 0.968
+      },
+      {
+        "name": "blk.17.ffn_down.weight",
+        "cos": 0.8481,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0643,
+        "snr": 1.746
+      },
+      {
+        "name": "blk.18.attn_output.weight",
+        "cos": 0.3861,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7748,
+        "snr": 0.999
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "cos": 0.2926,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6947,
+        "snr": 0.964
+      },
+      {
+        "name": "blk.19.attn_output.weight",
+        "cos": 0.2308,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6375,
+        "snr": 0.948
+      },
+      {
+        "name": "blk.19.ffn_down.weight",
+        "cos": 0.3271,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7149,
+        "snr": 0.979
+      },
+      {
+        "name": "blk.20.attn_output.weight",
+        "cos": 0.3027,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7022,
+        "snr": 0.968
+      },
+      {
+        "name": "blk.20.ffn_down.weight",
+        "cos": 0.8369,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0667,
+        "snr": 1.683
+      },
+      {
+        "name": "blk.21.attn_output.weight",
+        "cos": 0.3445,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.7446,
+        "snr": 0.98
+      },
+      {
+        "name": "blk.21.ffn_down.weight",
+        "cos": 0.2535,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6522,
+        "snr": 0.956
+      },
+      {
+        "name": "blk.22.attn_output.weight",
+        "cos": 0.4302,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.815,
+        "snr": 1.019
+      },
+      {
+        "name": "blk.22.ffn_down.weight",
+        "cos": 0.1996,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6197,
+        "snr": 0.938
+      },
+      {
+        "name": "blk.23.attn_output.weight",
+        "cos": 0.1977,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6178,
+        "snr": 0.938
+      },
+      {
+        "name": "blk.23.ffn_down.weight",
+        "cos": 0.8151,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0682,
+        "snr": 1.581
+      },
+      {
+        "name": "blk.24.attn_output.weight",
+        "cos": 0.2211,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6267,
+        "snr": 0.947
+      },
+      {
+        "name": "blk.24.ffn_down.weight",
+        "cos": 0.8082,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0693,
+        "snr": 1.551
+      },
+      {
+        "name": "blk.25.attn_output.weight",
+        "cos": 0.2313,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6435,
+        "snr": 0.946
+      },
+      {
+        "name": "blk.25.ffn_down.weight",
+        "cos": 0.81,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0692,
+        "snr": 1.559
+      },
+      {
+        "name": "blk.26.attn_output.weight",
+        "cos": 0.2804,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6805,
+        "snr": 0.962
+      },
+      {
+        "name": "blk.26.ffn_down.weight",
+        "cos": 0.8148,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0663,
+        "snr": 1.581
+      },
+      {
+        "name": "blk.27.attn_output.weight",
+        "cos": 0.2912,
+        "source_type": "Q4_K",
+        "edited_type": "Q4_K",
+        "norm_ratio": 0.6881,
+        "snr": 0.966
+      },
+      {
+        "name": "blk.27.ffn_down.weight",
+        "cos": 0.8449,
+        "source_type": "Q6_K",
+        "edited_type": "Q6_K",
+        "norm_ratio": 1.0607,
+        "snr": 1.732
+      }
+    ],
+    "sampled": 36,
+    "min_cos": 0.1977,
+    "min_snr": 0.938,
+    "instrument": "ggufio.compare_edit on merged-twin.gguf vs the base artifact"
+  },
+  "behaviour": {
+    "adapter_curve": {
+      "delta_br": 0.215,
+      "measured_on": "adapter"
+    },
+    "merged_bytes": {
+      "delta_br": 0.119,
+      "measured_on": "merged-bytes",
+      "source_artifact_sha256": "3380d89d360c47115fc0b5e8507a4a7c2797e294cb38f0e0ea005fab57fc388f"
+    }
+  },
+  "curve_is_not_merged_bytes": true,
+  "scale": 1.0,
+  "provenance": "delta_br pair (adapter 0.215 / merged 0.119, ratio 0.553) copied from docs/ROADMAP.md \"Where we are short\" item 3 and docs/PLAN-NEXT.md \"R8 verification of the shipped pick\" (Spark 1.7B Q4_K_M, identical coverage 36 tensors); per-tensor cos/SNR measured by this script on merged-twin.gguf."
+}

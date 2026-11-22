@@ -1397,4 +1397,6 @@ exercised end-to-end (all exit 1 with their named code): unbound adapter, base
 digest mismatch, twin without delivered cos, merged numbers absent without an
 UNMEASURED label, curve claim removed or false, and the adapter number pasted
 into the merged field. The twin artifact stays outside the clone; the card
-carries its sha256.
+carries its sha256. The twin record itself is committed at
+`verification/adapter-card/twin-spark-perlayer-10-27.json`, with a README that
+says which numbers were measured here and which are the quoted behaviour pair.
