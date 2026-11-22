@@ -105,6 +105,27 @@ EXPLAINER = {
     'NOT_A_DIRECTORY': {'meaning': '--foreign needs a directory, not a file.',
                         'agent_action': 'Pass the release directory; for one artifact use the '
                                         'native path verify-artifact FILE --name SCHEMA.'},
+    'CERTIFY_MISSING_AXIS': {
+        'meaning': 'A Phase 7 packet spec or its evidence is missing a required axis; no packet was written.',
+        'agent_action': 'Read the axis named in the message (shape, drift, fidelity, wording inventory, a serve argv) and supply its evidence; never pad the packet.'},
+    'CERTIFY_PROBE_ONLY': {
+        'meaning': 'The row count or prompt kinds say this is a probe, not a certified row.',
+        'agent_action': 'Run the full suite at its recorded row count; a probe result is a ranking input, not a row.'},
+    'CERTIFY_CONFIG_MISMATCH': {
+        'meaning': 'A wave was taken at a different serve_config than its spec slot (METHODOLOGY R9).',
+        'agent_action': 'Either point the spec at the wave that was actually taken and report the mismatch as pinned_cert_match=false, or re-run the wave at the pinned argv.'},
+    'CERTIFY_UNMEASURED': {
+        'meaning': 'A wave records measured!=true, or zero rows generated; an all-invalid screen is UNMEASURED.',
+        'agent_action': 'Re-run the wave; do not read a zero-valid screen as a removal or retention result.'},
+    'CERTIFY_ONE_INVENTORY': {
+        'meaning': 'A removal count carries one wording inventory, or the spec pins an inventory the shipped checker does not match.',
+        'agent_action': 'Regrade the saved answers under both inventories (scripts/screen_agreement.py) and record both digests.'},
+    'CERTIFY_RETENTION_INCOMPLETE': {
+        'meaning': 'Retention has no paired rows or no usable median answer length.',
+        'agent_action': 'Regenerate the missing side at the same suite and config; a rate without a length cannot separate a lost answer from a shorter one.'},
+    'CERTIFY_ARTIFACT_MISMATCH': {
+        'meaning': 'A shape audit or artifact identity does not belong to the packet artifact (METHODOLOGY R8).',
+        'agent_action': 'Re-audit the packet artifact or fix the recorded identity; an audit of another artifact is not evidence.'},
 }
 
 
