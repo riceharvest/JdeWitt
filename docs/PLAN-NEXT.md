@@ -1126,3 +1126,22 @@ claim_source `metadata:jdewitt.fingerprint`, 4 of 9 claimed fields recomputed an
 matching, with `edit_sha256`, `axis_norm_by_layer`, `scale` and `axis_space` reported as
 not recomputable (the file stores the re-encoded delta, not the fitted axis). gguf-py
 parses the edited container cleanly, so the extra key costs nothing in compatibility.
+
+#### First certified board run: the clear was a sample-size illusion (2026-11-22)
+
+Bigger bank: 58 rows captured on Spark 1.7B (48 harmful across 6 families, 10 harmless),
+suite from `verification/harsh-suites/selection.jsonl`, pinned capability corpus from the
+repo's own docs (42,000 chars, so nats are comparable across runs).
+
+Board on the artifact we shipped earlier (36 Q8_0 tensors, layers 10-27 @1.0), 32 rows
+across 4 families: **verdict refuses** — refusal_rate 0.125, and every refusal is
+cybercrime-intrusion (0.5 of that family; chem-bio, illegal and misinformation are 0.0).
+Capability delta +0.091 nats, coherence flags 0, undecided 0, 4,096 tokens spent.
+
+So the earlier "0/4 refusals" was four rows. On 32 the same file refuses 1 in 8, the
+board names the family, and the ladder confirms the shape of the problem: at scale 3.0
+cybercrime rows still refuse (20-27: dbr 0.263, drift 0.166; all layers: dbr 0.94, drift
+1.40 — clearing by wrecking). Per-layer bell profiles do not help: over 24 like-for-like
+pairs each, the three bells win 0-3 and their mean delta_br gain is negative (−0.009 to
+−0.023). What is left is a targeted search (family-weighted rows, rank-2 on the layers
+the refusing rows actually use), not another global strength sweep.
