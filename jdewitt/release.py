@@ -542,8 +542,477 @@ def keygen(path):
             'note': 'Protect the private key file (0600). Publish only the public key.'}
 
 
-def build_repro(directory):
-    """Machine-readable reproduction index: everything needed to re-derive the release byte-for-byte."""
+# Seal files are written next to a finished release and must never be mistaken for
+# release payload: `verify_release` re-hashes the inventory, and a seal that appeared
+# in it would make the release invalid the moment it was signed.
+REPRO_SEAL_FILES = ('repro.json', 'repro-spec.json')
+_MISSING = object()
+
+# Paths worth trying when an evaluation record pins no argv under `repro.serve_argv`.
+_SERVE_ARGV_PATHS = ('serve_argv', 'argv', 'server.argv', 'behaviour.serve_argv',
+                     'evaluation.serve_argv', 'merged_verification.serve_argv',
+                     'winner.serve_argv', 'settings.serve_argv')
+
+
+def _json_if(path):
+    path = Path(path)
+    if not path.is_file():
+        return None
+    if path.is_symlink():
+        raise ValueError(f'{path.name} cannot be a symlink')
+    return json.loads(path.read_text())
+
+
+def _declared_path(value):
+    """A path declared as a string or as a {path|file: ...} record, else None."""
+    if isinstance(value, str) and value.strip():
+        return value
+    if isinstance(value, dict):
+        for key in ('path', 'file'):
+            if isinstance(value.get(key), str) and value[key].strip():
+                return value[key]
+    return None
+
+
+def _resolve(directory, text):
+    path = Path(text)
+    return path if path.is_absolute() else Path(directory) / path
+
+
+def _portable_path(directory, path):
+    """A path relative to the release when it lives inside it, absolute otherwise."""
+    path = Path(path).resolve()
+    directory = Path(directory).resolve()
+    try:
+        return str(path.relative_to(directory))
+    except ValueError:
+        return str(path)
+
+
+def _dig_path(document, path):
+    current = document
+    for part in path.split('.'):
+        if not isinstance(current, dict) or part not in current:
+            return None
+        current = current[part]
+    return current
+
+
+def _gguf_facts(path):
+    """Architecture, declared file type and observed per-tensor quant types; header reads only."""
+    try:
+        reader = gguf.GGUFReader(str(path))
+        arch_field = reader.get_field('general.architecture')
+        arch = str(arch_field.contents()) if arch_field is not None else None
+        type_field = reader.get_field('general.file_type')
+        file_type = None
+        if type_field is not None:
+            kind = int(type_field.contents())
+            try:
+                file_type = gguf.LlamaFileType(kind).name
+            except ValueError:
+                file_type = str(kind)
+        counts = {}
+        for tensor in reader.tensors:
+            name = tensor.tensor_type.name
+            counts[name] = counts.get(name, 0) + 1
+        total = len(reader.tensors)
+        del reader
+    except Exception as error:
+        raise ValueError(f'{Path(path).name} is not a readable GGUF: {error}') from error
+    if not total:
+        raise ValueError(f'{Path(path).name} carries no tensors')
+    return {'arch': arch, 'file_type': file_type,
+            'quant_types': dict(sorted(counts.items())), 'tensors': total}
+
+
+def _gguf_tensor_table(path):
+    """Per-tensor quant type and stored byte cost from the released bytes."""
+    try:
+        reader = gguf.GGUFReader(str(path))
+        table = {tensor.name: {'quant': tensor.tensor_type.name,
+                               'bytes': int(tensor.n_bytes)}
+                 for tensor in reader.tensors}
+        del reader
+    except Exception as error:
+        raise ValueError(f'{Path(path).name} is not a readable GGUF: {error}') from error
+    if not table:
+        raise ValueError(f'{Path(path).name} carries no tensors')
+    return table
+
+
+def _read_plan_bundle(path):
+    """Manifest and payload digest of a plan bundle, refusing a card that lies about its bytes."""
+    import tarfile
+    from .registry import BUNDLE_FORMAT
+    path = Path(path)
+    try:
+        with tarfile.open(path, 'r') as tar:
+            names = tar.getnames()
+            if len(names) != 2 or set(names) != {f'{BUNDLE_FORMAT}/manifest.json',
+                                                 f'{BUNDLE_FORMAT}/plan.pt'}:
+                raise ValueError(f'{path.name} members {names} do not match '
+                                 f'{BUNDLE_FORMAT}/manifest.json + plan.pt')
+            manifest_member = tar.extractfile(f'{BUNDLE_FORMAT}/manifest.json')
+            payload_member = tar.extractfile(f'{BUNDLE_FORMAT}/plan.pt')
+            if manifest_member is None or payload_member is None:
+                raise ValueError(f'{path.name} bundle members are not regular files')
+            manifest = json.loads(manifest_member.read())
+            payload = payload_member.read()
+    except (tarfile.TarError, json.JSONDecodeError) as error:
+        raise ValueError(f'{path.name} is not a readable plan-bundle: {error}') from error
+    if not isinstance(manifest, dict) or manifest.get('format') != BUNDLE_FORMAT:
+        found = manifest.get('format') if isinstance(manifest, dict) else None
+        raise ValueError(f'{path.name} manifest format {found!r} is not {BUNDLE_FORMAT!r}')
+    payload_sha = hashlib.sha256(payload).hexdigest()
+    if manifest.get('payload_sha256') != payload_sha:
+        raise ValueError(f'{path.name} plan card payload digest disagrees with the bundle payload: '
+                         f'manifest {str(manifest.get("payload_sha256"))[:12]}... '
+                         f'payload {payload_sha[:12]}...')
+    meta = manifest.get('meta')
+    if not isinstance(meta, dict):
+        raise ValueError(f'{path.name} manifest carries no signed meta')
+    if meta.get('payload_sha256') != payload_sha:
+        raise ValueError(f'{path.name} signed meta payload digest disagrees with the bundle payload')
+    if meta.get('meta_digest') != digest({key: value for key, value in meta.items()
+                                          if key != 'meta_digest'}):
+        raise ValueError(f'{path.name} signed meta fails its own meta_digest')
+    return manifest, payload_sha
+
+
+def _repro_spec(directory):
+    """The declared reproduction operands: repro-spec.json wins over evaluation.json's `repro` block."""
+    directory = Path(directory)
+    evaluation = _json_if(directory / 'evaluation.json')
+    if not isinstance(evaluation, dict):
+        raise ValueError(f'{directory}/evaluation.json is not a JSON object')
+    spec = dict(evaluation.get('repro') or {}) if isinstance(evaluation.get('repro'), dict) else {}
+    extra = _json_if(directory / 'repro-spec.json')
+    if extra is not None:
+        if not isinstance(extra, dict):
+            raise ValueError('repro-spec.json must be a JSON object')
+        spec.update(extra)
+    return evaluation, spec
+
+
+def _file_with_digest(directory, wanted):
+    if not isinstance(wanted, str) or len(wanted) != 64:
+        return None
+    for path in sorted(Path(directory).rglob('*')):
+        if path.name in REPRO_SEAL_FILES or path.is_symlink() or not path.is_file():
+            continue
+        if sha256_file(path) == wanted:
+            return path
+    return None
+
+
+def _repro_base(directory, evaluation, spec):
+    """The user's quant artifact: name, digest, size, GGUF header and observed quant types."""
+    declared = spec.get('base', spec.get('base_artifact'))
+    declared_path = _declared_path(declared)
+    declared_sha = declared.get('sha256') if isinstance(declared, dict) else None
+    twin = _json_if(Path(directory) / 'twin.json') or {}
+    twin_base = twin.get('base')
+    if not isinstance(twin_base, dict):
+        twin_base = {}
+    twin_sha = twin_base.get('sha256') if isinstance(twin_base.get('sha256'), str) else None
+    source = 'repro spec'
+    path = _resolve(directory, declared_path) if declared_path else None
+    if path is None:
+        for key in ('base_artifact', 'base_artifact_path'):
+            if isinstance(evaluation.get(key), str) and evaluation[key].strip():
+                path, source = _resolve(directory, evaluation[key]), f'evaluation.json {key}'
+                break
+    if path is None:
+        match = _file_with_digest(directory, declared_sha or twin_sha)
+        if match is not None:
+            path, source = match, 'release directory digest'
+    if path is None:
+        fallback = Path(directory) / 'base.gguf'
+        if fallback.is_file():
+            path, source = fallback, 'base.gguf in release directory'
+    if path is None:
+        declared_digest = declared_sha or twin_sha
+        if not declared_digest:
+            raise ValueError('no base artifact: declare repro.base (evaluation.json or '
+                             'repro-spec.json), ship base.gguf, or record twin.json.base.sha256')
+        return {'name': twin_base.get('file') or twin_base.get('name'), 'path': None,
+                'sha256': declared_digest, 'bytes': None, 'arch': twin_base.get('arch'),
+                'file_type': None, 'quant_types': None,
+                'tensors': twin_base.get('tensor_count'),
+                'observed': False,
+                'source': 'twin.json.base digest; the artifact is not shipped, so it cannot be re-hashed'}
+    path = Path(path)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f'base artifact {path} must be an existing regular file')
+    facts = _gguf_facts(path)
+    return {'name': path.name, 'path': _portable_path(directory, path),
+            'sha256': sha256_file(path), 'bytes': path.stat().st_size,
+            'arch': facts['arch'], 'file_type': facts['file_type'],
+            'quant_types': facts['quant_types'], 'tensors': facts['tensors'],
+            'observed': True, 'source': source}
+
+
+def _repro_plan(directory, evaluation, spec):
+    """The digest-pinned plan card: bundle digest, manifest payload digest and registry key."""
+    declared = spec.get('plan')
+    declared_path = _declared_path(declared)
+    key_hint = declared.get('registry_key') if isinstance(declared, dict) else None
+    card = _json_if(Path(directory) / 'plan-card.json')
+    if declared_path is None:
+        for name in ('plan-card.tar', 'plan.tar'):
+            if (Path(directory) / name).is_file():
+                declared_path = name
+                break
+    if declared_path is None and isinstance(card, dict):
+        declared_path = card.get('bundle_file')
+    if declared_path is None:
+        return None
+    path = _resolve(directory, declared_path)
+    if path.is_symlink() or not path.is_file():
+        raise ValueError(f'plan bundle {path} is missing')
+    manifest, payload_sha = _read_plan_bundle(path)
+    bundle_sha = sha256_file(path)
+    card_problem = None
+    if isinstance(card, dict):
+        if card.get('bundle_sha256') not in (None, bundle_sha):
+            card_problem = (f'plan card names bundle {str(card.get("bundle_sha256"))[:12]}... '
+                            f'but the bundle is {bundle_sha[:12]}...')
+        elif card.get('payload_sha256') not in (None, payload_sha):
+            card_problem = 'plan card payload digest disagrees with the plan card payload'
+    key = key_hint or manifest.get('key') or (card.get('key') if isinstance(card, dict) else None)
+    if key_hint and manifest.get('key') not in (None, key_hint) and card_problem is None:
+        card_problem = f'plan bundle key {manifest.get("key")!r} is not the declared {key_hint!r}'
+    record = {'bundle': _portable_path(directory, path), 'bundle_sha256': bundle_sha,
+              'registry_key': key, 'manifest_payload_digest': payload_sha,
+              'meta_digest': (manifest.get('meta') or {}).get('meta_digest')}
+    if card_problem is not None:
+        record['card_problem'] = card_problem
+    return record
+
+
+def _repro_suites(directory, evaluation, spec):
+    """Per-axis suite file: digest, row count and kind counts."""
+    declared = spec.get('suites')
+    if declared is None:
+        declared = evaluation.get('suites')
+    if declared is None:
+        config = (evaluation.get('provenance') or {}).get('config') or {}
+        declared = {name: config[name] for name in ('directions', 'selection', 'holdout')
+                    if isinstance(config.get(name), str)}
+    if declared is None:
+        return None
+    if not isinstance(declared, dict):
+        raise ValueError('repro.suites must map an axis name to a suite path')
+    out = {}
+    for axis in sorted(declared):
+        text = _declared_path(declared[axis])
+        if text is None:
+            raise ValueError(f'suite {axis!r} names no path')
+        path = _resolve(directory, text)
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f'suite {axis!r} {path} is missing')
+        rows, kinds, unparsed = 0, {}, 0
+        for line in path.read_text().splitlines():
+            if not line.strip():
+                continue
+            rows += 1
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                # A damaged row still counts: the digest is the operand, and a
+                # check must name the suite rather than lose the whole axis.
+                unparsed += 1
+                continue
+            kind = row.get('kind') if isinstance(row, dict) else None
+            if isinstance(kind, str):
+                kinds[kind] = kinds.get(kind, 0) + 1
+        out[str(axis)] = {'path': _portable_path(directory, path), 'sha256': sha256_file(path),
+                          'rows': rows, 'kinds': dict(sorted(kinds.items())),
+                          'unparsed': unparsed}
+    return out or None
+
+
+def _repro_serve_argv(directory, evaluation, spec):
+    """The full serve argv per axis, as the packet recorded it."""
+    declared = spec.get('serve_argv')
+    if declared is None:
+        for path in _SERVE_ARGV_PATHS:
+            value = _dig_path(evaluation, path)
+            if isinstance(value, list) and value:
+                declared = {'default': value}
+                break
+    if declared is None:
+        twin = _json_if(Path(directory) / 'twin.json') or {}
+        value = _dig_path(twin, 'behaviour.serve_argv')
+        if isinstance(value, list) and value:
+            declared = {'merged': value}
+    if declared is None:
+        return None
+    if not isinstance(declared, dict):
+        raise ValueError('repro.serve_argv must map an axis name to a full argv list')
+    out = {}
+    for axis in sorted(declared):
+        argv = declared[axis]
+        if (not isinstance(argv, list) or not argv
+                or any(not isinstance(token, str) for token in argv)):
+            raise ValueError(f'serve_argv {axis!r} must be a nonempty list of strings')
+        out[str(axis)] = [str(token) for token in argv]
+    return out or None
+
+
+def _repro_codec(directory, evaluation, spec):
+    """What the served artifact stores per edited tensor, and the bytes that cost."""
+    declared = spec.get('codec')
+    twin = _json_if(Path(directory) / 'twin.json') or {}
+    artifact_hint, rows = None, []
+    if isinstance(declared, dict):
+        artifact_hint = _declared_path(declared) or _declared_path(declared.get('artifact'))
+        raw = declared.get('tensors')
+        if isinstance(raw, dict):
+            raw = [dict(value, name=value.get('name', key)) for key, value in raw.items()]
+        if isinstance(raw, list):
+            rows = [dict(value) for value in raw if isinstance(value, dict)]
+    elif isinstance(declared, list):
+        rows = [dict(value) for value in declared if isinstance(value, dict)]
+    if not rows and isinstance(twin, dict):
+        artifact_hint = artifact_hint or _declared_path(twin.get('artifact'))
+        types = twin.get('edit_type_per_tensor') or {}
+        for row in ((twin.get('delivered') or {}).get('tensors') or []):
+            if not isinstance(row, dict) or not isinstance(row.get('name'), str):
+                continue
+            rows.append({'name': row['name'], 'quant': types.get(row['name']),
+                         'realized_cos': row.get('cos')})
+    if not rows:
+        return None
+    artifact_hint = artifact_hint or 'model-merged.gguf'
+    artifact = _resolve(directory, artifact_hint)
+    if artifact.is_symlink() or not artifact.is_file():
+        raise ValueError(f'codec artifact {artifact} is missing')
+    table = _gguf_tensor_table(artifact)
+    served = []
+    for row in sorted(rows, key=lambda item: str(item.get('name'))):
+        name = row.get('name')
+        if not isinstance(name, str):
+            raise ValueError('codec row has no tensor name')
+        if name not in table:
+            raise ValueError(f'codec names tensor {name!r}, which {artifact.name} does not carry')
+        quant = row.get('quant') or table[name]['quant']
+        if quant != table[name]['quant']:
+            raise ValueError(f'{name} ships as {table[name]["quant"]} but the codec table '
+                             f'says {quant}; the artifact and the codec table disagree')
+        cos = row.get('realized_cos', row.get('cos'))
+        if isinstance(cos, bool) or not isinstance(cos, (int, float)):
+            raise ValueError(f'codec row {name!r} has no realized cos')
+        served.append({'name': name, 'quant': quant,
+                       'realized_cos': round(float(cos), 6),
+                       'bytes': table[name]['bytes']})
+    return {'artifact': {'name': artifact.name,
+                         'path': _portable_path(directory, artifact),
+                         'sha256': sha256_file(artifact)},
+            'tensors': served}
+
+
+def _repro_tool():
+    """The tool that built the index: package version and the checkout it ran from."""
+    from importlib.metadata import PackageNotFoundError, version
+    try:
+        package_version = version('jdewitt')
+    except PackageNotFoundError:
+        from . import __version__ as package_version
+    describe = None
+    try:
+        result = subprocess.run(['git', '-C', str(Path(__file__).resolve().parent.parent),
+                                 'describe', '--always', '--dirty', '--tags'],
+                                capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            describe = result.stdout.strip() or None
+    except (OSError, subprocess.SubprocessError):
+        describe = None
+    return {'package': 'jdewitt', 'version': package_version, 'git_describe': describe}
+
+
+def _repro_runtime(directory, evaluation, spec):
+    """The binary, interpreter and backend a reproduction needs; a hash where one exists."""
+    declared = spec.get('runtime') if isinstance(spec.get('runtime'), dict) else {}
+    server_sha = declared.get('llama_server_sha256')
+    server_hint = _declared_path(declared.get('llama_server'))
+    if server_sha is None and server_hint is not None:
+        server = _resolve(directory, server_hint)
+        if server.is_file() and not server.is_symlink():
+            server_sha = sha256_file(server)
+    provenance = evaluation.get('provenance') or {}
+    if server_sha is None:
+        server_sha = provenance.get('server_sha256')
+    backend = declared.get('backend')
+    if backend is None:
+        compute = provenance.get('compute_backend') or {}
+        backend = compute.get('name') or compute.get('type') or 'cpu'
+    import platform
+    return {'llama_server_sha256': server_sha, 'python': platform.python_version(),
+            'backend': backend or 'unknown'}
+
+
+def build_repro(directory, tolerant=False):
+    """Machine-readable reproduction index over every operand a release depends on.
+
+    Version 2 keeps every version-1 field (release identity, index/evaluation/README
+    digests, release file digests, ledger digest) and adds `operands`: the base GGUF,
+    the plan card, each suite, each serve argv, the per-tensor codec table, and the
+    tool/runtime that produced the index. `binding_digest` covers the portable
+    operands only, so a signature can be checked on hardware whose Python or backend
+    differs without pretending those are release bytes. With ``tolerant=True`` a
+    missing or unreadable operand is recorded as ``{error: ...}`` instead of raising,
+    which is how `release-repro --check` names every move at once.
+    """
+    directory = Path(directory)
+    record = json.loads((directory / 'files.json').read_text())
+    evaluation, spec = _repro_spec(directory)
+    repro = {'version': 2,
+             'release_identity': record['release_identity'],
+             'files_index_digest': record['record_digest'],
+             'evaluation_sha256': sha256_file(directory / 'evaluation.json'),
+             'readme_sha256': sha256_file(directory / 'README.md'),
+             'files': {name: metadata['sha256'] for name, metadata in record['files'].items()}}
+    ledger = read_evidence(directory)
+    if ledger is not None:
+        repro['ledger_digest'] = ledger['ledger_digest']
+    operands = {}
+    for key, builder in (('base', _repro_base), ('plan', _repro_plan),
+                         ('suites', _repro_suites), ('serve_argv', _repro_serve_argv),
+                         ('codec', _repro_codec)):
+        try:
+            operands[key] = builder(directory, evaluation, spec)
+        except Exception as error:
+            if not tolerant:
+                raise
+            operands[key] = {'error': f'{type(error).__name__}: {error}'}
+        value = operands.get(key)
+        if isinstance(value, dict) and isinstance(value.get('card_problem'), str):
+            if not tolerant:
+                raise ValueError(value['card_problem'])
+            operands[key] = dict(value)
+    operands['tool'] = _repro_tool()
+    operands['runtime'] = _repro_runtime(directory, evaluation, spec)
+    repro['operands'] = operands
+    repro['binding_digest'] = digest(_portable_repro(repro))
+    repro['repro_digest'] = digest(repro)
+    return repro
+
+
+def _portable_repro(repro):
+    """The part of a v2 index that describes release bytes rather than the host that read them."""
+    view = {key: value for key, value in repro.items()
+            if key not in {'repro_digest', 'binding_digest'}}
+    operands = dict(view.get('operands') or {})
+    operands.pop('tool', None)
+    operands.pop('runtime', None)
+    view['operands'] = operands
+    return view
+
+
+def _build_repro_v1(directory):
+    """The exact version-1 payload, so signatures made before operands existed still verify."""
     directory = Path(directory)
     record = json.loads((directory / 'files.json').read_text())
     repro = {'version': 1,
@@ -557,6 +1026,80 @@ def build_repro(directory):
         repro['ledger_digest'] = ledger['ledger_digest']
     repro['repro_digest'] = digest(repro)
     return repro
+
+
+def _operand_count(repro):
+    files = len(repro.get('files') or {})
+    operands = len(_flatten(repro.get('operands') or {}))
+    return files + operands
+
+
+def _flatten(value, prefix=''):
+    """Every leaf of a JSON value under a dotted path: `suites.retention.sha256`, `argv[1]`."""
+    leaves = {}
+    if isinstance(value, dict):
+        for key in sorted(value, key=str):
+            leaves.update(_flatten(value[key], f'{prefix}.{key}' if prefix else str(key)))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            leaves.update(_flatten(item, f'{prefix}[{index}]'))
+    elif prefix:
+        leaves[prefix] = value
+    return leaves
+
+
+def _write_repro_file(path, repro):
+    """Write the index with sorted keys, so identical operands produce identical bytes."""
+    atomic_text(Path(path), json.dumps(repro, ensure_ascii=False, indent=2,
+                                       sort_keys=True, allow_nan=False) + '\n')
+
+
+def write_repro(directory, out=None):
+    """Build the reproduction index and write it as repro.json (the build path)."""
+    directory = Path(directory)
+    repro = build_repro(directory)
+    out = Path(out) if out is not None else directory / 'repro.json'
+    if out.is_symlink():
+        raise ValueError('repro.json cannot be a symlink')
+    _write_repro_file(out, repro)
+    return {'directory': str(directory.resolve()), 'repro': str(out.resolve()),
+            'repro_digest': repro['repro_digest'], 'binding_digest': repro['binding_digest'],
+            'operand_count': _operand_count(repro),
+            'next': f'release-repro {directory} --check'}
+
+
+def _signature_record(directory):
+    """Load and cryptographically check signature.json; the payload is returned unverified."""
+    import base64
+    import tempfile
+    directory = Path(directory)
+    path = directory / 'signature.json'
+    if path.is_symlink():
+        raise ValueError('Release signature cannot be a symlink')
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    record = json.loads(path.read_text())
+    if (record.get('version') != 1 or record.get('algorithm') != 'ed25519'
+            or set(record) != {'version', 'algorithm', 'public_key_pem', 'payload', 'signature_base64'}):
+        raise ValueError('Release signature shape mismatch')
+    payload = record['payload']
+    if not isinstance(payload, dict) or 'version' not in payload or 'repro_digest' not in payload:
+        raise ValueError('Release signature payload is not a repro index')
+    message = json.dumps(payload, sort_keys=True, separators=(',', ':')).encode()
+    signature = base64.b64decode(record['signature_base64'])
+    with tempfile.TemporaryDirectory() as tmp:
+        message_path = Path(tmp) / 'message'
+        signature_path = Path(tmp) / 'signature'
+        key_path = Path(tmp) / 'public.pem'
+        message_path.write_bytes(message)
+        signature_path.write_bytes(signature)
+        key_path.write_text(record['public_key_pem'])
+        try:
+            _openssl('pkeyutl', '-verify', '-pubin', '-inkey', str(key_path), '-rawin',
+                     '-in', str(message_path), '-sigfile', str(signature_path))
+        except subprocess.CalledProcessError:
+            raise ValueError('Release signature verification failed')
+    return record
 
 
 def sign_release(directory, secret_path):
@@ -580,51 +1123,136 @@ def sign_release(directory, secret_path):
     public = _openssl('pkey', '-pubout', '-in', str(secret)).stdout
     record = {'version': 1, 'algorithm': 'ed25519', 'public_key_pem': public,
               'payload': repro, 'signature_base64': signature}
+    # The index lands before the seal: a signature.json without its repro.json is a
+    # seal over nothing, while a repro.json without a signature is visibly unsigned.
+    _write_repro_file(directory / 'repro.json', repro)
     atomic_json(directory / 'signature.json', record)
-    return {'directory': str(directory.resolve()), 'repro_digest': repro['repro_digest'],
+    return {'directory': str(directory.resolve()), 'repro': str((directory / 'repro.json').resolve()),
+            'repro_digest': repro['repro_digest'], 'binding_digest': repro['binding_digest'],
+            'signature_digest': repro['repro_digest'],
             'public_key_sha256': hashlib.sha256(public.encode()).hexdigest(),
+            'operand_count': _operand_count(repro),
+            'next': f'release-repro {directory} --check',
             'note': 'Signs byte reproducibility, not model quality; store the public key where buyers can pin it.'}
 
 
 def verify_signature(directory, public_path=None):
     """Verify a release signature; with public_path also pin authenticity to that key."""
-    import base64
-    import tempfile
     directory = Path(directory)
-    path = directory / 'signature.json'
-    if path.is_symlink():
-        raise ValueError('Release signature cannot be a symlink')
-    if not path.is_file():
-        raise FileNotFoundError(path)
-    record = json.loads(path.read_text())
-    if (record.get('version') != 1 or record.get('algorithm') != 'ed25519'
-            or set(record) != {'version', 'algorithm', 'public_key_pem', 'payload', 'signature_base64'}):
-        raise ValueError('Release signature shape mismatch')
-    repro = build_repro(directory)
-    if record['payload'] != repro:
-        raise ValueError('Signature payload does not match current release state')
-    message = json.dumps(record['payload'], sort_keys=True, separators=(',', ':')).encode()
-    signature = base64.b64decode(record['signature_base64'])
-    with tempfile.TemporaryDirectory() as tmp:
-        message_path = Path(tmp) / 'message'
-        signature_path = Path(tmp) / 'signature'
-        key_path = Path(tmp) / 'public.pem'
-        message_path.write_bytes(message)
-        signature_path.write_bytes(signature)
-        key_path.write_text(record['public_key_pem'])
-        try:
-            _openssl('pkeyutl', '-verify', '-pubin', '-inkey', str(key_path), '-rawin',
-                     '-in', str(message_path), '-sigfile', str(signature_path))
-        except subprocess.CalledProcessError:
-            raise ValueError('Release signature verification failed')
+    record = _signature_record(directory)
+    payload = record['payload']
+    if payload.get('version') == 1:
+        repro = _build_repro_v1(directory)
+        if payload != repro:
+            raise ValueError('Signature payload does not match current release state')
+    else:
+        repro = build_repro(directory)
+        if payload.get('binding_digest') != repro.get('binding_digest'):
+            raise ValueError('Signature payload does not match current release state')
     if public_path is not None:
         pinned = Path(public_path).read_text().strip()
         if pinned != record['public_key_pem'].strip():
             raise ValueError('Signing key is not the pinned public key')
     return {'valid': True, 'directory': str(directory.resolve()),
-            'repro_digest': repro['repro_digest'], 'release_identity': repro['release_identity'],
+            'repro_digest': payload['repro_digest'], 'release_identity': payload['release_identity'],
+            'binding_digest': payload.get('binding_digest'),
             'authenticity': 'verified against pinned public key' if public_path else
                             'signature math verified; not checked against a pinned public key'}
+
+
+def check_repro(directory, strict_provenance=False):
+    """Re-hash every operand and compare it with the seal; name each moved operand by JSON path.
+
+    The seal is signature.json's payload when present (the signed index), otherwise
+    repro.json. Release files are re-hashed from disk rather than compared with
+    files.json, so a changed artifact is a move even if its index entry was rewritten.
+    Tool/runtime values describe the box that built the index, not release bytes: they
+    are reported as `provenance_drift` and only fail with ``strict_provenance``.
+    """
+    directory = Path(directory)
+    if directory.is_symlink() or not directory.is_dir():
+        raise ValueError('Release must be a regular directory')
+    signature_path = directory / 'signature.json'
+    repro_path = directory / 'repro.json'
+    if signature_path.is_file():
+        expected, seal = _signature_record(directory)['payload'], 'signature.json'
+    elif repro_path.is_file():
+        if repro_path.is_symlink():
+            raise ValueError('repro.json cannot be a symlink')
+        expected, seal = json.loads(repro_path.read_text()), 'repro.json'
+        if (not isinstance(expected, dict)
+                or expected.get('repro_digest') != digest({key: value for key, value in expected.items()
+                                                          if key != 'repro_digest'})):
+            raise ValueError('repro.json integrity mismatch')
+    else:
+        raise FileNotFoundError(f'{directory}/repro.json '
+                                f'(build it: release-repro {directory} --out repro.json)')
+    if expected.get('version') == 1:
+        raise ValueError('repro index version 1 carries no operands; rebuild it with '
+                         'release-repro DIR --out repro.json')
+    actual = build_repro(directory, tolerant=True)
+    moved, drift, problems = [], [], []
+    files_checked = 0
+    for name, metadata in sorted((expected.get('files') or {}).items()):
+        files_checked += 1
+        wanted = metadata if isinstance(metadata, str) else (metadata or {}).get('sha256')
+        path = directory / name
+        try:
+            found = None if (path.is_symlink() or not path.is_file()) else sha256_file(path)
+        except OSError:
+            found = None
+        if found != wanted:
+            moved.append({'operand': f'files.{name}.sha256', 'expected': wanted, 'actual': found})
+    for key in ('version', 'release_identity', 'files_index_digest', 'evaluation_sha256',
+                'readme_sha256', 'ledger_digest'):
+        if expected.get(key) != actual.get(key):
+            moved.append({'operand': key, 'expected': expected.get(key), 'actual': actual.get(key)})
+    expected_flat = _flatten(expected.get('operands') or {})
+    actual_flat = _flatten(actual.get('operands') or {})
+    broken = {key: value for key, value in (actual.get('operands') or {}).items()
+              if isinstance(value, dict) and isinstance(value.get('error'), str)}
+    for key in sorted(broken):
+        moved.append({'operand': key,
+                      'expected': (expected.get('operands') or {}).get(key),
+                      'actual': broken[key]})
+    for operand in sorted(set(expected_flat) | set(actual_flat)):
+        root = operand.split('.', 1)[0].split('[', 1)[0]
+        if root in broken:
+            continue
+        if expected_flat.get(operand, _MISSING) == actual_flat.get(operand, _MISSING):
+            continue
+        entry = {'operand': operand, 'expected': expected_flat.get(operand),
+                 'actual': actual_flat.get(operand)}
+        if operand.startswith(('tool.', 'runtime.')):
+            drift.append(entry)
+        else:
+            moved.append(entry)
+    for key in ('base', 'plan', 'suites', 'serve_argv', 'codec'):
+        value = (actual.get('operands') or {}).get(key)
+        if isinstance(value, dict) and isinstance(value.get('error'), str):
+            problems.append({'operand': key, 'problem': value['error']})
+        elif isinstance(value, dict) and isinstance(value.get('card_problem'), str):
+            problems.append({'operand': key, 'problem': value['card_problem']})
+    if seal == 'signature.json' and repro_path.is_file():
+        shipped = json.loads(repro_path.read_text())
+        if shipped.get('repro_digest') != expected.get('repro_digest'):
+            moved.append({'operand': 'repro.repro_digest', 'expected': expected.get('repro_digest'),
+                          'actual': shipped.get('repro_digest')})
+    if strict_provenance:
+        moved.extend(drift)
+        drift = []
+    valid = not moved and not problems
+    return {'valid': valid, 'directory': str(directory.resolve()), 'seal': seal,
+            'operand_count': files_checked + len(expected_flat),
+            'checked': {'files': files_checked, 'operands': len(expected_flat)},
+            'resolved': {key: (actual.get('operands') or {}).get(key)
+                         for key in ('base', 'plan', 'suites', 'serve_argv', 'codec')},
+            'moved': moved, 'provenance_drift': drift, 'problems': problems,
+            'next': (f'release-repro {directory} --check' if not valid else
+                     'release-verify-signature DIR --public PUB.pem; verify-release DIR'),
+            'note': ('Every operand re-hashed from the release directory and the paths the '
+                     'index names; tool/runtime differences are provenance drift, not release '
+                     'bytes, and fail only with --strict-provenance.')}
 
 
 def verify_release(directory,expected_identity=None):
@@ -638,14 +1266,14 @@ def verify_release(directory,expected_identity=None):
         raise ValueError('Release index integrity mismatch')
     for name,metadata in record['files'].items():
         p=Path(name)
-        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name or name in {'evidence.json','signature.json'}:
+        if p.is_absolute() or '..' in p.parts or str(p)!=name or not name or name in {'evidence.json','signature.json',*REPRO_SEAL_FILES}:
             raise ValueError('Invalid release index path')
         if set(metadata)!={'sha256','bytes'} or type(metadata['bytes']) is not int or metadata['bytes']<0:
             raise ValueError('Invalid release file metadata')
     if expected_identity is not None and record['release_identity']!=expected_identity:
         raise ValueError('Release identity mismatch')
     actual=release_inventory(directory)
-    if {k:v for k,v in actual.items() if k not in {'evidence.json','signature.json'}}!=record['files']:
+    if {k:v for k,v in actual.items() if k not in {'evidence.json','signature.json',*REPRO_SEAL_FILES}}!=record['files']:
         raise ValueError('Release file set/hash mismatch')
     evaluation=json.loads((directory/'evaluation.json').read_text())
     readme=(directory/'README.md').read_text()

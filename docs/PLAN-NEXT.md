@@ -1400,3 +1400,40 @@ into the merged field. The twin artifact stays outside the clone; the card
 carries its sha256. The twin record itself is committed at
 `verification/adapter-card/twin-spark-perlayer-10-27.json`, with a README that
 says which numbers were measured here and which are the quoted behaviour pair.
+
+### The release ships a written reproduction index (2026-11-22)
+
+`release-sign` now writes `repro.json` beside `signature.json`, and
+`release-repro DIR --out repro.json` is the build-only path. Version 2 keeps every
+version-1 field (release identity, files/evaluation/README/ledger digests) and adds
+`operands`: the base GGUF (name, sha256, bytes, architecture, declared file type,
+observed per-tensor quant-type counts), the plan card (bundle sha256, manifest
+payload digest, registry key, meta digest), each suite (path, sha256, rows, kind
+counts, unparsed rows), each serve argv, and the codec table (per edited tensor:
+name, chosen quant type, realized cos, stored byte cost read from the artifact
+header). `tool` (package version, `git describe`) and `runtime` (llama.cpp binary
+sha256, Python, backend) are recorded too, but only the portable operands enter
+`binding_digest`; signature payloads still cover the whole index, and a version-1
+signature still verifies byte-for-byte.
+
+Operands are declared by `evaluation.json`'s `repro` block (or a `repro-spec.json`
+in the release directory) and fall back to what a phase-6 directory already
+records: `twin.json` supplies the base digest, the codec rows and the pinned argv,
+and `plan-card.json` cross-checks the bundle. Nothing is inferred from a path
+that was not named.
+
+`release-repro DIR --check` is the failing gate: it re-hashes every release file
+from disk, re-derives every operand and compares each leaf with the seal
+(`signature.json`'s payload, else `repro.json`), printing
+`moved: [{operand, expected, actual}]` with operand JSON paths
+(`suites.retention.sha256`, `plan.bundle_sha256`, `serve_argv.retention[6]`) and
+exiting 1. A missing operand, a plan card whose payload digest disagrees with its
+bundle, and a codec table whose quant type disagrees with the artifact are named
+refusals in `problems`. Tool/runtime differences are `provenance_drift` (they
+describe the box, not the bytes) and fail only with `--strict-provenance`. The
+build path validates before writing, so a refused operand never leaves a partial
+seal. Fixture gate: a synthetic dir (tiny F32 GGUF, plan-bundle tar, two-row
+suite, repro spec) signs, checks 0 with 50 operands, and names
+`suites.retention.sha256`, `plan.bundle_sha256` and `serve_argv.retention[6]`
+after the corresponding one-byte/one-token edits; restoring each exits 0 again,
+and a rebuild is byte-identical.
