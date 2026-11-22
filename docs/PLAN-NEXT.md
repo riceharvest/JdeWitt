@@ -1319,8 +1319,10 @@ for the blockless dtypes. New modules + compiled-C falsifiers:
   dequant needed an x86 sNaN-quieting detail (C's f16→f32 sets bit 22; numpy 0.19
   does not), which caused 49 mismatched blocks before the fix.
 
-Q2_0 (raw type id 42) has no entry in published gguf (0.19.0 is the latest), so its
-codec and the id→name fallback are tracked separately; Q4_2/Q4_3 and the
+The five blockless dtypes are registered in CODECS too (decode still returns
+their native dtype), so `encodable_types()` covers all 35 types. Q2_0 (raw type
+id 42) has no entry in published gguf (0.19.0 is the latest), so its codec and
+the id→name fallback are tracked separately; Q4_2/Q4_3 and the
 Q4_0_4_x/8_x GPU variants are removed upstream and cannot appear in files.
 
 ### Q2_0 (raw type id 42) landed (2026-11-22)

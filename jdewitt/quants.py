@@ -1205,3 +1205,11 @@ CODECS['IQ2_XS'] = (74, QK_K, quantize_iq2_xs, dequantize_iq2_xs)
 CODECS['IQ2_S'] = (82, QK_K, quantize_iq2_s, dequantize_iq2_s)
 CODECS['IQ1_S'] = (50, QK_K, quantize_iq1_s, dequantize_iq1_s)
 CODECS['IQ1_M'] = (56, QK_K, quantize_iq1_m, dequantize_iq1_m)
+
+
+# Blockless dtypes register like any other codec, with one difference: decode_values
+# returns their NATIVE dtype (see the RAW_CODECS branch in ggufio) so I32/I64 ids and
+# masks are not rounded through float32. quantize_* refuse overflow/NaN instead of
+# reproducing C's undefined behaviour.
+from .raw_dtypes import RAW_CODECS as _RAW_CODECS  # noqa: E402
+CODECS.update(_RAW_CODECS)
