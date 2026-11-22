@@ -33,7 +33,7 @@ DEFAULT_BINARY = '/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-p
 
 
 def perplexity(binary, model, corpus, *, ctx=512, threads=16, lora=None,
-               lora_scale=None, loras=None, timeout=1800):
+               lora_scale=None, loras=None, ngl=0, timeout=1800):
     """PPL of `model` over `corpus`, optionally with one LoRA adapter applied."""
     path = Path(model)
     if not path.is_file():
@@ -42,7 +42,10 @@ def perplexity(binary, model, corpus, *, ctx=512, threads=16, lora=None,
         raise ValueError(f'corpus {corpus} does not exist')
     if not Path(binary).exists():
         raise ValueError(f'perplexity binary {binary} does not exist; pass --perplexity')
-    command = [str(binary), '-m', str(path), '-f', str(corpus), '-ngl', '0',
+    # -ngl is a parameter, not a constant: the ladder is compute-bound and a GPU reads
+    # the same numbers ~10x faster, so refusing GPU perplexity would make the free part
+    # of the search the slow part.
+    command = [str(binary), '-m', str(path), '-f', str(corpus), '-ngl', str(int(ngl)),
                '-c', str(ctx), '-t', str(threads)]
     if loras:
         # Repeatable --lora-scaled is deprecated in this fork: only the LAST value is
@@ -74,10 +77,11 @@ def ln(value):
     return math.log(value)
 
 
-def ladder(binary, model, jobs, threads=16, parallel=3, timeout=1800):
+def ladder(binary, model, jobs, threads=16, parallel=3, ngl=0, timeout=1800):
     """Run many perplexity readings CONCURRENTLY: {key: reading}.
 
-    ``jobs`` are dicts with key/corpus/lora/scale/ctx. Each reading is its own
+    ``jobs`` are dicts with key/corpus/lora/scale/ctx (and optionally ngl, which
+    overrides the ladder default for one reading). Each reading is its own
     llama-perplexity process, so a shape x strength x corpus ladder costs about one
     sequential run instead of one per arm: measured 3.7 s per reading on a 1.7B
     Q4_K_M at ctx 128, and 3-way concurrency turns a 17-reading ladder into ~7 s
@@ -91,7 +95,7 @@ def ladder(binary, model, jobs, threads=16, parallel=3, timeout=1800):
         reading = perplexity(binary, model, job['corpus'], ctx=job.get('ctx', 512),
                              threads=per_job_threads, lora=job.get('lora'),
                              lora_scale=job.get('scale'), loras=job.get('loras'),
-                             timeout=timeout)
+                             ngl=job.get('ngl', ngl), timeout=timeout)
         return job['key'], reading
 
     results = {}

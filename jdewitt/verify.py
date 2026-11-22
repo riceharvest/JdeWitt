@@ -29,6 +29,13 @@ NOT_RECOMPUTABLE = {
     'axis_norm_by_layer': 'axis norm and scale are inseparable in the stored delta',
     'scale': 'scale multiplies the axis; only their product survives in the file',
     'axis_space': 'output/input projection is not identifiable from one file pair',
+    'certified': 'certification is the agent shape read on the shipped bytes (R2); a file field cannot carry it',
+    'adapter_screen_state': 'screened on the adapter over the pristine artifact, not on these bytes (R8)',
+    'screen_source': 'provenance of the screen, not a property of these bytes',
+    'residual_refusals': 'residual rows were screened on the adapter curve, not on these bytes',
+    'residual_undecided': 'an undecided row is not recomputable from file bytes',
+    'residual_rows': 'row ids from the adapter screen; there are no bytes to recompute them from',
+    'best_effort': 'a process label, not a property of these bytes',
 }
 
 

@@ -89,7 +89,7 @@ def _add_packed(writer, name, raw, ggml_shape, qtype):
 
 def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                        edit_type='q6_k', renormalize=False, verify_untouched=True,
-                       repair='none', norm_clamp=(0.9, 1.1)):
+                       repair='none', norm_clamp=(0.9, 1.1), claims=None):
     """Write `out`: the user's artifact, with the edited tensors re-encoded.
 
     ``edits`` maps a tensor name to ``(axis, space)`` (a fitted direction) or to an
@@ -230,6 +230,13 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     # and `verify --claim` can only compare fields it can find in the file.
     import json as _json
 
+    if claims:
+        # Behavioural claims ride along WITH their provenance, never as a verdict: a
+        # screen on an adapter is not a certification of these bytes (R2/R8), so the
+        # artifact records certified=false, what was screened and what it left open.
+        # A release that reads as "clears" because of a field we wrote is the exact
+        # failure mode this project exists to prevent.
+        fingerprint.update({k: v for k, v in claims.items() if v is not None})
     written = write_container(out, header, payloads, qtypes,
                               extra_kv=[('jdewitt.fingerprint',
                                          _json.dumps(fingerprint, sort_keys=True))])

@@ -130,8 +130,9 @@ def check_adapter(server, adapter_id, scale):
                            f'(it reports {applied}): a board over it would score the base weights')
 
 
-def capability(binary, model, corpus, ctx, threads, lora=None, scale=None):
-    reading = perplexity(binary, model, corpus, ctx=ctx, threads=threads, lora=lora, lora_scale=scale)
+def capability(binary, model, corpus, ctx, threads, lora=None, scale=None, ngl=0):
+    reading = perplexity(binary, model, corpus, ctx=ctx, threads=threads, lora=lora,
+                         lora_scale=scale, ngl=ngl)
     if 'ppl' not in reading:
         raise RuntimeError(f'perplexity over {model} failed: {reading}')
     return {'ppl': reading['ppl'], 'nats': round(ln(reading['ppl']), 4), 'seconds': reading['seconds']}
@@ -181,8 +182,8 @@ def board(artifact, records, *, serve, base=None, adapter=None, adapter_scale=1.
     corpus_path.parent.mkdir(parents=True, exist_ok=True)
     corpus_path.write_text(text)
     lora = (adapter, adapter_scale) if adapter else (None, None)
-    own = capability(perplexity_binary, artifact, corpus_path, 512, threads, *lora)
-    pristine = capability(perplexity_binary, base, corpus_path, 512, threads) if base else None
+    own = capability(perplexity_binary, artifact, corpus_path, 512, threads, *lora, ngl=ngl)
+    pristine = capability(perplexity_binary, base, corpus_path, 512, threads, ngl=ngl) if base else None
 
     rows, by_family = [], {}
     with Server(serve, artifact, adapters=[adapter] if adapter else (), ctx=ctx, ngl=ngl,
@@ -209,6 +210,15 @@ def board(artifact, records, *, serve, base=None, adapter=None, adapter_scale=1.
         'artifact': str(artifact), 'artifact_sha256': file_sha(artifact),
         'base': str(base) if base else None, 'adapter': str(adapter) if adapter else None,
         'records_sha256': file_sha(records), 'corpus_sha256': hashlib.sha256(text.encode()).hexdigest(),
+        # R9: a removal number without the config it was measured under is an
+        # anecdote, and on byte-identical files this stack flips verdicts between
+        # serve configs. The board records the argv it actually ran, plus the
+        # perplexity reading's own config, so its numbers can be compared only
+        # against numbers taken the same way.
+        'config': {'serve_argv': server._command(), 'ctx': ctx, 'ngl': ngl,
+                   'ngl_effective': getattr(server, 'ngl', None), 'parallel': 1,
+                   'perplexity': {'binary': str(perplexity_binary), 'ctx': 512,
+                                  'ngl': ngl, 'threads': threads}},
         'families': list(groups), 'prompts_per_family': prompts, 'tokens_per_row': tokens,
         'rows': total,
         'refusal_rate_by_family': {name: round(refused[name] / prompts, 4) for name in groups},

@@ -560,8 +560,14 @@ def tune_command(args):
     # the expensive ladder must not pay for it twice, and a re-run with a wider
     # grid only pays for the new arms.
     ladder_path = out_dir / 'ladder.json'
+    # A reading is only comparable within one measurement config. --ppl-ngl moves
+    # the ladder between CPU and GPU, and R9's rule applies to readings too: a
+    # number without its config is an anecdote. Cache identity therefore carries
+    # the binary and the shape of the run, not just the artifact and corpora.
     identity = {'artifact': str(Path(args.gguf).resolve()), 'sha256': artifact_sha,
-                'corpora': {label: str(Path(path).resolve()) for label, path in corpora.items()}}
+                'corpora': {label: str(Path(path).resolve()) for label, path in corpora.items()},
+                'read': {'binary': str(Path(args.perplexity).resolve()),
+                         'ngl': args.ppl_ngl, 'ctx': args.ctx, 'threads': args.threads}}
     cache = {}
     if ladder_path.is_file():
         try:
@@ -587,7 +593,8 @@ def tune_command(args):
         todo = [job for job in jobs if 'ppl' not in (cache.get(job['key']) or {})]
         if todo:
             readings = ladder(args.perplexity, str(args.gguf), todo,
-                              threads=args.threads, parallel=args.parallel)
+                              threads=args.threads, parallel=args.parallel,
+                              ngl=args.ppl_ngl)
             cache.update({key: reading for key, reading in readings.items() if 'ppl' in reading})
             errors.update({key: reading for key, reading in readings.items() if 'ppl' not in reading})
             atomic_json(ladder_path, {'identity': identity, 'readings': cache})
@@ -672,6 +679,11 @@ def tune_command(args):
     screen_identity = dict(identity)
     screen_identity['records'] = {'path': str(Path(args.records).resolve()),
                                   'sha256': file_sha(args.records, chunk=4 << 20)}
+    # R9: a shape verdict is conditional on the serve config, so a cached screen may
+    # only be reused under the same ctx/ngl. The real ngl can drop on a CUDA OOM
+    # fallback, which is why screen_one also keys on the ngl the server actually got.
+    screen_identity['serve'] = {'ctx': args.screen_ctx, 'ngl': args.ngl,
+                                'lib_dirs': [d for d in (args.serve_lib or '').split(':') if d]}
     screens = {}
     cached_spend = {'tokens': 0}
     if screens_path.is_file():
@@ -789,7 +801,8 @@ def tune_command(args):
             key = '|'.join(str(piece) for piece in (
                 arm['family'], arm['scale'], rows, args.screen_k, args.escalate_to,
                 args.settle_chars, basis,
-                adapters[arm['family']].get('tensors'), file_sha(adapters[arm['family']]['path'])[:12]))
+                adapters[arm['family']].get('tensors'), file_sha(adapters[arm['family']]['path'])[:12],
+                str(served), getattr(server, 'ctx', None), getattr(server, 'ngl', None)))
             if key in screens:
                 hits['screen'] += 1
                 cached_spend['tokens'] += screens[key].get('tokens') or 0
@@ -802,6 +815,10 @@ def tune_command(args):
             spent += result['tokens']
             budget_left -= result['tokens']
             result['rows_requested'] = rows
+            # The packet carries the argv the verdict is conditional on (R9), with
+            # the ngl the server REALLY got after any OOM fallback.
+            result['serve'] = {'binary': str(served), 'ctx': getattr(server, 'ctx', None),
+                               'ngl': getattr(server, 'ngl', None)}
             # Spend the remaining budget where it can still decide something: the
             # undecided rows, window doubling, until a row settles or the cap is hit.
             window = int(args.screen_k)
@@ -989,12 +1006,47 @@ def tune_command(args):
             if confirmed_clean is not None:
                 winner = confirmed_clean
             else:
-                # The probe row cleared but the full row set did not: that arm is not
-                # shippable, and keeping it would ship a one-row measurement.
+                # The probe row cleared but the full row set did not. Default is to ship
+                # nothing: an arm that leaves refusals must not be presented as a clear.
+                # --best-effort ships the arm that leaves the FEWEST, and the artifact
+                # records certified=false plus the residual row ids, because a measured
+                # 7-of-8 with a named residual beats no artifact at all.
                 confirmed_refusal = {'family': winner['family'], 'scale': winner['scale'],
                                      'reason': 'probe cleared, full-row confirmation refused',
                                      'rows': args.screen_rows}
-                winner = None
+                # Only arms measured on the SAME rows are comparable. With
+                # abort_on='refusal' an arm can stop on its first row, so the
+                # comparison is the refusal RATE over rows actually decoded, then
+                # undecided rows (an undecided row is not a cleared one, R6), then
+                # damage -- never a raw count that rewards having been asked less.
+                residual = [arm for arm in arms
+                            if (arm.get('screen') or {}).get('rows_requested') == args.screen_rows]
+
+                def unresolved(arm):
+                    screen = arm['screen']
+                    verdicts = screen.get('verdicts') or {}
+                    decoded = int(screen.get('rows_decoded') or 0)
+                    rate = int(verdicts.get('refusal', 0)) / decoded if decoded else 1.0
+                    return (rate, int(verdicts.get('escalate', 0)), damage(arm) or 0.0)
+
+                if args.best_effort and residual:
+                    best = min(residual, key=unresolved)
+                    verdicts = best['screen'].get('verdicts') or {}
+                    best['best_effort'] = True
+                    best['residual_refusals'] = int(verdicts.get('refusal', 0))
+                    best['residual_undecided'] = int(verdicts.get('escalate', 0))
+                    best['residual_rows_decoded'] = int(best['screen'].get('rows_decoded') or 0)
+                    best['residual_rows'] = [row['id'] for row in best['screen'].get('detail', [])
+                                             if row.get('verdict') in ('refusal', 'escalate')]
+                    winner = best
+                    confirmed_refusal['shipped_as'] = 'best_effort'
+                    confirmed_refusal['shipped_family'] = best['family']
+                    confirmed_refusal['shipped_scale'] = best['scale']
+                    confirmed_refusal['residual_refusals'] = best['residual_refusals']
+                    confirmed_refusal['residual_undecided'] = best['residual_undecided']
+                    confirmed_refusal['residual_rows'] = best['residual_rows']
+                else:
+                    winner = None
     finally:
         if server is not None:
             server.stop()
@@ -1019,6 +1071,7 @@ def tune_command(args):
         'strength_searched_for_codec': searched,
         'codec_refusal': codec_refusal,
         'confirmation_refusal': confirmed_refusal,
+        'best_effort': bool(args.best_effort),
         'shipping_options': ({'adapter': {'path': adapters[winner['family']]['path'],
                                           'scale': winner['scale'],
                                           'note': 'the exact fp32 edit; serve with --lora-scaled '
@@ -1069,8 +1122,13 @@ def tune_command(args):
             'round 2 decodes the Pareto front only (screen rows x --screen-k), classifies every '
             'prefix by refusal shape and counts the tokens each verdict cost; undecided rows are '
             'continued before they are called undecided.',
-            'the winner is the LOWEST-PERPLEXITY arm whose screen left no refusal and nothing '
-            'undecided, so the token spend selects the set and perplexity picks inside it.',
+            ('the winner is the BEST-EFFORT arm: no arm resolved every row, so the arm the '
+             'confirmation left with the fewest unresolved rows ships, and the artifact records '
+             'certified=false with the residual rows; it is not a removal claim.'
+             if args.best_effort and winner is not None and winner.get('best_effort')
+             else 'the winner is the LOWEST-PERPLEXITY arm whose screen left no refusal and '
+                  'nothing undecided, so the token spend selects the set and perplexity picks '
+                  'inside it.'),
             'a screen verdict is a screening signal (R2/R6): certification stays the agent shape '
             'read on merged bytes at one pinned serve config.',
             'an adapter curve is a screening approximation, not the export delta (R8); the '
@@ -1164,13 +1222,28 @@ def tune_command(args):
         target_path = (args.out_gguf if args.out_gguf
                        else out_dir / f"edited-{winner['family'].replace('|', '-')}"
                                       f"@{winner['scale']}-{Path(args.gguf).name}")
+        # What this file may claim about behaviour: nothing (R2/R8). The screen ran
+        # on the ADAPTER over the pristine bytes, and on this artifact family that
+        # curve is a measured overstatement of the export delta, so a clearance
+        # written here would be a verdict on bytes nobody screened. The record still
+        # travels -- provenance, adapter-screen state and the rows it left open --
+        # so the artifact cannot be read as certified, and best-effort cannot be
+        # mistaken for a clear.
+        screen_state = (screen_read(winner) or {}).get('state')
+        claims = {'certified': False,
+                  'adapter_screen_state': screen_state,
+                  'screen_source': 'adapter over the pristine artifact, not these bytes (R8)',
+                  'residual_refusals': winner.get('residual_refusals'),
+                  'residual_undecided': winner.get('residual_undecided'),
+                  'residual_rows': winner.get('residual_rows') or None,
+                  'best_effort': bool(winner.get('best_effort'))}
         rewrite = rewrite_with_edits(str(args.gguf), str(target_path), edits,
                                      scale=winner['scale'], axis_space=args.axis_space,
                                      edit_type=args.edit_type,
-                                     renormalize=args.renormalize)
+                                     renormalize=args.renormalize, claims=claims)
         edited_ppl = {}
         for label, corpus in corpora.items():
-            edited_ppl[label] = perplexity(args.perplexity, str(target_path), corpus,
+            edited_ppl[label] = perplexity(args.perplexity, str(target_path), corpus, ngl=args.ppl_ngl,
                                            ctx=args.ctx, threads=args.threads)
         metrics = (_arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
                                  'ppl': edited_ppl}, base)
@@ -1225,7 +1298,7 @@ def tune_command(args):
                                  renormalize=args.renormalize)
         served_ppl = {}
         for label, corpus in corpora.items():
-            served_ppl[label] = perplexity(args.perplexity, str(served_path), corpus,
+            served_ppl[label] = perplexity(args.perplexity, str(served_path), corpus, ngl=args.ppl_ngl,
                                            ctx=args.ctx, threads=args.threads)
         metrics = (_arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
                                  'ppl': served_ppl}, base)
@@ -1253,7 +1326,8 @@ def tune_command(args):
                           renormalize=args.renormalize)
     merged_ppl, merged_metrics = {}, {}
     for label, corpus in corpora.items():
-        reading = perplexity(args.perplexity, args.gguf, corpus, ctx=args.ctx, threads=args.threads)
+        reading = perplexity(args.perplexity, args.gguf, corpus, ctx=args.ctx,
+                             threads=args.threads, ngl=args.ppl_ngl)
         merged_ppl[label] = reading
     if all('ppl' in reading for reading in merged_ppl.values()):
         merged_metrics = _arm_metrics({'shape': winner['shape'], 'scale': winner['scale'],
