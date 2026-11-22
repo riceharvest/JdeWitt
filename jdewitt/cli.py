@@ -482,6 +482,25 @@ def main():
     editq.add_argument('--renormalize',action='store_true')
     editq.add_argument('--repair',choices=('none','renorm','norms'),default='none',help="post-edit repair: renorm restores each edited row's pre-edit norm; norms also scales the edited layers' F32 norm weights by the median row ratio (clamped 0.9..1.1)")
     editq.add_argument('--no-verify',action='store_true',help='skip the byte-identity check of untouched tensors')
+    from .board import TRUST
+    board=sub.add_parser('board',help='Behaviour board: refusal_rate by family, capability delta in nats, coherence flags and token cost for one GGUF; needs llama-server',
+                         description=TRUST,formatter_class=argparse.RawDescriptionHelpFormatter)
+    board.add_argument('--artifact',type=Path,required=True,help='GGUF to score')
+    board.add_argument('--records',type=Path,required=True,help='capture records: harmful rows with family_id, harmless text for the capability corpus')
+    board.add_argument('--base',type=Path,default=None,help='pristine GGUF: capability_delta_nats = artifact minus base (no base, no clear)')
+    board.add_argument('--adapter',type=Path,default=None,help='LoRA GGUF applied on the artifact; the board raises if the server does not apply it')
+    board.add_argument('--adapter-scale',type=float,default=1.0)
+    board.add_argument('--families',type=int,default=8,help='families on the board (first ids that hold --prompts rows)')
+    board.add_argument('--prompts',type=int,default=8,help='prompts per family')
+    board.add_argument('--tokens',type=int,default=128,help='tokens decoded per row')
+    board.add_argument('--corpus-chars',type=int,default=20000,help='capability corpus size in characters, cut from harmless record text')
+    board.add_argument('--corpus',type=Path,default=None,help='pinned capability corpus text file (replaces the records-derived one)')
+    board.add_argument('--perplexity',default=None,help='llama-perplexity binary (default: the repo CPU build)')
+    board.add_argument('--serve',default=None,help='llama-server binary (default: the repo CUDA build)')
+    board.add_argument('--serve-lib',default=None,help="colon-separated dirs prepended to the server's LD_LIBRARY_PATH")
+    board.add_argument('--ngl',type=int,default=99,help='gpu layers for the server')
+    board.add_argument('--threads',type=int,default=16,help='threads for the perplexity readings')
+    board.add_argument('--out',type=Path,required=True,help='report json path')
     revert=sub.add_parser('gguf-revert',help='Restore the pre-patch bytes an --in-place merge saved; refuses if the artifact changed since')
     revert.add_argument('artifact',type=Path)
     revert.add_argument('sidecar',type=Path)
@@ -795,6 +814,9 @@ def main():
             if args.perplexity is None:
                 args.perplexity=DEFAULT_BINARY
             result=tune_command(args)
+        elif args.command=='board':
+            from .board import board_command
+            result=board_command(args)
         elif args.command=='run':
             from .search import RunConfig
             from .pipeline import run
