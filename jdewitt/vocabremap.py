@@ -494,16 +494,21 @@ def sequence_controls(port, tokens, entry_items):
 
     ' can' alone is the prefix of can't; a matcher that fires on the prefix would
     demonize every 'we can compute'. This is the same sequence-aware rule the
-    decode driver needs, exercised against the served tokenizer.
+    decode driver needs, exercised against the served tokenizer. The checks are
+    scoped to the can't entry so a user-supplied table does not make them lie.
     """
+    cant = next((item for item in entry_items if item['entry']['form'] == "can't"), None)
+    if cant is None:
+        return {'skipped': "table has no can't entry; prefix/completion control not applicable"}
     negative = _plan_for_text('We can compute the total from here.', port, tokens, entry_items)
     positive = _plan_for_text("I can't help with that.", port, tokens, entry_items)
-    if negative['rules_that_fired']:
-        raise RuntimeError(f'sequence control failed: a bare " can" prefix fired {negative["rules_that_fired"]}')
-    if 'en-cant' not in positive['rules_that_fired']:
-        raise RuntimeError(f'sequence control failed: "I can\'t" did not fire en-cant '
+    if cant['entry']['id'] in negative['rules_that_fired']:
+        raise RuntimeError(f'sequence control failed: a bare " can" prefix fired {cant["entry"]["id"]}')
+    if cant['entry']['id'] not in positive['rules_that_fired']:
+        raise RuntimeError(f'sequence control failed: "I can\'t" did not fire {cant["entry"]["id"]} '
                            f'({positive["rules_that_fired"]})')
-    return {'negative': {'text': 'We can compute the total from here.',
+    return {'entry_id': cant['entry']['id'],
+            'negative': {'text': 'We can compute the total from here.',
                          'rules_that_fired': negative['rules_that_fired']},
             'positive': {'text': "I can't help with that.", 'rules_that_fired': positive['rules_that_fired']},
             'note': ('a prefix is not a completion: the bare " can" token must stay live while '
@@ -582,16 +587,17 @@ def coverage_for(loaded, missing, port, tokens, entry_items):
                 continue
             declining += 1
             ids = served_tokenize(port, row['answer'])
-            hits = []
+            hits = set()
             opener_hit = False
             for entry_item in entry_items:
                 for context_item in entry_item['contexts']:
                     starts = _occurrences(ids, context_item['ids'])
                     if starts:
-                        hits.append(entry_item['entry']['id'])
-                        matched_by_entry[entry_item['entry']['id']] = matched_by_entry.get(entry_item['entry']['id'], 0) + 1
+                        hits.add(entry_item['entry']['id'])
                         if any(start < OPENER_WINDOW_TOKENS for start in starts):
                             opener_hit = True
+            for entry_id in hits:
+                matched_by_entry[entry_id] = matched_by_entry.get(entry_id, 0) + 1
             if hits:
                 covered += 1
             if opener_hit:

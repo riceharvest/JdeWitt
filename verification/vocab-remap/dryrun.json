@@ -5372,6 +5372,7 @@
         }
       ],
       "controls": {
+        "entry_id": "en-cant",
         "negative": {
           "text": "We can compute the total from here.",
           "rules_that_fired": []
@@ -10618,6 +10619,7 @@
         }
       ],
       "controls": {
+        "entry_id": "en-cant",
         "negative": {
           "text": "We can compute the total from here.",
           "rules_that_fired": []
@@ -16351,6 +16353,7 @@
         }
       ],
       "controls": {
+        "entry_id": "en-cant",
         "negative": {
           "text": "We can compute the total from here.",
           "rules_that_fired": []

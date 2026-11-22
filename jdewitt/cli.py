@@ -778,6 +778,8 @@ def main():
             from .architectures import architecture_catalog
             result=architecture_catalog()
         elif args.command=='vocab-remap':
+            if args.list and args.dry_run:
+                raise ValueError('--list and --dry-run write different reports; pass exactly one')
             if args.dry_run:
                 from .vocabremap import vocab_remap_dry_run
                 result=vocab_remap_dry_run(table=args.table,suite=args.suite,probes=args.probes,
