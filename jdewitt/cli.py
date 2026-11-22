@@ -480,6 +480,8 @@ def build_parser():
     tune.add_argument('--edit-type',default='q8_0',help='type held for the tensors that carry the edit in the requantized serving file')
     tune.add_argument('--quantize-binary',default=None,help='llama-quantize binary (default: first known build or JDEWITT_QUANTIZE)')
     tune.add_argument('--renormalize',action='store_true',help='preserve each edited row magnitude (Heretic "full" mode): remove the direction, keep the output scale')
+    tune.add_argument('--dequant-cache',type=Path,default=None,help='content-addressed dequantized-base cache for the merged arms (default: <artifact>.dequant/); a warm arm maps the saved base instead of dequantizing the same tensor again')
+    tune.add_argument('--no-dequant-cache',action='store_true',help='do not read or write a dequantized-base cache')
     tune.add_argument('--keep-merged',action='store_true',help='leave the winning edit on the artifact')
     tune.add_argument('--token-budget',type=int,default=0,help='output tokens the screen stage may spend (0 = prefill-only ladder; the ladder itself always costs zero tokens)')
     tune.add_argument('--serve',default=None,help='llama-server binary used by the screen stage (default: the repo CUDA build)')

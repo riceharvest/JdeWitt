@@ -11,6 +11,7 @@ import shutil
 import mmap
 import math
 import os
+import time
 import hashlib
 import struct
 import numpy as np
@@ -18,23 +19,42 @@ from pathlib import Path
 from .quants import CODECS
 
 
-def _plan(reader, deltas):
-    """Validated per-tensor edit plans, shared by the copy and in-place paths."""
+def _plan(reader, edits):
+    """Validated per-tensor edit plans, shared by the copy and in-place paths.
+
+    ``edits`` maps a tensor name to a float32 delta of the tensor's logical
+    shape, or to ``(axis, space)`` exactly like ``_patch_inplace``. A tuple is
+    kept as a projection so the writer computes the delta from the very tensor
+    it dequantizes: that is the difference between one dequant pass and two
+    over the same artifact.
+    """
     plans = []
-    for name, delta in deltas.items():
+    for name, edit in edits.items():
         tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
-        delta = np.asarray(delta, dtype=np.float32)
-        if delta.shape != shape:
-            raise ValueError(f'delta for {name} has shape {delta.shape}, tensor shape is {shape}')
-        if not np.isfinite(delta).all():
-            raise ValueError(f'delta for {name} contains NaN/Inf')
+        if isinstance(edit, tuple):
+            axis, space = edit
+            axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
+            if axis.ndim not in (1, 2):
+                raise ValueError(f'axis for {name} is {axis.ndim}-D; expected (W,) or (k, W)')
+            want = shape[0] if space == 'output' else shape[1]
+            if axis.shape[-1] != want:
+                raise ValueError(f'axis for {name} is {axis.shape[-1]}-wide, {space} space needs {want}')
+            if not np.isfinite(axis).all():
+                raise ValueError(f'axis for {name} contains NaN/Inf')
+            kind = ('project', axis, space)
+        else:
+            delta = np.asarray(edit, dtype=np.float32)
+            if delta.shape != shape:
+                raise ValueError(f'delta for {name} has shape {delta.shape}, tensor shape is {shape}')
+            if not np.isfinite(delta).all():
+                raise ValueError(f'delta for {name} contains NaN/Inf')
+            kind = ('delta', delta.reshape(-1), None)
         if n != int(np.prod(shape)):
             raise ValueError(f'tensor {name}: {n} values for shape {shape}')
-        # Both consumers (copy and in-place) unpack (name, tensor, dtype, bs, els, n,
-        # quantize, dequantize, offset, n_bytes, shape, delta); a plan without the
-        # tensor object crashed edit_tensors with an 11-vs-12 unpack.
+        # Both consumers (copy and in-place) unpack their own tuple; the tensor
+        # object is carried because edit_tensors needs its bytes.
         plans.append((name, tensor, dtype, bs, els, n, quantize, dequantize, offset,
-                      n_bytes, shape, delta.reshape(-1)))
+                      n_bytes, shape, kind))
     return plans
 
 
@@ -287,12 +307,140 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
                     'not the axis, decided what shipped'}
 
 
-def edit_tensors(path, out_path, deltas):
-    """Apply {tensor_name: float32 delta matching that tensor's shape} and write out_path.
+class DequantBases:
+    """Content-addressed cache of dequantized tensor bases, one memmap .npy each.
 
-    Everything not in ``deltas`` is copied verbatim; each edited tensor is
-    requantized to the identical block count, so no other offset moves.
-    Returns per-tensor reports.
+    KEY = sha256(tensor name + quant type + that tensor's RAW block bytes). The
+    whole-file digest is deliberately NOT part of the key: tune merges and
+    reverts the artifact in place, so the file sha changes exactly when a cache
+    hit is still valid (the mtime lesson in docs/PLAN-NEXT.md). A patch rewrites
+    the raw bytes, which changes the key; a revert restores them, which restores
+    the hit.
+
+    A hit memory-maps the saved float32 array, so a warm arm never dequantizes a
+    tensor it has already unpacked and never copies it. A miss dequantizes once,
+    writes an atomically-replaced .npy and serves that array; the caller's next
+    arm reads it from disk.
+
+    Counters are per instance and cumulative. ``snapshot()`` + ``since()`` give
+    one arm's hits/misses/dequant seconds without resetting the cache.
+    """
+
+    def __init__(self, root):
+        self.root = Path(root)
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.hits = 0
+        self.misses = 0
+        self.dequant_seconds = 0.0
+        self.hit_keys = set()
+        self.miss_keys = set()
+
+    @staticmethod
+    def make_key(raw, name, qtype):
+        """sha256(qtype + name + raw block bytes): content, not file identity."""
+        payload = bytes(raw) if not isinstance(raw, (bytes, bytearray)) else raw
+        digest = hashlib.sha256()
+        digest.update(str(qtype).encode())
+        digest.update(b'\x00')
+        digest.update(str(name).encode())
+        digest.update(b'\x00')
+        digest.update(payload)
+        return digest.hexdigest()
+
+    def path_for(self, key):
+        return self.root / f'{key}.npy'
+
+    def _load(self, key, n, shape):
+        path = self.path_for(key)
+        if not path.is_file():
+            return None
+        try:
+            values = np.load(path, mmap_mode='r')
+        except (OSError, ValueError):
+            return None  # a torn .npy is a miss, never a crash mid-merge
+        if values.size != n or tuple(values.shape) != tuple(shape):
+            return None
+        return values
+
+    def _store(self, key, values):
+        path = self.path_for(key)
+        tmp = path.with_name(path.name + '.tmp.npy')
+        np.save(tmp, np.asarray(values, dtype=np.float32))
+        os.replace(tmp, path)
+
+    def base(self, raw, name, qtype, n, shape, dequantize):
+        """(float32 base of logical ``shape``, hit). Dequantizes only on a miss."""
+        key = self.make_key(raw, name, qtype)
+        cached = self._load(key, n, shape)
+        if cached is not None:
+            self.hits += 1
+            self.hit_keys.add(key)
+            return cached, True
+        start = time.perf_counter()
+        values = np.asarray(dequantize(np.frombuffer(raw, dtype=np.uint8), n),
+                            dtype=np.float32).reshape(shape)
+        self.dequant_seconds += time.perf_counter() - start
+        self.misses += 1
+        self.miss_keys.add(key)
+        self._store(key, values)
+        return values, False
+
+    def snapshot(self):
+        return {'hits': self.hits, 'misses': self.misses,
+                'dequant_seconds': self.dequant_seconds}
+
+    def since(self, snap):
+        """One arm's counters: what this merge paid, not the lifetime total."""
+        return {'cache_hits': self.hits - snap['hits'],
+                'cache_misses': self.misses - snap['misses'],
+                'dequant_seconds': round(self.dequant_seconds - snap['dequant_seconds'], 3)}
+
+    def report(self):
+        return {'cache_dir': str(self.root), 'cache_hits': self.hits,
+                'cache_misses': self.misses,
+                'cache_hit_keys': len(self.hit_keys), 'cache_miss_keys': len(self.miss_keys),
+                'cache_keys': len(self.hit_keys | self.miss_keys),
+                'dequant_seconds': round(self.dequant_seconds, 3)}
+
+
+def _full_base(mm, offset, n_bytes, name, dtype, n, shape, dequantize, dequant_cache):
+    """The whole tensor as float32 in logical shape, cache-first.
+
+    Returns (values, cache_hit). Without a cache this is a single bounded read:
+    projection edits and renormalization need whole rows, so they cannot run off
+    a tile at a time.
+    """
+    raw = mm[offset:offset + n_bytes]
+    if len(raw) != n_bytes:
+        raise ValueError(f'{name}: short read at byte {offset} (truncated artifact?)')
+    if dequant_cache is not None:
+        return dequant_cache.base(raw, name, dtype, n, shape, dequantize)
+    values = np.asarray(dequantize(np.frombuffer(raw, dtype=np.uint8), n),
+                        dtype=np.float32).reshape(shape)
+    return values, None
+
+
+def edit_tensors(path, out_path, deltas=None, projections=None, scale=1.0,
+                 renormalize=False, dequant_cache=None):
+    """Apply an edit and write out_path; the edit may be deltas or projections.
+
+    ``deltas`` maps {tensor_name: float32 delta matching that tensor's shape}.
+    ``projections`` maps {tensor_name: (axis, space)} exactly like
+    ``project_tensors_inplace``: the delta is computed from the tensor this
+    writer dequantizes, so an out-of-place merge pays ONE dequant pass instead
+    of dequantizing a second time to build a float32 delta first.
+
+    ``renormalize`` preserves each edited row's magnitude (Heretic's ``full``
+    mode) and only applies to projections; the arithmetic matches the delta
+    build_merged used to precompute, down to the last float, so the bytes this
+    writer emits are the same bytes.
+
+    ``dequant_cache`` (a ``DequantBases``) is consulted per tensor: a hit maps
+    the saved base instead of unpacking the raw blocks again. Reports
+    cache_hits/cache_misses/dequant_seconds for this call when it is given.
+
+    Everything not edited is copied verbatim; each edited tensor is requantized
+    to the identical block count, so no other offset moves.
     """
     from gguf import GGUFReader
     path = Path(path)
@@ -301,44 +449,66 @@ def edit_tensors(path, out_path, deltas):
         raise ValueError(f'{path} does not exist')
     if path.resolve() == out_path.resolve():
         raise ValueError('out_path must differ from in_path; edit_tensors_inplace patches the artifact itself')
-    plans = _plan(GGUFReader(str(path)), deltas)
+    edits = {}
+    for source in (deltas or {}, projections or {}):
+        edits.update(source)
+    if not edits:
+        raise ValueError('edit_tensors needs at least one delta or projection')
+    plans = _plan(GGUFReader(str(path)), edits)
+    snap = dequant_cache.snapshot() if dequant_cache is not None else None
     with open(path, 'rb') as f:
         mm = mmap.mmap(f.fileno(), 0, access=mmap.MAP_SHARED)
         try:
             new_blocks = []
-            for name, tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, delta in plans:
+            for (name, tensor, dtype, bs, els, n, quantize, dequantize, offset,
+                 n_bytes, shape, kind) in plans:
                 nb = n // els
-                # Dequant-tile-apply-requant: the FP32 working set stays bounded
-                # (~64 MiB of values) no matter how large the tensor is.
-                blocks_per_tile = max(1, (1 << 24) // els)
-                new_raw = np.empty(n_bytes, dtype=np.uint8)
-                changed_blocks = np.zeros(nb, dtype=bool)
-                delta_sq = sum_sq = 0.0
-                flat_delta = delta.reshape(-1)
-                count = 0
-                for start in range(0, nb, blocks_per_tile):
-                    tile = min(blocks_per_tile, nb - start)
-                    byte0, byte1 = start * bs, (start + tile) * bs
-                    raw_tile = np.frombuffer(mm, dtype=np.uint8, count=byte1 - byte0,
-                                            offset=offset + byte0).copy()
-                    values = dequantize(raw_tile, tile * els).reshape(-1)
-                    piece_delta = flat_delta[start * els:(start + tile) * els]
-                    edited = values + piece_delta
+                mode, payload, space = kind
+                if renormalize and mode != 'project':
+                    raise ValueError('renormalize only applies to projection edits: a delta already '
+                                     'carries its row scaling')
+                if mode == 'delta' and dequant_cache is None:
+                    # Dequant-tile-apply-requant: the FP32 working set stays
+                    # bounded (~64 MiB of values) no matter how large the tensor.
+                    new_raw, changed_blocks, rms, relative = _apply_tiled_delta(
+                        mm, name, quantize, dequantize, bs, els, nb, offset,
+                        n_bytes, payload)
+                else:
+                    base, _hit = _full_base(mm, offset, n_bytes, name, dtype, n, shape,
+                                            dequantize, dequant_cache)
+                    if mode == 'delta':
+                        edited = base + payload.reshape(shape)
+                    else:
+                        a = payload if payload.ndim == 2 else payload.reshape(1, -1)
+                        if space == 'output':
+                            delta = -(scale * (a.T @ (a @ base))).astype(np.float32)
+                        else:
+                            delta = -(scale * (base @ a.T) @ a).astype(np.float32)
+                        edited = base + delta
+                        if renormalize:
+                            # Same expression build_merged used to fold into the
+                            # delta; the second add keeps the shipped bytes equal
+                            # to the ones the delta path produced.
+                            rows_before = np.linalg.norm(base, axis=1, keepdims=True)
+                            rows_after = np.linalg.norm(edited, axis=1, keepdims=True)
+                            edited = edited * (rows_before / np.maximum(rows_after, 1e-12))
+                            delta = (edited - base).astype(np.float32)
+                            edited = base + delta
                     if not np.isfinite(edited).all():
                         raise ValueError(f'edited tensor {name} contains NaN/Inf')
-                    piece = quantize(np.ascontiguousarray(edited))
-                    if piece.size != byte1 - byte0:
-                        raise ValueError(f'requantized {name}: block produced {piece.size} '
-                                         f'bytes, expected {byte1 - byte0}')
-                    new_raw[byte0:byte1] = piece
-                    changed_blocks[start:start + tile] = np.any(piece.reshape(tile, bs) != raw_tile.reshape(tile, bs), axis=-1)
-                    delta_sq += float((piece_delta ** 2).sum())
-                    sum_sq += float((values ** 2).sum())
-                    count += tile * els
-                rms = float(math.sqrt(delta_sq / count)) if count else 0.0
-                mean_sq = float(sum_sq / count) if count else 0.0
-                new_blocks.append((name, offset, new_raw, int(nb), int(changed_blocks.sum()), rms,
-                                   rms / mean_sq if mean_sq else 0.0, dtype))
+                    raw_u8 = np.frombuffer(mm[offset:offset + n_bytes], dtype=np.uint8)
+                    new_raw = _requantize_tiles(
+                        quantize, np.ascontiguousarray(edited).reshape(-1), bs, els, nb, n_bytes)
+                    changed_blocks = np.any(
+                        new_raw.reshape(nb, bs) != raw_u8.reshape(nb, bs), axis=-1)
+                    delta_flat = (edited - base).reshape(-1)
+                    rms = float(math.sqrt(float((delta_flat ** 2).sum()) / n)) if n else 0.0
+                    mean_sq = float((base ** 2).sum()) / n if n else 0.0
+                    relative = rms / mean_sq if mean_sq else 0.0
+                    del base, edited, delta_flat
+                new_blocks.append((name, offset, new_raw, int(nb), int(changed_blocks.sum()),
+                                   rms, relative, dtype))
+                del new_raw
         finally:
             mm.close()
     if out_path.exists():
@@ -352,8 +522,57 @@ def edit_tensors(path, out_path, deltas):
     for name, offset, new_raw, nb, changed, rms, rel, dtype in new_blocks:
         reports.append({'tensor': name, 'dtype': dtype, 'blocks': nb, 'changed_blocks': changed,
                         'rms_delta': rms, 'relative_rms_delta': rel, 'bytes_written': int(new_raw.size)})
-    return {'input': str(path), 'output': str(out_path), 'tensors_edited': len(reports),
-           'tensors': reports, 'all_other_bytes_verbatim': True}
+    result = {'input': str(path), 'output': str(out_path), 'tensors_edited': len(reports),
+              'tensors': reports, 'all_other_bytes_verbatim': True}
+    if snap is not None:
+        result.update(dequant_cache.since(snap))
+    return result
+
+
+def _requantize_tiles(quantize, flat, bs, els, nb, n_bytes):
+    """Quantize a flat float32 tensor tile by tile; returns the new raw bytes."""
+    new_raw = np.empty(n_bytes, dtype=np.uint8)
+    blocks_per_tile = max(1, (1 << 24) // els)
+    for start in range(0, nb, blocks_per_tile):
+        tile = min(blocks_per_tile, nb - start)
+        byte0, byte1 = start * bs, (start + tile) * bs
+        piece = quantize(np.ascontiguousarray(flat[start * els:(start + tile) * els]))
+        if piece.size != byte1 - byte0:
+            raise ValueError(f'requantized block produced {piece.size} bytes, expected {byte1 - byte0}')
+        new_raw[byte0:byte1] = piece
+    return new_raw
+
+
+def _apply_tiled_delta(mm, name, quantize, dequantize, bs, els, nb, offset,
+                       n_bytes, flat_delta):
+    """The bounded-memory delta path: dequantize a tile, add, requantize."""
+    blocks_per_tile = max(1, (1 << 24) // els)
+    new_raw = np.empty(n_bytes, dtype=np.uint8)
+    changed_blocks = np.zeros(nb, dtype=bool)
+    delta_sq = sum_sq = 0.0
+    count = 0
+    for start in range(0, nb, blocks_per_tile):
+        tile = min(blocks_per_tile, nb - start)
+        byte0, byte1 = start * bs, (start + tile) * bs
+        raw_tile = np.frombuffer(mm, dtype=np.uint8, count=byte1 - byte0,
+                                 offset=offset + byte0).copy()
+        values = dequantize(raw_tile, tile * els).reshape(-1)
+        piece_delta = flat_delta[start * els:(start + tile) * els]
+        edited = values + piece_delta
+        if not np.isfinite(edited).all():
+            raise ValueError(f'edited tensor {name} contains NaN/Inf')
+        piece = quantize(np.ascontiguousarray(edited))
+        if piece.size != byte1 - byte0:
+            raise ValueError(f'requantized {name}: block produced {piece.size} '
+                             f'bytes, expected {byte1 - byte0}')
+        new_raw[byte0:byte1] = piece
+        changed_blocks[start:start + tile] = np.any(piece.reshape(tile, bs) != raw_tile.reshape(tile, bs), axis=-1)
+        delta_sq += float((piece_delta ** 2).sum())
+        sum_sq += float((values ** 2).sum())
+        count += tile * els
+    rms = float(math.sqrt(delta_sq / count)) if count else 0.0
+    mean_sq = float(sum_sq / count) if count else 0.0
+    return new_raw, changed_blocks, rms, rms / mean_sq if mean_sq else 0.0
 
 
 def _sha256(path):
@@ -364,7 +583,7 @@ def _sha256(path):
     return digest.hexdigest()
 
 
-def edit_tensors_inplace(path, deltas, revert_path=None):
+def edit_tensors_inplace(path, deltas, revert_path=None, dequant_cache=None):
     """Patch the artifact's own bytes: one file, no copy, no requantization.
 
     A requantized block keeps its byte width, so every tensor offset and the
@@ -375,10 +594,11 @@ def edit_tensors_inplace(path, deltas, revert_path=None):
     sidecar, and a crash mid-patch then leaves a partly edited artifact with no
     way back.
     """
-    return _patch_inplace(path, deltas, revert_path=revert_path)
+    return _patch_inplace(path, deltas, revert_path=revert_path, dequant_cache=dequant_cache)
 
 
-def project_tensors_inplace(path, projections, scale=1.0, revert_path=None):
+def project_tensors_inplace(path, projections, scale=1.0, revert_path=None,
+                            renormalize=False, dequant_cache=None):
     """The same patch, but the delta is computed from the weights being edited.
 
     projections maps a tensor name to ``(axis, space)``: ``axis`` is the fitted
@@ -388,11 +608,16 @@ def project_tensors_inplace(path, projections, scale=1.0, revert_path=None):
     difference between one dequant pass and two over the whole model: on a 1.1 GB
     Q4_K_M that was half the wall clock, and it is why the arm a search picks can
     be merged once instead of screened by building full artifacts.
+
+    ``dequant_cache`` (a ``DequantBases``) serves a tensor's base from a previous
+    pass; the patch then dequantizes nothing it has already unpacked.
     """
-    return _patch_inplace(path, projections, revert_path=revert_path, scale=scale)
+    return _patch_inplace(path, projections, revert_path=revert_path, scale=scale,
+                          renormalize=renormalize, dequant_cache=dequant_cache)
 
 
-def _patch_inplace(path, edits, revert_path=None, scale=1.0):
+def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
+                   dequant_cache=None):
     """One writer for both forms: {name: float32 delta} or {name: (axis, space)}."""
     from gguf import GGUFReader
     path = Path(path)
@@ -408,8 +633,8 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0):
             axis, space = edit
             axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
             want = shape[0] if space == 'output' else shape[1]
-            if axis.shape[0] != want:
-                raise ValueError(f'axis for {name} is {axis.shape[0]}-wide, {space} space needs {want}')
+            if axis.shape[-1] != want:
+                raise ValueError(f'axis for {name} is {axis.shape[-1]}-wide, {space} space needs {want}')
             if not np.isfinite(axis).all():
                 raise ValueError(f'axis for {name} contains NaN/Inf')
             kind = ('project', axis, space)
@@ -423,6 +648,7 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0):
         if n != int(np.prod(shape)):
             raise ValueError(f'tensor {name}: {n} values for shape {shape}')
         plans.append((name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, kind))
+    snap = dequant_cache.snapshot() if dequant_cache is not None else None
     size_before = path.stat().st_size
     reports, originals, proofs = [], [], []
     with open(path, 'r+b') as f:
@@ -435,13 +661,25 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0):
                 raise ValueError(f'{name}: short read at byte {offset} (truncated artifact?)')
             raw_u8 = np.frombuffer(raw, dtype=np.uint8)
             mode, payload, space = kind
-            values = dequantize(raw_u8, n).astype(np.float32).reshape(shape)
+            if dequant_cache is not None:
+                values, _hit = dequant_cache.base(raw, name, dtype, n, shape, dequantize)
+                values = np.asarray(values, dtype=np.float32).reshape(shape)
+            else:
+                values = dequantize(raw_u8, n).astype(np.float32).reshape(shape)
             if mode == 'delta':
                 edited = values + payload.reshape(shape)
             elif space == 'output':
-                edited = values - scale * np.outer(payload, payload @ values)
+                edited = (values - scale * np.outer(payload, payload @ values)
+                          if payload.ndim == 1 else
+                          values - scale * (payload.T @ (payload @ values)))
             else:
-                edited = values - scale * np.outer(values @ payload, payload)
+                edited = (values - scale * np.outer(values @ payload, payload)
+                          if payload.ndim == 1 else
+                          values - scale * (values @ payload.T) @ payload)
+            if renormalize and mode == 'project':
+                rows_before = np.linalg.norm(values, axis=1, keepdims=True)
+                rows_after = np.linalg.norm(edited, axis=1, keepdims=True)
+                edited = edited * (rows_before / np.maximum(rows_after, 1e-12))
             if not np.isfinite(edited).all():
                 raise ValueError(f'edited tensor {name} contains NaN/Inf')
             flat = np.ascontiguousarray(edited).reshape(-1)
@@ -497,6 +735,8 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0):
               'changed_blocks_total': int(sum(r['changed_blocks'] for r in reports)),
               'all_other_bytes_verbatim': True, 'bytes_added': 0,
               'patched_sha256': patched_sha256}
+    if snap is not None:
+        result.update(dequant_cache.since(snap))
     if revert_path is not None and originals:
         offsets = np.array([at for at, _ in originals], dtype=np.int64)
         lengths = np.array([len(raw) for _, raw in originals], dtype=np.int64)
@@ -535,7 +775,7 @@ def revert_inplace(path, sidecar):
     return {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored}
 
 
-def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None):
+def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None, dequant_cache=None):
     """Dequantize one tensor to float32 in torch [out, in] order, bounded RAM.
 
     Despite the tensor metadata being (in, out) — GGUFReader.shape on qwen3-4b
@@ -546,12 +786,23 @@ def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None):
 
     ``reader`` may be a prebuilt GGUFReader on the same file to skip header
     re-parsing when many tensors of one gguf are read (served_deltas).
+
+    ``dequant_cache`` (a ``DequantBases``) serves the whole base from a saved
+    memmap, so a second pass over the same bytes unpacks nothing.
     """
     path = Path(path)
     if reader is None:
         from gguf import GGUFReader
         reader = GGUFReader(str(path))
     tensor, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+    if dequant_cache is not None:
+        with open(path, 'rb') as f:
+            f.seek(offset)
+            raw = f.read(n_bytes)
+        if len(raw) != n_bytes:
+            raise ValueError(f'{name}: short read at byte {offset} (truncated artifact?)')
+        values, _hit = dequant_cache.base(raw, name, dtype, n, shape, dequantize)
+        return np.asarray(values, dtype=np.float32).reshape(shape)
     out = np.empty(n, dtype=np.float32)
     with open(path, 'rb') as f:
         mm = mmap.mmap(f.fileno(), 0, access=mmap.MAP_SHARED)

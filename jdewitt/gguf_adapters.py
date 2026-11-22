@@ -256,7 +256,8 @@ def write_adapter(path, pairs, arch, base_sha256=None):
         raise RuntimeError(f'adapter writer returned success but wrote no file: {path}')
     return {'path': str(path), 'bytes': path.stat().st_size, 'tensors': len(pairs), 'ranks': sorted(ranks)}
 
-def served_deltas(path, directions, tensor_names, strength=1.0):
+def served_deltas(path, directions, tensor_names, strength=1.0, *,
+                  as_projections=False, dequant_cache=None):
     """Ground-truth edit deltas for the gguf at ``path``: {name: float32 delta}.
 
     Feed the result to ggufio.edit_tensors to produce the merged gguf; that is
@@ -265,6 +266,14 @@ def served_deltas(path, directions, tensor_names, strength=1.0):
     Weights are read back in gguf dimension order and the output-side projection
     algebra runs in that order; a tensor whose width matches the other dim is
     transposed through the algebra so both ggml layout conventions work.
+
+    ``as_projections=True`` returns {name: (axis, space)} instead of a float32
+    delta: the writer then computes the projection from the tensor it dequantizes
+    once (``strength`` is applied by the writer's ``scale``). That is the form to
+    pass to ``edit_tensors(projections=...)`` when this function is the source of
+    the edit — returning a delta here and letting the writer dequantize again is
+    the second pass this function used to cause.
+    ``dequant_cache`` (a ``DequantBases``) is used on the delta path.
     """
     import numpy as np
     from .ggufio import dequantize_tensor, projection_delta
@@ -272,9 +281,29 @@ def served_deltas(path, directions, tensor_names, strength=1.0):
     d = np.atleast_2d(d).astype(np.float32)
     from gguf import GGUFReader
     reader = GGUFReader(str(path))
+    if as_projections:
+        # Shape only: no weight is dequantized here. dequantize_tensor returns
+        # the logical (out, in) layout, so dims[1] is the output width.
+        projections = {}
+        for name in tensor_names:
+            tensor = next((item for item in reader.tensors if item.name == name), None)
+            if tensor is None:
+                raise ValueError(f'no tensor {name!r} in file')
+            dims = tuple(int(x) for x in np.asarray(tensor.shape).ravel())
+            out_features = dims[1] if len(dims) == 2 else dims[0]
+            in_features = dims[0] if len(dims) == 2 else dims[1]
+            if d.shape[-1] == out_features:
+                projections[name] = (d, 'output')
+            elif d.shape[-1] == in_features:
+                projections[name] = (d, 'input')
+            else:
+                raise ValueError(f'direction width {d.shape[-1]} matches neither dim of '
+                                 f'{name} {(out_features, in_features)}')
+        return projections
+
     deltas = {}
     for name in tensor_names:
-        w = dequantize_tensor(path, name, reader=reader)
+        w = dequantize_tensor(path, name, reader=reader, dequant_cache=dequant_cache)
         if d.shape[1] == w.shape[0]:
             deltas[name] = projection_delta(w, d, strength, side='output')
         elif d.shape[1] == w.shape[1]:

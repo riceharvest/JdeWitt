@@ -165,7 +165,8 @@ def test_build_merged_rewrites_targets_only(tmp_path):
                 keys[1]: 'blk.0.ffn_down.weight',
                 keys[2]: 'blk.1.attn_output.weight'}
     out = tmp_path / 'out.gguf'
-    rep = spanfit.build_merged(str(src), str(out), axes, keys, name_map=name_map)
+    rep = spanfit.build_merged(str(src), str(out), axes, keys, name_map=name_map,
+                               axis_space='output')
     assert rep['tensors_edited'] == 3
     for hf, base in name_map.items():
         L0 = int([p for p in hf.split('.') if p.isdigit()][0])

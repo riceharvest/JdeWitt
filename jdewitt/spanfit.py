@@ -406,7 +406,7 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None, scale: float = 1.0,
                  axis_space: str = "input", in_place: bool = False,
-                 renormalize: bool = False) -> dict:
+                 renormalize: bool = False, dequant_cache=None) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
     source_keys are HF-style names ('model.layers.<L>.<suffix>') or, through
@@ -417,24 +417,27 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
     in_place patches `gguf_in`'s own bytes (no copy) and leaves a revert sidecar
     beside it; that is the path an agent should use on a model it already serves,
     because the artifact is quantized in place and never re-quantized as a whole.
+
+    Both paths hand ``(axis, space)`` to the writer instead of precomputing a
+    float32 delta, so each tensor is dequantized ONCE per arm. ``dequant_cache``
+    defaults to ``<gguf_in>.dequant/`` and serves a base from a previous arm
+    without unpacking it again; pass ``False`` to disable it.
     """
     from .gguf_adapters import gguf_weight_shapes, resolve_gguf_names
-    from .ggufio import dequantize_tensor, edit_tensors, project_tensors_inplace
+    from .ggufio import DequantBases, edit_tensors, project_tensors_inplace
 
     t0 = time.monotonic()
     shapes = gguf_weight_shapes(gguf_in)
     names = resolve_gguf_names(source_keys, shapes) if name_map is None else name_map
-    reader = None
-    try:
-        from gguf import GGUFReader  # provided by dspark gguf-py on sys.path
-        reader = GGUFReader(gguf_in)
-    except Exception:
-        pass
     if not names:
         raise SystemExit("no target tensors resolved from source keys")
+    cache = None
+    if dequant_cache is not False:
+        cache = (dequant_cache if isinstance(dequant_cache, DequantBases)
+                 else DequantBases(str(gguf_in) + '.dequant' if dequant_cache is None
+                                   else dequant_cache))
 
     projections = {}
-    deltas = {}
     skipped = []
     for key, base in names.items():
         layer = int([p for p in key.split(".") if p.isdigit()][0])
@@ -457,41 +460,21 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         if want != axis.shape[0]:
             skipped.append(f'{base}:axis-dim-{axis.shape[0]}-want-{want}')
             continue
-        if in_place:
-            # The in-place writer computes the delta from the weight it is already
-            # dequantizing, so the axis is the only thing that crosses over.
-            projections[base] = (axis.detach().cpu().numpy().astype(np.float32), axis_space)
-            continue
-        w = dequantize_tensor(gguf_in, base, reader=reader)  # ggml [in, out]
-        a = axis.reshape(-1, 1).numpy()
-        if renormalize:
-            # Row magnitudes restored: the projection is kept, the output scale is
-            # not. Done here (not in the writer) so the in-place and out-of-place
-            # paths compute the same delta.
-            edited = w + (-(scale * (a @ (a.T @ w))) if axis_space == "output"
-                          else -(scale * (a @ (a.T @ w.T))).T)
-            rows_before = np.linalg.norm(w, axis=1, keepdims=True)
-            rows_after = np.linalg.norm(edited, axis=1, keepdims=True)
-            edited = edited * (rows_before / np.maximum(rows_after, 1e-12))
-            deltas[base] = (edited - w).astype(np.float32)
-        elif axis_space == "output":
-            # axis lives in the space W writes into (the residual stream):
-            # dW = -s * u (u^T W). This is the form a residual-stream capture
-            # gives you, and the only one usable when the module's input dim
-            # differs from hidden (qwen3-4b o_proj: 4096 in, 2560 out).
-            deltas[base] = -(scale * (a @ (a.T @ w))).astype(np.float32)
-        else:
-            wt = w.T
-            deltas[base] = -(scale * (a @ (a.T @ wt))).T.astype(np.float32)
-        del w
+        # The writer computes the delta from the weight it is already dequantizing,
+        # so the axis is the only thing that crosses over. Renormalization is a
+        # writer mode for the same reason (out-of-place needs whole rows, which a
+        # precomputed delta pass also had to dequantize for).
+        projections[base] = (axis.detach().cpu().numpy().astype(np.float32), axis_space)
     if in_place:
         # One file, byte-level: the artifact keeps its quantization, its size and
         # every offset it had; only the changed tiles move, and the sidecar keeps
         # the pre-patch bytes so this is reversible.
         report = project_tensors_inplace(gguf_in, projections, scale=scale,
-                                         revert_path=str(gguf_in) + '.revert.npz')
+                                         revert_path=str(gguf_in) + '.revert.npz',
+                                         renormalize=renormalize, dequant_cache=cache)
     else:
-        report = edit_tensors(gguf_in, gguf_out, deltas)
+        report = edit_tensors(gguf_in, gguf_out, projections=projections, scale=scale,
+                              renormalize=renormalize, dequant_cache=cache)
     report["skipped"] = skipped
     report["elapsed_s"] = round(time.monotonic() - t0, 1)
     return report
@@ -706,6 +689,13 @@ def _main(argv=None):
     a.add_argument("--scale", type=float, default=1.0,
                    help="projection multiplier; 1.0 removes the axis completely, "
                         "1.5 is the certified q25 SAS scale (the curve is knife-edge, METHODOLOGY R8)")
+    a.add_argument("--dequant-cache", metavar="DIR",
+                   help="content-addressed dequantized-base cache (one .npy per tensor, keyed on "
+                        "sha256 of that tensor's raw blocks + name + quant type); default "
+                        "<gguf-in>.dequant/. A warm merge reads the base memmap instead of "
+                        "unpacking the blocks again")
+    a.add_argument("--no-dequant-cache", action="store_true",
+                   help="do not read or write a dequantized-base cache")
     g = sub.add_parser("targets", help="list the output-side projections an artifact has")
     g.add_argument("--gguf-in", required=True)
     m = sub.add_parser("axes", help="fit axes and save the [L,W] tensor")
@@ -868,8 +858,10 @@ def _main(argv=None):
                          "the keys this artifact actually carries (a merge that edits "
                          "0 tensors still exits 0)")
     out_path = args.gguf_in if args.in_place else args.out
+    cache = False if args.no_dequant_cache else args.dequant_cache
     rep = build_merged(args.gguf_in, out_path, axes, keys, name_map=name_map,
-                       scale=args.scale, axis_space=args.axis_space, in_place=args.in_place)
+                       scale=args.scale, axis_space=args.axis_space, in_place=args.in_place,
+                       dequant_cache=cache)
     # `tensors_edited` counts tensors the merge visited, not tensors whose bytes moved:
     # a scale-0.0 run reports 36 tensors edited with changed_blocks 0 in every one of
     # them and exits 0. What a no-op actually looks like is zero changed blocks, so that
