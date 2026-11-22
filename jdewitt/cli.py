@@ -69,7 +69,9 @@ def completion_script(parser, shell):
                  '    local -a commands',
                  '    commands=(']
         for name, help_text in sorted(commands):
-            lines.append(f"        '{name}:{help_text}'")
+            # A single quote in the help text closes the zsh array element and makes
+            # the whole completion file fail to parse; escape it the zsh way.
+            lines.append("        '" + name + ':' + help_text.replace("'", "'\\''") + "'")
         lines += ['    )',
                   '    if (( CURRENT == 2 )); then',
                   "        _describe 'command' commands",

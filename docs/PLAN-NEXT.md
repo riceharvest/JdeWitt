@@ -159,8 +159,12 @@ written into the item and stays GATED.
     drift from the real flags. Proven functional in bash: prefix `gguf-`
     completes the five gguf-* commands and `gguf-edit --` completes
     `--help --delta-gguf --strength --tensor`; 73 commands covered;
-    `bash -n` clean. The zsh script is emitted from the same introspection
-    but unverified — no zsh on this host to syntax-check it against.
+    `bash -n` clean. The zsh script is emitted from the same introspection and
+    was verified in a real zsh (alpine 3.20 container): `zsh -n` clean, sourcing
+    defines `_jdewitt`, and all 83 array entries match the 83 live commands. The
+    first zsh run caught a real bug: a help text containing an apostrophe
+    ('plan-register: ... run's fitted plan') closed the array element and made
+    the whole file fail to parse; help text is now escaped the zsh way.
 
 ## Tier 3 — hardening and the deep end
 
