@@ -51,7 +51,8 @@ def main():
         quants_path = sys.argv[2]
         quants_text = open(quants_path, 'r', encoding='utf-8').read()
         quants_digest = hashlib.sha256(quants_text.encode('utf-8')).hexdigest()
-        for name, size in (('kgrid_256', 256), ('kgrid_512', 512)):
+        for name, size in (('kgrid_256', 256), ('kgrid_512', 512),
+                           ('kgrid_2bit_1024', 1024)):
             declared, values = parse_static_u16(quants_text, name)
             kgrid[name] = values
     else:
@@ -103,7 +104,7 @@ def main():
             out.append(f'    {row},')
         out.append(f'], dtype={dtype})')
         out.append('')
-    for name, size in (('kgrid_256', 256), ('kgrid_512', 512)):
+    for name, size in (('kgrid_256', 256), ('kgrid_512', 512), ('kgrid_2bit_1024', 1024)):
         if name not in kgrid:
             continue
         values = kgrid[name]

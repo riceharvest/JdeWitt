@@ -1115,13 +1115,7 @@ def dequantize_iq1_m(raw, n):
     return out.reshape(-1)[:n]
 
 
-DECODE_ONLY.update({
-    'IQ2_XXS': (66, QK_K, dequantize_iq2_xxs),
-    'IQ2_XS': (74, QK_K, dequantize_iq2_xs),
-    'IQ2_S': (82, QK_K, dequantize_iq2_s),
-    'IQ1_S': (50, QK_K, dequantize_iq1_s),
-    'IQ1_M': (56, QK_K, dequantize_iq1_m),
-})
+DECODE_ONLY.update({})
 
 
 # IQ3_XXS's encoder lives in iq3.py (the iq3xs map/neighbour tables are its own
@@ -1193,3 +1187,21 @@ def type_name_for_id(qtype):
         return EXTRA_TYPE_NAMES[qid]
     from gguf import GGMLQuantizationType
     return GGMLQuantizationType(qid).name
+
+
+# IQ2/IQ1 encoders live in their own modules (grids, maps and neighbour tables are
+# each module's concern). IQ2_XXS/IQ2_XS/IQ1_S take the importance weights the
+# upstream impl asserts on, defaulting to a neutral all-ones vector: byte-exact
+# against the compiled C under those same weights, but a real calibration matrix
+# is not re-derived here. IQ1_M has an upstream NULL-weights path.
+from .iq2 import quantize_iq2_s  # noqa: E402
+from .iq2xs import quantize_iq2_xs  # noqa: E402
+from .iq2xxs import quantize_iq2_xxs  # noqa: E402
+from .iq1m import quantize_iq1_m  # noqa: E402
+from .iq1s import quantize_iq1_s  # noqa: E402
+
+CODECS['IQ2_XXS'] = (66, QK_K, quantize_iq2_xxs, dequantize_iq2_xxs)
+CODECS['IQ2_XS'] = (74, QK_K, quantize_iq2_xs, dequantize_iq2_xs)
+CODECS['IQ2_S'] = (82, QK_K, quantize_iq2_s, dequantize_iq2_s)
+CODECS['IQ1_S'] = (50, QK_K, quantize_iq1_s, dequantize_iq1_s)
+CODECS['IQ1_M'] = (56, QK_K, quantize_iq1_m, dequantize_iq1_m)

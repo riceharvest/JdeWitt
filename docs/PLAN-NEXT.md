@@ -1344,3 +1344,26 @@ Published gguf (0.19.0 is latest) has no `Q2_0` member, so integration goes thro
 Known limit: gguf-py's `GGUFReader` still refuses a whole file containing id 42, so
 `gguf-inspect` and `gguf-tensor-diff` cannot open such files yet; our container paths
 (parse_container, decode_values, edit, audit, verify) can.
+
+### All nine IQ types now have encoders (2026-11-22)
+
+Ports (each its own module + compiled-C harness, byte-exact vs scripts/ggml_ref/):
+- `iq2.py` IQ2_S (82 B/256) — 8 distributions x 64 blocks and real tensors, after
+  fixing two fold-order bugs (sigma2 and the neighbour d2 sums were pairwise).
+- `iq2xxs.py` IQ2_XXS (66 B/256), `iq2xs.py` IQ2_XS (74 B/256) — 8 distributions +
+  real tensors + a 3,000-block mixed-scale stress. Upstream asserts quant_weights;
+  both take optional weights defaulting to a neutral all-ones vector, and the C
+  harness is fed the same vector, so byte-exactness is proven under neutral weights
+  only. The real calibration imatrix is not re-derived.
+- `iq1s.py` IQ1_S (50 B/256) — 8 distributions, tie-heavy 2,048-block input,
+  real tensors; neutral weights as above. The port replaces the C sort with a stable
+  argsort (glibc here is stable; recheck on an unstable qsort).
+- `iq1m.py` IQ1_M (56 B/256) — NULL-weights upstream path, 8 distributions + ties +
+  512-block large-gauss + real tensors; neighbour lists built only for the 6,561
+  reachable tuples.
+
+All nine IQ codecs (IQ1_S/M, IQ2_XXS/XS/S, IQ3_XXS/S, IQ4_NL/XS) are now in CODECS,
+so DECODE_ONLY is empty for the IQ family. Encode cost measured on 262k elements,
+scaled to 4M: IQ1_M ~14 s, IQ1_S ~16 s, IQ2_S ~63 s, IQ2_XS ~71 s, IQ2_XXS ~75 s,
+IQ3_S ~39 s, IQ3_XXS ~52 s. These are explicit `--edit-type` choices; `auto` keeps
+its q6_k -> q8_0 -> f16 ladder.
