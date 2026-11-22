@@ -140,6 +140,31 @@ def test_served_deltas_as_projections_matches_delta_path(tmp_path):
     assert a.read_bytes() == b.read_bytes()
 
 
+def test_out_of_place_merge_dequantizes_each_tensor_once(tmp_path, monkeypatch):
+    """The old path dequantized once for the delta and once in the writer."""
+    from jdewitt import quants, spanfit
+    raw = _f32((8, 8), 8)[1]
+    src = _gguf(tmp_path / 'in.gguf',
+                [('blk.0.attn_output.weight', (8, 8), 0, raw),
+                 ('token_embd.weight', (4, 8), 0, _f32((4, 8), 9)[1])])
+    axes = torch.nn.functional.normalize(torch.randn(1, 8), dim=1)
+    calls = []
+    block_bytes, block_els, quantize, dequantize = quants.CODECS['F32']
+
+    def counted(values, n, _fn=dequantize):
+        calls.append(n)
+        return _fn(values, n)
+
+    monkeypatch.setitem(quants.CODECS, 'F32', (block_bytes, block_els, quantize, counted))
+    report = spanfit.build_merged(
+        str(src), str(tmp_path / 'out.gguf'), axes,
+        ['model.layers.0.self_attn.o_proj.weight'],
+        name_map={'model.layers.0.self_attn.o_proj.weight': 'blk.0.attn_output.weight'},
+        axis_space='output', dequant_cache=False)
+    assert report['tensors_edited'] == 1
+    assert len(calls) == 1, 'one dequant pass per edited tensor'
+
+
 def test_build_merged_warm_arm_reports_zero_dequant(tmp_path):
     from jdewitt import spanfit
     g = np.random.RandomState(6)

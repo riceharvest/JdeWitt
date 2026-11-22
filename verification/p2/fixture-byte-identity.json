@@ -1,0 +1,27 @@
+{
+ "what": "out-of-place merge of the tests/test_spanfit.py fixture, byte-identical before/after the P2b writer change",
+ "fixture": "tests/test_spanfit.py::test_build_merged_rewrites_targets_only (L=4, D=16, 3 target tensors, F32)",
+ "method": "same script built the merge with the pre-change code (master e1ece0c) and the post-change code; cmp on the two files",
+ "rows": [
+  {
+   "mode": "default axis_space=input",
+   "sha256_before_change": "278fefe66214dfceaa066da158f6ba9b2832e7578d87b01603659ac4a5d03ac9",
+   "sha256_after_change": "278fefe66214dfceaa066da158f6ba9b2832e7578d87b01603659ac4a5d03ac9",
+   "cmp": "identical"
+  },
+  {
+   "mode": "axis_space=output",
+   "sha256_before_change": "d16654c338ad2c34d753d3d8530e77758d2d2e3329b4dbfd5251d0d96e339b5e",
+   "sha256_after_change": "d16654c338ad2c34d753d3d8530e77758d2d2e3329b4dbfd5251d0d96e339b5e",
+   "cmp": "identical"
+  },
+  {
+   "mode": "axis_space=output + renormalize",
+   "sha256_before_change": "2f69670132d4fc10b3bc6ccc48433d72aac567d631db838f1cc823a88a54c8fa",
+   "sha256_after_change": "2f69670132d4fc10b3bc6ccc48433d72aac567d631db838f1cc823a88a54c8fa",
+   "cmp": "identical"
+  }
+ ],
+ "note": "the renormalize row matters because the row-norm arithmetic moved from build_merged's precomputed delta into the writer; it emits the same bytes, including the second add that reproduces the old two-step rounding.",
+ "cache": "the post-change runs also created <fixture-in>.gguf.dequant/ and the warm run (second post-change build) was identical too"
+}
