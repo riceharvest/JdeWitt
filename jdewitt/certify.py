@@ -491,6 +491,9 @@ def release_certify(spec_path, out_path=None):
     arm = dict(spec['arm'])
     arm.setdefault('chosen_type', fidelity_block['chosen_type'])
     arm.setdefault('realized_cos', fidelity_block['min_cos'])
+    arm.setdefault('realized_cos_kind',
+                   'codec-proxy' if fidelity.get('arm_measurement') is False else 'arm-preview')
+    arm.setdefault('realized_cos_source_artifact_sha256', fidelity.get('artifact_sha256'))
     arm.setdefault('byte_cost', arm_identity.get('bytes'))
     if arm.get('edited_tensors') is None:
         _fail('CERTIFY_MISSING_AXIS', 'missing axis: arm (.edited_tensors)')
