@@ -13,7 +13,7 @@ argued against a guess.
 
 One command, one JSON: artifact sha before and after revert, tensors and
 changed blocks, per-arm dequant/apply/requant seconds, requant_share,
-projected_4_arm_s, records_sha256, and `next` (the P2b command).
+projected_4_arm_s, records_sha256, and `next` (the card this run hands to).
 
 How the split is measured. Production code has no timers, and this script does
 not add any: it runs build_merged in its own process and, for the duration of
@@ -46,13 +46,26 @@ ART_SHA256 = '80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad'
 
 # P2b (t_35cd0a5b) is the card this baseline unblocks: one dequant pass plus a
 # content-addressed base cache. Its gate command is printed in `next` so the
-# next agent starts from this JSON instead of from this docstring.
-NEXT_TEMPLATE = (
+# next agent starts from this JSON instead of from this docstring; a run that
+# already used the cache prints the card it hands to instead (P2c), because
+# re-printing its own command would be a loop.
+P2B_NEXT = (
     'python scripts/merge_bench.py --artifact {artifact} --axes {axes} '
     '--only-layers {only_layers} --arms 3 --cache /mnt/ssd/models/spark/p2/dequant '
     '--json-out verification/p2/bench-cache.json   # P2b (t_35cd0a5b): the same bench '
     'with a dequant cache; arms[1].dequant_s must read 0.0 and cache_hits==cache_misses==36'
 )
+P2C_NEXT = (
+    'ab show t_542ab2dc   # P2c: parallel requant across tensors. This file is the P2b '
+    'gate (arm 0 dequant > 0, arms 1+ dequant_s == 0.0, cache_hits == cache_misses == '
+    '{tensors}); requant_share above is why the 4-arm <3min gate (t_cf83773e) lives there'
+)
+
+
+def next_command(artifact: str, axes: str, only_layers: str, cached: bool, tensors: int) -> str:
+    if cached:
+        return P2C_NEXT.format(tensors=tensors)
+    return P2B_NEXT.format(artifact=artifact, axes=axes, only_layers=only_layers)
 
 
 def sha256_file(path) -> str:
@@ -281,8 +294,8 @@ def bench(args) -> tuple[dict, str]:
         'note': 'apply_s is total_s minus dequant_s and requant_s: projection arithmetic, '
                 'block-change detection, file I/O and the writer closing sha256. No model is '
                 'loaded and no server is started on this path.',
-        'next': NEXT_TEMPLATE.format(artifact=artifact, axes=axes_path,
-                                     only_layers=args.only_layers or '10-27'),
+        'next': next_command(str(artifact), str(axes_path), args.only_layers or '10-27',
+                             cache is not None, len(names)),
     }
     if cache is not None:
         # Distinct keys: each of the 36 tensor bases is a miss once and a hit on
