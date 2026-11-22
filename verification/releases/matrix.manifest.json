@@ -145,7 +145,7 @@
         "quant_type": "Q4_K_M",
         "scale": null,
         "edited_tensors": null,
-        "note": "no edited artifact: the merged-bytes arm has not been built, so there is nothing to bind and no packet to count"
+        "note": "no certified edited artifact. Merged bytes do exist in the scratch cache (spark-auto-edit.gguf 1236261408 B, spark-iq4nl-edited.gguf 1080506912 B) but no wave or spec was saved for them, so there is nothing to certify and no digest to bind a row to"
       },
       "packet": "verification/releases/spark-1.7b/packet.json",
       "spec": "verification/releases/spark-1.7b/spec.json",
