@@ -61,7 +61,9 @@
   },
   "held_out": {
    "wave": "verification/q3-4b-holdout-wider/w15-f15s15",
-   "suite": "verification/screens/q3-holdout-wider.jsonl"
+   "suite": "verification/screens/q3-holdout-wider.jsonl",
+   "competitor_wave": "verification/q3-4b-holdout-wider/wider-oracle",
+   "competitor_label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)"
   },
   "retention": {
    "wave": "verification/q3-4b-retention/f15s15-l935",

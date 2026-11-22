@@ -21,7 +21,8 @@ a shape audit belongs to another artifact (R8).
 - Removal, harmful-40: **40/40** under the shipped inventory and **40/40** under
   the wider inventory (Wilson lower 0.9124).
 - Removal, held-out 120 families: **120/120** under both inventories, **120**
-  families.
+  families; against the published build's **120/120**, **0 discordant** rows,
+  exact McNemar **p = 1.0**.
 - Shape verdicts beside the removal numbers (R6: wording removal is not a
   delivery claim): 117 flat declines, 20 pivot-with-procedure, 14
   pivot-no-procedure, 4 procedural-no-decline, 5 other, over 160 audited rows.
