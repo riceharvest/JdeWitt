@@ -40,6 +40,18 @@ falsifier caught a dequantizer bias we had missed: ggml dequantize_row_q5_0
 stores an offset code and subtracts 16 (its quantizer adds 16.5 before
 truncating), which our first port omitted.
 
+ref_iq4.c: IQ4_NL / IQ4_XS quantizer reference (`./ref_iq4 iq4_nl|iq4_xs`), copied verbatim
+from ggml-quants.c @ master sha256 1665bffa9c0ef0e692f8799523a729879960a6aa07adaa32f9efb41f7076a3da
+with the kvalues_iq4nl table from ggml-common.h at the same revision (sha256
+0061131b615c5721fc88a78feeb22c1f8c450f1c2646a317d80796a653bf595c).
+quantize_iq4_nl and quantize_iq4_xs (jdewitt/quants.py) are byte-exact vs it on
+10 distributions x 64 blocks each and on real F32 checkpoint tensors; the only
+divergence is the upstream-undefined all-zero-block path of IQ4_NL, where the C
+reference leaves the code buffer untouched and we write zero codes.
+The IQ grid tables (iq2xxs/iq2xs/iq2s, iq3xxs/iq3s, iq1s, ksigns/kmask) are
+vendored into jdewitt/iq_tables.py by scripts/vendor_iq_tables.py, which records
+the ggml-common.h sha256 above and refuses a size mismatch.
+
 ref_23k.c: q2_K/q3_K scalar quantizer reference (`./ref_23k q2_K < weights.f32 > blocks.bin`).
 quantize_row_q2_K_ref byte-exact (13 distributions incl. 4 real F32 checkpoint tensors)
 — the first falsifier run exposed that make_qkx2_quants uses the CALLER's weights:

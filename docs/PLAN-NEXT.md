@@ -188,11 +188,27 @@ written into the item and stays GATED.
     jsonl imported with `symlink_to` in provenance, a FIFO and a 5 GiB sparse
     file both refused with the reason, chunked sha equals the whole-file sha.
 
-12. IQ quants (IQ1_S … IQ6_K): the small-model quants people actually use.
-    Port is code-only but carries pinned llama.cpp importance tables that
-    must be versioned, digested and pinned like NOTICE upstreams, or the
-    codec silently lies. Split per size class; Q2/Q3_K first still pays
-    the rent sooner.
+12. IQ quants (IQ1_S … IQ4_XS). — DECODERS LANDED 2026-11-22; IQ4 ENCODERS LANDED.
+    The grid tables (iq2xxs/iq2xs/iq2s, iq3xxs/iq3s, iq1s, ksigns/kmask) are
+    vendored by scripts/vendor_iq_tables.py into jdewitt/iq_tables.py, which
+    records the ggml-common.h sha256 (0061131b...) and refuses a declared-size
+    mismatch; nothing is hand-typed.
+    Decoders ported from dequantize_row_* (ggml-quants.c master 1665bffa...):
+    IQ1_S, IQ1_M, IQ2_XXS, IQ2_XS, IQ2_S, IQ3_XXS, IQ3_S are bit-exact against
+    the pinned gguf.quants port on 4,096 random blocks each (NaN-equal), IQ3_S
+    also on all 21 real tensors of the 0.5B IQ3_M checkpoint. They live in
+    DECODE_ONLY, so decode_values, gguf-tensor-diff and quants-audit use ours
+    rather than the labelled pinned-port fallback.
+    Encoders: IQ4_NL and IQ4_XS are byte-exact against the compiled C
+    (scripts/ggml_ref/ref_iq4.c, 10 distributions + real F32 tensors); the
+    zero-block path of IQ4_NL is undefined upstream (the reference leaves the
+    code buffer untouched) and we write zero codes.
+    Remaining, stated honestly: byte-exact ENCODERS for IQ1/IQ2/IQ3 need the
+    runtime-derived kmap/neighbour tables and, for IQ2_XXS/XS and IQ1, an
+    importance matrix (llama-quantize itself refuses those without one). Those
+    files are still editable: edit-quantized/rewrite re-encode the touched
+    tensors at a writable type (Q8_0/Q6_K) and copy every other tensor
+    byte-for-byte, which is the product behaviour the roadmap asked for.
 
 13. bitsandbytes NF4 — SINGLE-QUANT LANDED. `nf4-edit` for U8-packed
     weights + F32/F16 absmax scales: codebook pinned to bnb 0.42.0 by

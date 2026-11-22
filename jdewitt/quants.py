@@ -800,7 +800,327 @@ def dequantize_iq4_nl(raw: np.ndarray, n: int) -> np.ndarray:
     return out.reshape(n)
 
 
-DECODE_ONLY = {
-    'IQ4_XS': (136, QK_K, dequantize_iq4_xs),
-    'IQ4_NL': (18, 32, dequantize_iq4_nl),
-}
+DECODE_ONLY: dict = {}
+
+
+# ---------------------------------------------------------------- IQ4 codecs
+# quantize_row_iq4_nl_impl from ggml-quants.c (master sha 1665bffa...) with the
+# kvalues_iq4nl table from ggml-common.h at that revision. `best_index_iq4nl`
+# starts at 15 and decrements for every midpoint above the value, i.e. it is
+# `count(mid <= value)`: a value exactly on a midpoint takes the higher code.
+_IQ4_MID = ((_KVALUES_IQ4NL[:-1] + _KVALUES_IQ4NL[1:]) / np.float32(2.0)).astype(np.float32)
+
+
+def _best_index_iq4nl(values):
+    return (values[..., None] >= _IQ4_MID).sum(axis=-1).astype(np.int64)
+
+
+def _iq4_fit_subblocks(xb, ntry):
+    """One 32-element block per row: scale and codes, mirroring the C lane search.
+
+    `ntry > 0` runs the 2*ntry+2 candidate scales (IQ4_XS's reference); `ntry = -1`
+    is the single initial lane IQ4_NL's reference uses.
+    """
+    values = _KVALUES_IQ4NL
+    m = xb.shape[0]
+    weight = (xb * xb).astype(np.float32)
+    ax = np.abs(xb)
+    pick = np.argmax(ax, axis=1)
+    rows = np.arange(m)
+    amax = ax[rows, pick]
+    maxv = xb[rows, pick]
+    zero = amax < np.float32(GROUP_MAX_EPS)
+    safe_max = np.where(zero, np.float32(1.0), maxv).astype(np.float32)
+    nt = 2 * ntry + 2 if ntry >= 0 else 1
+    if ntry > 0:
+        d = -maxv / np.float32(values[0])
+    else:
+        d = maxv / np.float32(values[0])
+    idt = np.empty((m, nt), dtype=np.float32)
+    idt[:, 0] = np.float32(1.0) / d
+    for t in range(1, nt):
+        idt[:, t] = (np.float32(t - 1 - ntry) + np.float32(values[0])) / safe_max
+    exp = idt[:, 0:1] * xb
+    L = _best_index_iq4nl(exp).astype(np.uint8)
+    # C accumulates lane sums in element order; the lanes are independent, so the
+    # element loop stays while the lanes and blocks are vectorised.
+    sqx = np.zeros((m, nt), dtype=np.float32)
+    sq2 = np.zeros((m, nt), dtype=np.float32)
+    for j in range(xb.shape[1]):
+        xj = xb[:, j:j + 1]
+        wj = weight[:, j:j + 1]
+        idxs = _best_index_iq4nl(idt * xj)
+        q = values[idxs]
+        sqx += wj * q * xj
+        sq2 += wj * q * q
+    d = np.where(sq2[:, 0] > 0, sqx[:, 0] / np.where(sq2[:, 0] > 0, sq2[:, 0], np.float32(1.0)),
+                 np.float32(0.0))
+    best = d * sqx[:, 0]
+    for t in range(1, nt):
+        ok = (sq2[:, t] > 0) & (sqx[:, t] * sqx[:, t] > best * sq2[:, t])
+        dt = sqx[:, t] / np.where(ok, sq2[:, t], np.float32(1.0))
+        d = np.where(ok, dt, d)
+        best = np.where(ok, d * sqx[:, t], best)
+    scales = np.where(zero, np.float32(0.0), d).astype(np.float32)
+    # The C reference does not touch a zero block's code buffer; the buffer is
+    # reused, so a zero block keeps the previous block's codes. Replicate that
+    # (a leading zero block has no predecessor: zero codes).
+    for b in range(1, m):
+        if zero[b]:
+            L[b] = L[b - 1]
+    if zero[0]:
+        L[0] = 0
+    return scales, L
+
+
+def quantize_iq4_nl(x):
+    """Byte-reproducible mirror of quantize_row_iq4_nl_ref (18-byte blocks)."""
+    x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, 32)
+    nb = x.shape[0]
+    scales, L = _iq4_fit_subblocks(x, -1)
+    dh = scales.astype(np.float16)
+    out = np.empty((nb, 18), dtype=np.uint8)
+    out[:, 0:2] = np.ascontiguousarray(dh).view(np.uint16).view(np.uint8).reshape(nb, 2)
+    out[:, 2:18] = L[:, 0:16] | (L[:, 16:32] << 4)
+    return out.reshape(-1)
+
+
+def quantize_iq4_xs(x):
+    """Byte-reproducible mirror of quantize_row_iq4_xs_ref (136-byte blocks)."""
+    x = np.ascontiguousarray(x, dtype=np.float32).reshape(-1, QK_K)
+    nb = x.shape[0]
+    xb = x.reshape(nb, 8, 32)
+    scales, _L = _iq4_fit_subblocks(xb.reshape(-1, 32), 7)
+    scales = scales.reshape(nb, 8)
+    absd = np.abs(scales)
+    pick = np.argmax(absd, axis=1)
+    rows = np.arange(nb)
+    amax_scale = absd[rows, pick]
+    max_scale = scales[rows, pick]
+    max_scale = np.where(amax_scale > 0, max_scale, np.float32(0.0)).astype(np.float32)
+    dsuper = (-max_scale / np.float32(32.0)).astype(np.float32)
+    dh = dsuper.astype(np.float16)
+    id_ = np.where(dsuper != 0, np.float32(1.0) / np.where(dsuper != 0, dsuper, np.float32(1.0)),
+                   np.float32(0.0)).astype(np.float32)
+    ls = np.clip(_rint(id_[:, None] * scales), -32, 31).astype(np.int64)
+    dl = (dsuper[:, None] * ls.astype(np.float32)).astype(np.float32)
+    idl = np.where(dl != 0, np.float32(1.0) / np.where(dl != 0, dl, np.float32(1.0)),
+                   np.float32(0.0)).astype(np.float32)
+    L = _best_index_iq4nl(idl[:, :, None] * xb).astype(np.uint8)
+    l32 = ls + 32
+    scales_l = np.zeros((nb, 4), dtype=np.uint8)
+    scales_h = np.zeros((nb,), dtype=np.uint16)
+    for ib in range(8):
+        low = (l32[:, ib] & 0xF).astype(np.uint8)
+        if ib % 2 == 0:
+            scales_l[:, ib // 2] = low
+        else:
+            scales_l[:, ib // 2] |= (low << 4)
+        scales_h |= ((l32[:, ib] >> 4).astype(np.uint16) << (2 * (ib % 8)))
+    qs = np.empty((nb, 128), dtype=np.uint8)
+    flat = L.reshape(nb, QK_K)
+    for i in range(8):
+        qs[:, 16 * i:16 * i + 16] = flat[:, 32 * i:32 * i + 16] | (flat[:, 32 * i + 16:32 * i + 32] << 4)
+    out = np.empty((nb, 136), dtype=np.uint8)
+    out[:, 0:2] = np.ascontiguousarray(dh).view(np.uint16).view(np.uint8).reshape(nb, 2)
+    out[:, 2:4] = scales_h.view(np.uint8).reshape(nb, 2)
+    out[:, 4:8] = scales_l
+    out[:, 8:136] = qs
+    return out.reshape(-1)
+
+
+CODECS['IQ4_NL'] = (18, 32, quantize_iq4_nl, dequantize_iq4_nl)
+CODECS['IQ4_XS'] = (136, QK_K, quantize_iq4_xs, dequantize_iq4_xs)
+
+
+# ---------------------------------------------------------------- IQ grid codecs
+# Decoders ported from dequantize_row_* in ggml-quants.c (the revision whose
+# ggml-common.h sha256 is pinned in jdewitt/iq_tables.py). Grid values are
+# little-endian bytes in the C source, so the tables are re-viewed as uint8;
+# IQ1's grid entries are read as signed bytes and carry a +-1/8 excursion.
+from .iq_tables import (  # noqa: E402
+    IQ1S_DELTA, IQ1S_GRID, IQ2S_GRID, IQ2XXS_GRID, IQ2XS_GRID, IQ3S_GRID,
+    IQ3XXS_GRID, KMASK_IQ2XS, KSIGNS_IQ2XS,
+)
+
+
+def _grid_bytes(grid):
+    width = 8 if grid.dtype == np.uint64 else 4
+    raw = np.ascontiguousarray(grid).astype('<u8' if width == 8 else '<u4').view(np.uint8)
+    return raw.reshape(-1, width)
+
+
+def _signed_grid(grid):
+    return _grid_bytes(grid).view(np.int8)
+
+
+_IQ2XXS_BYTES = _grid_bytes(IQ2XXS_GRID)
+_IQ2XS_BYTES = _grid_bytes(IQ2XS_GRID)
+_IQ2S_BYTES = _grid_bytes(IQ2S_GRID)
+_IQ3XXS_BYTES = _grid_bytes(IQ3XXS_GRID)
+_IQ3S_BYTES = _grid_bytes(IQ3S_GRID)
+_IQ1S_SIGNED = _signed_grid(IQ1S_GRID)
+
+
+def _signs(ksign_idx):
+    return KSIGNS_IQ2XS[ksign_idx]
+
+
+def _mask_signs(sign_bytes, j):
+    return np.where((sign_bytes[..., None] & KMASK_IQ2XS[None, None, :]) != 0, -1.0, 1.0)
+
+
+def dequantize_iq2_xxs(raw, n):
+    nb = raw.size // 66
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 66)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    q32 = np.ascontiguousarray(b[:, 2:66]).view('<u4').reshape(nb, 16)
+    aux0, aux1 = q32[:, 0::2], q32[:, 1::2]
+    idx = np.ascontiguousarray(aux0).view(np.uint8).reshape(nb, 8, 4)
+    signs = KSIGNS_IQ2XS[((aux1[:, :, None] >> (7 * np.arange(4, dtype=np.uint32))) & 127)]
+    db = (d * (np.float32(0.5) + (aux1 >> 28).astype(np.float32)) * np.float32(0.25))
+    grid = _IQ2XXS_BYTES[idx].astype(np.float32)
+    vals = db[:, :, None, None] * grid * _mask_signs(signs, None)
+    return vals.reshape(-1)[:n]
+
+
+def dequantize_iq2_xs(raw, n):
+    nb = raw.size // 74
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 74)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    qs = np.ascontiguousarray(b[:, 2:66]).view('<u2').reshape(nb, 8, 4)
+    sc = b[:, 66:74]
+    gidx = (qs & 511).astype(np.int64)
+    signs = KSIGNS_IQ2XS[(qs >> 9).astype(np.int64)]
+    db0 = d * (np.float32(0.5) + (sc & 0xF).astype(np.float32)) * np.float32(0.25)
+    db1 = d * (np.float32(0.5) + (sc >> 4).astype(np.float32)) * np.float32(0.25)
+    db = np.where(np.arange(4)[None, None, :] < 2, db0[:, :, None], db1[:, :, None])
+    grid = _IQ2XS_BYTES[gidx].astype(np.float32)
+    vals = db[..., None] * grid * _mask_signs(signs, None)
+    return vals.reshape(-1)[:n]
+
+
+def dequantize_iq2_s(raw, n):
+    nb = raw.size // 82
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 82)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    qs = b[:, 2:34].astype(np.int32).reshape(nb, 8, 4)
+    qh = b[:, 66:74].astype(np.int32)
+    signs = b[:, 34:66].astype(np.int32).reshape(nb, 8, 4)
+    scales = b[:, 74:82]
+    shifts = np.array([8, 6, 4, 2], dtype=np.int32)
+    gidx = (qs | ((qh[:, :, None] << shifts[None, None, :]) & 0x300)).astype(np.int64)
+    db0 = d * (np.float32(0.5) + (scales & 0xF).astype(np.float32)) * np.float32(0.25)
+    db1 = d * (np.float32(0.5) + (scales >> 4).astype(np.float32)) * np.float32(0.25)
+    db = np.where(np.arange(4)[None, None, :] < 2, db0[:, :, None], db1[:, :, None])
+    grid = _IQ2S_BYTES[gidx].astype(np.float32)
+    vals = db[..., None] * grid * _mask_signs(signs, None)
+    return vals.reshape(-1)[:n]
+
+
+def dequantize_iq3_xxs(raw, n):
+    nb = raw.size // 98
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 98)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    qs = b[:, 2:66].astype(np.int64).reshape(nb, 8, 8)
+    aux = np.ascontiguousarray(b[:, 66:98]).view('<u4').reshape(nb, 8)
+    db = d * (np.float32(0.5) + (aux >> 28).astype(np.float32)) * np.float32(0.5)
+    signs = KSIGNS_IQ2XS[((aux[:, :, None] >> (7 * np.arange(4, dtype=np.uint32))) & 127)]
+    g1 = _IQ3XXS_BYTES[qs[:, :, 0:8:2]].astype(np.float32)
+    g2 = _IQ3XXS_BYTES[qs[:, :, 1:8:2]].astype(np.float32)
+    mask = _mask_signs(signs, None)  # (nb,8,4,8): sign per j and j+4 positions
+    vals = np.empty((nb, 8, 4, 8), dtype=np.float32)
+    vals[..., 0:4] = db[:, :, None, None] * g1 * mask[..., 0:4]
+    vals[..., 4:8] = db[:, :, None, None] * g2 * mask[..., 4:8]
+    return vals.reshape(-1)[:n]
+
+
+def dequantize_iq3_s(raw, n):
+    nb = raw.size // 110
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 110)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    qs = b[:, 2:66]
+    qh = b[:, 66:74]
+    signs = b[:, 74:106]
+    scales = b[:, 106:110]
+    out = np.empty((nb, 4, 2, 4, 8), dtype=np.float32)
+    shifts8 = np.array([8, 6, 4, 2], dtype=np.int32)
+    shifts7 = np.array([7, 5, 3, 1], dtype=np.int32)
+    for h in range(4):
+        qh_pair = qh[:, 2 * h:2 * h + 2].astype(np.int32)
+        for part in range(2):
+            qs_block = qs[:, 16 * h + 8 * part:16 * h + 8 * part + 8].astype(np.int32)
+            sign_block = signs[:, 8 * h + 4 * part:8 * h + 4 * part + 4]
+            nibble = ((scales[:, h] & 0xF) if part == 0 else (scales[:, h] >> 4)).astype(np.float32)
+            db = d.reshape(-1) * (np.float32(1.0) + np.float32(2.0) * nibble)
+            g1 = _IQ3S_BYTES[(qs_block[:, 0:8:2] |
+                              ((qh_pair[:, part:part + 1].astype(np.int32) << shifts8[None, :]) & 256))]
+            g2 = _IQ3S_BYTES[(qs_block[:, 1:8:2] |
+                              ((qh_pair[:, part:part + 1].astype(np.int32) << shifts7[None, :]) & 256))]
+            mask = _mask_signs(sign_block.astype(np.int32), None)
+            vals = out[:, h, part]
+            vals[..., 0:4] = db[:, None, None] * g1.astype(np.float32) * mask[..., 0:4]
+            vals[..., 4:8] = db[:, None, None] * g2.astype(np.float32) * mask[..., 4:8]
+    return out.reshape(-1)[:n]
+
+
+def dequantize_iq1_s(raw, n):
+    nb = raw.size // 50
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 50)
+    d = b[:, 0:2].copy().view(np.float16).astype(np.float32).reshape(nb, 1)
+    qs = b[:, 2:34].astype(np.int64).reshape(nb, 8, 4)
+    qh = np.ascontiguousarray(b[:, 34:50]).view('<u2').reshape(nb, 8)
+    dl = d * (np.float32(2.0) * ((qh >> 12) & 7).astype(np.float32) + np.float32(1.0))
+    delta = np.where((qh & 0x8000) != 0, np.float32(-IQ1S_DELTA), np.float32(IQ1S_DELTA))
+    idx = qs | (((qh[:, :, None] >> (3 * np.arange(4, dtype=np.uint16))) & 7).astype(np.int64) << 8)
+    grid = _IQ1S_SIGNED[idx].astype(np.float32)
+    vals = dl[:, :, None, None] * (grid + delta[:, :, None, None])
+    return vals.reshape(-1)[:n]
+
+
+def dequantize_iq1_m(raw, n):
+    nb = raw.size // 56
+    b = np.frombuffer(raw, np.uint8).reshape(nb, 56)
+    qs = b[:, 0:32].astype(np.int64).reshape(nb, 8, 4)
+    qh = b[:, 32:48].astype(np.int32)
+    sc = np.ascontiguousarray(b[:, 48:56]).view('<u2').reshape(nb, 4)
+    scale_u16 = ((sc[:, 0] >> 12) | ((sc[:, 1] >> 8) & 0x00F0) |
+                 ((sc[:, 2] >> 4) & 0x0F00) | (sc[:, 3] & 0xF000)).astype(np.uint16)
+    d = scale_u16.view(np.float16).astype(np.float32).reshape(nb, 1)
+    out = np.empty((nb, 8, 4, 8), dtype=np.float32)
+    for ib in range(8):
+        pair = ib // 2
+        shift = 6 * (ib % 2)
+        df = d.reshape(-1)
+        dl1 = df * (np.float32(2.0) * ((sc[:, pair] >> shift) & 7).astype(np.float32) + np.float32(1.0))
+        dl2 = df * (np.float32(2.0) * ((sc[:, pair] >> (shift + 3)) & 7).astype(np.float32) + np.float32(1.0))
+        qh0 = qh[:, 2 * ib]
+        qh1 = qh[:, 2 * ib + 1]
+        qblock = qs[:, ib]
+        idx = np.stack([
+            qblock[:, 0] | ((qh0 << 8) & 0x700),
+            qblock[:, 1] | ((qh0 << 4) & 0x700),
+            qblock[:, 2] | ((qh1 << 8) & 0x700),
+            qblock[:, 3] | ((qh1 << 4) & 0x700),
+        ], axis=1)
+        delta = np.stack([
+            np.where((qh0 & 0x08) != 0, -IQ1S_DELTA, IQ1S_DELTA),
+            np.where((qh0 & 0x80) != 0, -IQ1S_DELTA, IQ1S_DELTA),
+            np.where((qh1 & 0x08) != 0, -IQ1S_DELTA, IQ1S_DELTA),
+            np.where((qh1 & 0x80) != 0, -IQ1S_DELTA, IQ1S_DELTA),
+        ], axis=1).astype(np.float32)
+        grid = _IQ1S_SIGNED[idx].astype(np.float32)
+        dl = np.where(np.arange(4)[None, :] < 2, dl1[:, None], dl2[:, None])
+        out[:, ib] = dl[:, :, None] * (grid + delta[:, :, None])
+    return out.reshape(-1)[:n]
+
+
+DECODE_ONLY.update({
+    'IQ2_XXS': (66, QK_K, dequantize_iq2_xxs),
+    'IQ2_XS': (74, QK_K, dequantize_iq2_xs),
+    'IQ2_S': (82, QK_K, dequantize_iq2_s),
+    'IQ3_XXS': (98, QK_K, dequantize_iq3_xxs),
+    'IQ3_S': (110, QK_K, dequantize_iq3_s),
+    'IQ1_S': (50, QK_K, dequantize_iq1_s),
+    'IQ1_M': (56, QK_K, dequantize_iq1_m),
+})
