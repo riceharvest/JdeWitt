@@ -1814,42 +1814,45 @@ def quants_audit(path, blocks_per_dtype=4096):
     Decode-only dtypes are reported honestly as un-auditable for requant.
     """
     import numpy as np
-    from gguf import GGUFReader
     from .ggufio import CODECS
-    from .quants import DECODE_ONLY
-    reader = GGUFReader(str(path))
+    from .ggufwrite import parse_container, tensor_nbytes
+    from .quants import DECODE_ONLY, type_name_for_id
+    # Our own container parser, not GGUFReader: newer type ids (Q2_0 = 42) have no
+    # GGMLQuantizationType member and the reader refuses the whole file over it.
+    header = parse_container(path)
     reports = {}
     decode_only = {}
     port_only = {}
     unsupported = {}
     port_cache = {}
 
-    def port_supported(t_enum):
-        if t_enum in port_cache:
-            return port_cache[t_enum]
+    def port_supported(dtype):
+        if dtype in port_cache:
+            return port_cache[dtype]
         ok = False
         try:
-            from gguf import quants as gq_port
+            from gguf import GGMLQuantizationType, quants as gq_port
             from gguf.constants import GGML_QUANT_SIZES
+            t_enum = GGMLQuantizationType[dtype]
             _els, bs = GGML_QUANT_SIZES[t_enum]
             gq_port.dequantize(np.zeros(bs, dtype=np.uint8).reshape(1, bs), t_enum)
             ok = True
         except Exception:
             ok = False
-        port_cache[t_enum] = ok
+        port_cache[dtype] = ok
         return ok
 
     with open(path, 'rb') as f:
-        for tensor in reader.tensors:
-            dtype = tensor.tensor_type.name
-            n_bytes = int(tensor.n_bytes)
+        for tensor in header['tensors']:
+            dtype = type_name_for_id(tensor['qtype'])
+            n_bytes = tensor_nbytes([int(x) for x in tensor['dims']], tensor['qtype'])
             if dtype in DECODE_ONLY:
                 decode_only[dtype] = decode_only.get(dtype, {'tensors': 0, 'bytes': 0})
                 decode_only[dtype]['tensors'] += 1
                 decode_only[dtype]['bytes'] += n_bytes
                 continue
             if dtype not in CODECS:
-                if port_supported(tensor.tensor_type):
+                if port_supported(dtype):
                     port_only[dtype] = port_only.get(dtype, {'tensors': 0, 'bytes': 0})
                     port_only[dtype]['tensors'] += 1
                     port_only[dtype]['bytes'] += n_bytes
@@ -1859,7 +1862,8 @@ def quants_audit(path, blocks_per_dtype=4096):
             block_bytes, block_elements, quantize, dequantize = CODECS[dtype]
             nb = n_bytes // block_bytes
             if nb * block_bytes != n_bytes:
-                raise ValueError(f'tensor {tensor.name}: {n_bytes} not a multiple of {block_bytes} for {dtype}')
+                raise ValueError(f"tensor {tensor['name']}: {n_bytes} not a multiple of "
+                                 f'{block_bytes} for {dtype}')
             rep = reports.setdefault(dtype, {'tensors': 0, 'blocks_total': 0, 'blocks_sampled': 0,
                                              'bytes_per_block': block_bytes, 'elements_per_block': block_elements,
                                              'byte_identical_blocks': 0, 'max_abs_change': 0.0,
@@ -1872,13 +1876,14 @@ def quants_audit(path, blocks_per_dtype=4096):
             stride = max(1, nb // remaining)
             indices = list(range(0, nb, stride))[:remaining]
             for index in indices:
-                offset = int(tensor.data_offset) + index * block_bytes
+                offset = header['data_base'] + int(tensor['offset']) + index * block_bytes
                 f.seek(offset)
                 raw = np.frombuffer(f.read(block_bytes), dtype=np.uint8)
                 values = dequantize(raw, block_elements)
                 requant = quantize(values)
                 if requant.size != block_bytes:
-                    raise ValueError(f'{tensor.name}: requant produced {requant.size} bytes, expected {block_bytes}')
+                    raise ValueError(f"{tensor['name']}: requant produced {requant.size} bytes, "
+                                     f'expected {block_bytes}')
                 back = dequantize(np.frombuffer(requant, dtype=np.uint8), block_elements)
                 identical = bool(np.array_equal(np.frombuffer(requant, np.uint8).reshape(-1),
                                                 raw.reshape(-1)))

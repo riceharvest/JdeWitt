@@ -97,6 +97,8 @@ def parse_container(path):
 def type_size(qtype):
     from gguf import GGML_QUANT_SIZES, GGMLQuantizationType
 
+    if int(qtype) == 42:  # Q2_0: newer than published gguf, see quants.EXTRA_TYPE_IDS
+        return 64, 18
     block_els, block_bytes = GGML_QUANT_SIZES[GGMLQuantizationType(int(qtype))]
     return int(block_els), int(block_bytes)
 

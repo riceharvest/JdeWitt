@@ -102,7 +102,6 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     layers by the median row-norm ratio of those layers, clamped to ``norm_clamp``.
     """
 
-    from gguf import GGMLQuantizationType
 
     from .ggufwrite import parse_container, tensor_nbytes, write_container
     from .quantize import canonical_type
@@ -124,7 +123,8 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
         raise ValueError(f'cannot WRITE {target_name}: this build encodes {", ".join(sorted(_WRITABLE))}. '
                          f'The source artifact can be any type; only the re-encoded tensors '
                          f'have to be.')
-    target = GGMLQuantizationType[target_name]
+    from .quants import type_id_for_name, type_name_for_id
+    target_id = type_id_for_name(target_name)
     header = parse_container(src)
     header['source'] = str(src)
     started = time.monotonic()
@@ -135,7 +135,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             name = tensor['name']
             if name not in edits:
                 continue
-            dtype = GGMLQuantizationType(int(tensor['qtype'])).name
+            dtype = type_name_for_id(tensor['qtype'])
             nbytes = tensor_nbytes(tensor['dims'], tensor['qtype'])
             handle.seek(header['data_base'] + tensor['offset'])
             raw = np.frombuffer(handle.read(nbytes), dtype=np.uint8)
@@ -158,15 +158,15 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                 row_scale = before / np.maximum(after, 1e-12)
                 edited = edited * row_scale
                 ratios_by_layer.setdefault(int(name.split('.')[1]), []).append(row_scale.reshape(-1))
-            _tb, new_block_els, quantize_fn, _dq = QUANT_CODECS[target.name]
+            _tb, new_block_els, quantize_fn, _dq = QUANT_CODECS[target_name]
             flat = np.ascontiguousarray(edited.reshape(-1), dtype=np.float32)
             padded = flat.size + (-flat.size) % new_block_els
             if padded != flat.size:
                 flat = np.concatenate([flat, np.zeros(padded - flat.size, dtype=np.float32)])
             packed = np.asarray(quantize_fn(flat), dtype=np.uint8).reshape(-1)
             payloads[name] = packed
-            qtypes[name] = int(target)
-            edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': target.name,
+            qtypes[name] = target_id
+            edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': target_name,
                                 'bytes_before': int(nbytes), 'bytes_after': int(packed.size)})
             if repair != 'none':
                 edited_rows[-1]['row_scale_min'] = round(float(row_scale.min()), 6)
@@ -224,7 +224,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     fingerprint = {'edit_sha256': digest.hexdigest()[:32],
                    'edited': len(matrices), 'untouched': len(header['tensors']) - len(payloads),
                    'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
-                   'scale': scale, 'axis_space': axis_space, 'edit_type': target.name,
+                   'scale': scale, 'axis_space': axis_space, 'edit_type': target_name,
                    'repair': repair_block}
     # The fingerprint travels WITH the artifact: a claim nobody can check is marketing,
     # and `verify --claim` can only compare fields it can find in the file.
@@ -242,7 +242,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                                          _json.dumps(fingerprint, sort_keys=True))])
     by_name = {entry['name']: entry for entry in written['entries']}
     report = {
-        'source': str(src), 'output': str(out), 'edit_type': target.name,
+        'source': str(src), 'output': str(out), 'edit_type': target_name,
         'scale': scale, 'axis_space': axis_space, 'renormalize': bool(renormalize),
         'tensors': len(header['tensors']), 'tensors_edited': len(matrices), 'repair': repair,
         'edited': edited_rows,

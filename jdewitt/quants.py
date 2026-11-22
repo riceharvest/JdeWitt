@@ -1166,3 +1166,30 @@ CODECS['TQ2_0'] = (66, QK_K, quantize_tq2_0, _tq2_dequant)
 CODECS['MXFP4'] = (17, 32, quantize_mxfp4, dequantize_mxfp4)
 CODECS['NVFP4'] = (36, 64, quantize_nvfp4, dequantize_nvfp4)
 CODECS['Q1_0'] = (18, 128, quantize_q1_0, dequantize_q1_0)
+
+
+# Q2_0 is newer than published gguf (0.19.0 is the latest): its raw type id is 42
+# and the enum cannot name it, so every id/name handoff goes through these helpers.
+from .q2_0 import dequantize_q2_0, quantize_q2_0  # noqa: E402
+
+EXTRA_TYPE_IDS = {'Q2_0': 42}
+EXTRA_TYPE_NAMES = {42: 'Q2_0'}
+CODECS['Q2_0'] = (18, 64, quantize_q2_0, dequantize_q2_0)
+
+
+def type_id_for_name(name):
+    """Raw GGML type id for a codec name, including ids the pinned enum lacks."""
+    upper = str(name).strip().upper()
+    if upper in EXTRA_TYPE_IDS:
+        return EXTRA_TYPE_IDS[upper]
+    from gguf import GGMLQuantizationType
+    return int(GGMLQuantizationType[upper])
+
+
+def type_name_for_id(qtype):
+    """Codec name for a raw GGML type id, including ids the pinned enum lacks."""
+    qid = int(qtype)
+    if qid in EXTRA_TYPE_NAMES:
+        return EXTRA_TYPE_NAMES[qid]
+    from gguf import GGMLQuantizationType
+    return GGMLQuantizationType(qid).name

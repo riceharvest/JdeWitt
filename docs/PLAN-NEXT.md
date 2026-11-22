@@ -1322,3 +1322,25 @@ for the blockless dtypes. New modules + compiled-C falsifiers:
 Q2_0 (raw type id 42) has no entry in published gguf (0.19.0 is the latest), so its
 codec and the id→name fallback are tracked separately; Q4_2/Q4_3 and the
 Q4_0_4_x/8_x GPU variants are removed upstream and cannot appear in files.
+
+### Q2_0 (raw type id 42) landed (2026-11-22)
+
+`jdewitt/q2_0.py` ports quantize_row_q2_0_ref / dequantize_row_q2_0 from the pinned
+C: 18 bytes per **64** elements (`QK2_0` is 64 at the pinned ggml-common.h, not 256),
+`d` = amax in f16, four 2-bit codes per byte with 00=-1, 01=0, 10=+1, 11=+2. Byte-exact
+vs `scripts/ggml_ref/ref_q2_0.c` on 8 distributions, 4 real F32 tensors and the
+dequant direction.
+
+Published gguf (0.19.0 is latest) has no `Q2_0` member, so integration goes through
+`quants.type_id_for_name` / `type_name_for_id` (extra id map) and:
+- `CODECS['Q2_0']` is registered, so decode/edit paths accept it;
+- `ggufwrite.type_size(42)` returns (64, 18);
+- `rewrite`/`verify` resolve names via the helper instead of the enum;
+- `quantize.canonical_type` accepts `Q2_0`;
+- `quants-audit` now reads tensors with our own `parse_container` instead of
+  `GGUFReader`, which cannot construct an enum member for id 42 (the audit ran on a
+  real file with a Q2_0 tensor: 32/32 sampled blocks byte-identical).
+
+Known limit: gguf-py's `GGUFReader` still refuses a whole file containing id 42, so
+`gguf-inspect` and `gguf-tensor-diff` cannot open such files yet; our container paths
+(parse_container, decode_values, edit, audit, verify) can.

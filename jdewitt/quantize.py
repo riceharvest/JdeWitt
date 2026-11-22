@@ -62,6 +62,8 @@ def canonical_type(name):
     # Anything gguf-py can name is worth handing to llama-quantize: the binary is the
     # authority on what this build can emit, and refusing here would silently cap the
     # tool at the K-quant family (IQ/TQ/MXFP4 targets included).
+    if upper == 'Q2_0':
+        return upper  # newer than published gguf; a codec here, not an enum member
     try:
         from gguf import GGMLQuantizationType
 

@@ -22,6 +22,8 @@ from pathlib import Path
 
 import numpy as np
 
+from .quants import type_name_for_id
+
 FLOATS = {'F32': np.float32, 'F16': np.float16}
 RECOMPUTABLE = ('edited', 'untouched', 'layers', 'edit_type')
 NOT_RECOMPUTABLE = {
@@ -50,8 +52,6 @@ def _tensors(path):
     Parsing the container directly skips gguf-py's per-string vocabulary decode, which
     costs seconds per file and says nothing about the weights.
     """
-    from gguf import GGMLQuantizationType
-
     from .ggufwrite import parse_container, tensor_nbytes
 
     header = parse_container(path)
@@ -64,7 +64,7 @@ def _tensors(path):
         rows = int(np.prod(dims[1:])) if len(dims) > 1 else 1
         tensors[entry['name']] = {
             'name': entry['name'], 'dims': dims, 'raw': raw.reshape(rows, -1),
-            'type': GGMLQuantizationType(int(entry['qtype'])).name}
+            'type': type_name_for_id(entry['qtype'])}
     return header, tensors
 
 
