@@ -362,6 +362,28 @@ def _identity_payload(artifact):
                        'edit': recipe.get('edit')} if recipe else None}
 
 
+def _verify_on_disk(artifact, axis):
+    """When the artifact is still here, its bytes must agree with the recorded digest.
+
+    The path is never the identity, but a present file is a free check: a spec that
+    claims a sha256 while the bytes hash differently is the same failure as an audit
+    of another artifact, and it ships just as quietly.
+    """
+    path = artifact.get('path')
+    if not path or not Path(str(path)).expanduser().is_file():
+        return
+    actual = file_sha256(Path(str(path)).expanduser())
+    expected = artifact.get('sha256')
+    prefix = artifact.get('sha256_prefix_16')
+    if expected and actual != expected:
+        _fail('CERTIFY_ARTIFACT_MISMATCH',
+              f'{axis}: {path} hashes to {actual}, the spec records {expected}')
+    if prefix and not actual.startswith(str(prefix)):
+        _fail('CERTIFY_ARTIFACT_MISMATCH',
+              f'{axis}: {path} hashes to {actual}, which does not start with the recorded '
+              f'prefix {prefix}')
+
+
 def _identity_digest(artifact):
     return _digest(_identity_payload(_artifact_identity(artifact, 'artifact')))
 
@@ -460,6 +482,8 @@ def release_certify(spec_path, out_path=None):
 
     arm_identity = _artifact_identity(spec['artifact'], 'artifact')
     base_identity = _artifact_identity(spec['base'], 'base')
+    _verify_on_disk(spec['artifact'], 'artifact')
+    _verify_on_disk(spec['base'], 'base')
     identity_digest = _identity_digest(spec['artifact'])
     digests = inventory_digests()
     declared_inventory = inputs['wording_inventory']
