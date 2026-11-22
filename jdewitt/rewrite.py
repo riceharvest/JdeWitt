@@ -34,6 +34,15 @@ SCALAR_ADDERS = {
 }
 
 
+REPAIR_MODES = ('none', 'renorm', 'norms')
+
+
+def _is_residual_norm(name):
+    """blk.N.attn_norm / ffn_norm / post_* weights; the per-head q/k norms are not residual-stream."""
+    leaf = name.split('.', 2)[2]
+    return leaf.endswith('_norm.weight') and not leaf.startswith(('attn_q_norm', 'attn_k_norm'))
+
+
 def _copy_metadata(reader, writer, skip=('general.architecture',)):
     """Copy every kv pair verbatim through the typed writer API."""
     from gguf import GGUFValueType
@@ -79,12 +88,18 @@ def _add_packed(writer, name, raw, ggml_shape, qtype):
 
 
 def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
-                       edit_type='q6_k', renormalize=False, verify_untouched=True):
+                       edit_type='q6_k', renormalize=False, verify_untouched=True,
+                       repair='none', norm_clamp=(0.9, 1.1)):
     """Write `out`: the user's artifact, with the edited tensors re-encoded.
 
     ``edits`` maps a tensor name to ``(axis, space)`` (a fitted direction) or to an
     explicit float32 delta. Tensors in that map are re-encoded at ``edit_type``;
     everything else is copied byte for byte, metadata included.
+
+    ``repair`` runs after the edit and before encoding: 'none' (default) changes
+    nothing, 'renorm' rescales every edited row back to its pre-edit L2 norm, 'norms'
+    does that and also rescales the F32 residual-stream norm weights of the edited
+    layers by the median row-norm ratio of those layers, clamped to ``norm_clamp``.
     """
 
     from gguf import GGMLQuantizationType
@@ -99,6 +114,9 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
         raise ValueError(f'{src} does not exist')
     if src.resolve() == out.resolve():
         raise ValueError('refusing to rewrite onto the input artifact')
+    if repair not in REPAIR_MODES:
+        raise ValueError(f'repair must be one of {", ".join(REPAIR_MODES)}, not {repair!r}')
+    renormalize = renormalize or repair != 'none'
     target_name = canonical_type(edit_type)
     from .quants import CODECS as _WRITABLE
 
@@ -111,6 +129,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     header['source'] = str(src)
     started = time.monotonic()
     payloads, qtypes, edited_rows = {}, {}, []
+    ratios_by_layer = {}
     with open(src, 'rb') as handle:
         for tensor in header['tensors']:
             name = tensor['name']
@@ -132,10 +151,13 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             else:
                 delta = np.asarray(edit, dtype=np.float32).reshape(logical)
             edited = matrix + delta
+            row_scale = None
             if renormalize:
                 before = np.linalg.norm(matrix, axis=1, keepdims=True)
                 after = np.linalg.norm(edited, axis=1, keepdims=True)
-                edited = edited * (before / np.maximum(after, 1e-12))
+                row_scale = before / np.maximum(after, 1e-12)
+                edited = edited * row_scale
+                ratios_by_layer.setdefault(int(name.split('.')[1]), []).append(row_scale.reshape(-1))
             _tb, new_block_els, quantize_fn, _dq = QUANT_CODECS[target.name]
             flat = np.ascontiguousarray(edited.reshape(-1), dtype=np.float32)
             padded = flat.size + (-flat.size) % new_block_els
@@ -146,6 +168,42 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             qtypes[name] = int(target)
             edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': target.name,
                                 'bytes_before': int(nbytes), 'bytes_after': int(packed.size)})
+            if repair != 'none':
+                edited_rows[-1]['row_scale_min'] = round(float(row_scale.min()), 6)
+                edited_rows[-1]['row_scale_max'] = round(float(row_scale.max()), 6)
+    matrices = set(payloads)
+    repair_block = {'mode': repair, 'tensors': sorted(matrices) if repair != 'none' else [],
+                    'scale_min': None, 'scale_max': None, 'norms': [], 'clamp': None,
+                    'clamp_hits': 0}
+    if repair != 'none':
+        every = np.concatenate([row for rows in ratios_by_layer.values() for row in rows])
+        repair_block['scale_min'] = round(float(every.min()), 6)
+        repair_block['scale_max'] = round(float(every.max()), 6)
+    if repair == 'norms':
+        low, high = float(norm_clamp[0]), float(norm_clamp[1])
+        repair_block['clamp'] = [low, high]
+        with open(src, 'rb') as handle:
+            for tensor in header['tensors']:
+                name = tensor['name']
+                parts = name.split('.')
+                if (len(parts) < 3 or parts[0] != 'blk' or not parts[1].isdigit()
+                        or int(parts[1]) not in ratios_by_layer
+                        or not _is_residual_norm(name) or int(tensor['qtype']) != 0):
+                    continue
+                handle.seek(header['data_base'] + tensor['offset'])
+                old = np.frombuffer(handle.read(tensor_nbytes(tensor['dims'], 0)), dtype=np.float32)
+                measured = float(np.median(np.concatenate(ratios_by_layer[int(parts[1])])))
+                factor = min(max(measured, low), high)
+                hit = factor != measured
+                new = (old * np.float32(factor)).astype(np.float32)
+                payloads[name] = np.frombuffer(new.tobytes(), dtype=np.uint8)
+                qtypes[name] = 0
+                repair_block['clamp_hits'] += int(hit)
+                repair_block['norms'].append({
+                    'name': name, 'median_row_ratio': round(measured, 6),
+                    'factor': round(factor, 6), 'clamped': hit,
+                    'median_old': round(float(np.median(old)), 6),
+                    'median_new': round(float(np.median(new)), 6)})
     # Edit fingerprint: the machine-checkable claim a release needs (changed tensors,
     # untouched count, the axis digest and its per-layer norm). Anyone can recompute
     # it from the two files, so "this is a fresh edit" stops being a matter of trust —
@@ -154,7 +212,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
 
     digest = hashlib.sha256()
     layer_norms = {}
-    for name in sorted(payloads):
+    for name in sorted(matrices):
         entry = edits[name]
         if isinstance(entry, tuple):
             axis = np.asarray(entry[0], dtype=np.float32)
@@ -164,15 +222,16 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             layer = int(name.split('.')[1])
             layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
     fingerprint = {'edit_sha256': digest.hexdigest()[:32],
-                   'edited': len(payloads), 'untouched': len(header['tensors']) - len(payloads),
+                   'edited': len(matrices), 'untouched': len(header['tensors']) - len(payloads),
                    'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
-                   'scale': scale, 'axis_space': axis_space, 'edit_type': target.name}
+                   'scale': scale, 'axis_space': axis_space, 'edit_type': target.name,
+                   'repair': repair_block}
     written = write_container(out, header, payloads, qtypes)
     by_name = {entry['name']: entry for entry in written['entries']}
     report = {
         'source': str(src), 'output': str(out), 'edit_type': target.name,
         'scale': scale, 'axis_space': axis_space, 'renormalize': bool(renormalize),
-        'tensors': len(header['tensors']), 'tensors_edited': len(payloads),
+        'tensors': len(header['tensors']), 'tensors_edited': len(matrices), 'repair': repair,
         'edited': edited_rows,
         'bytes_in': src.stat().st_size, 'bytes_out': out.stat().st_size,
         'fingerprint': fingerprint,
@@ -183,7 +242,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
         with open(src, 'rb') as old, open(out, 'rb') as new:
             for tensor in header['tensors']:
                 name = tensor['name']
-                if name in edits:
+                if name in payloads:
                     continue
                 entry = by_name.get(name)
                 if entry is None:

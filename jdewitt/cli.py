@@ -474,6 +474,7 @@ def main():
     editq.add_argument('--min-cos',type=float,default=0.95,help='delivered-edit fidelity floor used by --edit-type auto')
     editq.add_argument('--axis-space',choices=('output','input'),default='output')
     editq.add_argument('--renormalize',action='store_true')
+    editq.add_argument('--repair',choices=('none','renorm','norms'),default='none',help="post-edit repair: renorm restores each edited row's pre-edit norm; norms also scales the edited layers' F32 norm weights by the median row ratio (clamped 0.9..1.1)")
     editq.add_argument('--no-verify',action='store_true',help='skip the byte-identity check of untouched tensors')
     revert=sub.add_parser('gguf-revert',help='Restore the pre-patch bytes an --in-place merge saved; refuses if the artifact changed since')
     revert.add_argument('artifact',type=Path)
@@ -758,10 +759,10 @@ def main():
                     f'{args.out.stem}-{kind}{args.out.suffix}')
                 attempt=rewrite_with_edits(args.gguf,candidate,edits,scale=args.scale,
                                            axis_space=args.axis_space,edit_type=kind,
-                                           renormalize=args.renormalize,
+                                           renormalize=args.renormalize,repair=args.repair,
                                            verify_untouched=not args.no_verify)
                 delivered=compare_edit(str(args.gguf),str(candidate),probe,
-                                       renormalize=args.renormalize)
+                                       renormalize=args.renormalize or args.repair!='none')
                 attempt['delivered_edit']=delivered
                 attempt['path']=str(candidate)
                 if result is not None and candidate != args.out:
