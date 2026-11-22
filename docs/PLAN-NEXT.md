@@ -944,3 +944,39 @@ Also fixed: cache identity is now the artifact/records sha256, not mtime. `tune`
 merges and reverts its own artifact, which restores every byte but moves mtime, so
 an mtime-keyed cache discarded the ladder and every adapter after each verification
 run (2m20 -> 15 s once keyed on content).
+
+### The codec floor: why the merge disagreed with the adapter (2026-11-22)
+
+`ggufio.preview_edit` runs the REAL quantizer on sampled blocks and answers "what
+will the file contain", with no file write and no tokens. First measurement of an
+in-place rank-1 removal on Spark 1.7B, per-tensor cos(realized, intended) and
+signal-to-noise against the codec's own rounding:
+
+  Q4_K, strength 1.0 : attn cos 0.454 / snr 1.03, ffn cos 0.938 / snr 2.73
+  Q4_K, strength 3.0 : attn 0.832 / 1.71,        ffn 0.990 / 7.01
+  Q4_K, strength 6.0 : attn 0.929 / 2.59,        ffn 0.997 / 11.98
+  F16,  strength 1.0 : attn 1.0000 / 282,        ffn 1.0000 / 146
+
+So a strength-1.0 in-place merge on Q4_K ships an edit whose attention component is
+only 45% aligned with the projection the ladder measured — the requantization noise
+is as large as the edit. That is the root cause of the R8 disagreement (adapter
+delta_br 0.215 vs merged 0.119) and of the merged artifact refusing while the
+adapter screen cleared.
+
+The tool now gates it: `--min-edit-cos 0.9` rejects any arm the codec cannot store,
+and when EVERY arm is rejected it bisects the strength (`--max-scale`) to find the
+smallest scale that passes. Measured on this artifact: the bisection landed at
+6.61 (cos 0.926), and that arm costs +10.2 nats of control PPL — a collapsed model.
+Conclusion, and the doctrine this repo should follow:
+
+  * a 4-bit artifact is NOT a valid merge target for a rank-1 removal at useful
+    strengths; the edit is at the codec's noise floor,
+  * the faithful path is: merge into the F16/BF16 artifact (fidelity 1.0000), then
+    quantize for serving,
+  * the in-place Q4_K path stays available for edits that are LARGE relative to the
+    block step, and it is now gated by a measurement instead of an assumption,
+  * shipping the LoRA adapter is the exact-edit alternative (fp32, no requant), and
+    the report carries its path and scale next to the merge command.
+
+Also landed: F16 codec support (the tool previously could not edit an F16 gguf at
+all — `F16` was missing from `quants.CODECS`), so the 16-bit merge path is real.

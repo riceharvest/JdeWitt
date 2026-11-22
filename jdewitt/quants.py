@@ -499,6 +499,15 @@ def dequantize_bf16(raw, n):
     return u32.view(np.float32).reshape(-1)[:n]
 
 
+def quantize_f16(x):
+    """Round-to-nearest-even f32 -> f16 bytes (an F16 gguf tensor is editable)."""
+    return np.ascontiguousarray(x, dtype=np.float16).view(np.uint8).reshape(-1)
+
+
+def dequantize_f16(raw, n):
+    return np.frombuffer(raw, dtype=np.float16).astype(np.float32)[:n]
+
+
 def quantize_f32(x):
     return np.ascontiguousarray(x, dtype=np.float32).view(np.uint8).reshape(-1)
 
@@ -515,6 +524,7 @@ CODECS = {
     'Q6_K': (210, QK_K, quantize_q6_k, dequantize_q6_k),
     'F32': (4, 1, quantize_f32, float32_passthrough),
     'BF16': (2, 1, quantize_bf16, dequantize_bf16),
+    'F16': (2, 1, quantize_f16, dequantize_f16),
 }
 
 

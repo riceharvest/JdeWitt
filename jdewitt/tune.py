@@ -59,6 +59,70 @@ def file_sha(path, chunk=1 << 20):
     return digest.hexdigest()
 
 
+ATTN_SUFFIXES = {'attn_output', 'attn_out', 'ssm_out', 'o_proj', 'out_proj'}
+MLP_SUFFIXES = {'ffn_down', 'w2', 'down_proj'}
+
+
+def primal_weight_index(hf_dir, width):
+    """{(layer, kind): safetensors key} for the checkpoint's residual-write weights.
+
+    The adapter's LoRA factors must be derived from the PRIMAL (HF) weights: a
+    fork whose converter folds ffn tensors into the gguf basis applies the delta to
+    the *unfolded* activation, so factors built from the folded dequantized weight
+    apply a rotated functional — measured here as an adapter curve whose delta_br
+    was 0.55x the merged bytes'. The merge itself is unaffected (right-multiplying
+    by the fold commutes with the projection), only the adapter has to use primal.
+    """
+    import glob
+
+    import re as _re
+
+    from safetensors import safe_open
+
+    pattern = _re.compile(r'\.(\d+)\.([A-Za-z_][\w.]*)\.weight$')
+    index, ambiguous = {}, []
+    for shard in sorted(glob.glob(str(Path(hf_dir) / '*.safetensors'))):
+        with safe_open(shard, framework='pt') as handle:
+            for key in handle.keys():
+                match = pattern.search(key)
+                if match is None:
+                    continue
+                suffix = match.group(2).split('.')[-1]
+                if suffix in ATTN_SUFFIXES:
+                    kind = 'attn'
+                elif suffix in MLP_SUFFIXES:
+                    kind = 'mlp'
+                else:
+                    continue
+                try:
+                    shape = tuple(handle.get_slice(key).get_shape())
+                except Exception:
+                    continue
+                if len(shape) != 2 or int(shape[0]) != int(width):
+                    continue
+                slot = (int(match.group(1)), kind)
+                if slot in index:
+                    ambiguous.append((slot, index[slot], key))
+                    continue
+                index[slot] = (shard, key)
+    if ambiguous:
+        raise ValueError(f'{hf_dir} carries more than one residual-write weight per layer and '
+                         f'kind, so the pairing with the artifact is ambiguous: {ambiguous[:4]}')
+    return index
+
+
+def read_primal(index, slot):
+    """The [out, in] float32 weight for one (layer, kind), or None."""
+    from safetensors import safe_open
+
+    entry = index.get(slot)
+    if entry is None:
+        return None
+    shard, key = entry
+    with safe_open(shard, framework='pt') as handle:
+        return handle.get_tensor(key).float()
+
+
 def parse_footprints(spec, first, last):
     """'all' or comma-separated 'start-end' ranges, clamped to the editable layers.
 
@@ -223,6 +287,19 @@ def screen_read(arm):
     return {'state': 'empty', 'clean': False}
 
 
+def edit_survives(arm, minimum):
+    """Is this arm's edit larger than the artifact's own quantization noise?
+
+    ``fidelity.min_cos`` is measured by running the real codec round-trip on
+    sampled tensors (ggufio.preview_edit). An arm below the floor cannot ship what
+    the ladder measured, so it is not a candidate -- screening it would spend
+    tokens on an edit the file cannot store.
+    """
+    fidelity = arm.get('fidelity') or {}
+    cos = fidelity.get('min_cos')
+    return cos is None or float(cos) >= float(minimum)
+
+
 def arm_is_clean(arm):
     state = screen_read(arm)
     return bool(state and state['clean'])
@@ -282,7 +359,7 @@ def tune_command(args):
     from .spanfit import load_records, per_layer_axes, shared_axis
     from .gguf_adapters import (discover_writeback_targets, gguf_weight_shapes,
                                 serve_factors, write_adapter)
-    from .ggufio import dequantize_tensor, revert_inplace
+    from .ggufio import dequantize_tensor, preview_edit, revert_inplace
     from .spanfit import build_merged
     from .screen import Server, mark_candidates, rows_to_screen, screen_arm
 
@@ -343,12 +420,15 @@ def tune_command(args):
     # cached: they are a deterministic function of (artifact bytes, records bytes,
     # families, axes width), so an iteration pays the dequant pass ONCE per model.
     artifact_sha = file_sha(args.gguf)
+    basis = 'primal' if args.hf else 'artifact'
     fit_identity = {'artifact_sha256': artifact_sha,
                     'records_sha256': file_sha(args.records, chunk=4 << 20),
                     'families': [family['key'] for family in families],
+                    'basis': basis, 'hf': str(args.hf) if args.hf else None,
                     'width': width, 'layers': len(covered), 'arch': arch}
     adapters_path = out_dir / 'adapters.json'
     adapters = {}
+    primal, basis_counts = {}, {'primal': 0, 'artifact': 0}
     if adapters_path.is_file():
         try:
             cached = json.loads(adapters_path.read_text())
@@ -358,6 +438,7 @@ def tune_command(args):
             for key, entry in (cached.get('adapters') or {}).items():
                 if Path(entry['path']).is_file():
                     adapters[key] = entry
+            basis_counts.update(cached.get('basis_counts') or {})
     if not adapters:
         reader = None
         try:
@@ -365,10 +446,21 @@ def tune_command(args):
             reader = GGUFReader(str(args.gguf))
         except Exception:
             reader = None
+        if args.hf:
+            primal = primal_weight_index(args.hf, width)
         pairs = {family['key']: [] for family in families}
         for layer in covered:
             for name in discovered['targets'][layer]:
-                weight = torch.as_tensor(dequantize_tensor(args.gguf, name, reader=reader)).float()
+                suffix = name.split('.')[-2]
+                kind = ('attn' if suffix in ATTN_SUFFIXES
+                        else 'mlp' if suffix in MLP_SUFFIXES else None)
+                weight = read_primal(primal, (layer, kind)) if (primal and kind) else None
+                if weight is None:
+                    weight = torch.as_tensor(dequantize_tensor(args.gguf, name,
+                                                               reader=reader)).float()
+                    basis_counts['artifact'] += 1
+                else:
+                    basis_counts['primal'] += 1
                 for family in families:
                     start, end = family['layers']
                     if not start <= layer <= end:
@@ -384,7 +476,8 @@ def tune_command(args):
                 continue
             name = 'adapter-' + family['key'].replace('|', '-') + '.gguf'
             adapters[family['key']] = write_adapter(out_dir / name, pairs[family['key']], arch)
-        atomic_json(adapters_path, {'identity': fit_identity, 'adapters': adapters})
+        atomic_json(adapters_path, {'identity': fit_identity, 'adapters': adapters,
+                                    'basis_counts': basis_counts})
 
     base = {}
     # Ladder readings are cached per artifact+corpora+arm: a run that dies after
@@ -495,6 +588,8 @@ def tune_command(args):
     refined = []
     widened = []
     confirmed = []
+    pruned_by_codec = []
+    searched = []
     screens_path = out_dir / 'screens.json'
     screen_identity = dict(identity)
     screen_identity['records'] = {'path': str(Path(args.records).resolve()),
@@ -529,6 +624,56 @@ def tune_command(args):
                     f'the screen server answers the same text at adapter scale 0 and 50 '
                     f'(k={blast["k"]}, {blast["tokens"]} tokens): the scale POST is not '
                     f'applying, so every arm verdict would be the UNEDITED model')
+        def measure_fidelity(family, scale):
+            """Does this edit survive the artifact's own codec? Zero tokens.
+
+            The adapter curve is computed in fp32; the shipped bytes are
+            re-quantized, and on Q4_K the re-quantization noise can be as large as
+            the edit itself. Sampling two or three tensors and running the real
+            codec round-trip answers 'what will actually be in the file' before a
+            single token is spent on screening an edit that cannot survive.
+            """
+            start, end = family['layers']
+            picks = []
+            for layer in (start, (start + end) // 2, end):
+                for name in discovered['targets'][layer]:
+                    if name not in picks:
+                        picks.append(name)
+            picks = picks[:3]
+            key = f'fid|{family["key"]}|{scale}'
+            if key in cache:
+                return cache[key]
+            edits = {}
+            for name in picks:
+                layer = int(name.split('.')[1])
+                edits[name] = (axes_by_shape[family['shape']][layer].numpy(), args.axis_space)
+            reading = preview_edit(args.gguf, edits, scale=scale)
+            cache[key] = reading
+            atomic_json(ladder_path, {'identity': identity, 'readings': cache})
+            return reading
+
+        def fidelity_scale(family, floor, ceiling, calls=6):
+            """Smallest strength whose edit survives the codec, by bisection.
+
+            preview_edit runs the REAL quantizer on sampled blocks, so this is the
+            codec floor for this family on this artifact: below it the merge ships a
+            partly random edit, above it the edit is what the ladder measured. Zero
+            generated tokens, ~7 s a probe.
+            """
+            low, high = 0.5, float(ceiling)
+            best = None
+            for _ in range(max(1, calls)):
+                if high / low < 1.25:
+                    break
+                middle = round((low * high) ** 0.5, 3)
+                reading = measure_fidelity(family, middle)
+                if (reading.get('min_cos') or 0.0) >= floor:
+                    best = middle
+                    high = middle
+                else:
+                    low = middle
+            return best
+
         def measure_arm(family, scale, round_index=0):
             readings = fetch(arm_jobs(family, scale))
             row = {'shape': family['shape'], 'layers': list(family['layers']),
@@ -542,7 +687,9 @@ def tune_command(args):
                     failures.append({'family': family['key'], 'scale': scale, 'corpus': label,
                                      'error': reading.get('error'), 'tail': reading.get('tail')})
                     return None
-            return _arm_metrics(row, base)
+            arm = _arm_metrics(row, base)
+            arm['fidelity'] = measure_fidelity(family, scale)
+            return arm
 
         def screen_one(arm, rows):
             """Decode `rows` rows for one arm: initial window, then doubling on the
@@ -554,7 +701,8 @@ def tune_command(args):
             nonlocal spent, budget_left
             key = '|'.join(str(piece) for piece in (
                 arm['family'], arm['scale'], rows, args.screen_k, args.escalate_to,
-                args.settle_chars))
+                args.settle_chars, basis,
+                adapters[arm['family']].get('tensors'), file_sha(adapters[arm['family']]['path'])[:12]))
             if key in screens:
                 hits['screen'] += 1
                 cached_spend['tokens'] += screens[key].get('tokens') or 0
@@ -622,7 +770,13 @@ def tune_command(args):
                 # walked upward, not a Pareto set walked sideways.
                 pool = [arm for arm in round_arms + arms
                         if damage(arm) is not None and damage(arm) <= drift_budget
-                        and (arm.get('delta_br') or 0) > 0 and not arm.get('screen')]
+                        and (arm.get('delta_br') or 0) > 0 and not arm.get('screen')
+                        and edit_survives(arm, args.min_edit_cos)]
+                pruned_by_codec.extend(
+                    {'family': arm['family'], 'scale': arm['scale'],
+                     'min_cos': (arm.get('fidelity') or {}).get('min_cos')}
+                    for arm in round_arms
+                    if not edit_survives(arm, args.min_edit_cos))
                 for arm in weakest_first(pool)[:args.front]:
                     if budget_left <= 0:
                         break
@@ -641,6 +795,19 @@ def tune_command(args):
                            'front_states': [{'family': arm['family'], 'scale': arm['scale'],
                                              'screen': screen_read(arm)}
                                             for arm in arms if arm.get('screen')]})
+            if not screened and pruned_by_codec and server is not None and budget_left > 0:
+                # Everything was rejected by the codec, not by the branch: find the
+                # strength where this artifact can actually store the edit, measure
+                # it, and screen that instead of giving up.
+                best_scale = fidelity_scale(families[0], args.min_edit_cos, args.max_scale)
+                if best_scale is not None:
+                    searched.append({'family': families[0]['key'], 'scale': best_scale,
+                                     'floor': args.min_edit_cos})
+                    arm = measure_arm(families[0], best_scale, index)
+                    if arm is not None and edit_survives(arm, args.min_edit_cos):
+                        arms.append(arm)
+                        arm['screen'] = screen_one(arm, args.probe_rows)
+                        screened.append(arm)
             if screened and any(arm_is_clean(arm) for arm in screened):
                 break
             if server is None or budget_left <= 0:
@@ -658,7 +825,8 @@ def tune_command(args):
         else:
             eligible = [arm for arm in arms if damage(arm) is not None
                         and damage(arm) <= drift_budget
-                        and arm.get('delta_br') is not None]
+                        and arm.get('delta_br') is not None
+                        and edit_survives(arm, args.min_edit_cos)]
             winner = max(eligible, key=lambda arm: arm['delta_br']) if eligible else None
 
         # Back and forth: once an arm clears the screen, walk its strength DOWN and
@@ -727,14 +895,24 @@ def tune_command(args):
         'scales': scales, 'drift_budget': args.drift_budget,
         'drift_budget_used': drift_budget, 'drift_noise_ln': round(noise_ln, 4),
         'front_widened': widened, 'ctx_used': args.ctx,
+        'min_edit_cos': args.min_edit_cos,
+        'pruned_by_codec': pruned_by_codec,
+        'strength_searched_for_codec': searched,
+        'shipping_options': ({'adapter': {'path': adapters[winner['family']]['path'],
+                                          'scale': winner['scale'],
+                                          'note': 'the exact fp32 edit; serve with --lora-scaled '
+                                                  'FILE:SCALE, no requant noise'},
+                              'merge_scale_floor': args.min_edit_cos}
+                             if winner is not None else None),
         'corpora': corpora,
         'corpora_source': corpora_source,
         'base': {label: {'ppl': base[label]['ppl'],
                          'uncertainty': base[label].get('uncertainty'),
                          'seconds': base[label].get('seconds')}
                  for label in base},
-        'adapters': {shape: {'path': adapter['path'], 'tensors': adapter['tensors']}
-                     for shape, adapter in adapters.items()},
+        'adapters': {key: {'path': adapter['path'], 'tensors': adapter['tensors']}
+                     for key, adapter in adapters.items()},
+        'adapter_basis': {'mode': basis, 'tensors': basis_counts},
         'arms': arms, 'arm_failures': failures,
         'rounds': rounds,
         'refinement': refined,
@@ -754,6 +932,12 @@ def tune_command(args):
             'per_arm': {f"{arm['family']}@{arm['scale']}": (arm.get('screen') or {}).get('tokens')
                         for arm in arms if arm.get('screen')},
             'server_load_seconds': getattr(server, 'load_seconds', None) if server else None,
+            'serve': {
+                'binary': str(served) if served else None,
+                'ctx': args.screen_ctx, 'ngl': args.ngl,
+                'adapters_loaded': len(adapter_ids),
+                'lib_dirs': [d for d in (args.serve_lib or '').split(':') if d],
+            },
             'screen_blast': blast,
             'ladder_cache_hits': hits,
         },
@@ -770,6 +954,10 @@ def tune_command(args):
             'read on merged bytes at one pinned serve config.',
             'an adapter curve is a screening approximation, not the export delta (R8); the '
             'winner is re-measured on the merged bytes before it is called done.',
+            'the adapter factors must come from PRIMAL (HF) weights (--hf): on a fork whose '
+            'converter folds tensors into the gguf basis, factors built from the folded weight '
+            'apply a rotated functional, and the ladder then ranks an edit that is not the one '
+            'the merge ships.',
         ],
     }
     state = screen_read(winner) if winner else None
@@ -778,6 +966,13 @@ def tune_command(args):
             f'the winner is not cleared: screen state {state["state"]} '
             f'({winner["screen"]["verdicts"]}). Go back to the ladder with more strength '
             f'(raise --scales or --rounds) or a different shape; do not ship it as removal.')
+    if winner is None and pruned_by_codec and not [arm for arm in arms if arm.get('screen')]:
+        report['notes'].append(
+            f'every arm was rejected by the CODEC, not by the branch: the best edit survived '
+            f'the requant round-trip at cos {max((entry["min_cos"] or 0) for entry in pruned_by_codec):.3f} '
+            f'against a --min-edit-cos floor of {args.min_edit_cos}. On an artifact whose '
+            f'quantization step is comparable to the edit, a stronger scale is the only merge '
+            f'that can ship; the adapter at the same axis is the noise-free alternative.')
     if winner is None:
         report['notes'].append(
             'no arm both stayed inside the drift budget and moved the refusal branch; the '
@@ -856,6 +1051,45 @@ def tune_command(args):
             f"{merged_metrics.get('delta_br')} against the adapter curve's "
             f"{winner['delta_br']} (ratio {ratio}). Rank with it, but screen the MERGED "
             f'artifact before calling anything removed.')
+    # Screen the MERGED bytes: the adapter ladder ranks, but the artifact that
+    # ships is the merged one and R8 just measured how far the two curves drift
+    # apart. This is the only screen whose verdict belongs to the shipped file; it
+    # costs one server reload and one row set, zero extra merges.
+    if args.merged_screen and args.token_budget > 0:
+        if server is not None:
+            server.stop()
+            server = None
+        merged_server = Server(served, args.gguf, ctx=args.screen_ctx, ngl=args.ngl,
+                               lib_dirs=[d for d in (args.serve_lib or '').split(':') if d],
+                               log_path=out_dir / 'llama-server-merged.log').start()
+        try:
+            result = screen_arm(merged_server, screen_rows, args.screen_k, abort_on='refusal')
+            spent += result['tokens']
+            budget_left -= result['tokens']
+            window = int(args.screen_k)
+            while result['verdicts']['escalate'] and window < int(args.escalate_to):
+                next_window = min(int(args.escalate_to), window * 2)
+                need = result['verdicts']['escalate'] * (next_window - window)
+                if need > budget_left:
+                    result['stopped_on_budget'] = True
+                    break
+                extra = escalate_screen(merged_server, {'screen': result}, rows_by_id, None,
+                                        None, {}, next_window - window)
+                spent += extra
+                budget_left -= extra
+                window = next_window
+            mark_candidates(result, args.settle_chars)
+            state = screen_read({'screen': result}) or {}
+            report['merged_verification']['screen'] = {
+                'artifact_sha256': file_sha(args.gguf),
+                'verdicts': result['verdicts'], 'state': state.get('state'),
+                'clean': bool(state.get('clean')), 'tokens': result['tokens'],
+                'rows': result['rows_decoded'], 'k': args.screen_k, 'window': window,
+                'detail': [{'id': row['id'], 'verdict': row['verdict'],
+                            'opening': row['opening']} for row in result['detail']],
+            }
+        finally:
+            merged_server.stop()
     revert = merged.get('revert_sidecar')
     if args.keep_merged:
         report['next'] = [

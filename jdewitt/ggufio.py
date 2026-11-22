@@ -55,6 +55,92 @@ def _tensor_info(reader, name):
     return tensor, dtype, block_bytes, block_els, n, quantize, dequantize, offset, n_bytes, shape
 
 
+def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32):
+    """Simulate an in-place edit on sampled tensors: does it survive the codec?
+
+    ``edits`` maps a tensor name to a float32 delta of that tensor's logical shape
+    (or to ``(axis, space)`` exactly like ``project_tensors_inplace``, in which case
+    ``scale`` multiplies the projection exactly as the writer does). The tile is
+    dequantized, the delta added, then re-encoded and decoded with the SAME codec
+    the writer uses. What comes back is what the served artifact will actually
+    contain, so this answers a question no perplexity reading can: is the edit
+    larger than the quantization step it has to be stored in?
+
+    Measured on a 1.7B Q4_K_M: a rank-1 removal at strength 1.0 lands at
+    cos(realized, intended) ~0.28-0.88 with noise as large as the edit, i.e. a
+    strength-1.0 in-place merge on Q4_K ships a largely random edit. Nothing about
+    that is visible in the adapter curve, which is why the two disagreed.
+
+    Only ``windows`` x ``blocks`` whole blocks of each tensor are re-encoded: the
+    codec quantizes every block independently, so a spread of blocks is a faithful
+    sample of its behaviour, while re-encoding 18M elements of an ffn_down tile per
+    arm costs a minute of numpy per arm.
+    """
+    from gguf import GGUFReader
+
+    reader = GGUFReader(str(path))
+    chosen = [name for name in (names or edits) if name in edits]
+    if limit:
+        chosen = chosen[:limit]
+    rows = []
+    for name in chosen:
+        _tensor, dtype, _bs, _els, n, quantize, dequantize, offset, n_bytes, shape = _tensor_info(reader, name)
+        with open(path, 'rb') as handle:
+            handle.seek(offset)
+            raw = np.frombuffer(handle.read(n_bytes), dtype=np.uint8)
+        base = dequantize(raw, n).astype(np.float32)
+        edit = edits[name]
+        if isinstance(edit, tuple):
+            axis, space = edit
+            axis = np.asarray(axis, dtype=np.float32).reshape(-1)
+            matrix = base.reshape(shape)
+            if space == 'output':
+                delta = -scale * (axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix))
+            else:
+                delta = -scale * ((axis.reshape(-1, 1) @ (axis.reshape(1, -1) @ matrix.T)).T)
+        else:
+            delta = np.asarray(edit, dtype=np.float32).reshape(shape)
+        wanted = (base.reshape(shape) + delta).reshape(-1).astype(np.float32)
+        flat_base = base.reshape(-1)
+        flat_delta = delta.reshape(-1)
+        window_len = int(blocks) * int(_els)
+        span = max(0, n - window_len)
+        offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // _els * _els, span)
+                          for step in range(max(1, windows))})
+        realised_parts, delta_parts = [], []
+        for offset in offsets:
+            end = min(n, offset + window_len)
+            chunk = (end - offset) // _els * _els
+            if chunk <= 0:
+                continue
+            reencoded = dequantize(quantize(wanted[offset:offset + chunk].copy()), chunk)
+            realised_parts.append(reencoded.astype(np.float32) - flat_base[offset:offset + chunk])
+            delta_parts.append(flat_delta[offset:offset + chunk])
+        if not realised_parts:
+            continue
+        realized = np.concatenate(realised_parts)
+        delta_flat = np.concatenate(delta_parts)
+        delta_norm = float(np.linalg.norm(delta_flat))
+        noise = realized - delta_flat
+        noise_norm = float(np.linalg.norm(noise))
+        realised_norm = float(np.linalg.norm(realized))
+        cos = (float((realized * delta_flat).sum() / (realised_norm * delta_norm + 1e-12))
+               if delta_norm > 0 and realised_norm > 0 else 0.0)
+        rows.append({'name': name, 'qtype': dtype, 'shape': list(shape),
+                     'cos': round(cos, 4),
+                     'norm_ratio': round(realised_norm / (delta_norm + 1e-12), 4),
+                     'snr': round(delta_norm / (noise_norm + 1e-12), 3),
+                     'delta_norm': round(delta_norm, 4),
+                     'noise_norm': round(noise_norm, 4),
+                     'windows': len(offsets), 'blocks_per_window': int(blocks)})
+    cosines = [row['cos'] for row in rows]
+    return {'tensors': rows, 'sampled': len(rows),
+            'min_cos': min(cosines) if cosines else None,
+            'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
+            'min_snr': min((row['snr'] for row in rows), default=None),
+            'note': 'a low cos here means the codec, not the axis, decides what ships'}
+
+
 def edit_tensors(path, out_path, deltas):
     """Apply {tensor_name: float32 delta matching that tensor's shape} and write out_path.
 

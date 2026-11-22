@@ -33,7 +33,7 @@ DEFAULT_BINARY = '/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-p
 
 
 def perplexity(binary, model, corpus, *, ctx=512, threads=16, lora=None,
-               lora_scale=None, timeout=1800):
+               lora_scale=None, loras=None, timeout=1800):
     """PPL of `model` over `corpus`, optionally with one LoRA adapter applied."""
     path = Path(model)
     if not path.is_file():
@@ -44,7 +44,13 @@ def perplexity(binary, model, corpus, *, ctx=512, threads=16, lora=None,
         raise ValueError(f'perplexity binary {binary} does not exist; pass --perplexity')
     command = [str(binary), '-m', str(path), '-f', str(corpus), '-ngl', '0',
                '-c', str(ctx), '-t', str(threads)]
-    if lora:
+    if loras:
+        # Repeatable --lora-scaled is deprecated in this fork: only the LAST value is
+        # used, so a multi-adapter arm (per-band strength profile) must arrive as ONE
+        # comma-separated argument. Mixing the two spellings silently drops adapters.
+        command += ['--lora-scaled',
+                    ','.join(f'{path}:{float(scale):g}' for path, scale in loras)]
+    elif lora:
         if lora_scale is None:
             command += ['--lora', str(lora)]
         else:
@@ -84,7 +90,8 @@ def ladder(binary, model, jobs, threads=16, parallel=3, timeout=1800):
     def one(job):
         reading = perplexity(binary, model, job['corpus'], ctx=job.get('ctx', 512),
                              threads=per_job_threads, lora=job.get('lora'),
-                             lora_scale=job.get('scale'), timeout=timeout)
+                             lora_scale=job.get('scale'), loras=job.get('loras'),
+                             timeout=timeout)
         return job['key'], reading
 
     results = {}
