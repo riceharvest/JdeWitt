@@ -215,15 +215,22 @@ def per_direction_adapters(basis, serve_weights, names_by_index, arch, out_dir, 
         files.append({'direction': i, 'tensors': len(pairs), **report})
     return files
 
-def write_adapter(path, pairs, arch):
+def write_adapter(path, pairs, arch, base_sha256=None):
     """pairs: iterable of (gguf_base_name, A_torch[rank,in], B_torch[out,rank]).
 
     Tensors are written float16 with numpy dims unchanged; the fork's load-time
     shape check then reads ne=[in,rank] and [rank,out] as required. With
     adapter.lora.alpha omitted the effective scale is the requested adapter_scale.
+
+    ``base_sha256`` binds the file to the artifact it was fitted on: a shipped
+    adapter that cannot name its base cannot be labelled (adapter-card refuses it),
+    because the adapter curve is only meaningful over those exact bytes (R8).
     """
     ranks = set()
     writer = GGUFWriter(str(path), arch)
+    if base_sha256:
+        from .adapter_card import ADAPTER_BASE_SHA_KEY  # one spelling for reader and writer
+        writer.add_string(ADAPTER_BASE_SHA_KEY, str(base_sha256))
     for name, A, B in pairs:
         A = A.detach().cpu().float().to(torch.float16).numpy()
         B = B.detach().cpu().float().to(torch.float16).numpy()

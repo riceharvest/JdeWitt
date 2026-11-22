@@ -505,7 +505,10 @@ def tune_command(args):
                     'records_sha256': file_sha(args.records, chunk=4 << 20),
                     'families': [family['key'] for family in families],
                     'basis': basis, 'hf': str(args.hf) if args.hf else None,
-                    'width': width, 'layers': len(covered), 'arch': arch}
+                    'width': width, 'layers': len(covered), 'arch': arch,
+                    # Caches written before the adapter carried its base binding are
+                    # unlabelable (adapter-card refuses them); regenerate them once.
+                    'adapter_base_binding': 1}
     if any(not is_flat(family['weights']) for family in families):
         fit_identity['profile_weights'] = {family['key']: sorted(family['weights'].items())
                                            for family in families}
@@ -560,7 +563,8 @@ def tune_command(args):
             if not pairs[family['key']]:
                 continue
             name = 'adapter-' + family['key'].replace('|', '-') + '.gguf'
-            adapters[family['key']] = write_adapter(out_dir / name, pairs[family['key']], arch)
+            adapters[family['key']] = write_adapter(out_dir / name, pairs[family['key']], arch,
+                                                    base_sha256=artifact_sha)
         atomic_json(adapters_path, {'identity': fit_identity, 'adapters': adapters,
                                     'basis_counts': basis_counts})
 

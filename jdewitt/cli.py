@@ -184,6 +184,12 @@ def build_parser():
     esmoke.add_argument('--out',type=Path,default=Path('export-smoke.json'),help='JSON report path; the server log is written beside it')
     esmoke.add_argument('--server-arg',action='append',default=[],metavar='ARG',help='Extra llama-server argv token, passed in order and recorded; use --server-arg=--flag for dash-leading values (repeatable)')
     esmoke.add_argument('--no-server',action='store_true',help='Header half only: servable is "unmeasured", never true')
+    acard=sub.add_parser('adapter-card',help='Label a shipped LoRA adapter (R8): bind it to its base artifact, record the merged twin fidelity and BOTH delta_br readings')
+    acard.add_argument('--adapter',type=Path,required=True,help='shipped LoRA adapter GGUF (must carry jdewitt.base_artifact_sha256)')
+    acard.add_argument('--base',type=Path,required=True,help='base artifact the adapter was fitted on; its sha256 must match the binding')
+    acard.add_argument('--twin',type=Path,required=True,help='merged twin fidelity record: per-tensor delivered cos/SNR, artifact sha256, edited/untouched counts, edit fingerprint, both delta_br readings')
+    acard.add_argument('--out',type=Path,required=True,help='adapter.json to write beside the shipped adapter (refuses to overwrite)')
+    acard.add_argument('--scale',type=float,default=None,help='ladder scale the adapter shipped at (default: scale/edit_fingerprint.scale from the twin record)')
     editm.add_argument('input',type=Path)
     editm.add_argument('output',type=Path)
     editm.add_argument('--set',action='append',default=[],metavar='KEY=JSON',
@@ -635,6 +641,9 @@ def main():
             from .export_smoke import export_smoke_command
             result=export_smoke_command(args)
             exit_code=0 if result['verdict']['servable'] is True else 1
+        elif args.command=='adapter-card':
+            from .adapter_card import build_adapter_card
+            result=build_adapter_card(args.adapter,args.base,args.twin,args.out,args.scale)
         elif args.command=='verify':
             from .verify import verify_files
             result=verify_files(args.pristine,args.edited,args.claim,args.other,args.rows,args.threshold,args.min_overlap)
@@ -943,6 +952,11 @@ def main():
         print(json.dumps(result,indent=2,allow_nan=False))
         if exit_code is not None:
             raise SystemExit(exit_code)
+        # verify-artifact is a check, so an invalid artifact is a failing check, not
+        # a report: scripts and release gates must see a non-zero exit. The body is
+        # still printed first (valid:false + the named problems).
+        if args.command=='verify-artifact' and not result.get('valid'):
+            raise SystemExit(1)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
         print(json.dumps({'error':{'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)

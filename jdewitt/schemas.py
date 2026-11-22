@@ -53,6 +53,44 @@ SCHEMAS = {
         'properties': {'version': {'const': 2}, 'suite_digest': {'type': 'string'},
                        'generation_digest': {'type': 'string'}, 'identity': {'type': 'object'},
                        'sandbox_image': {'type': 'string'}, 'scoring_digest': {'type': 'string'}}},
+    'adapter.json': {
+        'description': 'R8 label shipped beside a LoRA adapter: base binding, adapter identity, '
+                       'the merged twin fidelity record and BOTH delta_br readings.',
+        'type': 'object',
+        'required': ['version', 'kind', 'adapter', 'base', 'merged_twin', 'adapter_delta_br',
+                     'merged_delta_br', 'adapter_to_merged_ratio', 'ranking_valid_on_this_artifact',
+                     'ranking_validity_ratio_floor', 'merged_effect_status',
+                     'curve_is_not_merged_bytes', 'r8_note', 'claim_limit'],
+        'properties': {
+            'version': {'const': 1},
+            'kind': {'const': 'adapter-card'},
+            'adapter': {'type': 'object',
+                        'required': ['sha256', 'bytes', 'rank', 'tensor_entries',
+                                     'edited_tensors', 'scale', 'bound_base_sha256'],
+                        'properties': {'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                       'bound_base_sha256': {'type': 'string'}},
+                        'additionalProperties': True},
+            'base': {'type': 'object',
+                     'required': ['sha256', 'arch', 'tensor_count'],
+                     'properties': {'sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                    'arch': {'type': 'string'},
+                                    'tensor_count': {'type': 'integer'}}},
+            'merged_twin': {'type': 'object',
+                            'required': ['artifact_sha256', 'edited_tensors', 'untouched_tensors',
+                                         'edit_fingerprint', 'delivered'],
+                            'properties': {'artifact_sha256': {'type': 'string', 'pattern': '^[0-9a-f]{64}$'},
+                                           'edited_tensors': {'type': 'integer'},
+                                           'untouched_tensors': {'type': 'integer'},
+                                           'delivered': {'type': 'object', 'required': ['tensors']}}},
+            'adapter_delta_br': {'type': 'number', 'nullable': True},
+            'merged_delta_br': {'type': 'number', 'nullable': True},
+            'adapter_to_merged_ratio': {'type': 'number', 'nullable': True},
+            'ranking_valid_on_this_artifact': {'type': 'boolean'},
+            'ranking_validity_ratio_floor': {'type': 'number'},
+            'merged_effect_status': {'type': 'string'},
+            'curve_is_not_merged_bytes': {'const': True},
+            'r8_note': {'type': 'string'},
+            'claim_limit': {'type': 'string'}}},
     'run-status.command.json': {
         'description': 'run-status output contract.',
         'type': 'object',
@@ -371,6 +409,7 @@ EMIT_SCHEMAS = {
     'studies-compare': 'studies-compare.command.json',
     'quants-audit': 'quants-audit.command.json',
     'export-smoke': 'export-smoke.command.json',
+    'adapter-card': 'adapter.json',
     'suite-stats': 'suite-stats.command.json',
     'suite-diff': 'suite-diff.command.json',
     'study-metrics': 'study-metrics.command.json',
@@ -402,6 +441,8 @@ def enforce(command, value):
 def validate_against(value, schema, path='$'):
     """Small validator covering the subset used above; returns a list of problems."""
     problems = []
+    if value is None and schema.get('nullable'):
+        return problems
     kind = schema.get('type')
     if kind == 'object':
         if not isinstance(value, dict):
@@ -430,6 +471,12 @@ def validate_against(value, schema, path='$'):
     elif kind == 'integer':
         if type(value) is not int:
             problems.append(f'{path}: expected integer')
+    elif kind == 'number':
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            problems.append(f'{path}: expected number')
+    elif kind == 'boolean':
+        if not isinstance(value, bool):
+            problems.append(f'{path}: expected boolean')
     if 'const' in schema and value != schema['const']:
         problems.append(f'{path}: expected constant {schema["const"]!r}, got {value!r}')
     return problems
@@ -447,6 +494,19 @@ def infer_schema_name(path):
     raise ValueError(f'No published schema for {path.name!r}; available: {sorted(SCHEMAS)}')
 
 
+def _artifact_problems(name, document):
+    """Facts that must hold for an artifact whose schema is shape-only.
+
+    adapter.json is the R8 label, so "valid" has to mean more than "the keys are
+    there": the merged field must not hold an adapter number and the curve claim
+    must be present and true (jdewitt.adapter_card.verify_adapter_card).
+    """
+    if name == 'adapter.json':
+        from .adapter_card import verify_adapter_card
+        return verify_adapter_card(document)
+    return []
+
+
 def validate_artifact(path, name=None):
     """Check one artifact against its published schema. File reads only."""
     path = Path(path)
@@ -454,9 +514,13 @@ def validate_artifact(path, name=None):
     if name not in SCHEMAS:
         raise ValueError(f'No published schema for {name!r}; available: {sorted(SCHEMAS)}')
     document = json.loads(path.read_text())
-    problems = validate_against(document, SCHEMAS[name])
+    problems = validate_against(document, SCHEMAS[name]) + _artifact_problems(name, document)
+    note = ('Shape and version only; digests and semantics are checked by release verify commands.'
+            if name != 'adapter.json' else
+            'Shape, version and the R8 card semantics: curve claim, merged-field provenance and '
+            'ratio/ranking agreement.')
     return {'file': str(path.resolve()), 'schema': name, 'valid': not problems,
-            'problems': problems, 'note': 'Shape and version only; digests and semantics are checked by release verify commands.'}
+            'problems': problems, 'note': note}
 
 
 def verify_all(directory):
@@ -472,7 +536,7 @@ def verify_all(directory):
             missing.append(name)
             continue
         document = json.loads(path.read_text())
-        problems = validate_against(document, SCHEMAS[name])
+        problems = validate_against(document, SCHEMAS[name]) + _artifact_problems(name, document)
         checked.append({'file': str(path), 'schema': name, 'valid': not problems, 'problems': problems[:5]})
     return {'directory': str(directory.resolve()), 'checked': checked, 'missing_schemas': missing,
             'valid': all(row['valid'] for row in checked),

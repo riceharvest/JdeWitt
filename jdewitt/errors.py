@@ -101,8 +101,21 @@ class BudgetExhausted(RuntimeError):
     """A per-job budget (generated tokens or judge requests) ran out mid-run."""
 
 
+class AdapterCardRefused(ValueError):
+    """A shipped adapter cannot be labelled honestly (R8); ``code`` names the reason.
+
+    Distinct from a generic ValueError so the CLI envelope carries the refusal
+    name instead of "INPUT_ERROR" and a reader can grep one vocabulary.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
+    if isinstance(exception, AdapterCardRefused):
+        return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),
                       (DirectionRejected, 'DIRECTION_REJECTED'),
