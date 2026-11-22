@@ -172,8 +172,17 @@ written into the item and stays GATED.
     float array declaring 1e18 elements; n_dims=0xFFFFFFFF; and a lying
     length (declares 100, ships 10). The 672 MB real file parses, grows
     its header and round-trips byte-verbatim in 2.5s after the change.
-    Still open in this item: streaming the tensor blob where materialising
-    helps, and a symlink/size audit across importer paths.
+    Remaining two parts LANDED 2026-11-22: `edit_metadata` copies the tensor
+    blob in 64 MiB chunks whenever the data base moves (and `copyfile` when it
+    does not), so metadata edits never materialise a checkpoint; `gguf-inspect`
+    reads headers only. The importer now audits every local source before
+    reading it (`local_file_audit`): a FIFO/device/directory is refused, a file
+    above 4 GiB is refused without being read, a symlink is followed AND
+    recorded (`symlink_to` in the provenance — HF's cache hands out symlinks
+    into blobs/), text is read with a 256M-character cap, and file hashes are
+    computed in 4 MiB chunks instead of `read_bytes()`. Verified: a symlinked
+    jsonl imported with `symlink_to` in provenance, a FIFO and a 5 GiB sparse
+    file both refused with the reason, chunked sha equals the whole-file sha.
 
 12. IQ quants (IQ1_S … IQ6_K): the small-model quants people actually use.
     Port is code-only but carries pinned llama.cpp importance tables that

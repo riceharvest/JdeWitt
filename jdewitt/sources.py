@@ -12,6 +12,7 @@ import hashlib
 import io
 import json
 import re
+import stat
 import string
 from pathlib import Path
 
@@ -22,6 +23,10 @@ KINDS = ('refusal', 'harmless', 'math', 'code', 'direction')
 SPLITS = ('directions', 'selection', 'holdout')
 FAMILY_STRATEGIES = ('column', 'row-group', 'constant')
 TEXT_SUFFIXES = {'.jsonl', '.ndjson', '.json', '.csv', '.tsv', '.txt', '.parquet'}
+# One prompt corpus is prompts, not a dataset dump: a file that big is a mistake (or a
+# device/fifo pretending to be a file), and materialising it is how an importer OOMs.
+LOCAL_FILE_MAX_BYTES = 4 << 30
+LOCAL_TEXT_MAX_CHARS = 256 << 20
 
 
 def token_set(text):
@@ -69,26 +74,80 @@ def slug(value):
     return text[:64]
 
 
+def local_file_audit(path):
+    """Stat one importer input: regular target, bounded size, symlink named.
+
+    Hugging Face's cache hands out symlinks into ``blobs/``, so a symlink is
+    followed AND recorded rather than refused; a FIFO, device or directory behind
+    the path is refused because reading it would block or never end.
+    """
+    path = Path(path)
+    try:
+        info = path.stat()
+    except FileNotFoundError:
+        raise ValueError(f'Missing local prompt file: {path}')
+    if not stat.S_ISREG(info.st_mode):
+        raise ValueError(f'{path} is not a regular file (mode {oct(stat.S_IMODE(info.st_mode))}); '
+                         f'a FIFO, device or directory cannot be read as a corpus')
+    if info.st_size > LOCAL_FILE_MAX_BYTES:
+        raise ValueError(f'{path} is {info.st_size} bytes; a prompt corpus above '
+                         f'{LOCAL_FILE_MAX_BYTES} bytes is refused, not materialised')
+    audit = {'bytes': info.st_size}
+    if path.is_symlink():
+        audit['symlink_to'] = str(path.resolve())
+    return audit
+
+
+def _file_sha256(path):
+    """Chunked sha256: hashing a corpus must not decide whether it fits in memory."""
+    digest_obj = hashlib.sha256()
+    with open(path, 'rb') as handle:
+        for chunk in iter(lambda: handle.read(4 << 20), b''):
+            digest_obj.update(chunk)
+    return digest_obj.hexdigest()
+
+
+def _read_text_bounded(path):
+    with open(path, 'r', encoding='utf-8', errors='strict') as handle:
+        text = handle.read(LOCAL_TEXT_MAX_CHARS + 1)
+    if len(text) > LOCAL_TEXT_MAX_CHARS:
+        raise ValueError(f'{path} holds more than {LOCAL_TEXT_MAX_CHARS} characters; refused')
+    return text
+
+
 def read_local(path, column=None):
     """Read one local corpus file into records. No network, no guessing."""
     path = Path(path)
-    if not path.is_file():
-        raise ValueError(f'Missing local prompt file: {path}')
+    local_file_audit(path)
     suffix = path.suffix.casefold()
     if suffix not in TEXT_SUFFIXES:
         raise ValueError(f'Unsupported prompt file type {suffix!r}; expected one of {sorted(TEXT_SUFFIXES)}')
     if suffix in {'.jsonl', '.ndjson'}:
-        records = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+        records, total = [], 0
+        with open(path, 'r', encoding='utf-8', errors='strict') as handle:
+            for line in handle:
+                total += len(line)
+                if total > LOCAL_TEXT_MAX_CHARS:
+                    raise ValueError(f'{path} holds more than {LOCAL_TEXT_MAX_CHARS} characters; refused')
+                if line.strip():
+                    records.append(json.loads(line))
     elif suffix == '.json':
-        loaded = json.loads(path.read_text())
+        loaded = json.loads(_read_text_bounded(path))
         records = loaded if isinstance(loaded, list) else loaded.get('data')
     elif suffix in {'.csv', '.tsv'}:
         delimiter = '\t' if suffix == '.tsv' else ','
-        records = list(csv.DictReader(io.StringIO(path.read_text()), delimiter=delimiter))
+        records = list(csv.DictReader(io.StringIO(_read_text_bounded(path)), delimiter=delimiter))
     elif suffix == '.parquet':
         records = read_parquet(path)
     else:
-        records = [line for line in path.read_text().splitlines() if line.strip()]
+        records, total = [], 0
+        with open(path, 'r', encoding='utf-8', errors='strict') as handle:
+            for line in handle:
+                total += len(line)
+                if total > LOCAL_TEXT_MAX_CHARS:
+                    raise ValueError(f'{path} holds more than {LOCAL_TEXT_MAX_CHARS} characters; refused')
+                if line.strip():
+                    records.append(line)
     return records
 
 
@@ -138,7 +197,7 @@ def read_hub(source):
     path = Path(hf_hub_download(dataset, filename, revision=revision, repo_type='dataset'))
     records = read_local(path, source.get('column'))
     return records, {'dataset': dataset, 'revision': revision, 'file': filename,
-                     'file_sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+                     'file_sha256': _file_sha256(path), **local_file_audit(path)}
 
 
 def _normalize_revision_time(value):
@@ -375,7 +434,8 @@ def passthrough_rows(source, split):
     if not rows:
         raise ValueError(f'Passthrough source {source["id"]!r} selected no rows')
     provenance = {'id': source['id'], 'kind': 'passthrough', 'split': split,
-                  'path': str(path), 'file_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+                  'path': str(path), 'file_sha256': _file_sha256(path),
+                  **local_file_audit(path),
                   'rows_used': len(rows), 'duplicates_dropped': 0, 'kinds': kinds,
                   'family_strategy': None, 'family_origin': 'authored-file',
                   'family_count': len({row.get('family_id') for row in rows if row.get('family_id')})}
@@ -409,7 +469,8 @@ def source_rows(source, split):
     elif 'path' in source:
         path = Path(source['path'])
         records = read_local(path, source.get('column'))
-        provenance = {'path': str(path), 'file_sha256': hashlib.sha256(path.read_bytes()).hexdigest()}
+        provenance = {'path': str(path), 'file_sha256': _file_sha256(path),
+                      **local_file_audit(path)}
     else:
         raise ValueError('Each source needs either a dataset or a path')
     if 'where' in source:
