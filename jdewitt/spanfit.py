@@ -22,6 +22,8 @@ import time
 import numpy as np
 import torch
 
+from .errors import NoVerifiedAdapter
+
 
 # ---------- fit ----------
 
@@ -506,17 +508,13 @@ def gguf_targets(gguf_in: str, max_probe_layers: int = 512) -> dict:
     against the file itself, and the layer count is reported per suffix so a
     patched or partial artifact shows up as a mismatch instead of a silent skip.
     """
-    from .gguf_adapters import HF_TO_LLAMA, WRITEBACK_TENSOR, discover_writeback_targets, gguf_weight_shapes
+    from .gguf_adapters import (HF_TO_LLAMA, discover_writeback_targets,
+                                gguf_weight_shapes, inferred_hidden_width)
     shapes = gguf_weight_shapes(gguf_in)
     # The generic view: which residual-write projections this artifact carries at
     # its own hidden width. This is what `build --gguf-targets auto` uses, so an
     # agent can look before it merges instead of reading architecture notes.
-    widths = {}
-    for name, dims in shapes.items():
-        suffix = name.rsplit('.', 2)[-2] if name.endswith('.weight') else ''
-        if len(dims) == 2 and WRITEBACK_TENSOR.match(suffix):
-            widths[int(dims[1])] = widths.get(int(dims[1]), 0) + 1
-    hidden = max(widths.items(), key=lambda item: item[1])[0] if widths else None
+    hidden = inferred_hidden_width(shapes)
     auto = discover_writeback_targets(shapes, hidden) if hidden else {'targets': {}, 'unmapped_writeback_width': []}
     auto_view = {'hidden': hidden, 'layers': len(auto['targets']),
                  'targets_per_layer': [len(names) for _, names in sorted(auto['targets'].items())][:4],
@@ -648,6 +646,27 @@ class InPlaceRemoval:
 # ---------- CLI ----------
 
 def main(argv=None):
+    """CLI entry: expected adapter refusals print the same envelope as the main CLI.
+
+    spanfit is its own entry point (`python -m jdewitt.spanfit`), so without this
+    a NoVerifiedAdapter would surface as a bare traceback/exit text while
+    `python -m jdewitt edit-quantized` reports the typed code. One code, one
+    shape, whichever entry point hit it.
+    """
+    try:
+        return _main(argv)
+    except NoVerifiedAdapter as error:
+        import sys
+        words = [a for a in (sys.argv[1:] if argv is None else argv) if not a.startswith('-')]
+        print(json.dumps({'error': {'code': 'NO_VERIFIED_ADAPTER',
+                                    'type': type(error).__name__,
+                                    'message': str(error),
+                                    'command': words[0] if words else 'spanfit'}}),
+              file=sys.stderr)
+        raise SystemExit(1) from error
+
+
+def _main(argv=None):
     ap = argparse.ArgumentParser(prog="jdewitt.spanfit")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
@@ -812,18 +831,28 @@ def main(argv=None):
         # capture/artifact mismatch (wrong checkpoint, converted with a different
         # hidden size, sharded file), and a merge that silently edits the layers
         # it happens to find is a partial edit reported as a complete one.
-        from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes
-        found = discover_writeback_targets(gguf_weight_shapes(args.gguf_in), int(axes.shape[-1]))
+        from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes, inferred_hidden_width
+        shapes = gguf_weight_shapes(args.gguf_in)
+        found = discover_writeback_targets(shapes, int(axes.shape[-1]))
         targets = {L: names for L, names in found['targets'].items() if L in set(ids)}
         missing = sorted(set(ids) - set(targets))
         if missing:
-            raise SystemExit(
+            width = int(axes.shape[-1])
+            unmapped = found['unmapped_writeback_width'][:8]
+            raise NoVerifiedAdapter(
                 f"--gguf-targets auto: this artifact has no residual-write projection at width "
-                f"{int(axes.shape[-1])} for layers {missing[:12]}"
-                f"{'...' if len(missing) > 12 else ''}; found layers {sorted(targets)}. The axes "
-                f"and the artifact disagree, so a merge here would edit part of the model and "
-                f"look complete. Width-matching tensors it would not edit: "
-                f"{found['unmapped_writeback_width'][:6]}")
+                f"{width} for layers {missing[:8]}"
+                f"{'...' if len(missing) > 8 else ''} ({len(missing)} of {len(ids)} layers); "
+                f"found residual-write layers {sorted(targets)} with hidden width "
+                f"{inferred_hidden_width(shapes)}. The axes and the artifact disagree, so a merge "
+                f"here would edit part of the model and look complete. Width-matching tensors it "
+                f"would not edit: {unmapped or 'none'}. List what the file carries with "
+                f"`python -m jdewitt.spanfit targets --gguf-in <artifact>`; do not rename a tensor "
+                f"to make this fit — discovery proves a tensor NAME, and certifying a layout is "
+                f"the export smoke, not this merge",
+                width=width, missing_layers=missing[:8], missing_layers_total=len(missing),
+                found_layers=sorted(targets), unmapped_writeback_width=unmapped,
+                artifact=str(args.gguf_in))
         keys = sorted(name for names in targets.values() for name in names)
         name_map = {name: name for name in keys}
     else:

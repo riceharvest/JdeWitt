@@ -17,6 +17,27 @@ class DirectionRejected(ValueError):
     """Observed directions cannot meet rank/stability gates for this method."""
 
 
+class NoVerifiedAdapter(ValueError):
+    """A layout this tool cannot name to an adapter it can verify, so nothing is edited.
+
+    Distinct from INPUT_ERROR on purpose: a typo'd flag value and "this checkpoint's
+    block carries no residual-write projection I can name" are different problems
+    with different next moves, and the message carries the discovered facts (layer
+    ids with no target, linear module / tensor names seen, width-matching names that
+    would not be edited) so a caller can list what was seen instead of guessing a
+    tensor name.
+
+    The honest boundary: discovery proves a tensor NAME exists at the expected
+    width, not that the architecture serves the edit. Certifying a layout is a
+    separate gate (export smoke); this code never means "the layout is broken",
+    only "no adapter for it could be verified here".
+    """
+
+    def __init__(self, message, **facts):
+        super().__init__(message)
+        self.facts = facts
+
+
 class HoldoutRejected(RuntimeError):
     """The sealed winner failed; never use this as a fallback-selection signal."""
 
@@ -32,6 +53,14 @@ EXPLAINER = {
                            'agent_action': 'Run `methods` and choose from the implemented list.'},
     'DIRECTION_REJECTED': {'meaning': 'Fitted directions failed validation (degenerate or rejected).',
                            'agent_action': 'Check suite family structure, capture mode and rank; refit.'},
+    'NO_VERIFIED_ADAPTER': {
+        'meaning': 'The layout has no adapter this tool can name and verify: no residual-write '
+                   'projection at the expected width was found, or the source key has no tensor '
+                   'the artifact carries. Nothing was edited.',
+        'agent_action': 'List what was discovered and what could not be named instead of guessing a '
+                        'tensor: `python -m jdewitt.spanfit targets --gguf-in <artifact>` and '
+                        '`architectures`. Do not retry with another tensor name; the checkpoint and '
+                        'the edit footprint have to agree on the hidden width first.'},
     'HOLDOUT_REJECTED': {'meaning': 'The sealed holdout failed for the selected winner.',
                          'agent_action': 'Treat the release as unproven. Never rescue the run by re-picking a runner-up.'},
     'CANCEL_REQUESTED': {'meaning': 'run-cancel stopped the scheduler before asking for new trials.',
@@ -77,6 +106,7 @@ def error_code(exception):
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),
                       (DirectionRejected, 'DIRECTION_REJECTED'),
+                      (NoVerifiedAdapter, 'NO_VERIFIED_ADAPTER'),
                       (HoldoutRejected, 'HOLDOUT_REJECTED'),
                       (CancelRequested, 'CANCEL_REQUESTED'),
                       (BudgetExhausted, 'BUDGET_EXHAUSTED'),

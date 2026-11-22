@@ -42,6 +42,7 @@ from torch import nn
 
 from .answers import atomic_json
 from .chat import render_chat
+from .errors import NoVerifiedAdapter
 from .refusal_shape import classify, screen_short
 
 LOCI = ("answer", "last-prompt", "first-answer")
@@ -366,10 +367,15 @@ def capture_command(args):
     if empty:
         linear_names = sorted({name for name, module in layers[empty[0]].named_modules()
                               if isinstance(module, nn.Linear)})
-        raise ValueError(
+        raise NoVerifiedAdapter(
             f"blocks {empty[:8]} carry no residual-write projection this tool can name; "
             f"linear modules in block {empty[0]}: {linear_names}. Capture cannot edit a block "
-            f"it cannot locate, and guessing would edit the wrong matrix")
+            f"it cannot locate, and guessing would edit the wrong matrix. Discovery proves a "
+            f"module NAME at hidden width {width}, not that the architecture serves the edit; "
+            f"a layout is certified by the export smoke, not here",
+            width=width, layers_without_target=empty[:8], layers_without_target_total=len(empty),
+            linear_modules=linear_names, layer=empty[0],
+            writeback_names=list(WRITEBACK_MODULE.pattern.strip('^$()').split('|')))
     suffix_counts = {}
     for found in targets.values():
         for name, _ in found:

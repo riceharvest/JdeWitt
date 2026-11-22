@@ -796,7 +796,8 @@ def main():
             result=capture_command(args)
         elif args.command=='edit-quantized':
             from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
-            from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes
+            from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes,inferred_hidden_width
+            from .errors import NoVerifiedAdapter
             from .ggufio import compare_edit
             from .rewrite import rewrite_with_edits
             records=load_records(args.records)
@@ -805,10 +806,20 @@ def main():
             else:
                 axes=(shared_axis(records)[0] if args.shape=='shared' else per_layer_axes(records))
             width=int(axes.shape[-1])
-            discovered=discover_writeback_targets(gguf_weight_shapes(str(args.gguf)),width)
+            shapes=gguf_weight_shapes(str(args.gguf))
+            discovered=discover_writeback_targets(shapes,width)
             layers=sorted(discovered['targets'])
             if not layers:
-                raise ValueError(f'{args.gguf} carries no residual-write projection at width {width}')
+                raise NoVerifiedAdapter(f'{args.gguf} carries no residual-write projection at width {width}: '
+                                        f'its own writeback names put the hidden width at {inferred_hidden_width(shapes)}, '
+                                        f'and width-matching tensors it would not edit are '
+                                        f'{discovered["unmapped_writeback_width"][:8] or "none"}. The records and the '
+                                        f'artifact have to belong to the same model; list what the file carries with '
+                                        f'`python -m jdewitt.spanfit targets --gguf-in {args.gguf}`',
+                                        width=width, records_width=width,
+                                        artifact_hidden_width=inferred_hidden_width(shapes),
+                                        unmapped_writeback_width=discovered['unmapped_writeback_width'],
+                                        artifact=str(args.gguf))
             if args.layers:
                 wanted=set(parse_layer_ids(args.layers))
                 layers=[layer for layer in layers if layer in wanted]
@@ -817,7 +828,14 @@ def main():
                 for name in discovered['targets'][layer]:
                     edits[name]=(axes[layer].numpy(),args.axis_space)
             if not edits:
-                raise ValueError('the footprint selects no tensor this artifact carries')
+                raise NoVerifiedAdapter(f'the footprint selects no tensor this artifact carries: {len(layers)} '
+                                        f'discovered layer(s) survive the --layers filter, so the axes '
+                                        f'({int(axes.shape[0])} layer rows) and the footprint do not cover the same '
+                                        f'layers. Discovered layers: {sorted(discovered["targets"])[:8]}; pass a '
+                                        f'--layers range the artifact actually has, do not edit a partial model and '
+                                        f'call it done',
+                                        discovered_layers=sorted(discovered['targets']), width=width,
+                                        artifact=str(args.gguf))
             sample=list(edits)[:1]+list(edits)[-1:]
             probe={name:edits[name] for name in sample}
             attempts=['q6_k','q8_0','f16'] if args.edit_type=='auto' else [args.edit_type]

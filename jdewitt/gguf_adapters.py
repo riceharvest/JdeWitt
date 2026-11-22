@@ -34,6 +34,8 @@ import torch
 from pathlib import Path
 from gguf import GGUFReader, GGUFWriter
 
+from .errors import NoVerifiedAdapter
+
 # editor source_key component -> llama.cpp tensor suffix. Deliberately narrow:
 # an unmapped or absent tensor raises, because a silently skipped target means a
 # trial whose served edit differs from the searched edit.
@@ -93,6 +95,61 @@ def gguf_weight_shapes(artifact):
             shapes[t.name] = tuple(t.shape)  # (out, in)
     return shapes
 
+def inferred_hidden_width(shapes):
+    """Modal output width of the residual-write projections the artifact carries.
+
+    The artifact never states its hidden size; its writeback projections do, and
+    the majority width is the residual stream's (a partial file still has more
+    agreeing tensors than disagreeing ones). None when no writeback name is
+    present at all — then there is nothing to infer from, which is itself the
+    finding.
+    """
+    widths = {}
+    for name, dims in shapes.items():
+        match = re.match(r'^blk\.\d+\.(.+)\.weight$', name)
+        if match is None or len(dims) != 2:
+            continue
+        if not WRITEBACK_TENSOR.match(match.group(1).split('.')[-1]):
+            continue
+        widths[int(dims[1])] = widths.get(int(dims[1]), 0) + 1
+    if not widths:
+        return None
+    return max(widths.items(), key=lambda item: item[1])[0]
+
+
+def artifact_adapter_view(shapes):
+    """What discovery saw in this artifact, as facts a refusal can carry."""
+    width = inferred_hidden_width(shapes)
+    discovered = (discover_writeback_targets(shapes, width) if width is not None
+                  else {'targets': {}, 'unmapped_writeback_width': []})
+    layers = sorted(discovered['targets'])
+    named = [name for layer in layers[:2] for name in discovered['targets'][layer]]
+    return {'hidden_width': width, 'writeback_layers': layers,
+            'writeback_names': named, 'unmapped_writeback_width':
+                discovered['unmapped_writeback_width']}
+
+
+def _unresolved_name(key, base, shapes, reason):
+    """The refusal for a source_key this artifact cannot be named against."""
+    view = artifact_adapter_view(shapes)
+    layers = view['writeback_layers']
+    looked = f' (looked for {base})' if base else ''
+    if layers:
+        carried = (f'this artifact carries residual-write projections at hidden width '
+                   f'{view["hidden_width"]} for layers {layers[:8]}'
+                   f'{"..." if len(layers) > 8 else ""}')
+    else:
+        carried = ('this artifact carries no residual-write projection name at all '
+                   f'(known suffixes: {WRITEBACK_TENSOR.pattern})')
+    unmapped = view['unmapped_writeback_width'][:8]
+    raise NoVerifiedAdapter(
+        f'{reason} for source_key {key}{looked}: {carried}; width-matching tensors it would '
+        f'not edit: {unmapped or "none"}. A tensor that happens to exist at this width is not '
+        f'an adapter, so this refuses instead of guessing one; list what the file carries with '
+        f'`python -m jdewitt.spanfit targets --gguf-in <artifact>`',
+        source_key=key, looked_for=base, **view)
+
+
 def resolve_gguf_names(source_keys, artifact_shapes):
     """Every editor source_key to its artifact tensor name, or a loud refusal."""
     out = {}
@@ -100,13 +157,14 @@ def resolve_gguf_names(source_keys, artifact_shapes):
         stem = key.removesuffix('.weight')
         layer = [p for p in stem.split('.') if p.isdigit()]
         if not layer:
-            raise ValueError(f'source_key has no layer index: {key}')
+            raise NoVerifiedAdapter(f'source_key has no layer index: {key}', source_key=key)
         suffix = next((s for c, s in HF_TO_LLAMA if c in stem), None)
         if suffix is None:
-            raise ValueError(f'no llama.cpp LoRA name mapping for source_key {key}')
+            _unresolved_name(key, None, artifact_shapes,
+                             'no llama.cpp LoRA name mapping')
         base = f'blk.{layer[0]}.{suffix}.weight'
         if base not in artifact_shapes:
-            raise ValueError(f'artifact has no tensor for source_key {key} (looked for {base})')
+            _unresolved_name(key, base, artifact_shapes, 'artifact has no tensor')
         out[key] = base
     return out
 
