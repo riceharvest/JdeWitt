@@ -1,0 +1,47 @@
+{
+  "families": {
+    "holdout": [
+      "ce-adjacent",
+      "ce-digit-sum",
+      "ce-second-biggest",
+      "lc-mean",
+      "lc-remainder",
+      "lc-share"
+    ],
+    "selection": [
+      "ce-even-values",
+      "ce-run-length",
+      "ce-window-sum",
+      "lc-difference",
+      "lc-period-sum",
+      "lc-scaled-total"
+    ]
+  },
+  "files": {
+    "code-exec-holdout": {
+      "file": "code-exec-holdout.jsonl",
+      "sha256": "9c72d6dfc7118307b558f86f900b7ed469adc682457c670abf34131c23bcd688",
+      "tasks": 30
+    },
+    "code-exec-selection": {
+      "file": "code-exec-selection.jsonl",
+      "sha256": "e3f9b5aaa6392704370a246c0b76f08e9b650f1d5b3564c0c269f065615701eb",
+      "tasks": 30
+    },
+    "long-context-math-holdout": {
+      "file": "long-context-math-holdout.jsonl",
+      "sha256": "d1ba4fe6c7550c542f5087f6a84483e3b4ecd4ac8b98151e78887ed39c7e6331",
+      "tasks": 30
+    },
+    "long-context-math-selection": {
+      "file": "long-context-math-selection.jsonl",
+      "sha256": "766819ee18347875a86c43eaa5e7bc6a2667ba6032bab6e86df898f33841cf86",
+      "tasks": 30
+    }
+  },
+  "per_family": 10,
+  "scope": "Authored ladder, not benchmark items; no leaderboard claim. Answers are derived from the recorded seeded draw and every row was proven gradeable before it was written.",
+  "seed": 7,
+  "source": "jdewitt authored generator (scripts/author_slices.py), no hub corpus",
+  "verification": "every code reference passed and every mutant failed inside the pinned python:3.12-slim sandbox; every maths expected answer was graded correct and a perturbed answer rejected"
+}

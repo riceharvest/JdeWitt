@@ -222,10 +222,17 @@ written into the item and stays GATED.
      through the labelled pinned port, 69 rows marked not-ours), rel_rms
      0.0567/0.0876/0.1769 min/median/max, 20s. Both binaries stay gitignored.
 
-14. Two more curated import specs in the jailbreak-slices pattern: a code
-    execution slice (runs through the existing ast-based executor) and a
-    long-context math slice. Authored families, revision-pinned, disjoint
-    selection/holdout, `suite-stats` output in the commit message.
+14. Two more curated slices. — LANDED 2026-11-22.
+    `scripts/author_slices.py` generates `examples/curated-slices/`: a code
+    execution slice (30 + 30 single-function tasks over six `ce-*` families,
+    every reference passed and every mutant failed inside the pinned
+    python:3.12-slim sandbox) and a long-context maths slice (30 + 30 `lc-*`
+    rows whose prompt is a ~3.6-4.8k-character operations report, every expected
+    answer graded correct and a perturbed one rejected by `grade_math`).
+    Selection/holdout are family-disjoint and `validate_splits` accepts them;
+    same-seed regeneration is byte-identical; `suite-stats` in the commit
+    message. Honest scope in the README: authored ladder, not benchmark items,
+    and the long-context rows test reading a report, not reasoning about one.
 
 15. SAE hooks stay a long bet unchanged: contracts and fit metadata only
     when the compute plan is real. No contract code before a GPU is
