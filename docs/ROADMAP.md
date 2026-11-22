@@ -281,7 +281,14 @@ any of them. Ours must be fewer artifacts with claims nobody can argue with:
   argv + codec choices) that reproduces the artifact without re-running the
   search, and a check that fails when any operand moved.
 - `release-diff` and `verify-artifact` aimed at third parties: anyone can diff
-  our claims against another tool's release directory by digest.
+  our claims against another tool's release directory by digest. The reading
+  half ships as `verify-artifact DIR --foreign`: it hashes the regular files,
+  reads GGUF headers (architecture, tensor count, quant type per tensor family,
+  tokenizer keys) without loading weights, reports `certified_claims: 0`, and
+  names each claim that cannot be checked there together with the file that
+  would be needed (`files.json`, `evidence.json`, `signature.json`, a
+  codec-realized record, a serve argv). A directory that already carries
+  `files.json` is refused as ambiguous and goes through the native path.
 - The honest table published including the losses. A roadmap that only lists
   wins is marketing, and the README already treats marketing as a bug.
 
