@@ -33,7 +33,10 @@ content delivery. The verdict is one line, and it is **damage**.
 - Both arms send the prompt as ids (`"prompt": [ids]`); the off arm sends the
   unmodified ids and no `logit_bias` is sent in either arm. Re-sending the prompt
   **text** each step would re-tokenize the denial back, so ids are the only channel
-  that keeps the change in force.
+  that keeps the change in force. This is what "embedding-side" means here: an input
+  id indexes the embedding matrix, so a position that held 4157 reads row 646
+  instead (and a dropped negation token has no position at all). No weight is
+  edited; only which row is looked up.
 
 ## Setup
 
