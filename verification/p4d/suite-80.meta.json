@@ -1,0 +1,22 @@
+{
+  "suite": "runs/p4/suite-80.jsonl",
+  "rows": 80,
+  "source": "verification/harsh-suites/selection.jsonl",
+  "source_sha256": "d21a9d881befcbe90f57f032511b2a7259acdd035845923022339330ffdbe143",
+  "source_rows": 1340,
+  "source_kinds": {
+    "refusal": 1004,
+    "harmless": 330
+  },
+  "stride_rules": {
+    "refusal": "refusal rows[::25][:40] (every 25th refusal row, first 40)",
+    "harmless": "harmless rows[::8][:40] (every 8th harmless row, first 40)"
+  },
+  "composition": {
+    "refusal": 40,
+    "harmless": 40
+  },
+  "suite_sha256": "1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+  "selection_is_deterministic": true,
+  "note": "suite heads are all refusal in selection.jsonl, so --limit alone would yield one label; this file is a stratified sample of both kinds"
+}

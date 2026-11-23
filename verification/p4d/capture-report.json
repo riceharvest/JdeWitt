@@ -1,0 +1,315 @@
+{
+  "records": "runs/p4/records.pt",
+  "records_bytes": 18587379,
+  "identity": {
+    "model": "/mnt/ssd/models/Spark-X2.6-1.7B",
+    "revision": null,
+    "architecture": "spark2_5",
+    "hidden": 2048,
+    "layers": 28,
+    "layer_path": "model.layers",
+    "locus": "answer",
+    "dtype": "bfloat16",
+    "max_tokens": 512,
+    "ctx_size": 2048,
+    "kinds": [
+      "refusal",
+      "harmless"
+    ],
+    "suite": "runs/p4/suite-80.jsonl",
+    "suite_sha256": "1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+    "targets": {
+      "0": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "1": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "2": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "3": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "4": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "5": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "6": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "7": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "8": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "9": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "10": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "11": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "12": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "13": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "14": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "15": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "16": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "17": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "18": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "19": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "20": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "21": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "22": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "23": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "24": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "25": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "26": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ],
+      "27": [
+        "self_attn.out_proj",
+        "mlp.down_proj"
+      ]
+    },
+    "compute_backend": {
+      "type": "xpu",
+      "rank": "primary",
+      "name": "Intel(R) Arc(TM) Pro B70 Graphics"
+    },
+    "margin": {
+      "resolution": {
+        "Sure": [
+          {
+            "spelling": " Sure",
+            "ids": [
+              38289
+            ],
+            "resolved": true
+          },
+          {
+            "spelling": "Sure",
+            "ids": [
+              48353
+            ],
+            "resolved": true
+          }
+        ],
+        "cannot": [
+          {
+            "spelling": " cannot",
+            "ids": [
+              6847
+            ],
+            "resolved": true
+          },
+          {
+            "spelling": "cannot",
+            "ids": [
+              87753
+            ],
+            "resolved": true
+          }
+        ]
+      },
+      "pairs": [
+        [
+          38289,
+          6847
+        ],
+        [
+          38289,
+          87753
+        ],
+        [
+          48353,
+          6847
+        ],
+        [
+          48353,
+          87753
+        ]
+      ],
+      "available": true,
+      "refusal": null
+    }
+  },
+  "rows_read": 80,
+  "records_written": 80,
+  "labels": {
+    "bad": 36,
+    "deliver": 3,
+    "ambiguous": 1,
+    "good": 30,
+    "overdecline": 10
+  },
+  "filtered_kinds": {},
+  "discarded": {},
+  "tokens": {
+    "prompt": 12880,
+    "answer": 15256
+  },
+  "elapsed_s": 608.8,
+  "settling": {
+    "enabled": true,
+    "min_tokens": 24,
+    "rows_settled": 46,
+    "note": "a settled row stops at the first explicit self-declination (cert-mode settle), so its answer span IS the refusal span; rows that do not settle decode to the full budget, so a procedure is never cut short"
+  },
+  "answers_reused": 0,
+  "answers_reused_note": "0 row(s) took their answer from --answers and cost ZERO output tokens (prefill only); rows not found there were generated",
+  "target_suffixes": {
+    "out_proj": 28,
+    "down_proj": 28
+  },
+  "fit_usable": true,
+  "next": [
+    "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf --in-place --records runs/p4/records.pt --shape perlayer --scale 1.0 --gguf-targets auto",
+    "python -m jdewitt.spanfit axes --records runs/p4/records.pt --out axes.pt --shape shared"
+  ],
+  "notes": [
+    "bad = a harmful row whose own answer declines; good = a harmless row that complies; deliver/ambiguous/overdecline are recorded for the agent read and never enter the default bad/good contrast.",
+    "capture is not certification: shape verdicts on the edited artifact stay an agent read (METHODOLOGY R2).",
+    "the margin ranks candidate axes and never certifies (METHODOLOGY R2/R6): a lower prefill margin is evidence the axis points at the mechanism, not that the edited artifact still behaves; only a merged serve decides that."
+  ],
+  "margin": {
+    "resolution": {
+      "Sure": [
+        {
+          "spelling": " Sure",
+          "ids": [
+            38289
+          ],
+          "resolved": true
+        },
+        {
+          "spelling": "Sure",
+          "ids": [
+            48353
+          ],
+          "resolved": true
+        }
+      ],
+      "cannot": [
+        {
+          "spelling": " cannot",
+          "ids": [
+            6847
+          ],
+          "resolved": true
+        },
+        {
+          "spelling": "cannot",
+          "ids": [
+            87753
+          ],
+          "resolved": true
+        }
+      ]
+    },
+    "pairs": [
+      [
+        38289,
+        6847
+      ],
+      [
+        38289,
+        87753
+      ],
+      [
+        48353,
+        6847
+      ],
+      [
+        48353,
+        87753
+      ]
+    ],
+    "available": true,
+    "refusal": null
+  },
+  "margin_summary": {
+    "bad": {
+      "n": 36,
+      "mean": -1.723958,
+      "median": -1.65625
+    },
+    "good": {
+      "n": 30,
+      "mean": 5.751042,
+      "median": 5.609375
+    },
+    "delta_bad_minus_good": -7.475,
+    "rows_with_margin": 80,
+    "rows_without_margin": 0,
+    "note": "delta_bad_minus_good is the prefill margin (Sure minus cannot) on harmful rows minus the same on harmless rows; it ranks candidate axes and never certifies (METHODOLOGY R2/R6)."
+  },
+  "margin_available": true,
+  "gguf": {
+    "artifact": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+    "writeback_layers": 28,
+    "missing_layers": [],
+    "unmapped_width_tensors": [],
+    "agree": true
+  }
+}
