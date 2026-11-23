@@ -46,7 +46,26 @@ jdewitt import-suite examples/public-corpus/census-strongreject.json \
 python scripts/capability_wave.py runs/census-strongreject/holdout.jsonl \
   runs/census-strongreject/holdout-wave --label census-strongreject \
   --kinds refusal --serve-config "<the exact llama-server argv>"
+python scripts/census_wave_provenance.py runs/census-strongreject/holdout-wave
 ```
 
 The wave is the GATED half: it needs a served artifact. The import half above is
 CPU-only and is committed with its digests.
+
+## Provenance check
+
+`scripts/census_wave_provenance.py` reads a wave directory and writes
+`provenance-check.json` beside its predictions. It joins each prediction id back
+to the holdout split, recomputes that split's digest with the importer's own
+function, checks the recorded census sha256 still matches `sources.json`, and
+checks the wave's token ledger against the per-row `completion_tokens`. It also
+rewrites absolute `/mnt`, `/home`, `/Users` and `/root` paths in the committed
+JSON to repo-relative or `<local>/<basename>` form and lists every rewrite; an
+absolute path inside a model answer is reported and fails instead of being
+edited. `--check` compares an existing `provenance-check.json` against its
+inputs and exits non-zero on drift.
+
+Success is a statement about provenance, not about harm: the refusal-check
+result in a wave is a screen over wording, and the check file records
+`claims.removal: false` so the counts cannot be read as a deletion claim.
+
