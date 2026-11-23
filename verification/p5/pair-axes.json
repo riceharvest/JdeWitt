@@ -1,0 +1,36 @@
+{
+ "schema": "jdewitt.p5-pair-axes/1",
+ "date_utc": "2026-11-23T16:17:33Z",
+ "method": "spanfit.per_layer_axes(records, 'bad', 'deliver', pairs=True) over vetted pairs relabelled from committed agent verdicts",
+ "records": {
+  "path": "verification/q3-4b-pair-mirror/records-all.pt",
+  "sha256": "1fa8fece4740dd85b6484360c0418e502667fa56bf5e8f57cb54694552fb045b"
+ },
+ "verdicts": {
+  "path": "verification/q3-4b-pair-mirror/pairs.jsonl",
+  "sha256": "384e063991da19a7a185c2d09a282554e3446b0494c6cdf5a64c61100f0d4da8",
+  "n_vetted_pairs": 10,
+  "by_verdict": {
+   "deliver": 10,
+   "pivot": 0,
+   "declined": 0,
+   "other": 0
+  }
+ },
+ "gate_packet": "verification/p5/pair-axis-check.json",
+ "gate_sha256_by_key": {
+  "mean_cos": -0.07979,
+  "mean_abs_cos": 0.241422,
+  "decision": "orthogonal"
+ },
+ "axes": {
+  "path": "verification/p5/pair-axes.pt",
+  "sha256": "5065e47b128748bb538ee5d33e0c83f762352e4b4d7ed0caa19f7824bf50d333",
+  "shape": [
+   36,
+   2560
+  ],
+  "dtype": "torch.float32"
+ },
+ "rows_used": 20
+}
