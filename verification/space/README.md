@@ -88,3 +88,60 @@ proves nothing about removal, and the report says `"removal_measured": false`.
 
 The output artifacts are not committed (`*.gguf` is ignored); each run rewrites
 them, and the reports record the paths used at the time.
+
+# licence gate
+
+`licence-gate.json` holds three real Hub rows from `jdewitt.bank_licence`: one
+allowed (`Qwen/Qwen3-4B-Instruct-2507`, apache-2.0), one refused for its licence
+(`bigscience/bloom-560m`), one refused as gated (`meta-llama/Llama-3.2-1B`). The
+gate reads `model_info` only (`files_metadata=False`); a fresh `HF_HOME` stayed
+empty, so no file was downloaded. The allow-list is `spaces/bank/licences.json`,
+which `SHA256SUMS` pins.
+
+# the loop gate
+
+`loop.json` is the Phase 0 done gate for "app loop + card labels, dry run on a
+fixture" (§10). It is rebuilt by:
+
+    python verification/space/make_loop_gate.py
+
+That script runs `space_loop.dry_run` on `fixtures/loop/`, stages a tree into a
+temporary directory, runs the banned-word grep, `ruff check jdewitt scripts` and
+the two Space test files, and writes one JSON. The user-facing equivalent is:
+
+    python -m jdewitt space-dry-run --bank spaces/bank \
+        --model jdewitt/loop-fixture --quant Q4_K_M \
+        --fixture verification/space/fixtures/loop
+
+What the run proves, with no GPU, no socket and no Hub download:
+
+- the three labels and one refusal: the base at Q4_K_M renders
+  `measured_artifact_class`, the fine-tune (same architecture, different bytes and
+  revision) renders `banked_unmeasured`, and the other architecture is `refused`
+  with `BANK_MISS` and one sentence naming the architecture and what would cover
+  it;
+- coverage read a 512-byte prefix of each 295 488-byte artifact; the fixture hub
+  pads that prefix to the declared size as a sparse file, so no tensor bytes move;
+- the licence gate ran on Hub metadata before the download, and the refusal paths
+  (wrong licence, gated repo) are unit-tested;
+- the unmeasured card's first line is `This file was **not** measured.`, and the
+  card carries base repo@rev, applied strength, artifact class, config and
+  delivered cos;
+- `panel_order` puts `caveat` above `start` and `file`, and `spaces/app.py` builds
+  the caveat Markdown above the `gr.File` control;
+- every job deleted its workspace and left the four delivered files (artifact,
+  `card.md`, `sidecar.json`, `SHA256SUMS` with matching digests);
+- the quant control keeps `model-Q8_0.gguf` in the list, disabled with the reason,
+  instead of hiding it;
+- the staged tree carries `spaces/app.py` verbatim, vendors `gguf_types.py` and
+  vendors no `quantize.py` (the llama-quantize wrapper with its local paths).
+
+`fixtures/loop/` regenerates with the project venv (torch is needed for the plan
+bundle):
+
+    python verification/space/fixtures/make_loop_fixture.py
+
+It writes one measured entry (2 layers, hidden 256, `q4_k` source), the base at
+Q4_K_M and Q8_0, a fine-tune of the same architecture with different bytes, an
+artifact of an architecture no entry covers, `hub.json` (file sizes and the header
+prefix that still parses) and the licence allow-list.

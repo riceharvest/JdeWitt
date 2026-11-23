@@ -1,0 +1,334 @@
+{
+  "schema": "jdewitt-space-loop-gate-v1",
+  "command": "python -m jdewitt space-dry-run --bank spaces/bank --model jdewitt/loop-fixture --quant Q4_K_M --fixture verification/space/fixtures/loop",
+  "dry_run": {
+    "ok": true,
+    "labels": [
+      "measured_artifact_class",
+      "banked_unmeasured",
+      "refused"
+    ],
+    "caveat_above_file": true,
+    "panel_order": [
+      "model",
+      "quant",
+      "licence",
+      "coverage",
+      "caveat",
+      "start",
+      "file"
+    ],
+    "panel": [
+      {
+        "id": "model",
+        "body": "jdewitt/loop-fixture-ft"
+      },
+      {
+        "id": "quant",
+        "body": "model-Q4_K_M.gguf"
+      },
+      {
+        "id": "licence",
+        "body": "apache-2.0: allowed"
+      },
+      {
+        "id": "coverage",
+        "body": "banked_unmeasured"
+      },
+      {
+        "id": "caveat",
+        "body": "This file was **not** measured. The direction was fitted on `jdewitt/loop-fixture@base-rev` and applied as-is at strength `attn 1.5, mlp 0.75`. Codec fidelity only: delivered cos `1.0000` on `4` tensors. No claim is made about this model's answers."
+      },
+      {
+        "id": "start"
+      },
+      {
+        "id": "file",
+        "body": "/mnt/ssd/hermes/profiles/ab-run-2580/cache/scratch/jdewitt-space-dry-6qd87zre/banked_unmeasured/deliver-job-20261123T190857-1246798/model-Q4_K_M-banked.gguf"
+      }
+    ],
+    "quant_control": [
+      {
+        "name": "model-Q4_K_M.gguf",
+        "size": 295488,
+        "quant_type": "q4_k",
+        "enabled": true,
+        "reason": null,
+        "label": "model-Q4_K_M.gguf"
+      },
+      {
+        "name": "model-Q8_0.gguf",
+        "size": 557632,
+        "quant_type": "q8_0",
+        "enabled": false,
+        "reason": "source type `q8_0` is not in this entry's covered source types (q4_k)",
+        "label": "model-Q8_0.gguf \u2014 unavailable: source type `q8_0` is not in this entry's covered source types (q4_k)"
+      }
+    ],
+    "network": "none: the fixture hub serves headers, files and licence facts from disk",
+    "cases": [
+      {
+        "expected": "measured",
+        "repo": "jdewitt/loop-fixture",
+        "revision": "base-rev",
+        "file": "model-Q4_K_M.gguf",
+        "label": "measured_artifact_class",
+        "workspace_deleted": true,
+        "files_present": {
+          "artifact": true,
+          "card": true,
+          "sidecar": true,
+          "sha256sums": true
+        },
+        "steps": [
+          {
+            "step": "coverage",
+            "state": "ok",
+            "seconds": 0.007,
+            "detail": "read 512 of 295488 bytes (header and tensor table only)",
+            "code": null
+          },
+          {
+            "step": "licence",
+            "state": "ok",
+            "seconds": 0.001,
+            "detail": "LICENCE_ACCEPTED: jdewitt/loop-fixture declares licence 'apache-2.0', which is on the bank's allow-list.",
+            "code": null
+          },
+          {
+            "step": "download",
+            "state": "ok",
+            "seconds": 0.001,
+            "detail": "295488 bytes, sha256 a7f5115ccc6c2238",
+            "code": null
+          },
+          {
+            "step": "edit",
+            "state": "ok",
+            "seconds": 1.681,
+            "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
+            "code": null
+          },
+          {
+            "step": "readback",
+            "state": "ok",
+            "seconds": 0.001,
+            "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 fcb07fb169244d85",
+            "code": null
+          },
+          {
+            "step": "package",
+            "state": "ok",
+            "seconds": 0.002,
+            "detail": "3 files, 861440 artifact bytes",
+            "code": null
+          }
+        ],
+        "card": "Measured on `jdewitt/loop-fixture@base-rev` `Q4_K_M` at `-c 4096 --parallel 4`: `40/40` harmful and `120/120` held-out by answer shape, retention `241/241`, drift `0.0058` ln ppl. Shape read by an agent, wide inventory; no word-list count is used.\n\n## Banked edit \u2014 jdewitt/loop-fixture@base-rev\n\n- Label: `measured_artifact_class`\n- Base (the direction was fitted on): `jdewitt/loop-fixture@base-rev`\n- Applied strength: attn 1.5, mlp 0.75 (per tensor, the banked arm's number; never a UI control)\n- Artifact class: `jdewitt/loop-fixture@base-rev` `Q4_K_M`\n- Config: `-c 4096 --parallel 4`\n- Delivered cos: `1.0` min over `4` edited tensors (codec fidelity of the stored edit, not an answer measurement)\n- Untouched tensors: `2` byte-identical on re-read of both files\n- Licence: `apache-2.0` (verbatim from the Hub card)\n- Pipeline: header read -> byte copy -> tensor re-encode -> read-back\n- Output sha256: `fcb07fb169244d8536e7888300638afaa7335e8d7e52b936b2863e5fb537e4e7`\n- No inference: this Space's requirements carry no transformers, no llama-server and no tokenizer.",
+        "readback": {
+          "input_sha256": "a7f5115ccc6c2238f3fd3fe91184cd91251e6daf85dd0a068de51d9802b396ff",
+          "output_sha256": "fcb07fb169244d8536e7888300638afaa7335e8d7e52b936b2863e5fb537e4e7",
+          "bytes_in": 295488,
+          "bytes_out": 861440,
+          "reopened": {
+            "tensors": 6,
+            "shapes_match": true,
+            "source_types": [
+              "Q4_K"
+            ]
+          },
+          "ok": true,
+          "edited": {
+            "count": 4,
+            "min_cos": 1.0,
+            "mean_cos": 1.0,
+            "floor": 0.999
+          }
+        },
+        "files": {
+          "artifact": "model-Q4_K_M-banked.gguf",
+          "card": "card.md",
+          "sidecar": "sidecar.json",
+          "sha256sums": "SHA256SUMS"
+        }
+      },
+      {
+        "expected": "banked_unmeasured",
+        "repo": "jdewitt/loop-fixture-ft",
+        "revision": "ft-rev",
+        "file": "model-Q4_K_M.gguf",
+        "label": "banked_unmeasured",
+        "workspace_deleted": true,
+        "files_present": {
+          "artifact": true,
+          "card": true,
+          "sidecar": true,
+          "sha256sums": true
+        },
+        "steps": [
+          {
+            "step": "coverage",
+            "state": "ok",
+            "seconds": 0.001,
+            "detail": "read 512 of 295488 bytes (header and tensor table only)",
+            "code": null
+          },
+          {
+            "step": "licence",
+            "state": "ok",
+            "seconds": 0.0,
+            "detail": "LICENCE_ACCEPTED: jdewitt/loop-fixture-ft declares licence 'apache-2.0', which is on the bank's allow-list.",
+            "code": null
+          },
+          {
+            "step": "download",
+            "state": "ok",
+            "seconds": 0.0,
+            "detail": "295488 bytes, sha256 f96a4612b2f6f115",
+            "code": null
+          },
+          {
+            "step": "edit",
+            "state": "ok",
+            "seconds": 0.045,
+            "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
+            "code": null
+          },
+          {
+            "step": "readback",
+            "state": "ok",
+            "seconds": 0.002,
+            "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 a31ab457828ca25e",
+            "code": null
+          },
+          {
+            "step": "package",
+            "state": "ok",
+            "seconds": 0.003,
+            "detail": "3 files, 861440 artifact bytes",
+            "code": null
+          }
+        ],
+        "card": "This file was **not** measured. The direction was fitted on `jdewitt/loop-fixture@base-rev` and applied as-is at strength `attn 1.5, mlp 0.75`. Codec fidelity only: delivered cos `1.0000` on `4` tensors. No claim is made about this model's answers.\n\n## Banked edit \u2014 jdewitt/loop-fixture-ft@ft-rev\n\n- Label: `banked_unmeasured`\n- Base (the direction was fitted on): `jdewitt/loop-fixture@base-rev`\n- Applied strength: attn 1.5, mlp 0.75 (per tensor, the banked arm's number; never a UI control)\n- Artifact class: `jdewitt/loop-fixture-ft@ft-rev` `Q4_K_M`\n- Config: `-c 4096 --parallel 4`\n- Delivered cos: `1.0` min over `4` edited tensors (codec fidelity of the stored edit, not an answer measurement)\n- Untouched tensors: `2` byte-identical on re-read of both files\n- Licence: `apache-2.0` (verbatim from the Hub card)\n- Pipeline: header read -> byte copy -> tensor re-encode -> read-back\n- Output sha256: `a31ab457828ca25e28a87660594ddeb8459e8be94872d4fb0a56e9ecb98e4256`\n- No inference: this Space's requirements carry no transformers, no llama-server and no tokenizer.\n\nThe only measured facts on this card are the codec ones above; the bank has no measured row for this file.",
+        "readback": {
+          "input_sha256": "f96a4612b2f6f115b3e29d51daa159932a08e4105dc06cef66d626ab53ce239c",
+          "output_sha256": "a31ab457828ca25e28a87660594ddeb8459e8be94872d4fb0a56e9ecb98e4256",
+          "bytes_in": 295488,
+          "bytes_out": 861440,
+          "reopened": {
+            "tensors": 6,
+            "shapes_match": true,
+            "source_types": [
+              "Q4_K"
+            ]
+          },
+          "ok": true,
+          "edited": {
+            "count": 4,
+            "min_cos": 1.0,
+            "mean_cos": 1.0,
+            "floor": 0.999
+          }
+        },
+        "files": {
+          "artifact": "model-Q4_K_M-banked.gguf",
+          "card": "card.md",
+          "sidecar": "sidecar.json",
+          "sha256sums": "SHA256SUMS"
+        }
+      },
+      {
+        "expected": "refused",
+        "repo": "jdewitt/loop-other",
+        "revision": "other-rev",
+        "file": "model-Q4_K_M.gguf",
+        "label": "refused",
+        "workspace_deleted": true,
+        "files_present": {},
+        "steps": [
+          {
+            "step": "coverage",
+            "state": "refused",
+            "seconds": 0.001,
+            "detail": "read 512 of 295488 bytes (header and tensor table only); the artifact declares architecture 'otherach' and the bank has no entry for it (covered: ['loopfixture'])",
+            "code": "BANK_MISS"
+          }
+        ],
+        "refusal": {
+          "code": "BANK_MISS",
+          "message": "the artifact declares architecture 'otherach' and the bank has no entry for it (covered: ['loopfixture'])",
+          "sentence": "`BANK_MISS`: the artifact declares architecture 'otherach' and the bank has no entry for it (covered: ['loopfixture']); covering it needs an axis fitted and measured on that architecture at its hidden width."
+        }
+      }
+    ]
+  },
+  "checks": {
+    "banned_grep": {
+      "patterns": "uncensored|refusals removed",
+      "matches": "",
+      "exit": 1,
+      "empty": true
+    },
+    "ruff": {
+      "exit": 0,
+      "tail": "All checks passed!"
+    },
+    "pytest": {
+      "exit": 0,
+      "summary": "63 passed in 10.35s"
+    },
+    "stage": {
+      "files": 44,
+      "app_is_the_repo_file": true,
+      "vendored": [
+        "jdewitt/__init__.py",
+        "jdewitt/answers.py",
+        "jdewitt/bank.py",
+        "jdewitt/bank_apply.py",
+        "jdewitt/bank_licence.py",
+        "jdewitt/batching.py",
+        "jdewitt/clock.py",
+        "jdewitt/data.py",
+        "jdewitt/errors.py",
+        "jdewitt/evaluation.py",
+        "jdewitt/ggml_fp4.py",
+        "jdewitt/gguf_types.py",
+        "jdewitt/ggufgeom.py",
+        "jdewitt/ggufio.py",
+        "jdewitt/ggufwrite.py",
+        "jdewitt/iq1m.py",
+        "jdewitt/iq1s.py",
+        "jdewitt/iq2.py",
+        "jdewitt/iq2xs.py",
+        "jdewitt/iq2xxs.py",
+        "jdewitt/iq3.py",
+        "jdewitt/iq_tables.py",
+        "jdewitt/q1.py",
+        "jdewitt/q2_0.py",
+        "jdewitt/q8.py",
+        "jdewitt/quants.py",
+        "jdewitt/raw_dtypes.py",
+        "jdewitt/refusal_check.py",
+        "jdewitt/registry.py",
+        "jdewitt/rewrite.py",
+        "jdewitt/scoring.py",
+        "jdewitt/space_loop.py",
+        "jdewitt/storage.py",
+        "jdewitt/tq.py"
+      ],
+      "quantize_vendored": false,
+      "requirements": [
+        "numpy>=2",
+        "gguf>=0.19",
+        "huggingface_hub>=0.34",
+        "gradio>=5,<6"
+      ]
+    }
+  },
+  "claims": {
+    "no_network": "the fixture hub serves file lists, header prefixes and licence facts from disk; the dry run imports no Hub client",
+    "header_only": "each coverage step read a 512-byte prefix of a 295 488-byte artifact and padded the copy to the declared size as a sparse file",
+    "labels": "all three states come from entry.measurement.state narrowed to the artifact class; the refusal sentence names the architecture",
+    "workspace": "each job deleted its workspace; the four delivered files existed"
+  }
+}
