@@ -84,7 +84,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.004,
+            "seconds": 0.006,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -105,21 +105,21 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.577,
+            "seconds": 1.554,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 fcb07fb169244d85",
             "code": null
           },
           {
             "step": "package",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "3 files, 861440 artifact bytes",
             "code": null
           }
@@ -190,14 +190,14 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.037,
+            "seconds": 0.043,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.003,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 a31ab457828ca25e",
             "code": null
           },
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed, 1 skipped in 10.48s"
+      "summary": "66 passed, 1 skipped in 10.29s"
     },
     "stage": {
       "files": 44,

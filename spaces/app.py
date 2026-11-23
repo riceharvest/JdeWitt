@@ -56,6 +56,12 @@ def refresh(repo):
     return _quant_update(view), verdict, view['licence_line']
 
 
+def pick_base(base):
+    """The covered-bases list writes the repo field, then refreshes the rest."""
+    quant_update, verdict, licence_line = refresh(base)
+    return (base or ''), quant_update, verdict, licence_line
+
+
 def start(repo, filename):
     """One job: the loop runs, the caveat and the delivered files come back."""
     if not (filename or '').strip():
@@ -91,8 +97,9 @@ with gr.Blocks(title=TITLE) as demo:
                      interactive=False)
     status = gr.Markdown('')
 
-    bases.change(refresh, inputs=[bases], outputs=[quant, coverage, licence])
+    bases.change(pick_base, inputs=[bases], outputs=[repo, quant, coverage, licence])
     repo.submit(refresh, inputs=[repo], outputs=[quant, coverage, licence])
+    demo.load(refresh, inputs=[repo], outputs=[quant, coverage, licence])
     run.click(start, inputs=[repo, quant], outputs=[caveat, artifact, extras, status])
 
 # One job at a time. The queue is the first lock; `space_loop._job_lock` is the
