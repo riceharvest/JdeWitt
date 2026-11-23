@@ -340,6 +340,9 @@ def build_parser():
         help='type the edited tensors are re-encoded at: auto probes q6_k -> q8_0 -> f16 for the smallest type that clears --min-cos, preserve keeps each tensor\'s own source codec (the shipped-twin reproduction path), or name one this build can encode')
     papply.add_argument('--min-cos',type=float,default=0.95,help='delivered-cos floor --edit-type auto uses to pick the smallest type')
     papply.add_argument('--axis-space',choices=('output','input'),default='output')
+    bcheck=sub.add_parser('bank-check',help='Resolve a Space bank entry against a GGUF from its header + tensor table only: entry, target tensor names, layers, per-kind strength, edit types, or one typed refusal (BANK_MISS / GEOMETRY_MISMATCH / UNSUPPORTED_QUANT / BUNDLE_BAD_DIGEST)')
+    bcheck.add_argument('--bank',type=Path,required=True,help='bank directory holding bank.json')
+    bcheck.add_argument('--gguf',type=Path,required=True,help='artifact to check; its header is read, its tensor data never is')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('--allow-config-mismatch',action='store_true',
         help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
@@ -813,6 +816,9 @@ def main():
             from .planapply import plan_apply
             result=plan_apply(args.bundle,args.gguf,args.out,args.strength,
                               args.edit_type,args.min_cos,args.axis_space)
+        elif args.command=='bank-check':
+            from .bank import bank_check
+            result=bank_check(args.bank,args.gguf)
         elif args.command=='studies-compare':
             from .agent import studies_compare
             result=studies_compare(args.paths)

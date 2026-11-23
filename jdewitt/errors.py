@@ -132,6 +132,18 @@ EXPLAINER = {
     'MATRIX_LEDGER_INVALID': {
         'meaning': 'The registered loss ledger cannot be published: a measured number has no in-clone source or recompute command, its quoted value no longer recomputes, or a void number cites no evidence-map claim with a void status.',
         'agent_action': 'Fix the ledger entry the message names (source, locator, command, or claim status); a loss with no artifact does not get printed as if it had one.'},
+    'BANK_MISS': {
+        'meaning': 'The Space bank has no entry for the architecture the GGUF declares; nothing is edited.',
+        'agent_action': 'Add a fitted entry for that architecture, or refuse the artifact with this code; never guess an axis from another model.'},
+    'GEOMETRY_MISMATCH': {
+        'meaning': 'A bank entry exists for the architecture but its hidden width, layer count or footprint does not match the artifact; the message names the missing layers.',
+        'agent_action': 'Check the artifact\'s own tensor table (bank-check prints the discovered layers and widths); widen the entry only from a fit on that geometry.'},
+    'UNSUPPORTED_QUANT': {
+        'meaning': 'A target tensor carries a source quant type this build cannot decode; nothing is edited.',
+        'agent_action': 'Convert the artifact to a covered type (q4_k/q5_k/q6_k/q8_0) or teach this build that codec; do not requantize blind.'},
+    'BUNDLE_BAD_DIGEST': {
+        'meaning': 'A bank entry\'s bundle is missing or does not hash to the digest the entry pins.',
+        'agent_action': 'Restore the bundle from the bank release and re-verify its sha256; never apply an axis whose bytes are not the measured ones.'},
 }
 
 
@@ -212,10 +224,25 @@ class ReleaseRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class BankRefused(ValueError):
+    """The Space direction bank cannot describe this artifact; ``code`` names why.
+
+    BANK_MISS: no entry for the architecture the artifact declares.
+    GEOMETRY_MISMATCH: hidden/layer/footprint disagree; the message names the
+    missing layers. UNSUPPORTED_QUANT: a source tensor type this build cannot
+    decode. BUNDLE_BAD_DIGEST: the entry's bundle does not hash to its pinned
+    digest. Every one is raised before a byte is read from the bundle's axis, so
+    a Space never edits with an axis it could not verify.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
-                             MatrixRefused, ReleaseRefused)):
+                             MatrixRefused, ReleaseRefused, BankRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

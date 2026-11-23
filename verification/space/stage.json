@@ -1,0 +1,147 @@
+{
+  "schema": "jdewitt-space-stage-check-v1",
+  "script": "scripts/space_stage.py",
+  "command": "python scripts/space_stage.py --out DIR  (twice, into two fresh directories)",
+  "requirements": {
+    "numpy": ">=2",
+    "gguf": ">=0.19",
+    "huggingface_hub": ">=0.34",
+    "gradio": ">=5,<6"
+  },
+  "diff_r_identical": true,
+  "sanitisation": {
+    "pattern": "/mnt/|/home/|t_[0-9a-f]{8}|uncensored",
+    "matches": []
+  },
+  "app_parses": true,
+  "staged_import": {
+    "module": "jdewitt.space_loop",
+    "gradio_imported": false,
+    "torch_imported": false,
+    "exit_code": 0,
+    "stdout": "jdewitt-space-inspect-v1",
+    "stderr": ""
+  },
+  "size": {
+    "files": 27,
+    "bytes": 344045,
+    "outside_bank_bytes": 342480,
+    "cap_outside_bank_bytes": 5242880
+  },
+  "ruff": {
+    "command": "ruff check jdewitt scripts",
+    "exit_code": 0,
+    "stdout": "All checks passed!"
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "bytes": 30
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 34523
+    },
+    {
+      "path": "NOTICE",
+      "bytes": 434
+    },
+    {
+      "path": "README.md",
+      "bytes": 1211
+    },
+    {
+      "path": "app.py",
+      "bytes": 1669
+    },
+    {
+      "path": "jdewitt/__init__.py",
+      "bytes": 67
+    },
+    {
+      "path": "jdewitt/bank.py",
+      "bytes": 14961
+    },
+    {
+      "path": "jdewitt/errors.py",
+      "bytes": 16564
+    },
+    {
+      "path": "jdewitt/ggml_fp4.py",
+      "bytes": 5885
+    },
+    {
+      "path": "jdewitt/ggufgeom.py",
+      "bytes": 4121
+    },
+    {
+      "path": "jdewitt/iq1m.py",
+      "bytes": 12656
+    },
+    {
+      "path": "jdewitt/iq1s.py",
+      "bytes": 11556
+    },
+    {
+      "path": "jdewitt/iq2.py",
+      "bytes": 10352
+    },
+    {
+      "path": "jdewitt/iq2xs.py",
+      "bytes": 14811
+    },
+    {
+      "path": "jdewitt/iq2xxs.py",
+      "bytes": 15174
+    },
+    {
+      "path": "jdewitt/iq3.py",
+      "bytes": 18395
+    },
+    {
+      "path": "jdewitt/iq_tables.py",
+      "bytes": 100148
+    },
+    {
+      "path": "jdewitt/q1.py",
+      "bytes": 1988
+    },
+    {
+      "path": "jdewitt/q2_0.py",
+      "bytes": 2046
+    },
+    {
+      "path": "jdewitt/q8.py",
+      "bytes": 3663
+    },
+    {
+      "path": "jdewitt/quants.py",
+      "bytes": 54184
+    },
+    {
+      "path": "jdewitt/raw_dtypes.py",
+      "bytes": 4091
+    },
+    {
+      "path": "jdewitt/space_loop.py",
+      "bytes": 9084
+    },
+    {
+      "path": "jdewitt/tq.py",
+      "bytes": 4812
+    },
+    {
+      "path": "requirements.txt",
+      "bytes": 55
+    },
+    {
+      "path": "spaces/bank/README.md",
+      "bytes": 1508
+    },
+    {
+      "path": "spaces/bank/bank.json",
+      "bytes": 57
+    }
+  ],
+  "ok": true
+}
