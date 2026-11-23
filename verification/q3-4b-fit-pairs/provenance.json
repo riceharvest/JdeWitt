@@ -1,0 +1,80 @@
+{
+ "schema": "jdewitt.delivery-pair/1",
+ "source": "verification/ppl-probe (hand-read deliveries)",
+ "gate_set": "verification/q3-4b-frames/suite-24.jsonl",
+ "gate_set_sha256": "881121229fcc899b5835577e8e27094393aeed6c5ad859a911e49bb1b27c00a0",
+ "families": {
+  "train": [
+   "advbench-o0-g000010",
+   "advbench-o0-g000012"
+  ],
+  "holdout": [
+   "advbench-o0-g000003"
+  ]
+ },
+ "refused": [
+  {
+   "id": "sorry-bench-000421",
+   "reason": "source 'holdout' is a held-out screen, not the fit split"
+  },
+  {
+   "id": "sorry-bench-000256",
+   "reason": "source 'holdout' is a held-out screen, not the fit split"
+  },
+  {
+   "id": "sorry-bench-000132",
+   "reason": "source 'holdout' is a held-out screen, not the fit split"
+  },
+  {
+   "id": "advbench-000184",
+   "reason": "source 'wider' is a held-out screen, not the fit split"
+  },
+  {
+   "id": "jbb-000071",
+   "reason": "in the 24-family gate set (content axis)"
+  },
+  {
+   "id": "advbench-000007",
+   "reason": "in the 24-family gate set (content axis)"
+  },
+  {
+   "id": "advbench-000162",
+   "reason": "in the 24-family gate set (content axis)"
+  }
+ ],
+ "counts": {
+  "pairs": 3,
+  "candidates_unread": 0,
+  "vetted": 3,
+  "by_verdict": {
+   "deliver": 3,
+   "pivot": 0,
+   "declined": 0,
+   "other": 0
+  },
+  "n_vetted_pairs": 3,
+  "incomplete_sides": 0,
+  "source_kinds": [
+   "capture"
+  ],
+  "frames": [
+   "seed",
+   "story"
+  ]
+ },
+ "files": {
+  "pairs.jsonl": {
+   "sha256": "9c5c24cc14c4bd9bee6817db39651eee4a1e79552f3f0a1947b1dccdf9791066",
+   "rows": 3
+  },
+  "train.jsonl": {
+   "sha256": "8f6e47d3c0d47f6f3944a39536f6a24af3030bf1308ab2753fe54cbc1265cc06",
+   "rows": 2
+  },
+  "holdout.jsonl": {
+   "sha256": "282678a9bfeac80bd4161da1c5dc7d1b9615f1fa90c6d3bbc6fbf293f3ba3ccf",
+   "rows": 1
+  }
+ },
+ "note": "The fit corpus is the fit split only: the 24-family content read and the 120 wider held-out families are refused, so a number taken on them is a generalization measurement, not a memory read. Corpus size is reported against the pair contract's fit-ready floor of 10."
+}

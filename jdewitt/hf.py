@@ -143,7 +143,7 @@ def reply_boundary(tokenizer, generated_ids, thinking_open=False, final_marker=N
 
 
 class HFModel:
-    def __init__(self, model_id, revision, rank, max_tokens, dtype='bfloat16', trust_remote_code=False, quantization='none', trial_operator='merged-resident', ctx_size=None, edit_targets='writeback', merged_cache_bytes=0, allow_secondary=False):
+    def __init__(self, model_id, revision, rank, max_tokens, dtype='bfloat16', trust_remote_code=False, quantization='none', trial_operator='merged-resident', ctx_size=None, edit_targets='writeback', merged_cache_bytes=0, allow_secondary=False, attn_implementation='eager'):
         self.backend = resolve_backend(allow_secondary)
         self.device = backend_device(self.backend)
         self.secondary_test_run = self.backend['rank'] != 'primary'
@@ -167,7 +167,7 @@ class HFModel:
         self._source_context = compatible_source(model_id)
         prepared_source = self._source_context.__enter__()
         try:
-            self.model = factory.from_pretrained(str(prepared_source), revision=revision, dtype=getattr(torch,dtype), device_map={'': self.device}, trust_remote_code=trust_remote_code, attn_implementation='eager', **kwargs).eval()
+            self.model = factory.from_pretrained(str(prepared_source), revision=revision, dtype=getattr(torch,dtype), device_map={'': self.device}, trust_remote_code=trust_remote_code, attn_implementation=attn_implementation, **kwargs).eval()
         except BaseException:
             self._source_context.__exit__(None,None,None)
             raise

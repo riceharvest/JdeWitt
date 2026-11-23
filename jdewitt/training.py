@@ -7,12 +7,20 @@ import torch
 from torch.nn import functional as F
 
 
-def completion_logprob(logits, ids, prompt_length):
+def completion_logprob(logits,ids,prompt_length,chunk=32):
     if ids.ndim!=2 or ids.shape[0]!=1 or logits.shape[:2]!=ids.shape or not 0<prompt_length<ids.shape[1]:
         raise ValueError('Need one untruncated prompt plus labeled completion')
     labels=ids[:,prompt_length:]
-    logp=F.log_softmax(logits[:,prompt_length-1:-1].float(),dim=-1)
-    return logp.gather(-1,labels.unsqueeze(-1)).sum()
+    logits=logits[:,prompt_length-1:-1]
+    # sum logp over the labeled tokens, computed in position chunks: the fused
+    # cross_entropy keeps a 32x152k float32 block instead of a full float32
+    # log_softmax copy of the vocabulary at every completion position, which is
+    # what lets a dense 4B fit on a 12 GiB card.
+    total=logits.new_zeros((),dtype=torch.float32)
+    for start in range(0,labels.shape[1],chunk):
+        block=logits[:,start:start+chunk].float().reshape(-1,logits.shape[-1])
+        total=total+F.cross_entropy(block,labels[:,start:start+chunk].reshape(-1),reduction='sum')
+    return -total
 
 
 def dpo_loss(chosen,rejected,reference_chosen,reference_rejected,beta):
@@ -32,8 +40,9 @@ def train_adapters(model,editor,rows,mode,steps,learning_rate,beta,seed,progress
     for p in model.parameters():
         p.requires_grad_(False)
     for *_,adapter in editor.targets:
-        if adapter.base.weight.ndim!=2 or adapter.operator!='merged-resident':
-            raise ValueError('Training currently requires dense original-precision resident projections')
+        if (adapter.base.weight.ndim!=2 or getattr(adapter.base.weight,'quant_state',None) is not None
+                or adapter.operator not in {'live','merged-resident'}):
+            raise ValueError('Training requires dense original-precision projections')
         adapter.reset()
         adapter.A=(torch.randn(adapter.A.shape,generator=rng)/math.sqrt(adapter.A.shape[-1])).to(device).requires_grad_()
         adapter.B=torch.zeros(adapter.B.shape,device=device,dtype=torch.float32,requires_grad=True)
@@ -41,7 +50,17 @@ def train_adapters(model,editor,rows,mode,steps,learning_rate,beta,seed,progress
         parameters.extend([adapter.A,adapter.B])
     optimizer=torch.optim.Adam(parameters,lr=learning_rate)
     losses=[]
-    model.eval()
+    # Fit mode (dropout-free configs; the base stays frozen) so checkpointing is
+    # live: transformers only recomputes checkpointed blocks in training mode,
+    # and retaining every block's activations does not fit a small card.
+    model.train()
+    # Adapter-only gradients: the base stays frozen, so recomputing each block in
+    # the backward pass costs one extra forward and saves the retained-activation
+    # footprint. Without it a dense 4B DPO fit does not fit a 12 GiB card.
+    checkpointing=False
+    if hasattr(model,'gradient_checkpointing_enable'):
+        model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant':False})
+        checkpointing=True
     def score(ids,prompt):
         ids=ids.to(device)
         return completion_logprob(model(ids,use_cache=False).logits,ids,prompt)
@@ -70,11 +89,17 @@ def train_adapters(model,editor,rows,mode,steps,learning_rate,beta,seed,progress
             loss.backward()
             if any(p.grad is None or not torch.isfinite(p.grad).all() for p in parameters):
                 raise ValueError('Missing or nonfinite edit-factor gradients')
+            # A two-pair preference fit saturates fast; an unclipped Adam step on
+            # the saturated margin can push the factors into a nonfinite regime.
+            torch.nn.utils.clip_grad_norm_(parameters,1.0)
             optimizer.step()
             losses.append(float(loss.detach()))
             if progress is not None:
                 progress({'stage':'training','completed_steps':step+1,'total_steps':steps,'loss':losses[-1]})
     finally:
+        if checkpointing:
+            model.gradient_checkpointing_disable()
+        model.eval()
         for p in parameters:
             p.requires_grad_(False)
             p.grad=None
@@ -106,7 +131,7 @@ def validate_training_config(obj):
         raise ValueError('revision must be null or a nonempty string')
 
 
-def train_job(path):
+def train_job(path,allow_secondary=False):
     from .data import load_suite,validate_splits,digest
     from .hf import HFModel,preflight_hf
     from .release import sha256_file
@@ -128,7 +153,8 @@ def train_job(path):
         raise FileExistsError('Training outputs are immutable; use a new output directory')
     with exclusive(output,'.training.lock'):
         backend=HFModel(obj['model'],obj['revision'],obj['rank'],obj['max_tokens'],obj['dtype'],
-                        obj['trust_remote_code'],ctx_size=obj['ctx_size'])
+                        obj['trust_remote_code'],ctx_size=obj['ctx_size'],allow_secondary=allow_secondary,
+                        attn_implementation='sdpa',trial_operator='live')
         try:
             rows=[]
             for task in train:
@@ -150,6 +176,16 @@ def train_job(path):
             atomic_json(output/'training-identity.json',identity)
             report=train_adapters(backend.model,backend.editor,rows,obj['mode'],obj['steps'],obj['learning_rate'],
                                   obj['beta'],obj['seed'],lambda r:atomic_json(output/'progress.json',r))
+            report['backend']=dict(backend.backend)
+            if backend.secondary_test_run:
+                report['backend_note']=('Second-rank CUDA test backend: the B70 kernels, the B70 VRAM '
+                                        'envelope and the llama.cpp Vulkan serving gates were not exercised '
+                                        'on this fit; the numbers it enables are a test, never a certification.')
+            # The fit ran the live low-rank forward (same function, no per-module
+            # dense workspace). Export verifies against the resident operator, so
+            # switch the adapters back to it now that no gradient is being taken.
+            for *_,adapter in backend.editor.targets:
+                adapter.operator='merged-resident'
             stream_merge(obj['model'],output/'hf',backend.editor)
             report['export']=verify_resident_export(obj['model'],output/'hf',backend.editor)
             atomic_json(output/'training-report.json',report)

@@ -415,6 +415,9 @@ def build_parser():
                      help='Override a JSON field before the run (dot path; value parsed as JSON, else string)')
     train=sub.add_parser('train',help='Train local B70 SFT/DPO edit factors; output is unvalidated')
     train.add_argument('config',type=Path)
+    train.add_argument('--allow-cuda',action='store_true',
+                       help='opt into the second-rank CUDA backend for a loop/test fit; '
+                            'the report records rank=secondary and the fit is never a certification')
     verify=sub.add_parser('verify-release',help='Verify a finished release using only file reads, no models')
     verify.add_argument('directory',type=Path)
     verify.add_argument('--expected-identity')
@@ -1028,7 +1031,7 @@ def main():
             result=run(RunConfig.from_json(obj))
         elif args.command=='train':
             from .training import train_job
-            result=train_job(args.config)
+            result=train_job(args.config,allow_secondary=args.allow_cuda)
         else:
             if (args.output/'report.json').exists():
                 raise FileExistsError('Use a new output directory for an independent evaluation')

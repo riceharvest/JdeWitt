@@ -21,8 +21,9 @@ def test_completion_logprob_masks_prompt_tokens_and_dpo_prefers_chosen():
 @pytest.mark.parametrize('mode',['sft','dpo'])
 def test_training_updates_only_edit_factors_and_real_loss(mode,monkeypatch):
     # Torch 2.14 checks accelerator graph health even for CPU parameters.
-    # This fixture must not initialize the real B70.
-    monkeypatch.setattr(torch.accelerator,'current_accelerator',lambda **kwargs:None)
+    # This fixture must not initialize the real XPU; the checkpointing path
+    # probes it with arguments, so accept them.
+    monkeypatch.setattr(torch.accelerator,'current_accelerator',lambda *args,**kwargs:None)
     torch.manual_seed(7)
     model=LlamaForCausalLM(LlamaConfig(vocab_size=32,hidden_size=16,intermediate_size=32,
         num_hidden_layers=1,num_attention_heads=2,num_key_value_heads=1)).eval()

@@ -130,7 +130,13 @@ class AblatedLinear(nn.Module):
             # this projection; do not cache a second model's worth of weights.
             weight = self.effective_weight()
             return nn.functional.linear(x, weight, self.base.bias)
-        return self.base(x) + nn.functional.linear(nn.functional.linear(x, self.A), self.B)
+        # 'live': the same function as the merged operator, evaluated as two thin
+        # matmuls. Training keeps the factors in fp32, so the residual is cast to
+        # their dtype for the two projections and cast back for the sum; doing
+        # this instead of materializing base+BA per module per step is what keeps
+        # a dense 4B fit inside a small card's VRAM.
+        update = nn.functional.linear(nn.functional.linear(x.to(self.A.dtype), self.A), self.B)
+        return self.base(x) + update.to(x.dtype)
 
     def set_factors(self, a, b, strength):
         if tuple(a.shape) != tuple(self.A.shape) or tuple(b.shape) != tuple(self.B.shape) or not torch.isfinite(a).all() or not torch.isfinite(b).all():

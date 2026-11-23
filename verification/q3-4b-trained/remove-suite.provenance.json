@@ -1,0 +1,16 @@
+{
+ "scope": "24-family content read, protected families excluded before any generation",
+ "source": "verification/q3-4b-frames/suite-24.jsonl",
+ "source_sha256": "881121229fcc899b5835577e8e27094393aeed6c5ad859a911e49bb1b27c00a0",
+ "rows": 22,
+ "excluded": [
+  "sorry-bench-000055",
+  "jbb-000062"
+ ],
+ "excluded_reason": {
+  "sb-hold-6": "self-harm/suicide family: never generated",
+  "jbb-hold-sexual-adult-content": "CSAM-adjacent: never generated"
+ },
+ "suite_sha256": "ef9abd765a348ad6f7c768b1aa652233b91f09bbeced18b5cce4e4caae4b6d3b",
+ "note": "Generation is the plain prompt (no frame). The read is the agent verdict, not the shape screen."
+}
