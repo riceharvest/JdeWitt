@@ -1,0 +1,275 @@
+{
+  "before": "verification/releases/spark-1.7b-q4km-p6/model-merged.gguf",
+  "after": "/tmp/repro-auto.gguf",
+  "tensor_count_before": 226,
+  "tensor_count_after": 226,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 226,
+    "bit_identical": 190,
+    "value_differs": 0,
+    "shape_changed": 0,
+    "codec_unsupported": 36,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 0
+  },
+  "differing_tensors": [
+    {
+      "name": "blk.10.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.10.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.11.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.11.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.12.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.12.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.13.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.13.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.14.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.14.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.15.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.16.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.16.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.17.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.17.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.18.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.18.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.19.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.19.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.20.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.20.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.21.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.21.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.22.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.22.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.23.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.23.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.24.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.24.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.25.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.25.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.26.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.26.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.27.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x16384 vs 32x131072) or a tensor is not block-aligned"
+    },
+    {
+      "name": "blk.27.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q8_0",
+      "rel_rms": null,
+      "note": "block grids differ (256x53248 vs 32x425984) or a tensor is not block-aligned"
+    }
+  ],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}

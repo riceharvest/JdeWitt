@@ -1,9 +1,9 @@
 {
   "directory": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6",
   "repro": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6/repro.json",
-  "repro_digest": "60952e99c67763bb93e29b0f4f2bf60b6ef6d678ead0614e3281efc61cb4d0aa",
-  "binding_digest": "6814746907d9c7df30fb77acb5d89dd07e9fab18a39c22218d98e852db725fee",
-  "signature_digest": "60952e99c67763bb93e29b0f4f2bf60b6ef6d678ead0614e3281efc61cb4d0aa",
+  "repro_digest": "83caa8133a906ab666c5f4e0cbaf5814a7dc67766a789a9cf5b40c76c360da2d",
+  "binding_digest": "b0f63f4c0625b1b4ac21c5d98986e34b9a303eac331446477c52208c98e36810",
+  "signature_digest": "83caa8133a906ab666c5f4e0cbaf5814a7dc67766a789a9cf5b40c76c360da2d",
   "public_key_sha256": "b1ad47c1f66f485f3a925fe45d1f100f5bbee08af38beedd1819dee8dcc25498",
   "operand_count": 199,
   "next": "release-repro verification/releases/spark-1.7b-q4km-p6 --check",
