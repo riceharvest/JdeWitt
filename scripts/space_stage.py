@@ -134,8 +134,9 @@ def _external_imports(tree):
 def _closure(app_source):
     """{module: path} for every local module `app.py` can reach, or MISSING_IMPORT."""
     seen = {}
-    pending = [(name, 'strict') for name in _imports(ast.parse(app_source), 'app', False)[0]]
-    pending += [(name, 'candidate') for name in _imports(ast.parse(app_source), 'app', False)[1]]
+    strict, candidates = _imports(ast.parse(app_source), 'app', False)
+    pending = [(name, 'strict') for name in strict]
+    pending += [(name, 'candidate') for name in candidates]
     while pending:
         name, kind = pending.pop()
         path = _module_path(name)

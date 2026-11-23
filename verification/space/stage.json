@@ -24,8 +24,8 @@
   },
   "size": {
     "files": 27,
-    "bytes": 344066,
-    "outside_bank_bytes": 342501,
+    "bytes": 344045,
+    "outside_bank_bytes": 342480,
     "cap_outside_bank_bytes": 5242880
   },
   "ruff": {
@@ -124,7 +124,7 @@
     },
     {
       "path": "jdewitt/space_loop.py",
-      "bytes": 9105
+      "bytes": 9084
     },
     {
       "path": "jdewitt/tq.py",

@@ -120,7 +120,7 @@ def _coverage(document, repo, revision, quant):
 
     if quant is None:
         chosen = by_repo[0]
-        return chosen, None, 'unstated'
+        return chosen, None
     name = quant_type(quant)
     if name is None:
         raise _Refusal(
@@ -139,7 +139,7 @@ def _coverage(document, repo, revision, quant):
     # Prefer the entry fitted on the revision the visitor actually named.
     exact = [entry for entry in by_quant
              if _revision_match(revision, entry['base'].get('revision')) == 'exact']
-    return (exact or by_quant)[0], name, None
+    return (exact or by_quant)[0], name
 
 
 def inspect(repo, revision=None, quant=None, *, bank_dir=None):
@@ -175,7 +175,7 @@ def inspect(repo, revision=None, quant=None, *, bank_dir=None):
         except (OSError, ValueError) as error:
             raise _Refusal('BANK_INVALID', f'the direction bank cannot be read: {error}')
         report['bank']['entries'] = len(document['entries'])
-        entry, quant_name, _ = _coverage(document, repo_text, revision_text, quant)
+        entry, quant_name = _coverage(document, repo_text, revision_text, quant)
     except _Refusal as refusal:
         report['refusal'] = {'code': refusal.code, 'message': refusal.message}
         return report
