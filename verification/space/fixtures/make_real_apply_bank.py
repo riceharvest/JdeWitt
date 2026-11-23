@@ -7,10 +7,11 @@ Run from the repo root with the project venv (needs torch for the plan payload):
         --gguf /path/to/artifact.gguf --bank /tmp/bank-qwen2 \\
         --layers 10 12 --seed 1
 
-The bank that ships in `spaces/bank/bank.json` is empty on purpose (no fitted axis
-is in this clone), so the real-artifact gate run needs an entry whose geometry is
-the artifact's OWN — read from its header and tensor table here — and whose axis is
-an explicitly SYNTHETIC, seeded unit direction. That is enough to prove the command
+The bank that ships in `spaces/bank/bank.json` carries one entry whose axis is fitted
+from a real capture (the Qwen3-4B refit), so the real-artifact gate run does not use
+it: `bank-apply` needs an entry whose geometry is the artifact's OWN — read from its
+header and tensor table here — and whose axis is an explicitly SYNTHETIC, seeded unit
+direction. That is enough to prove the command
 (the write path, the codec ladder, the per-tensor measurement, the untouched bytes);
 it proves nothing about removal, and the entry says so: `measurement.state` is
 `synthetic_axis`, and the report's `removal_measured` is false.
