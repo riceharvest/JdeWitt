@@ -94,6 +94,9 @@ Currently checkable in a fresh clone:
   at 159. The 24-family delivery read puts the unedited base itself at 1/24. Removal of the
   wording is now matched; removal of the behaviour is not — on the first 20 families of that
   screen the arm delivers the asked-for content on 0 of 20, the published build on 1 of 20.
+  Equal removal at less capability loss is **not established**: the matched-removal arm pays
+  a measured maths loss where the published build pays none, and no row in this clone holds
+  the base's maths score at equal removal with no discordant removal rows.
   `scripts/screen_agreement.py` re-grades any screen under both
   inventories and prints the false-clean count; `docs/non-heretic-methods.md` carries the
   retraction, the floor sweep and the frontier table.
@@ -107,6 +110,30 @@ Currently checkable in a fresh clone:
   generated exits non-zero as `UNMEASURED` instead of reporting a
   removal count. Refusal text and the dead screen are committed under
   `verification/instrument-gates/`.
+
+- **The delivery axis is its own axis (Phase 5, probe-level).** Ten
+  agent-read delivery pairs from the base's own capture — 5 fit-split,
+  5 eval-split — give a pair-diff axis whose mean |cos| against the
+  published same-base oracle axis is 0.2414 over the 27 layers the oracle
+  edited (0.1862 on the fit split alone): orthogonal, so one merge test is
+  justified and this is not the oracle edit under another name. The pairs
+  are 10/10 agent-read deliveries; the reading is a zero-token axis
+  comparison, not a delivery result. Evidence:
+  `verification/q3-4b-pair-mirror/pairs.jsonl`,
+  `verification/q3-4b-pair-mirror/records-all.pt`,
+  `verification/q3-4b-oracle-control/q3oaxes135/axes.pt`.
+
+- **The adapter curve is not the merged bytes (Phase 6, four probe
+  rows).** One fitted plan on Spark-X2.6-1.7B Q4_K_M was built as a
+  rank-1 adapter and as a merged twin from the same deltas and served at
+  one pinned config. On four harmful probe rows the two agree on 1 of 4;
+  the merged twin keeps 3 of 4 refusals where the adapter keeps none, and
+  the adapter delta is 0.2523 against the merged 0.1525 (ratio 0.6044,
+  under the 0.7 floor), so `ranking_valid_on_this_artifact` is false and
+  the adapter is screening-only. This is a measured divergence, not an
+  averaged result; no removal, retention or capability claim is made from
+  these four rows. Evidence: the Spark runtime-equivalence record and the
+  release adapter/twin cards under `verification/`.
 
 - **Vocabulary surgery is a wording layer, not a removal.** `jdewitt vocab-remap
   --remap on|off` is a client-side reference harness, not a patched sampler: one
