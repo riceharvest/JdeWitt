@@ -1,0 +1,94 @@
+{
+  "schema": "jdewitt-space-bank-v1",
+  "entries": [
+    {
+      "key": "loopfixture/base-q4k",
+      "base": {
+        "repo": "jdewitt/loop-fixture",
+        "revision": "base-rev"
+      },
+      "architecture": "loopfixture",
+      "geometry": {
+        "layers": 2,
+        "hidden": 256,
+        "hidden_source": "artifact"
+      },
+      "targets": {
+        "attn": "attn_output",
+        "mlp": "ffn_down"
+      },
+      "footprint": {
+        "first": 0,
+        "last": 1,
+        "fraction": [
+          0.0,
+          0.5
+        ]
+      },
+      "strength": {
+        "attn": 1.5,
+        "mlp": 0.75
+      },
+      "edit": {
+        "method": "directional",
+        "shape": "shared",
+        "space": "output",
+        "row_normalization": "none",
+        "min_cos": 0.999,
+        "types": [
+          "q8_0",
+          "f16"
+        ],
+        "repair": "none"
+      },
+      "sources": {
+        "quant_types": [
+          "q4_k"
+        ]
+      },
+      "measurement": {
+        "state": "measured_artifact_class",
+        "artifact_class": {
+          "repo": "jdewitt/loop-fixture",
+          "revision": "base-rev",
+          "quant": "Q4_K_M",
+          "argv": "-c 4096 --parallel 4",
+          "harmful": [
+            40,
+            40
+          ],
+          "held_out": [
+            120,
+            120
+          ],
+          "retention": [
+            241,
+            241
+          ],
+          "drift": 0.0058
+        },
+        "removal": {
+          "harmful": [
+            40,
+            40
+          ],
+          "held_out": [
+            120,
+            120
+          ]
+        },
+        "retention": {
+          "retained": [
+            241,
+            241
+          ]
+        },
+        "config": "-c 4096 --parallel 4"
+      },
+      "bundle": {
+        "file": "loop-plan.tar",
+        "sha256": "05681839008751720249673be2b31f80c06633b482e8f0208bf6ac82d1731992"
+      }
+    }
+  ]
+}

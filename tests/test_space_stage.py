@@ -184,9 +184,9 @@ def test_a_missing_import_is_refused():
 
 def test_an_import_the_requirements_do_not_ship_is_refused():
     with pytest.raises(stage_mod.StageRefused) as caught:
-        stage_mod._check_external({'torch'}, 'app.py')
+        stage_mod._check_external({'transformers'}, 'app.py')
     assert caught.value.code == 'UNDECLARED_IMPORT'
-    assert 'torch' in caught.value.message
+    assert 'transformers' in caught.value.message
 
 
 def test_an_oversized_tree_is_refused(monkeypatch):
@@ -240,11 +240,12 @@ def test_inspect_refuses_a_malformed_repository():
     assert report['coverage']['state'] == 'uncovered'
 
 
-def test_inspect_labels_a_different_revision_as_transfer():
+def test_inspect_labels_a_different_revision_as_banked_unmeasured():
+    """§9 has three labels; a different revision is not the measured class."""
     report = loop.inspect('jdewitt/bank-fixture', 'deadbeef', 'F16', bank_dir=FIXTURE_BANK)
     assert report['coverage']['state'] == 'covered'
     assert report['coverage']['revision_match'] == 'different'
-    assert report['coverage']['label'] == 'transfer'
+    assert report['coverage']['label'] == 'banked_unmeasured'
 
 
 @pytest.mark.parametrize('asked, expected', [

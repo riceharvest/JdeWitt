@@ -136,7 +136,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, scales=None, axis_space='o
 
 
     from .ggufwrite import parse_container, tensor_nbytes, write_container
-    from .quantize import canonical_type
+    from .gguf_types import canonical_type
     from .ggufio import axis_delta, decode_values
     from .quants import CODECS as QUANT_CODECS
 

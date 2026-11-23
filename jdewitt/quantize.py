@@ -22,22 +22,13 @@ import subprocess
 import time
 from pathlib import Path
 
+from .gguf_types import TYPE_ALIASES, canonical_type  # noqa: F401  (re-exported)
+
 # Known local builds, in preference order. JDEWITT_QUANTIZE wins over all of them.
 KNOWN_BINARIES = (
     '/home/dario/llama.cpp-spark/build-cpu/bin/llama-quantize',
     '/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-quantize',
 )
-
-TYPE_ALIASES = {
-    'q2_k': 'Q2_K', 'q3_k_s': 'Q3_K_S', 'q3_k_m': 'Q3_K_M', 'q3_k_l': 'Q3_K_L',
-    'q4_0': 'Q4_0', 'q4_1': 'Q4_1', 'q4_k_s': 'Q4_K_S', 'q4_k_m': 'Q4_K_M',
-    'q5_0': 'Q5_0', 'q5_1': 'Q5_1', 'q5_k_s': 'Q5_K_S', 'q5_k_m': 'Q5_K_M',
-    'q6_k': 'Q6_K', 'q8_0': 'Q8_0', 'f16': 'F16', 'bf16': 'BF16', 'f32': 'F32',
-    'iq1_s': 'IQ1_S', 'iq1_m': 'IQ1_M', 'iq2_xxs': 'IQ2_XXS', 'iq2_xs': 'IQ2_XS',
-    'iq2_s': 'IQ2_S', 'iq2_m': 'IQ2_M', 'iq3_xxs': 'IQ3_XXS', 'iq3_xs': 'IQ3_XS',
-    'iq3_s': 'IQ3_S', 'iq3_m': 'IQ3_M', 'iq4_xs': 'IQ4_XS', 'iq4_nl': 'IQ4_NL',
-    'tq1_0': 'TQ1_0', 'tq2_0': 'TQ2_0', 'mxfp4': 'MXFP4',
-}
 
 
 def resolve_binary(binary=None):
@@ -50,28 +41,6 @@ def resolve_binary(binary=None):
         if Path(path).is_file():
             return path
     raise ValueError('no llama-quantize found; pass --binary PATH or set JDEWITT_QUANTIZE')
-
-
-def canonical_type(name):
-    key = str(name).strip().lower()
-    if key in TYPE_ALIASES:
-        return TYPE_ALIASES[key]
-    upper = str(name).strip().upper()
-    if upper in set(TYPE_ALIASES.values()):
-        return upper
-    # Anything gguf-py can name is worth handing to llama-quantize: the binary is the
-    # authority on what this build can emit, and refusing here would silently cap the
-    # tool at the K-quant family (IQ/TQ/MXFP4 targets included).
-    if upper == 'Q2_0':
-        return upper  # newer than published gguf; a codec here, not an enum member
-    try:
-        from gguf import GGMLQuantizationType
-
-        if upper in GGMLQuantizationType.__members__:
-            return upper
-    except Exception:
-        pass
-    raise ValueError(f'unknown quantization type {name!r}; known: {", ".join(sorted(TYPE_ALIASES))}')
 
 
 def parse_overrides(specs):

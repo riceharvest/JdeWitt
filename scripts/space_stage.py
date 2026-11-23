@@ -48,12 +48,14 @@ BANK = ROOT / 'spaces' / 'bank'
 BANK_SCHEMA = 'jdewitt-space-bank-v1'
 MAX_OUTSIDE_BANK = 5 * 1024 * 1024
 SDK_VERSION = '5.50.0'
-SHORT_DESCRIPTION = 'Check whether the direction bank covers your GGUF'
+SHORT_DESCRIPTION = 'Covered GGUF edit, labelled from measurement'
 # What the Space image plus requirements.txt can import. Gradio comes from the
-# ZeroGPU image; the other three are the Space's own requirements. Torch is
-# absent on purpose — the image supplies it and `jdewitt.bank`/`space_loop`
-# never import it.
+# Gradio/ZeroGPU image; the other three are the Space's own requirements. Torch is
+# not pinned in requirements.txt (the XPU pin in pyproject.toml must never reach a
+# CUDA image) but the image does carry it, and the bank-apply path needs it to load
+# the pinned plan tensor; nothing here needs transformers, llama-server or a tokenizer.
 SPACE_REQUIREMENTS = ('gradio', 'numpy', 'gguf', 'huggingface_hub')
+IMAGE_PROVIDED = ('torch',)
 BANNED = (
     ('absolute path', re.compile(r'/mnt/|/home/')),
     ('board card id', re.compile(r't_[0-9a-f]{8}')),
@@ -160,14 +162,15 @@ def _closure(app_source):
 
 def _check_external(names, origin):
     """Every import the Space will execute must be in the image or requirements."""
-    allowed = set(sys.stdlib_module_names) | set(SPACE_REQUIREMENTS)
+    allowed = set(sys.stdlib_module_names) | set(SPACE_REQUIREMENTS) | set(IMAGE_PROVIDED)
     missing = sorted(name for name in names if name not in allowed)
     if missing:
         raise StageRefused(
             'UNDECLARED_IMPORT',
             f'{origin} imports {", ".join(missing)}, which requirements.txt does not ship '
             f'and the ZeroGPU image does not guarantee; the Space requirements are '
-            f'{", ".join(SPACE_REQUIREMENTS)}')
+            f'{", ".join(SPACE_REQUIREMENTS)} (the image also carries '
+            f'{", ".join(IMAGE_PROVIDED)})')
 
 
 # --------------------------------------------------------------------------- content
@@ -198,7 +201,7 @@ def _readme(document):
     bases = sorted({str(entry['base']['repo']) for entry in document['entries']})
     models = 'models: []' if not bases else 'models:\n' + ''.join(f'  - {base}\n' for base in bases).rstrip('\n')
     return f"""---
-title: Banked-axis coverage
+title: Banked GGUF edit
 sdk: gradio
 sdk_version: "{SDK_VERSION}"
 app_file: app.py
@@ -206,68 +209,37 @@ short_description: {SHORT_DESCRIPTION}
 {models}
 ---
 
-# Banked-axis coverage
+# Banked GGUF edit
 
-This Space answers one question: does the direction bank cover the base model you
-serve, at the quant you hold?
+This Space takes one GGUF. It reads the file's header, checks the model card's
+licence, and — when the direction bank covers that architecture and quant —
+applies the bank's measured direction to a copy and hands back the edited file
+with its card, its sidecar and `SHA256SUMS`.
 
-Enter `owner/name`, optionally a revision, and the quant tag. The answer comes
-from `jdewitt.space_loop.inspect`, which reads the bank and nothing else:
+The result carries one of three labels, generated from the bank entry's
+`measurement` and the file in hand:
 
-- **covered** — the bank has an entry fitted on that base and a source type that
-  covers your quant, reported with the entry's measurement label;
-- **not covered** — a typed refusal (`BANK_MISS`, `UNSUPPORTED_QUANT`) naming the
-  reason, so the answer says what would have to be fitted rather than guessing.
+- `measured_artifact_class` — this exact repo@revision and quant were measured;
+- `banked_unmeasured` — the file is covered by its geometry but was not measured;
+  the card says so in its first line and claims codec fidelity only;
+- `refused` — one typed code naming the reason and what would cover it.
 
-Nothing is downloaded, no tensor is read and no file is written. The licence and
-access gate is not wired up yet, so every answer reports the licence as
-`UNVERIFIED`; the page says that instead of implying permission. The edit loop,
-the output file and the generated card are later cards.
+No inference runs here and no token is generated: the requirements carry no
+transformers, no llama-server and no tokenizer. Nothing is uploaded to us — your
+file lives only in the Space's ephemeral disk, the job workspace is deleted after
+the response, and a gated repository is refused before any download.
 
 `jdewitt/` is a vendored copy of this repository's package, limited to the modules
 `app.py` imports; `spaces/bank/` is the bank directory verbatim.
 """
 
 
-APP = '''# SPDX-License-Identifier: AGPL-3.0-or-later
-"""The Space's Gradio surface: coverage and an honest refusal, nothing else.
-
-Every answer comes from `jdewitt.space_loop.inspect`, which reads the bank and
-nothing else: no model download, no tensor read, no edit. This file stays thin so
-the loop can be imported and tested on a CPU without Gradio or torch.
-"""
-import gradio as gr
-
-from jdewitt.space_loop import inspect, render
-
-TITLE = 'Banked-axis coverage'
+def _app_source():
+    """`spaces/app.py` is the source of truth; the stage ships it verbatim."""
+    return APP_PATH.read_text(encoding='utf-8')
 
 
-def check(repo, revision, quant):
-    """Visitor input -> the plain-language report the page shows."""
-    return render(inspect((repo or '').strip(), (revision or '').strip() or None,
-                          (quant or '').strip() or None))
-
-
-with gr.Blocks(title=TITLE) as demo:
-    gr.Markdown(
-        '# Is your GGUF covered?\\n'
-        'Name the model you serve and the quant you hold. This build reads the '
-        'direction bank and answers whether it covers that base. It does not '
-        'download your file, does not edit it, and the licence check is not wired '
-        'up yet — so an answer here is coverage only, not permission to edit.')
-    with gr.Row():
-        repo = gr.Textbox(label='Model repository', placeholder='owner/name')
-        revision = gr.Textbox(label='Revision (optional)', placeholder='a commit sha')
-        quant = gr.Textbox(label='Quant', placeholder='Q4_K_M')
-    button = gr.Button('Check coverage', variant='primary')
-    answer = gr.Textbox(label='Coverage', lines=9)
-    button.click(check, inputs=[repo, revision, quant], outputs=answer)
-    repo.submit(check, inputs=[repo, revision, quant], outputs=answer)
-
-if __name__ == '__main__':
-    demo.launch()
-'''
+APP_PATH = ROOT / 'spaces' / 'app.py'
 
 REQUIREMENTS = """numpy>=2
 gguf>=0.19
@@ -284,15 +256,16 @@ GITIGNORE = """__pycache__/
 def _tree_files():
     """{relative path: bytes} for everything the Space tree carries."""
     document = _bank_document()
-    app = APP.encode()
+    app = _app_source().encode()
     files = {
         'README.md': _readme(document).encode(),
         'app.py': app,
         'requirements.txt': REQUIREMENTS.encode(),
         '.gitignore': GITIGNORE.encode(),
     }
-    external = _external_imports(ast.parse(APP))
-    for module, path in sorted(_closure(APP).items()):
+    app_source = app.decode()
+    external = _external_imports(ast.parse(app_source))
+    for module, path in sorted(_closure(app_source).items()):
         relative = Path(PACKAGE) / path.relative_to(ROOT / PACKAGE)
         files[relative.as_posix()] = path.read_bytes()
         external |= _external_imports(ast.parse(path.read_text()))

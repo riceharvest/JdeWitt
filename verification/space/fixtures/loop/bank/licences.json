@@ -1,0 +1,13 @@
+{
+  "schema": "jdewitt-space-bank-licences-v1",
+  "scope": "Fixture allow-list: one licence, so the licence gate runs its real allow-list path with no network.",
+  "allow": {
+    "apache-2.0": {
+      "name": "Apache License 2.0",
+      "spdx": "Apache-2.0",
+      "used_by": [
+        "loopfixture/base-q4k"
+      ]
+    }
+  }
+}
