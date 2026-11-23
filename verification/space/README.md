@@ -83,5 +83,41 @@ same command, byte-identical output every time (42 F16 tensors, 2.50 GB →
 is above 240 s. The 7B extrapolation (3.04× edited params) is ≈ 1510 s, a number
 under a named assumption.
 
-`spaces/bank` is empty, so the timing entry is a fixture: `removal_measured` is
-false and the delivered cos is codec fidelity on a synthetic edit, not removal.
+The timing run predates the shipped entry. `spaces/bank` now carries
+`qwen3-4b-instruct-2507/f15s15-l935`, but the timing entry is still a labelled
+synthetic-axis fixture (it needed the geometry, not the direction), so
+`removal_measured` is false there and the delivered cos is codec fidelity on a
+synthetic edit, not removal.
+
+# The self-apply: the bank's own bundle on the base's Q4_K_M
+
+`selfapply-qwen3-4b.json` is the first number the bank owns: `bank-apply` with the
+shipped entry on the quant the Space will actually serve
+(`unsloth/Qwen3-4B-Instruct-2507-GGUF` Q4_K_M @ `a06e946b`, sha256 `3605803b…`,
+2,497,281,120 B), no model. The document is the `--edit-type auto` report verbatim
+(card 3's shape: per-tensor cos/SNR, chosen type, bytes in/out, untouched re-read),
+plus the artifact identity, the delivered ladder for the two other types the entry
+measured, the probe-vs-delivered evidence, and the `gguf-inspect`/`gguf-tensor-diff`
+read-back.
+
+| run | type | delivered min cos | floor 0.95 | bytes out |
+|---|---|---:|---|---:|
+| auto | Q6_K (the probe's choice) | 0.8815 (37 of 42 below) | missed | 2,618,260,064 (+0.12 GB) |
+| forced | Q8_0 | 0.9873 | met | 2,798,248,544 (+0.30 GB) |
+| forced | F16 | 1.0006 | met | 3,494,978,080 (+0.99 GB) |
+
+`removal_measured` is false and the document says so: cos is codec fidelity; no
+answer was generated. The 42 edited names are exactly the 42 non-identical names in
+`gguf-tensor-diff`, and the 356 untouched tensors are bit-identical in both diffs
+(the JSON's untouched count equals the diff's `bit_identical` count).
+
+Why `auto` misses: its ladder decides the type from `ggufio.preview_edit`, which
+re-encodes `windows=2 x blocks=32` blocks (8,192 elements) of each probe tensor. For
+these rank-1 deltas that sample is optimistic — on `blk.29.ffn_down.weight` the
+sample reads cos 0.9974, the whole tensor 0.8812, the written file 0.8815 — so the
+ladder stops at Q6_K one step before the type that clears. This is not a
+`CODEC_FLOOR`: Q8_0 clears at the entry's own strength and the strength was not
+raised.
+
+Raw transcripts are in `selfapply-run/`; `selfapply-run/make_report.py` rebuilds the
+document from them.
