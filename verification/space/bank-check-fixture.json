@@ -5,6 +5,7 @@
     "path": "verification/space/fixtures/fixture-2layer-f16.gguf",
     "architecture": "bankfixture",
     "layers": 2,
+    "tensor_layers": 2,
     "declared_block_count": null,
     "hidden": 256,
     "tensors": 6,

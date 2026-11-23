@@ -120,6 +120,32 @@ def test_missing_bundle_is_a_bad_digest(tmp_path):
     assert 'missing' in message
 
 
+def test_declared_block_count_drives_the_footprint(tmp_path):
+    """A target-less last block is a missing layer, not a silently smaller footprint."""
+    import numpy as np
+    from gguf import GGUFWriter
+
+    gguf = tmp_path / 'three-block.gguf'
+    writer = GGUFWriter(str(gguf), 'bankfixture')
+    writer.add_block_count(3)
+    for layer in (0, 1):
+        writer.add_tensor(f'blk.{layer}.attn_output.weight',
+                          np.zeros((256, 256), dtype=np.float16))
+        writer.add_tensor(f'blk.{layer}.ffn_down.weight',
+                          np.zeros((256, 512), dtype=np.float16))
+    writer.open_output_file()
+    writer.write_header_to_file()
+    writer.write_kv_data_to_file()
+    writer.write_tensors_to_file()
+    writer.close()
+
+    bank = _bank_copy(tmp_path, lambda entry: entry['footprint'].update(
+        {'first': 0, 'last': 2, 'fraction': [0.0, 1.0]}))
+    code, message = _code(bank, gguf)
+    assert code == 'GEOMETRY_MISMATCH'
+    assert 'layer 2' in message
+
+
 def test_projected_footprint_reproduces_the_roadmap_example():
     entry = {'key': 'qwen3', 'geometry': {'layers': 36},
              'footprint': {'first': 15, 'last': 35, 'fraction': [0.4167, 0.9722]}}

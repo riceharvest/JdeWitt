@@ -73,7 +73,7 @@ def _validated_entry(entry):
         raise ValueError(f'bank entry {key!r}: sources.quant_types must be a list')
     bundle = entry['bundle']
     name = bundle.get('file') if isinstance(bundle, dict) else None
-    if not isinstance(name, str) or not name or Path(name).name != name:
+    if not isinstance(name, str) or not name or Path(name).name != name or name in ('.', '..'):
         raise ValueError(f'bank entry {key!r}: bundle.file must be a plain file name '
                          f'beside bank.json, not a path')
     if not isinstance(bundle.get('sha256'), str) or not bundle['sha256']:
@@ -215,8 +215,12 @@ def resolve(bank_dir, gguf):
     hidden = inferred_hidden_width(shapes)
     discovered = (discover_writeback_targets(shapes, hidden) if hidden is not None
                   else {'targets': {}, 'unmapped_writeback_width': []})
-    artifact_layers = _artifact_layers(discovered)
+    tensor_layers = _artifact_layers(discovered)
     declared_layers = _declared(reader, 'block_count')
+    # The header's block_count is the artifact's own statement of its depth and is
+    # what a fraction must project onto; falling back to the deepest writeback layer
+    # would silently shrink a footprint whose last block carries no target.
+    artifact_layers = int(declared_layers) if declared_layers is not None else tensor_layers
 
     if hidden is None:
         raise BankRefused(
@@ -244,9 +248,9 @@ def resolve(bank_dir, gguf):
     if chosen is None:
         entry, missing = min(failures, key=lambda item: len(item[1]))
         where = ''
-        if declared_layers is not None and int(declared_layers) != artifact_layers:
-            where = (f' (the header declares {declared_layers} blocks but the tensor table '
-                     f'shows writeback layers 0-{artifact_layers - 1})')
+        if declared_layers is not None and tensor_layers != artifact_layers:
+            where = (f' (the header declares {artifact_layers} blocks but the tensor table '
+                     f'shows writeback layers 0-{tensor_layers - 1})')
         raise BankRefused(
             'GEOMETRY_MISMATCH',
             f'entry {entry["key"]!r} needs both target kinds on every footprint layer, but '
@@ -283,6 +287,7 @@ def resolve(bank_dir, gguf):
         'bank': str(bank_dir),
         'artifact': {'path': str(gguf), 'architecture': architecture,
                      'layers': artifact_layers,
+                     'tensor_layers': tensor_layers,
                      'declared_block_count': None if declared_layers is None else int(declared_layers),
                      'hidden': hidden, 'tensors': len(reader.tensors),
                      'source_types': source_types},
