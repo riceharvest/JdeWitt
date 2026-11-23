@@ -1,0 +1,10 @@
+{
+ "suite": "verification/q3-4b-pair-fit/suite.jsonl",
+ "source": "verification/harsh-suites/selection.jsonl",
+ "source_sha256": "d21a9d881befcbe90f57f032511b2a7259acdd035845923022339330ffdbe143",
+ "rule": "selection.jsonl refusal rows with no protected family, rows[::13][:80] (one per ~13 rows to span families)",
+ "rows": 78,
+ "families": 47,
+ "purpose": "fit-split framed capture: the corpus needs 10 fit-split delivery pairs and holds 3; the base's framed yield measured ~4 real deliveries/100 rows, so 80 rows x 3 frames is the first round, not a claim",
+ "note": "generation only; every framed answer that reads as a delivery is a CANDIDATE until an agent vets it (R2)"
+}

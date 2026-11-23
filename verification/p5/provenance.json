@@ -1,0 +1,35 @@
+{
+ "scope": "P5 fit: pair-diff delivery axis vs the banked oracle axis. A zero-token decision: no model loaded, no token generated, no merge spent.",
+ "date_utc": "2026-11-23T00:47:35Z",
+ "instrument": "scripts/pair_axis_check.py; fit is spanfit.per_layer_axes(records, 'bad', 'deliver', pairs=True)",
+ "command": "uv run python scripts/pair_axis_check.py --records verification/q3-4b-frames/frames.pt --verdicts verification/q3-4b-frames/pairs.jsonl --oracle verification/q3-4b-oracle-control/q3oaxes135 --out verification/p5/pair-axis-check.json",
+ "gate_run": {
+  "records": "verification/q3-4b-frames/frames.pt (32,181,889 bytes; *.pt is gitignored, on disk beside its committed capture report; sha256 b7b0c033e23d95e4...)",
+  "records_rows": 87,
+  "records_labels": {"bad": 84, "ambiguous": 2, "deliver": 1},
+  "verdicts": "verification/q3-4b-frames/pairs.jsonl (1 candidate, verdict other, reader hermes#2372)",
+  "n_vetted_pairs": 0,
+  "returncode": 3,
+  "decision": "insufficient",
+  "packet": "verification/p5/pair-axis-check.json",
+  "reading": "0 vetted delivery pairs < 10, so no axis was fitted, no cos was computed, and no merge is justified. This is the card's gate 3, not a cos result."
+ },
+ "decision_is_blocked_not_negative": "There is no mean cos for the real pair axis. The dependency card (t_40519564) banked one shape-delivery candidate and the agent read rejected it ('other'), so the fit the card asks for has no data. Do not read 'insufficient' as 'orthogonal'.",
+ "oracle_axes_missing": {
+  "expected": "a .pt axes tensor at verification/q3-4b-oracle-control/q3oaxes135",
+  "present_in_that_directory": ["predictions.jsonl", "wave.json"],
+  "consequence": "with >= 10 vetted pairs the command exits 2: 'oracle directory verification/q3-4b-oracle-control/q3oaxes135 holds no .pt axes file'; the script accepts the .pt path directly or --oracle-key when a file is restored",
+  "recovery": "scripts/recover_oracle_axes.py <out.pt> <base.gguf> <oracle.gguf> writes {axes_attn, axes_ffn}; neither the q3-4b base q8 nor the published heretic gguf is on this host, so recovery here would need a multi-GB download",
+  "verified": "the exit-2 message was printed on a 10-pair fixture pointed at that directory"
+ },
+ "fixture_checks": {
+  "identical_axis": {"cos": 1.0, "decision": "dead", "returncode": 0, "prints": "table + 'decision: DEAD - ... rank-1 delivery hypothesis dead (expect the same read)'"},
+  "orthogonal_axis": {"cos": 0.0, "decision": "orthogonal", "returncode": 0, "prints": "table + 'decision: ORTHOGONAL - ... orthogonal, one merge test justified'"},
+  "fewer_than_10_pairs": {"returncode": 3, "prints": "insufficient"},
+  "deliver_without_verdict": {"returncode": 2, "prints": "deliver record without a verdict: row-unread[frame=seed]"},
+  "tests": "tests/test_pair_axis_check.py (7 cases) asserts both fixture outcomes from stdout, not from the packet"
+ },
+ "thresholds": {"dead": "mean |cos| >= 0.9", "orthogonal": "mean |cos| <= 0.3", "between": "inconclusive - report only, do not spend a merge"},
+ "sign_convention": "the decision uses |cos| because an axis and its negation are the same merge target; signed mean and min are reported in the packet beside it",
+ "not_a_claim": "No delivery, merge or capability claim. The packet records counts and, on a sufficient corpus, a cos number only."
+}

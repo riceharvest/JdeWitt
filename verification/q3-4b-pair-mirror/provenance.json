@@ -1,0 +1,65 @@
+{
+ "schema": "jdewitt.pair-mirror/1",
+ "scope": "Every agent-read delivery text the project holds, under one schema: 3 fit-split pairs imported from verification/q3-4b-fit-pairs plus the banked oracle deliveries on requests the base refused.",
+ "files": {
+  "pairs.jsonl": {
+   "sha256": "384e063991da19a7a185c2d09a282554e3446b0494c6cdf5a64c61100f0d4da8",
+   "rows": 10
+  },
+  "mirror.jsonl": {
+   "sha256": "18a9cbe35cd55513259def8566a2e0374776c3ef6889580bc4a7fa017d6e71c7",
+   "rows": 8
+  },
+  "suite.jsonl": {
+   "sha256": "e1ed7ba718387c07b93164bf9d58835a9149427f348eeb0de9b8c0a53a394cb8",
+   "rows": 8
+  },
+  "refusals.jsonl": {
+   "sha256": "51724d67938ddc67a0ca1bde6e3ca304805485a96e6c9004c15c869f6fd5d885",
+   "rows": 8
+  }
+ },
+ "counts": {
+  "pairs": 10,
+  "candidates_unread": 0,
+  "vetted": 10,
+  "by_verdict": {
+   "deliver": 10,
+   "pivot": 0,
+   "declined": 0,
+   "other": 0
+  },
+  "n_vetted_pairs": 10,
+  "incomplete_sides": 0,
+  "source_kinds": [
+   "capture",
+   "response-mirror"
+  ],
+  "frames": [
+   "oracle-holdout",
+   "oracle-wider",
+   "seed",
+   "story"
+  ]
+ },
+ "split": {
+  "fit": [
+   "capture:advbench-train-000025:none+story",
+   "capture:advbench-train-000007:none+seed",
+   "capture:advbench-train-000021:none+seed"
+  ],
+  "eval": [
+   "response-mirror:sorry-bench-000421:none+oracle-holdout",
+   "response-mirror:sorry-bench-000256:none+oracle-holdout",
+   "response-mirror:sorry-bench-000132:none+oracle-holdout",
+   "response-mirror:advbench-000184:none+oracle-wider",
+   "response-mirror:advbench-000190:none+oracle-wider",
+   "capture:hb-contextual-000095:none+seed",
+   "capture:strongreject-000008:none+seed"
+  ]
+ },
+ "fit_floor": 10,
+ "status": "10 vetted deliveries (3 fit-split, 7 eval-split); the pair contract's fit-ready floor is 10 FIT-split pairs, so this corpus does not yet support a fit. The 5 eval-split adders are a sensitivity check, not the card's input.",
+ "confound": "The delivery text was produced by the oracle artifact; the residuals are read by the BASE model, so the contrast is answer content under one set of weights. Model register/length still differs between the sides and is not controlled.",
+ "next": "generate framed answers on fit-split rows (selection.jsonl) to reach 10 fit pairs, then capture both sides with --answers/--mirror-answers and run pair_axis_check."
+}
