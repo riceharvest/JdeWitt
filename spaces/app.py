@@ -92,5 +92,9 @@ with gr.Blocks(title=TITLE) as demo:
     repo.submit(refresh, inputs=[repo], outputs=[quant, coverage, licence])
     run.click(start, inputs=[repo, quant], outputs=[caveat, artifact, extras, status])
 
+# One job at a time. The queue is the first lock; `space_loop._job_lock` is the
+# second, so two worker processes cannot both hold a 50 GB workspace.
+demo.queue(default_concurrency_limit=1)
+
 if __name__ == '__main__':
-    demo.queue(default_concurrency_limit=1).launch()
+    demo.launch()
