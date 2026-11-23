@@ -425,8 +425,10 @@ def capture_command(args):
     mirror_by_id = {}
     for row_id, mirror_name, mirror_answer in (
             read_mirror_answers(args.mirror_answers) if getattr(args, "mirror_answers", None) else ()):
-        if mirror_name in frame_by_name or mirror_name in mirror_by_id:
-            raise ValueError(f"mirror frame {mirror_name!r} collides with a pinned frame name")
+        if mirror_name in framed_names:
+            # A mirror label names where the answer came from; reusing a frame the
+            # same run is generating under would make two records indistinguishable.
+            raise ValueError(f"mirror frame {mirror_name!r} is also being generated in this run")
         if row_id in mirror_by_id:
             raise ValueError(f"mirror answers name row {row_id!r} twice")
         mirror_by_id[row_id] = (mirror_frame(mirror_name), mirror_answer)
