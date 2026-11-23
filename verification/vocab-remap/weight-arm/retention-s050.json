@@ -1,0 +1,133 @@
+{
+ "arms": {
+  "a": {
+   "artifact": "/mnt/ssd/b70-prep/llama.cpp-spark/build-vulkan/bin/llama-server -m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf -dev Vulkan0 -c 4096 --parallel 4 --jinja --no-webui -ngl 99 --port 8201",
+   "by_kind": {
+    "code": {
+     "invalid": 0,
+     "median_answer_chars": 472,
+     "passed": 46,
+     "rows": 61
+    },
+    "math": {
+     "invalid": 0,
+     "median_answer_chars": 3.0,
+     "passed": 69,
+     "rows": 180
+    }
+   },
+   "directory": "verification/vocab-remap/weight-arm/waves/base/retention-cap768",
+   "invalid": 0,
+   "median_answer_chars": 5,
+   "passed": 115,
+   "rows": 241,
+   "valid": 241
+  },
+  "b": {
+   "artifact": "/mnt/ssd/b70-prep/llama.cpp-spark/build-vulkan/bin/llama-server -m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.vocab-remap-s050.gguf -dev Vulkan0 -c 4096 --parallel 4 --jinja --no-webui -ngl 99 --port 8203",
+   "by_kind": {
+    "code": {
+     "invalid": 0,
+     "median_answer_chars": 1566,
+     "passed": 24,
+     "rows": 61
+    },
+    "math": {
+     "invalid": 0,
+     "median_answer_chars": 3.0,
+     "passed": 66,
+     "rows": 180
+    }
+   },
+   "directory": "verification/vocab-remap/weight-arm/waves/s050/retention-cap768",
+   "invalid": 0,
+   "median_answer_chars": 10,
+   "passed": 90,
+   "rows": 241,
+   "valid": 241
+  }
+ },
+ "config": {
+  "ctx": 4096,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 768,
+  "no_think": true,
+  "parallel": 4,
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "config_mismatch": null,
+ "note": "A truncated or empty answer is not a pass; it is counted in invalid. McNemar is exact and two-sided over the valid pairs.",
+ "paired": {
+  "exact_mcnemar": {
+   "discordant": 45,
+   "exact_mcnemar_p_two_sided": 0.0002,
+   "paired": 241,
+   "refusals_a": 115,
+   "refusals_b": 90,
+   "refused_by_a_only": 35,
+   "refused_by_b_only": 10
+  },
+  "gained": 10,
+  "gained_ids": [
+   "cap-code-longest-streak-en-00",
+   "cap-code-to-roman-en-00",
+   "cap-number-theory-lcm-en-11",
+   "cap-pct-reverse-en-00",
+   "cap-rate-together-en-00",
+   "cap-rate-together-en-04",
+   "cap-rate-together-en-07",
+   "cap-rate-together-en-09",
+   "cap-rate-together-en-10",
+   "cap-rate-together-en-11"
+  ],
+  "lost": 35,
+  "lost_ids": [
+   "cap-code-char-count-en-00",
+   "cap-code-count-distinct-en-00",
+   "cap-code-count-primes-en-00",
+   "cap-code-first-negative-en-00",
+   "cap-code-fizzbuzz-en-00",
+   "cap-code-index-of-max-en-00",
+   "cap-code-int-parse-en-00",
+   "cap-code-longest-word-en-00",
+   "cap-code-max-absolute-en-00",
+   "cap-code-move-zeros-en-00",
+   "cap-code-perfect-square-en-00",
+   "cap-code-prefix-sums-en-00",
+   "cap-code-product-even-en-00",
+   "cap-code-range-product-en-00",
+   "cap-code-reverse-words-en-00",
+   "cap-code-rotate-left-en-00",
+   "cap-code-sort-by-length-en-00",
+   "cap-code-sorted-ascending-en-00",
+   "cap-code-sum-positive-en-00",
+   "cap-code-sum-tail-en-00",
+   "cap-code-unique-order-en-00",
+   "cap-code-window-average-en-00",
+   "cap-code-word-count-top-en-00",
+   "cap-code-zip-sum-en-00",
+   "cap-counting-combinations-en-00",
+   "cap-counting-combinations-en-01",
+   "cap-counting-combinations-en-03",
+   "cap-counting-combinations-en-04",
+   "cap-counting-combinations-en-06",
+   "cap-counting-combinations-en-09",
+   "cap-counting-combinations-en-10",
+   "cap-counting-combinations-en-11",
+   "cap-fraction-sum-en-02",
+   "cap-fraction-sum-en-06",
+   "cap-fraction-sum-en-08"
+  ],
+  "median_answer_chars": {
+   "a": 5,
+   "b": 10
+  },
+  "shared_rows": 241,
+  "valid_both": 241
+ },
+ "schema": "jdewitt.vocab-weight-arm-retention/1",
+ "scope": "paired retention of one authored suite between the pristine artifact and one weight-side row edit; pass counts and answer lengths come from the shipped scorer in each wave, the pairing is by row id",
+ "suite": "verification/capability/capability-run-en.jsonl"
+}
