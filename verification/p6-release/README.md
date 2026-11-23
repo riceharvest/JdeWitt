@@ -67,9 +67,12 @@ The card is a footprint plan: basis rows map to layers 10–27, rank 1, width
 2048. `plan-apply` verifies the bundle, checks the artifact's own geometry,
 discovers the residual-write tensors from the file, and edits only those.
 `--edit-type preserve` keeps each tensor's source codec, which is how the
-shipped twin was written; `--edit-type auto` picks the smallest type that clears
-the cos floor (on this base it walks the ladder to F16, a different codec, not a
-different edit).
+shipped twin was written; with it the reproduction is byte-exact (226/226
+tensors identical to `model-merged.gguf`). The default `--edit-type auto`
+walks the 0.95 cos floor from Q6_K (probe 0.797) to Q8_0 (probe 0.9819) and
+ships the same edit in a different codec: 36 edited tensors re-encoded Q8_0,
+delivered min cos 0.9658, and 190 untouched tensors still byte-identical. That
+is a codec choice, not a different direction.
 
 ## Verify the directory
 

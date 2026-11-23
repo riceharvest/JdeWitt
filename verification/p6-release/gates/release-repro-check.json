@@ -281,13 +281,7 @@
     }
   },
   "moved": [],
-  "provenance_drift": [
-    {
-      "operand": "tool.git_describe",
-      "expected": "21dc2b9-dirty",
-      "actual": "d61fa26-dirty"
-    }
-  ],
+  "provenance_drift": [],
   "problems": [],
   "next": "release-verify-signature DIR --public PUB.pem; verify-release DIR",
   "note": "Every operand re-hashed from the release directory and the paths the index names; tool/runtime differences are provenance drift, not release bytes, and fail only with --strict-provenance."

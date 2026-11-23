@@ -2,7 +2,7 @@
   "left": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6",
   "right": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/p6-release/competitor-fixture",
   "release_identities": {
-    "left": "3613753a618fe79e353966c96be024b5daea5184b3c15ec06f1cddd50ac71702",
+    "left": "9964a63f35379fa59ef682c5b002276379599481ee8cfce2e890cf0156ad5613",
     "right": "385a819de7ae30abd8140291ef71a6097f8ea8bccc0d12146a02fbc12b0b099f",
     "same": false
   },
@@ -21,7 +21,7 @@
     "changed": [
       {
         "name": "README.md",
-        "left_sha256": "2677b21c80a292b13179ef662b8bad0681881d7135db84fa9130fe205c65873e",
+        "left_sha256": "05c042a47344bb54f467f7413679246530e962e26bf4edbf09e78e74285dabca",
         "right_sha256": "e4df7f1eab21eafd1b4b48082493fa149f5d3cc20a7ed478c9a2f0cd482ea8ff"
       },
       {
@@ -129,7 +129,7 @@
     ]
   },
   "ledger_digests": {
-    "left": "bc9af6b82396f7291aca41baad2b4bfd8d05ed609e43524622a6ae543c583b36",
+    "left": "a710f68c76da4c30e7dff86654c1e4bd9906846ef1bbf0e10cdbadc7307af2d9",
     "right": null
   },
   "signatures": {
