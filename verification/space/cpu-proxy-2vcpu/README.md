@@ -8,6 +8,7 @@ with, so the number can be re-made on another host:
         --bank verification/space/cpu-proxy-2vcpu/bank \
         --run run1=<time-run1.txt>,<report-run1.json> \
         --run run2=<time-run2.txt>,<report-run2.json> \
+        --run run3=<time-run3.txt>,<report-run3.json> \
         --out verification/space/cpu-proxy-2vcpu.json \
         --repo unsloth/Qwen3-4B-Instruct-2507-GGUF \
         --revision a06e946bb6b655725eafa393f4a9745d460374c9 \

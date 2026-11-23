@@ -60,3 +60,28 @@ proves nothing about removal, and the report says `"removal_measured": false`.
 
 The output artifacts are not committed (`*.gguf` is ignored); each run rewrites
 them, and the reports record the paths used at the time.
+
+# The 2-vCPU CPU proxy
+
+`cpu-proxy-2vcpu.json` is the measurement `docs/SPACE-ROADMAP.md` §4's decision
+rule is applied to. It is a **CPU proxy, not a Space run**: the edit path is
+numpy-only and ZeroGPU adds a GPU but not CPU cores, so `bank-apply` was timed on
+two affinity-pinned cores of this host (`taskset -c 0,1`, `/usr/bin/time -v`).
+
+| file | what it holds |
+|---|---|
+| `cpu-proxy-2vcpu.json` | artifact identity (repo/revision/sha256/bytes), `is_a_space_run: false`, host cores × affinity, three runs with wall/user/sys/RSS, bytes out, per-tensor delivered cos, the §4 verdict, the 7B extrapolation |
+| `cpu-proxy-2vcpu/bank/` | the labelled synthetic-axis timing entry the runs used (see its README) |
+| `cpu-proxy-2vcpu/make_report.py` | rebuilds the JSON from the two transcripts and the bank-apply reports |
+
+Artifact: `unsloth/Qwen3-4B-Instruct-2507-GGUF` @ `a06e946bb6b6`, Q4_K_M,
+2,497,281,120 B, sha256 `3605803b…` (equal to the Hub LFS sha, recomputed after
+the download). Measured on 2026-11-23: **496.3 / 476.3 / 606.2 s** wall for the
+same command, byte-identical output every time (42 F16 tensors, 2.50 GB →
+3.49 GB, 356 untouched byte-identical). The one-core-at-98 % reading is why a
+2-vCPU Space does not halve this. Verdict: **`cuda_codec_required`** — every run
+is above 240 s. The 7B extrapolation (3.04× edited params) is ≈ 1510 s, a number
+under a named assumption.
+
+`spaces/bank` is empty, so the timing entry is a fixture: `removal_measured` is
+false and the delivered cos is codec fidelity on a synthetic edit, not removal.

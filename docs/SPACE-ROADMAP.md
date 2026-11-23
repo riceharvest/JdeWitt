@@ -105,10 +105,29 @@ Decision rule, applied by the 2-vCPU proxy card before anything is deployed:
 | 120-240 s | two calls, sharded by layer block; quota cost ≤ 240 s of 300 |
 | > 240 s | a CUDA codec port is **mandatory** before any Space run; if the port cannot beat 240 s either, the free product is 1.7B-and-below and 4B/7B are dropped |
 
+**Applied by the 2-vCPU proxy card (2026-11-23) — a CPU proxy, not a Space run:**
+`verification/space/cpu-proxy-2vcpu.json`. `bank-apply` on
+`unsloth/Qwen3-4B-Instruct-2507-GGUF` @ `a06e946bb6b6` Q4_K_M (sha256 `3605803b…`,
+2,497,281,120 B), pinned to cores 0-1 (`taskset -c 0,1`), on a labelled synthetic-axis entry
+carrying the §5.1 geometry (36 layers, hidden 2560, `blk.15-35`, 42 tensors, strength 1.5):
+
+- **496.3 s** wall / 450.4 s user / 37.2 s sys, max RSS 4,285,292 kB; 2.50 GB in → 3.49 GB out,
+  42 tensors written at F16, 356 untouched tensors byte-identical;
+- repeats: 476.3 s and 606.2 s, byte-identical output each time. The range is the shared host's
+  memory pressure — the slower run spends 25 % more *user* CPU, not more I/O — and no run uses
+  more than ~98 % of ONE core, so the second vCPU buys nothing;
+- verdict: **`cuda_codec_required`**. Every run is above 240 s, so the rule cannot move.
+- 7B extrapolation: the 7B case has **3.04×** the edited parameters (2.26 B / 743.2 M) and would
+  be **≈ 1510 s** at the same per-parameter cost — a number under that named assumption, not a
+  measured 7B run.
+
+These are CPU proxy seconds from this clone; no Space run has produced a runtime yet (Phase 3).
+
 Memory: a 4B Q4_K_M is ≈ 2.5 GB on disk; dequantizing the 42 edited tensors in float32 is
-≈ 660 M params × 4 B ≈ 2.6 GB. That fits 16 GB. A 7B Q4_K_M (≈ 4.5 GB) with ≈ 2.26 B edited params
-(≈ 9 GB in float32) is the edge of the container **and** is nowhere near 240 s on 2 vCPU, so 7B is
-not v1.
+≈ 743 M params (measured from the tensor table: 21 layers × (10,485,760 + 24,903,680)) × 4 B
+≈ 3.0 GB, and the measured run peaked at 4.3 GB RSS. That fits 16 GB. A 7B Q4_K_M (≈ 4.5 GB)
+with ≈ 2.26 B edited params (≈ 9 GB in float32) is the edge of the container **and** is nowhere
+near 240 s on 2 vCPU, so 7B is not v1.
 
 **One consequence to state plainly:** if the edit is CUDA-accelerated it does real work inside
 `@spaces.GPU`, and the visitor's 5 minutes are spent on compute. If it stays on CPU inside a GPU
@@ -290,17 +309,19 @@ browser pulls the file from the Space (no upload from a 2-vCPU container); no re
 the visitor's account for a one-shot edit; and an anonymous visitor (2 min of quota) is a valid
 user for a job that may not need the GPU at all.
 
-Sizes (ARITHMETIC from GGML block sizes; verify on the real files):
+Sizes (ARITHMETIC from GGML block sizes; the 4B row was then verified on the real file — see
+`verification/space/cpu-proxy-2vcpu.json`):
 
 | case | input | edited params | out at q8_0 | out at f16 |
 |---|---:|---:|---:|---:|
-| 4B Q4_K_M, 21 of 36 layers, 2 tensors/layer | ≈ 2.5 GB | ≈ 660 M | ≈ 2.8 GB (+0.30) | ≈ 3.4 GB (+0.92) |
+| 4B Q4_K_M, 21 of 36 layers, 2 tensors/layer | 2.50 GB (measured) | 743.2 M (measured) | ≈ 2.8 GB (+0.30) | 3.49 GB (+0.99, measured) |
 | 7B Q4_K_M, 28 layers, 2 tensors/layer | ≈ 4.5 GB | ≈ 2.26 B | ≈ 5.5 GB (+1.03) | ≈ 7.6 GB (+3.15) |
 
 Transfer, with the assumption named: a 2.8 GB download at 30-100 MB/s is 28-95 s inside the Space;
 the visitor's browser pulling 2.8 GB at 10-50 MB/s is 1-5 min and is outside our control. A 5.5 GB
 push to the Hub at 10 MB/s is ≈ 9 min — longer than the whole GPU budget, and it must happen in
-the same request window. That is why (b) is not v1.
+the same request window. That is why (b) is not v1. (The measured F16 output is 3.49 GB, not
+2.8 GB; the download estimate moves to 35-116 s at the same rates, still inside the window.)
 
 **v1.1: OAuth push**, adopted only if the 4.5 GB direct-download case fails in a live run. It is
 supported: `hf_oauth: true`, `hf_oauth_scopes: [write-repos]`. The app would create
@@ -349,7 +370,7 @@ contains no inference stack — no `transformers`, no `llama-server`, no tokeniz
 | staging script: `spaces/` app + README metadata + vendored `jdewitt/` + bank, no absolute paths, no board ids | two runs byte-identical; the staged tree imports without torch; sanitisation grep empty |
 | bank format + loader: geometry from the artifact, typed refusals | `BANK_MISS` on a real uncovered GGUF; a resolved target list on a fixture; `BUNDLE_BAD_DIGEST` on a corrupted bundle |
 | `bank-apply`: their gguf in, edited gguf out, one JSON | delivered cos printed, untouched tensors byte-identical on re-read, second run same sha256 |
-| 2-vCPU proxy timing on the covered 4B Q4_K_M | `verification/space/cpu-proxy-2vcpu.json` with wall/user/sys/RSS and the verdict from §4 |
+| 2-vCPU proxy timing on the covered 4B Q4_K_M | `verification/space/cpu-proxy-2vcpu.json` with wall/user/sys/RSS and the verdict from §4 — **done (2026-11-23): ≈ 496 s on the per-tensor F16 ladder → `cuda_codec_required`** |
 | licence + access gate | one allowed, one refused, one gated repo; one JSON each; no download |
 | app loop + card labels, dry run on a fixture | the three label states render; the refusal copy names the reason; `grep -r uncensored spaces/` empty |
 
