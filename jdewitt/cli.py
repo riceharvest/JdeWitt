@@ -509,6 +509,8 @@ def build_parser():
     tune.add_argument('--ppl-ngl',type=int,default=None,help='GPU layers for the perplexity ladder (default: same as --ngl); the ladder is compute-bound, so a GPU makes the free part of the search fast too')
     tune.add_argument('--best-effort',action='store_true',help='when no arm leaves zero refusals, ship the arm with the lowest refusal RATE over the confirmed rows (ties: fewest undecided, then damage); the artifact records certified=false and the residual row ids; never on by default')
     tune.add_argument('--rank',type=int,default=1,help='directions per layer in the ladder: rank>1 searches the top-k contrast subspace instead of a single direction')
+    tune.add_argument('--axes',type=Path,default=None,help='precomputed [L,W] (or [W]) axis tensor to apply instead of the fitted contrast mean: the file `python -m jdewitt.rdo fit --out` writes. Every requested --shapes uses it, the width must match the records, and --rank>1 is refused (a rank-k tensor is a different contract)')
+    tune.add_argument('--axes-key',default='axes',help="key inside the --axes file that holds the tensor (default 'axes'; a bare tensor file is accepted too)")
     tune.add_argument('--scales',default='1.0,1.5')
     tune.add_argument('--profile',choices=('flat','bell','manual'),default='flat',help='per-layer strength profile over each footprint; bell/manual also run flat and two bell widths at the same scales so the comparison is like-for-like')
     tune.add_argument('--profile-centre',type=float,default=0.5,help='bell peak position as a fraction of the footprint (0 first layer, 1 last)')
