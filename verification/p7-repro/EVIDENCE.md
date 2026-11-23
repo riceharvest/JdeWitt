@@ -95,6 +95,13 @@ negatives: exit 0, `moved []` (`gates/release-repro-check.json`). The untouched 
 dir also still checks 0 and its shipped signature still verifies against the
 pinned key (`gates/original-p6-*.json`).
 
+**The same bytes under another name still pass.** A reflink copy of the base named
+`tmp-p7-base-renamed.gguf` (sha256 `80ff5222…`) checks 0 and
+`release-verify-signature --base` verifies with the same `binding_digest`
+`459eaf56…`, because a version-3 seal leaves the base's file name and path out of
+the binding (`gates/release-repro-renamed-base.json`,
+`gates/release-verify-signature-renamed-base.json`).
+
 **UNMEASURED is named, never fabricated.** A missing release directory exits 1 with
 `UNMEASURED: release directory … does not exist …` naming the path
 (`gates/unmeasured-missing-directory.json`); an explicit `--base` that does not
