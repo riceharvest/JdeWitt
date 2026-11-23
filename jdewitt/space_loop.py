@@ -34,6 +34,7 @@ import re
 import shutil
 import tempfile
 import time
+import uuid
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -627,11 +628,9 @@ def _job_lock(root):
         path.unlink(missing_ok=True)
 
 
-def _sweep(root, keep):
+def _sweep(root):
     """Delete deliverables and workspaces an earlier job left behind."""
     for entry in Path(root).iterdir():
-        if entry.name == keep:
-            continue
         if entry.name.startswith('deliver-') or entry.name.startswith('job-'):
             shutil.rmtree(entry, ignore_errors=True)
 
@@ -728,7 +727,7 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
     The order is the roadmap's: coverage from the header only, then the licence
     gate, then the download, then the banked edit, then the read-back and the
     package. A refusal before the download leaves the Hub with no tensor bytes
-    moved. The job workspace is deleted when the deliverable exists; the three
+    moved. The job workspace is deleted when the deliverable exists; the four
     delivered files stay until the next job sweeps them.
     """
     started = time.monotonic()
@@ -736,7 +735,8 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
     revision = str(revision or '').strip() or None
     filename = str(filename or '').strip()
     quant = str(quant or '').strip() or None
-    job_id = 'job-' + time.strftime('%Y%m%dT%H%M%S', time.gmtime()) + f'-{os.getpid()}'
+    job_id = ('job-' + time.strftime('%Y%m%dT%H%M%S', time.gmtime())
+              + f'-{os.getpid()}-{uuid.uuid4().hex[:6]}')
     result = {
         'schema': LOOP_SCHEMA,
         'job': {'id': job_id, 'repo': repo, 'revision': revision,
@@ -771,7 +771,7 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
         return refuse('WORKSPACE_FAILED', f'the job workspace cannot be made: {error}')
     try:
         with _job_lock(workspace_root):
-            _sweep(workspace_root, keep=job_id)
+            _sweep(workspace_root)
             workspace = Path(tempfile.mkdtemp(prefix=job_id + '-', dir=workspace_root))
             try:
                 return _run_job(result, refuse, bank_path, hub, workspace,
@@ -953,19 +953,6 @@ def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, 
 
 
 # -------------------------------------------------------------------- the dry run
-
-def sweep_deliverables(root=None):
-    """Remove the delivered files of earlier jobs (the disk is ephemeral anyway)."""
-    root = Path(root) if root is not None else _default_root()
-    removed = 0
-    if not root.is_dir():
-        return removed
-    for entry in root.iterdir():
-        if entry.name.startswith('deliver-') or entry.name.startswith('job-'):
-            shutil.rmtree(entry, ignore_errors=True)
-            removed += 1
-    return removed
-
 
 def preview(repo, revision=None, *, bank_dir=None, hub=None):
     """The repo-level view the page shows before Start: files, licence, verdict.

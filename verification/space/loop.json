@@ -84,7 +84,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.005,
+            "seconds": 0.004,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -105,7 +105,7 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.663,
+            "seconds": 1.577,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
@@ -169,7 +169,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -183,14 +183,14 @@
           {
             "step": "download",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.0,
             "detail": "295488 bytes, sha256 f96a4612b2f6f115",
             "code": null
           },
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.056,
+            "seconds": 0.037,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
@@ -249,7 +249,7 @@
           {
             "step": "coverage",
             "state": "refused",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "read 512 of 295488 bytes (header and tensor table only); the artifact declares architecture 'otherach' and the bank has no entry for it (covered: ['loopfixture'])",
             "code": "BANK_MISS"
           }
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed, 1 skipped in 10.91s"
+      "summary": "66 passed, 1 skipped in 10.48s"
     },
     "stage": {
       "files": 44,
