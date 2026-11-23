@@ -62,6 +62,119 @@ def file_sha(path, chunk=1 << 20):
     return digest.hexdigest()
 
 
+def load_axis_file(path, key='axes'):
+    """A precomputed [L, W] (or [W]) axis tensor, plus whether it was a plain vector.
+
+    The file is what `python -m jdewitt.rdo fit --out` (or `spanfit axes`) writes:
+    ``{'axes': tensor, 'meta': {...}}``. A bare tensor is accepted too, so a caller
+    does not have to wrap a direction it already has. A rank-k tensor ([L, k, W])
+    is NOT this contract: it is a different edit (a subspace projection), so it is
+    refused here instead of being silently reshaped.
+    """
+    import torch
+
+    payload = torch.load(str(path), map_location='cpu', weights_only=False)
+    if isinstance(payload, dict):
+        if key not in payload:
+            raise ValueError(f'{path} carries no {key!r} entry: its keys are '
+                             f'{sorted(payload)}; pass --axes-key with the entry that holds '
+                             f'the [L, W] tensor')
+        axes = payload[key]
+        meta = payload.get('meta') if isinstance(payload.get('meta'), dict) else {}
+    else:
+        axes, meta = payload, {}
+    axes = torch.as_tensor(axes).float()
+    vector = axes.dim() == 1
+    if vector:
+        axes = axes.unsqueeze(0)
+    if axes.dim() != 2:
+        raise ValueError(
+            f'{path}:{key} is {tuple(axes.shape)}; a precomputed axis is one direction per '
+            f'layer, [L, W] (or [W]). A rank-k tensor is a different contract (a subspace '
+            f'projection, not this edit): fit it with --rank without --axes, or pass a '
+            f'rank-1 file')
+    return axes.contiguous(), meta, vector
+
+
+def records_geometry(records):
+    """(layers, width) of a capture: how many layer slots and how wide each row is."""
+    import torch
+
+    layers, widths = 0, set()
+    for _meta, rec in records:
+        layers = max(layers, len(rec))
+        if len(rec):
+            widths.add(int(torch.as_tensor(rec[0]).numel()))
+    if len(widths) != 1:
+        raise ValueError(f'the records carry rows of different widths {sorted(widths)}; '
+                         f'a single axis cannot apply to all of them')
+    return layers, widths.pop()
+
+
+def resolve_axes(args, records):
+    """The precomputed per-layer axis the ladder applies, or None to fit one.
+
+    Returns ``(axes [L, W] or None, info)``. A file axis is checked against the
+    capture it will be projected through: a width mismatch means the two belong to
+    different models, and a file with MORE layer rows than the capture has no layer
+    to apply them to. Fewer rows is allowed but reported, because a footprint that
+    silently shrinks is a smaller edit than the table claims.
+    """
+    if getattr(args, 'axes', None) is None:
+        return None, {}
+    axes, meta, vector = load_axis_file(args.axes, args.axes_key)
+    record_layers, record_width = records_geometry(records)
+    axis_width = int(axes.shape[-1])
+    if axis_width != record_width:
+        raise ValueError(
+            f'--axes {args.axes} carries width {axis_width}, but the records '
+            f'{args.records} are width {record_width}: the axis and the capture do not '
+            f'belong to the same model, so every projection would be between unrelated '
+            f'spaces. Fit the axis on these records, or point --records/--axes at the same '
+            f'model')
+    if vector:
+        # [W] is one shared direction: every captured layer gets it, which is what a
+        # `shared` fit means and what a perlayer arm can still rank.
+        axes = axes.expand(record_layers, -1).contiguous()
+        layers = record_layers
+    else:
+        layers = int(axes.shape[0])
+        if layers > record_layers:
+            raise ValueError(
+                f'--axes {args.axes} carries {layers} layer rows, but the records '
+                f'{args.records} captured only {record_layers}: the extra rows have no '
+                f'captured layer to apply to, so the file is not from this capture')
+    info = {'layers': layers, 'width': axis_width, 'vector': vector, 'meta': meta,
+            'record_layers': record_layers}
+    return axes, info
+
+
+def axes_digest(axes_by_shape):
+    """sha256 over the axes the ladder will actually apply, per requested shape.
+
+    Cache identity and the table both need to name the AXIS SOURCE, not just the
+    artifact: two runs on the same bytes with a different direction are different
+    measurements, and reusing one's adapters for the other would print a ranking
+    for an edit nobody measured.
+    """
+    import hashlib
+
+    import torch
+
+    digest = hashlib.sha256()
+    for shape in sorted(axes_by_shape):
+        tensor = axes_by_shape[shape].detach().to('cpu').to(torch.float32).contiguous()
+        digest.update(shape.encode())
+        digest.update(str(tuple(tensor.shape)).encode())
+        digest.update(tensor.numpy().tobytes())
+    return digest.hexdigest()
+
+
+def axes_source(args):
+    """'contrast' (fitted here) or 'file:<path>' (precomputed, read from disk)."""
+    return f'file:{args.axes}' if getattr(args, 'axes', None) else 'contrast'
+
+
 ATTN_SUFFIXES = {'attn_output', 'attn_out', 'ssm_out', 'o_proj', 'out_proj'}
 MLP_SUFFIXES = {'ffn_down', 'w2', 'down_proj'}
 
@@ -445,6 +558,16 @@ def tune_command(args):
         raise ValueError('--grow must be >= 1.0 (a shrinking grid is a different search)')
     if args.token_budget < 0:
         raise ValueError('--token-budget must be >= 0')
+    if getattr(args, 'axes', None) is not None and args.rank > 1:
+        # A [L, W] file is one direction per layer. Rank-k is a DIFFERENT edit
+        # (projection out of a per-layer subspace), so accepting both would either
+        # silently drop the extra directions or apply a rank-1 slice of a rank-k
+        # fit while the report said --rank k. Refuse instead of choosing.
+        raise ValueError(
+            '--axes and --rank > 1 cannot be combined: a precomputed --axes file is one '
+            'direction per layer ([L, W]), while --rank k searches the top-k contrast '
+            'subspace ([L, k, W]), which is a different edit with a different contract. '
+            'Rank the file at --rank 1, or drop --axes and let the ladder fit the subspace.')
 
     records = load_records(args.records)
     corpora, corpora_source = derive_corpora(args, records, out_dir)
@@ -454,9 +577,23 @@ def tune_command(args):
     shortest = min(len(Path(path).read_text()) for path in corpora.values())
     args.ctx = min(int(args.ctx), max(64, shortest // 10))
     axes_by_shape = {}
+    file_axes, file_meta, file_vector, file_layers = None, {}, False, None
+    record_layers = None
+    if getattr(args, 'axes', None) is not None:
+        # A precomputed axis is the whole axis: the ladder's job here is to rank
+        # THIS direction over shapes/strengths, not to re-fit a contrast mean that
+        # would silently replace it (and, with the adapter cache keyed on the
+        # artifact alone, would print a ranking for an edit nobody selected).
+        file_axes, file_info = resolve_axes(args, records)
+        file_meta = file_info['meta']
+        file_vector = file_info['vector']
+        file_layers = file_info['layers']
+        record_layers = file_info['record_layers']
     for shape in shapes_requested:
         try:
-            if args.rank > 1:
+            if file_axes is not None:
+                axes_by_shape[shape] = file_axes
+            elif args.rank > 1:
                 # rank-k: the top-k per-layer contrast subspace. Every extra direction
                 # is another thing the artifact has to store, which the codec gate
                 # measures, so rank is a searched dimension and not a preference.
@@ -512,11 +649,18 @@ def tune_command(args):
     # families, axes width), so an iteration pays the dequant pass ONCE per model.
     artifact_sha = file_sha(args.gguf)
     basis = 'primal' if args.hf else 'artifact'
+    axis_source = axes_source(args)
+    axis_sha = axes_digest(axes_by_shape)
     fit_identity = {'artifact_sha256': artifact_sha,
                     'records_sha256': file_sha(args.records, chunk=4 << 20),
                     'families': [family['key'] for family in families],
                     'basis': basis, 'hf': str(args.hf) if args.hf else None,
                     'width': width, 'layers': len(covered), 'arch': arch,
+                    # The axis is part of the fit, not of the artifact: a
+                    # precomputed RDO axis and the contrast mean are different
+                    # edits at the same bytes, and an adapter cache keyed without
+                    # this pair would hand the ladder the wrong one.
+                    'axes_source': axis_source, 'axes_sha256': axis_sha,
                     # Caches written before the adapter carried its base binding are
                     # unlabelable (adapter-card refuses them); regenerate them once.
                     'adapter_base_binding': 1}
@@ -1120,6 +1264,15 @@ def tune_command(args):
         'families': [family['key'] for family in families],
         'scales': scales, 'drift_budget': args.drift_budget,
         'drift_budget_used': drift_budget, 'drift_noise_ln': round(noise_ln, 4),
+        'axes': {'source': axis_source, 'sha256': axis_sha,
+                 'file': str(args.axes) if getattr(args, 'axes', None) else None,
+                 'vector': file_vector if file_axes is not None else None,
+                 'layers': (file_layers if file_axes is not None
+                            else int(next(iter(axes_by_shape.values())).shape[0])),
+                 'width': width,
+                 'file_meta': file_meta or None},
+        'fit_identity': fit_identity,
+        'generated_tokens': spent,
         'front_widened': widened, 'ctx_used': args.ctx,
         'min_edit_cos': args.min_edit_cos, 'rank': args.rank,
         'pruned_by_codec': pruned_by_codec,
@@ -1200,6 +1353,16 @@ def tune_command(args):
         report['notes'].append(
             'the screen panel does NOT cover ' + ', '.join(screen_uncovered) +
             ': a clean screen (or a best-effort pick) is not evidence on those families.')
+    if file_axes is not None:
+        report['notes'].append(
+            f'the ladder applied a PRECOMPUTED axis from {args.axes} (key {args.axes_key!r}, '
+            f'sha256 {axis_sha[:12]}): the contrast mean was never fitted in this run, so '
+            f'this table ranks the supplied direction over shapes and strengths.')
+        if record_layers is not None and file_layers != record_layers:
+            report['notes'].append(
+                f'the axis file carries {file_layers} layer rows while the capture carries '
+                f'{record_layers}: only the rows the file names are covered, and the missing '
+                f'layers are not part of this table.')
     state = screen_read(winner) if winner else None
     if winner is not None and state is not None and not state['clean']:
         if winner.get('best_effort'):

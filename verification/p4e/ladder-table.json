@@ -1,0 +1,932 @@
+{
+ "card": "t_84a37c5b P4e",
+ "scale": 1.0,
+ "rows": [
+  {
+   "arm": "a1",
+   "selector": "contrast mean",
+   "family": "perlayer|all",
+   "shape": "perlayer",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.2166,
+   "delta_br": -0.3319,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.3024
+  },
+  {
+   "arm": "a1",
+   "selector": "contrast mean",
+   "family": "shared|all",
+   "shape": "shared",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.166,
+   "delta_br": -0.6566,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.1882
+  },
+  {
+   "arm": "a2",
+   "selector": "contrast mean",
+   "family": "perlayer|all",
+   "shape": "perlayer",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.2166,
+   "delta_br": -0.3319,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.3024
+  },
+  {
+   "arm": "a2",
+   "selector": "contrast mean",
+   "family": "shared|all",
+   "shape": "shared",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.166,
+   "delta_br": -0.6566,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.1882
+  },
+  {
+   "arm": "a3",
+   "selector": "RDO (axes-rdo.pt)",
+   "family": "perlayer|all",
+   "shape": "perlayer",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 1.259,
+   "delta_br": -0.7385,
+   "axes_source": "file:runs/p4/axes-rdo.pt",
+   "axes_sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+   "codec_min_cos": 0.1549
+  },
+  {
+   "arm": "a3",
+   "selector": "RDO (axes-rdo.pt)",
+   "family": "shared|all",
+   "shape": "shared",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 1.259,
+   "delta_br": -0.7385,
+   "axes_source": "file:runs/p4/axes-rdo.pt",
+   "axes_sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+   "codec_min_cos": 0.1549
+  },
+  {
+   "arm": "a4",
+   "selector": "contrast mean",
+   "family": "perlayer|all",
+   "shape": "perlayer",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.2166,
+   "delta_br": -0.3319,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.3024
+  },
+  {
+   "arm": "a4",
+   "selector": "contrast mean",
+   "family": "shared|all",
+   "shape": "shared",
+   "layers": [
+    0,
+    27
+   ],
+   "scale": 1.0,
+   "drift_ln": 0.166,
+   "delta_br": -0.6566,
+   "axes_source": "contrast",
+   "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+   "codec_min_cos": 0.1882
+  }
+ ],
+ "arms": {
+  "a1": {
+   "selector": "contrast mean",
+   "footprints_flag": "all",
+   "axes": {
+    "source": "contrast",
+    "sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "file": null,
+    "vector": null,
+    "layers": 28,
+    "width": 2048,
+    "file_meta": null
+   },
+   "fit_identity": {
+    "artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "records_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+    "families": [
+     "perlayer|all",
+     "shared|all"
+    ],
+    "basis": "artifact",
+    "hf": null,
+    "width": 2048,
+    "layers": 28,
+    "arch": "spark2_5",
+    "axes_source": "contrast",
+    "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "adapter_base_binding": 1
+   },
+   "generated_tokens": 0,
+   "tokens_search": 0,
+   "tokens_screen": 0,
+   "drift_noise_ln": 0.1446,
+   "drift_budget_used": 0.2891,
+   "ctx_used": 512,
+   "corpora_source": {
+    "derived_chars": {
+     "refusal": 6000,
+     "delivery": 6000,
+     "control": 6000
+    },
+    "target_chars": 6000
+   },
+   "base": {
+    "refusal": {
+     "ppl": 6.4587,
+     "uncertainty": 0.69261,
+     "seconds": 9.0
+    },
+    "delivery": {
+     "ppl": 9.4067,
+     "uncertainty": 1.13047,
+     "seconds": 8.3
+    },
+    "control": {
+     "ppl": 23.1502,
+     "uncertainty": 3.34649,
+     "seconds": 9.1
+    }
+   },
+   "winner": null,
+   "arms": [
+    {
+     "family": "perlayer|all",
+     "shape": "perlayer",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.2166,
+     "delta_br": -0.3319,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3269,
+        "norm_ratio": 0.7118,
+        "snr": 0.98,
+        "delta_norm": 0.1024,
+        "noise_norm": 0.1045,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.8275,
+        "norm_ratio": 1.0529,
+        "snr": 1.653,
+        "delta_norm": 0.0756,
+        "noise_norm": 0.0458,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3024,
+        "norm_ratio": 0.7169,
+        "snr": 0.962,
+        "delta_norm": 0.0868,
+        "noise_norm": 0.0902,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.3024,
+      "mean_cos": 0.4856,
+      "min_snr": 0.962,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    },
+    {
+     "family": "shared|all",
+     "shape": "shared",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.166,
+     "delta_br": -0.6566,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.1882,
+        "norm_ratio": 0.5545,
+        "snr": 0.954,
+        "delta_norm": 0.0764,
+        "noise_norm": 0.0801,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.9068,
+        "norm_ratio": 1.0606,
+        "snr": 2.229,
+        "delta_norm": 0.1173,
+        "noise_norm": 0.0526,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.394,
+        "norm_ratio": 0.7592,
+        "snr": 1.011,
+        "delta_norm": 0.0994,
+        "noise_norm": 0.0983,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1882,
+      "mean_cos": 0.4963,
+      "min_snr": 0.954,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    }
+   ],
+   "tune_json": "verification/p4e/tune-a1.json"
+  },
+  "a2": {
+   "selector": "contrast mean",
+   "footprints_flag": "layer band (layer_scores.json 0-27)",
+   "axes": {
+    "source": "contrast",
+    "sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "file": null,
+    "vector": null,
+    "layers": 28,
+    "width": 2048,
+    "file_meta": null
+   },
+   "fit_identity": {
+    "artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "records_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+    "families": [
+     "perlayer|all",
+     "shared|all"
+    ],
+    "basis": "artifact",
+    "hf": null,
+    "width": 2048,
+    "layers": 28,
+    "arch": "spark2_5",
+    "axes_source": "contrast",
+    "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "adapter_base_binding": 1
+   },
+   "generated_tokens": 0,
+   "tokens_search": 0,
+   "tokens_screen": 0,
+   "drift_noise_ln": 0.1446,
+   "drift_budget_used": 0.2891,
+   "ctx_used": 512,
+   "corpora_source": {
+    "derived_chars": {
+     "refusal": 6000,
+     "delivery": 6000,
+     "control": 6000
+    },
+    "target_chars": 6000
+   },
+   "base": {
+    "refusal": {
+     "ppl": 6.4587,
+     "uncertainty": 0.69261,
+     "seconds": 10.1
+    },
+    "delivery": {
+     "ppl": 9.4067,
+     "uncertainty": 1.13047,
+     "seconds": 10.0
+    },
+    "control": {
+     "ppl": 23.1502,
+     "uncertainty": 3.34649,
+     "seconds": 9.3
+    }
+   },
+   "winner": null,
+   "arms": [
+    {
+     "family": "perlayer|all",
+     "shape": "perlayer",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.2166,
+     "delta_br": -0.3319,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3269,
+        "norm_ratio": 0.7118,
+        "snr": 0.98,
+        "delta_norm": 0.1024,
+        "noise_norm": 0.1045,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.8275,
+        "norm_ratio": 1.0529,
+        "snr": 1.653,
+        "delta_norm": 0.0756,
+        "noise_norm": 0.0458,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3024,
+        "norm_ratio": 0.7169,
+        "snr": 0.962,
+        "delta_norm": 0.0868,
+        "noise_norm": 0.0902,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.3024,
+      "mean_cos": 0.4856,
+      "min_snr": 0.962,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    },
+    {
+     "family": "shared|all",
+     "shape": "shared",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.166,
+     "delta_br": -0.6566,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.1882,
+        "norm_ratio": 0.5545,
+        "snr": 0.954,
+        "delta_norm": 0.0764,
+        "noise_norm": 0.0801,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.9068,
+        "norm_ratio": 1.0606,
+        "snr": 2.229,
+        "delta_norm": 0.1173,
+        "noise_norm": 0.0526,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.394,
+        "norm_ratio": 0.7592,
+        "snr": 1.011,
+        "delta_norm": 0.0994,
+        "noise_norm": 0.0983,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1882,
+      "mean_cos": 0.4963,
+      "min_snr": 0.954,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    }
+   ],
+   "tune_json": "verification/p4e/tune-a2.json"
+  },
+  "a3": {
+   "selector": "RDO (axes-rdo.pt)",
+   "footprints_flag": "layer band (layer_scores.json 0-27)",
+   "axes": {
+    "source": "file:runs/p4/axes-rdo.pt",
+    "sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+    "file": "runs/p4/axes-rdo.pt",
+    "vector": false,
+    "layers": 28,
+    "width": 2048,
+    "file_meta": {
+     "method": "rdo",
+     "axes_sha256": "5c481da33093174c715762db601e9d3b4cb04074a260323381bcefa0a9d197f7",
+     "centering": "none",
+     "holdout": "none"
+    }
+   },
+   "fit_identity": {
+    "artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "records_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+    "families": [
+     "perlayer|all",
+     "shared|all"
+    ],
+    "basis": "artifact",
+    "hf": null,
+    "width": 2048,
+    "layers": 28,
+    "arch": "spark2_5",
+    "axes_source": "file:runs/p4/axes-rdo.pt",
+    "axes_sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+    "adapter_base_binding": 1
+   },
+   "generated_tokens": 0,
+   "tokens_search": 0,
+   "tokens_screen": 0,
+   "drift_noise_ln": 0.1446,
+   "drift_budget_used": 0.2891,
+   "ctx_used": 512,
+   "corpora_source": {
+    "derived_chars": {
+     "refusal": 6000,
+     "delivery": 6000,
+     "control": 6000
+    },
+    "target_chars": 6000
+   },
+   "base": {
+    "refusal": {
+     "ppl": 6.4587,
+     "uncertainty": 0.69261,
+     "seconds": 9.6
+    },
+    "delivery": {
+     "ppl": 9.4067,
+     "uncertainty": 1.13047,
+     "seconds": 9.9
+    },
+    "control": {
+     "ppl": 23.1502,
+     "uncertainty": 3.34649,
+     "seconds": 7.9
+    }
+   },
+   "winner": null,
+   "arms": [
+    {
+     "family": "perlayer|all",
+     "shape": "perlayer",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 1.259,
+     "delta_br": -0.7385,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3569,
+        "norm_ratio": 0.7059,
+        "snr": 1.003,
+        "delta_norm": 0.1005,
+        "noise_norm": 0.1002,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.8752,
+        "norm_ratio": 1.0243,
+        "snr": 1.976,
+        "delta_norm": 0.073,
+        "noise_norm": 0.0369,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.1549,
+        "norm_ratio": 0.5979,
+        "snr": 0.924,
+        "delta_norm": 0.0884,
+        "noise_norm": 0.0958,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1549,
+      "mean_cos": 0.4623,
+      "min_snr": 0.924,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    },
+    {
+     "family": "shared|all",
+     "shape": "shared",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 1.259,
+     "delta_br": -0.7385,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3569,
+        "norm_ratio": 0.7059,
+        "snr": 1.003,
+        "delta_norm": 0.1005,
+        "noise_norm": 0.1002,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.8752,
+        "norm_ratio": 1.0243,
+        "snr": 1.976,
+        "delta_norm": 0.073,
+        "noise_norm": 0.0369,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.1549,
+        "norm_ratio": 0.5979,
+        "snr": 0.924,
+        "delta_norm": 0.0884,
+        "noise_norm": 0.0958,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1549,
+      "mean_cos": 0.4623,
+      "min_snr": 0.924,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    }
+   ],
+   "tune_json": "verification/p4e/tune-a3.json",
+   "axes_file": "runs/p4/axes-rdo.pt",
+   "axes_file_sha256": "d9d9266cab93a059d8ecae8c1d4645fee5f2b8a4fda0b120e144417b298a0055",
+   "axes_fit_records_sha256": "c863fdb2a1db0061dcb7c933a062b66f1e60f1297bfae859b8593b575372144e"
+  },
+  "a4": {
+   "selector": "contrast mean",
+   "footprints_flag": "margin best_footprint (margin_scores.json full -> 0-27)",
+   "axes": {
+    "source": "contrast",
+    "sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "file": null,
+    "vector": null,
+    "layers": 28,
+    "width": 2048,
+    "file_meta": null
+   },
+   "fit_identity": {
+    "artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "records_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+    "families": [
+     "perlayer|all",
+     "shared|all"
+    ],
+    "basis": "artifact",
+    "hf": null,
+    "width": 2048,
+    "layers": 28,
+    "arch": "spark2_5",
+    "axes_source": "contrast",
+    "axes_sha256": "5ca40165b69dda2a30e25b22dd525b1c844cc7fca5d5517deed780df3553644e",
+    "adapter_base_binding": 1
+   },
+   "generated_tokens": 0,
+   "tokens_search": 0,
+   "tokens_screen": 0,
+   "drift_noise_ln": 0.1446,
+   "drift_budget_used": 0.2891,
+   "ctx_used": 512,
+   "corpora_source": {
+    "derived_chars": {
+     "refusal": 6000,
+     "delivery": 6000,
+     "control": 6000
+    },
+    "target_chars": 6000
+   },
+   "base": {
+    "refusal": {
+     "ppl": 6.4587,
+     "uncertainty": 0.69261,
+     "seconds": 9.5
+    },
+    "delivery": {
+     "ppl": 9.4067,
+     "uncertainty": 1.13047,
+     "seconds": 9.5
+    },
+    "control": {
+     "ppl": 23.1502,
+     "uncertainty": 3.34649,
+     "seconds": 8.6
+    }
+   },
+   "winner": null,
+   "arms": [
+    {
+     "family": "perlayer|all",
+     "shape": "perlayer",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.2166,
+     "delta_br": -0.3319,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3269,
+        "norm_ratio": 0.7118,
+        "snr": 0.98,
+        "delta_norm": 0.1024,
+        "noise_norm": 0.1045,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.8275,
+        "norm_ratio": 1.0529,
+        "snr": 1.653,
+        "delta_norm": 0.0756,
+        "noise_norm": 0.0458,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.3024,
+        "norm_ratio": 0.7169,
+        "snr": 0.962,
+        "delta_norm": 0.0868,
+        "noise_norm": 0.0902,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.3024,
+      "mean_cos": 0.4856,
+      "min_snr": 0.962,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    },
+    {
+     "family": "shared|all",
+     "shape": "shared",
+     "layers": [
+      0,
+      27
+     ],
+     "scale": 1.0,
+     "drift_ln": 0.166,
+     "delta_br": -0.6566,
+     "fidelity": {
+      "tensors": [
+       {
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.1882,
+        "norm_ratio": 0.5545,
+        "snr": 0.954,
+        "delta_norm": 0.0764,
+        "noise_norm": 0.0801,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q6_K",
+        "shape": [
+         2048,
+         6656
+        ],
+        "cos": 0.9068,
+        "norm_ratio": 1.0606,
+        "snr": 2.229,
+        "delta_norm": 0.1173,
+        "noise_norm": 0.0526,
+        "windows": 2,
+        "blocks_per_window": 32
+       },
+       {
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q4_K",
+        "shape": [
+         2048,
+         2048
+        ],
+        "cos": 0.394,
+        "norm_ratio": 0.7592,
+        "snr": 1.011,
+        "delta_norm": 0.0994,
+        "noise_norm": 0.0983,
+        "windows": 2,
+        "blocks_per_window": 32
+       }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1882,
+      "mean_cos": 0.4963,
+      "min_snr": 0.954,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+     }
+    }
+   ],
+   "tune_json": "verification/p4e/tune-a4.json"
+  }
+ },
+ "arbitration": {
+  "agreement_tolerance": 0.05,
+  "drift_noise_ln": 0.1446,
+  "drift_noise_ln_source": "tune.json drift_noise_ln (max base-reading +-half-width / ppl, this run)",
+  "docs_noise_ln": 0.41,
+  "rdo_vs_contrast": {
+   "delta_br_gap": -0.4066,
+   "drift_gap_ln": 1.0424,
+   "matched": false
+  },
+  "perlayer_vs_shared_contrast_drift_gap_ln": 0.0506
+ }
+}

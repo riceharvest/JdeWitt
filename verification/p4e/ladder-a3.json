@@ -1,0 +1,182 @@
+{
+  "identity": {
+    "artifact": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+    "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "corpora": {
+      "refusal": "/home/dario/.agentboard/worktrees/t_84a37c5b/runs/p4/ladder-a3/ppl-refusal.txt",
+      "delivery": "/home/dario/.agentboard/worktrees/t_84a37c5b/runs/p4/ladder-a3/ppl-delivery.txt",
+      "control": "/home/dario/.agentboard/worktrees/t_84a37c5b/runs/p4/ladder-a3/ppl-control.txt"
+    },
+    "read": {
+      "binary": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+      "ngl": 0,
+      "ctx": 512,
+      "threads": 16
+    }
+  },
+  "readings": {
+    "base|refusal": {
+      "ppl": 6.4587,
+      "uncertainty": 0.69261,
+      "seconds": 9.6
+    },
+    "base|delivery": {
+      "ppl": 9.4067,
+      "uncertainty": 1.13047,
+      "seconds": 9.9
+    },
+    "base|control": {
+      "ppl": 23.1502,
+      "uncertainty": 3.34649,
+      "seconds": 7.9
+    },
+    "blast|perlayer|all": {
+      "ppl": 1041806.8364,
+      "uncertainty": 107683.13272,
+      "seconds": 8.1
+    },
+    "blast|shared|all": {
+      "ppl": 1041806.8364,
+      "uncertainty": 107683.13272,
+      "seconds": 10.0
+    },
+    "perlayer|all|1.0|refusal": {
+      "ppl": 20.7776,
+      "uncertainty": 2.89112,
+      "seconds": 9.9
+    },
+    "perlayer|all|1.0|delivery": {
+      "ppl": 63.3335,
+      "uncertainty": 9.97251,
+      "seconds": 7.9
+    },
+    "perlayer|all|1.0|control": {
+      "ppl": 81.53,
+      "uncertainty": 13.569,
+      "seconds": 9.9
+    },
+    "shared|all|1.0|refusal": {
+      "ppl": 20.7776,
+      "uncertainty": 2.89112,
+      "seconds": 9.6
+    },
+    "shared|all|1.0|delivery": {
+      "ppl": 63.3335,
+      "uncertainty": 9.97251,
+      "seconds": 8.1
+    },
+    "shared|all|1.0|control": {
+      "ppl": 81.53,
+      "uncertainty": 13.569,
+      "seconds": 7.5
+    },
+    "fid|perlayer|all|1.0|None": {
+      "tensors": [
+        {
+          "name": "blk.0.attn_output.weight",
+          "qtype": "Q4_K",
+          "shape": [
+            2048,
+            2048
+          ],
+          "cos": 0.3569,
+          "norm_ratio": 0.7059,
+          "snr": 1.003,
+          "delta_norm": 0.1005,
+          "noise_norm": 0.1002,
+          "windows": 2,
+          "blocks_per_window": 32
+        },
+        {
+          "name": "blk.0.ffn_down.weight",
+          "qtype": "Q6_K",
+          "shape": [
+            2048,
+            6656
+          ],
+          "cos": 0.8752,
+          "norm_ratio": 1.0243,
+          "snr": 1.976,
+          "delta_norm": 0.073,
+          "noise_norm": 0.0369,
+          "windows": 2,
+          "blocks_per_window": 32
+        },
+        {
+          "name": "blk.13.attn_output.weight",
+          "qtype": "Q4_K",
+          "shape": [
+            2048,
+            2048
+          ],
+          "cos": 0.1549,
+          "norm_ratio": 0.5979,
+          "snr": 0.924,
+          "delta_norm": 0.0884,
+          "noise_norm": 0.0958,
+          "windows": 2,
+          "blocks_per_window": 32
+        }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1549,
+      "mean_cos": 0.4623,
+      "min_snr": 0.924,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+    },
+    "fid|shared|all|1.0|None": {
+      "tensors": [
+        {
+          "name": "blk.0.attn_output.weight",
+          "qtype": "Q4_K",
+          "shape": [
+            2048,
+            2048
+          ],
+          "cos": 0.3569,
+          "norm_ratio": 0.7059,
+          "snr": 1.003,
+          "delta_norm": 0.1005,
+          "noise_norm": 0.1002,
+          "windows": 2,
+          "blocks_per_window": 32
+        },
+        {
+          "name": "blk.0.ffn_down.weight",
+          "qtype": "Q6_K",
+          "shape": [
+            2048,
+            6656
+          ],
+          "cos": 0.8752,
+          "norm_ratio": 1.0243,
+          "snr": 1.976,
+          "delta_norm": 0.073,
+          "noise_norm": 0.0369,
+          "windows": 2,
+          "blocks_per_window": 32
+        },
+        {
+          "name": "blk.13.attn_output.weight",
+          "qtype": "Q4_K",
+          "shape": [
+            2048,
+            2048
+          ],
+          "cos": 0.1549,
+          "norm_ratio": 0.5979,
+          "snr": 0.924,
+          "delta_norm": 0.0884,
+          "noise_norm": 0.0958,
+          "windows": 2,
+          "blocks_per_window": 32
+        }
+      ],
+      "sampled": 3,
+      "min_cos": 0.1549,
+      "mean_cos": 0.4623,
+      "min_snr": 0.924,
+      "note": "a low cos here means the codec, not the axis, decides what ships"
+    }
+  }
+}

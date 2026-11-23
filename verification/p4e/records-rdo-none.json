@@ -1,0 +1,8 @@
+{
+ "source": "runs/p4/records.pt",
+ "source_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+ "derived": "runs/p4/records-rdo-none.pt",
+ "transformation": "family_id set to None on every record",
+ "why": "rdo centers rows at their family mean when any family_id exists; the capture's harmless rows carry none, so the bad-family means and the harmless mean both collapse to zero and the contrast is degenerate (layer 0: 'bad and good means coincide'). The design here has no within-family bad/good pairs, so raw-row centering mode ('none') is the honest fit; rdo's own centering_note calls it the mode for records without a family design.",
+ "rows": 80
+}
