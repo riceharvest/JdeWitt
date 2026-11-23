@@ -1,0 +1,492 @@
+{
+  "artifact": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "records": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/records.pt",
+  "arch": "spark2_5",
+  "width": 2048,
+  "layers_covered": 28,
+  "shapes": [
+    "perlayer",
+    "shared"
+  ],
+  "footprints": [
+    [
+      0,
+      27
+    ]
+  ],
+  "profile": "flat",
+  "profile_mean": "one",
+  "profiles": {
+    "perlayer|all": {
+      "profile": "flat",
+      "weights": {
+        "0": 1.0,
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0,
+        "9": 1.0,
+        "10": 1.0,
+        "11": 1.0,
+        "12": 1.0,
+        "13": 1.0,
+        "14": 1.0,
+        "15": 1.0,
+        "16": 1.0,
+        "17": 1.0,
+        "18": 1.0,
+        "19": 1.0,
+        "20": 1.0,
+        "21": 1.0,
+        "22": 1.0,
+        "23": 1.0,
+        "24": 1.0,
+        "25": 1.0,
+        "26": 1.0,
+        "27": 1.0
+      }
+    },
+    "shared|all": {
+      "profile": "flat",
+      "weights": {
+        "0": 1.0,
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0,
+        "9": 1.0,
+        "10": 1.0,
+        "11": 1.0,
+        "12": 1.0,
+        "13": 1.0,
+        "14": 1.0,
+        "15": 1.0,
+        "16": 1.0,
+        "17": 1.0,
+        "18": 1.0,
+        "19": 1.0,
+        "20": 1.0,
+        "21": 1.0,
+        "22": 1.0,
+        "23": 1.0,
+        "24": 1.0,
+        "25": 1.0,
+        "26": 1.0,
+        "27": 1.0
+      }
+    }
+  },
+  "profile_comparison": {
+    "flat": {
+      "drift_ln": {
+        "perlayer|all@1.0": 1.259,
+        "shared|all@1.0": 1.259
+      },
+      "delta_br": {
+        "perlayer|all@1.0": -0.7385,
+        "shared|all@1.0": -0.7385
+      }
+    }
+  },
+  "families": [
+    "perlayer|all",
+    "shared|all"
+  ],
+  "scales": [
+    1.0
+  ],
+  "drift_budget": 0.02,
+  "drift_budget_used": 0.2891,
+  "drift_noise_ln": 0.1446,
+  "axes": {
+    "source": "file:/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/axes-rdo.pt",
+    "sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+    "file": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/axes-rdo.pt",
+    "vector": false,
+    "layers": 28,
+    "width": 2048,
+    "file_meta": {
+      "method": "rdo",
+      "axes_sha256": "5c481da33093174c715762db601e9d3b4cb04074a260323381bcefa0a9d197f7",
+      "centering": "none",
+      "holdout": "none"
+    }
+  },
+  "fit_identity": {
+    "artifact_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "records_sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+    "families": [
+      "perlayer|all",
+      "shared|all"
+    ],
+    "basis": "artifact",
+    "hf": null,
+    "width": 2048,
+    "layers": 28,
+    "arch": "spark2_5",
+    "axes_source": "file:/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/axes-rdo.pt",
+    "axes_sha256": "0838820a994f5f668fe8b298a6b9782362860bee41875f34c619de6b8f1defa7",
+    "adapter_base_binding": 1
+  },
+  "generated_tokens": 0,
+  "front_widened": [],
+  "ctx_used": 512,
+  "min_edit_cos": 0.9,
+  "rank": 1,
+  "pruned_by_codec": [],
+  "strength_searched_for_codec": [],
+  "codec_refusal": null,
+  "confirmation_refusal": null,
+  "best_effort": false,
+  "shipping_options": null,
+  "corpora": {
+    "refusal": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/rerun/a3/ppl-refusal.txt",
+    "delivery": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/rerun/a3/ppl-delivery.txt",
+    "control": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/rerun/a3/ppl-control.txt"
+  },
+  "screen_families": [],
+  "screen_uncovered_families": [],
+  "corpora_source": {
+    "derived_chars": {
+      "refusal": 6000,
+      "delivery": 6000,
+      "control": 6000
+    },
+    "target_chars": 6000
+  },
+  "base": {
+    "refusal": {
+      "ppl": 6.4587,
+      "uncertainty": 0.69261,
+      "seconds": 8.8
+    },
+    "delivery": {
+      "ppl": 9.4067,
+      "uncertainty": 1.13047,
+      "seconds": 9.0
+    },
+    "control": {
+      "ppl": 23.1502,
+      "uncertainty": 3.34649,
+      "seconds": 7.5
+    }
+  },
+  "adapters": {
+    "perlayer|all": {
+      "path": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/rerun/a3/adapter-perlayer-all.gguf",
+      "tensors": 56
+    },
+    "shared|all": {
+      "path": "/home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/rerun/a3/adapter-shared-all.gguf",
+      "tensors": 56
+    }
+  },
+  "adapter_basis": {
+    "mode": "artifact",
+    "tensors": {
+      "primal": 0,
+      "artifact": 56
+    }
+  },
+  "arms": [
+    {
+      "shape": "perlayer",
+      "layers": [
+        0,
+        27
+      ],
+      "family": "perlayer|all",
+      "base_family": "perlayer|all",
+      "profile": "flat",
+      "profile_weights": {
+        "0": 1.0,
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0,
+        "9": 1.0,
+        "10": 1.0,
+        "11": 1.0,
+        "12": 1.0,
+        "13": 1.0,
+        "14": 1.0,
+        "15": 1.0,
+        "16": 1.0,
+        "17": 1.0,
+        "18": 1.0,
+        "19": 1.0,
+        "20": 1.0,
+        "21": 1.0,
+        "22": 1.0,
+        "23": 1.0,
+        "24": 1.0,
+        "25": 1.0,
+        "26": 1.0,
+        "27": 1.0
+      },
+      "scale": 1.0,
+      "round": 1,
+      "ppl": {
+        "refusal": {
+          "ppl": 20.7776,
+          "uncertainty": 2.89112,
+          "seconds": 9.3
+        },
+        "delivery": {
+          "ppl": 63.3335,
+          "uncertainty": 9.97251,
+          "seconds": 7.5
+        },
+        "control": {
+          "ppl": 81.53,
+          "uncertainty": 13.569,
+          "seconds": 9.4
+        }
+      },
+      "drift_ln": 1.259,
+      "br": -1.1145,
+      "delta_br": -0.7385,
+      "fidelity": {
+        "tensors": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "qtype": "Q4_K",
+            "shape": [
+              2048,
+              2048
+            ],
+            "cos": 0.3569,
+            "norm_ratio": 0.7059,
+            "snr": 1.003,
+            "delta_norm": 0.1005,
+            "noise_norm": 0.1002,
+            "windows": 2,
+            "blocks_per_window": 32
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "qtype": "Q6_K",
+            "shape": [
+              2048,
+              6656
+            ],
+            "cos": 0.8752,
+            "norm_ratio": 1.0243,
+            "snr": 1.976,
+            "delta_norm": 0.073,
+            "noise_norm": 0.0369,
+            "windows": 2,
+            "blocks_per_window": 32
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "qtype": "Q4_K",
+            "shape": [
+              2048,
+              2048
+            ],
+            "cos": 0.1549,
+            "norm_ratio": 0.5979,
+            "snr": 0.924,
+            "delta_norm": 0.0884,
+            "noise_norm": 0.0958,
+            "windows": 2,
+            "blocks_per_window": 32
+          }
+        ],
+        "sampled": 3,
+        "min_cos": 0.1549,
+        "mean_cos": 0.4623,
+        "min_snr": 0.924,
+        "note": "a low cos here means the codec, not the axis, decides what ships"
+      }
+    },
+    {
+      "shape": "shared",
+      "layers": [
+        0,
+        27
+      ],
+      "family": "shared|all",
+      "base_family": "shared|all",
+      "profile": "flat",
+      "profile_weights": {
+        "0": 1.0,
+        "1": 1.0,
+        "2": 1.0,
+        "3": 1.0,
+        "4": 1.0,
+        "5": 1.0,
+        "6": 1.0,
+        "7": 1.0,
+        "8": 1.0,
+        "9": 1.0,
+        "10": 1.0,
+        "11": 1.0,
+        "12": 1.0,
+        "13": 1.0,
+        "14": 1.0,
+        "15": 1.0,
+        "16": 1.0,
+        "17": 1.0,
+        "18": 1.0,
+        "19": 1.0,
+        "20": 1.0,
+        "21": 1.0,
+        "22": 1.0,
+        "23": 1.0,
+        "24": 1.0,
+        "25": 1.0,
+        "26": 1.0,
+        "27": 1.0
+      },
+      "scale": 1.0,
+      "round": 1,
+      "ppl": {
+        "refusal": {
+          "ppl": 20.7776,
+          "uncertainty": 2.89112,
+          "seconds": 8.3
+        },
+        "delivery": {
+          "ppl": 63.3335,
+          "uncertainty": 9.97251,
+          "seconds": 7.7
+        },
+        "control": {
+          "ppl": 81.53,
+          "uncertainty": 13.569,
+          "seconds": 7.2
+        }
+      },
+      "drift_ln": 1.259,
+      "br": -1.1145,
+      "delta_br": -0.7385,
+      "fidelity": {
+        "tensors": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "qtype": "Q4_K",
+            "shape": [
+              2048,
+              2048
+            ],
+            "cos": 0.3569,
+            "norm_ratio": 0.7059,
+            "snr": 1.003,
+            "delta_norm": 0.1005,
+            "noise_norm": 0.1002,
+            "windows": 2,
+            "blocks_per_window": 32
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "qtype": "Q6_K",
+            "shape": [
+              2048,
+              6656
+            ],
+            "cos": 0.8752,
+            "norm_ratio": 1.0243,
+            "snr": 1.976,
+            "delta_norm": 0.073,
+            "noise_norm": 0.0369,
+            "windows": 2,
+            "blocks_per_window": 32
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "qtype": "Q4_K",
+            "shape": [
+              2048,
+              2048
+            ],
+            "cos": 0.1549,
+            "norm_ratio": 0.5979,
+            "snr": 0.924,
+            "delta_norm": 0.0884,
+            "noise_norm": 0.0958,
+            "windows": 2,
+            "blocks_per_window": 32
+          }
+        ],
+        "sampled": 3,
+        "min_cos": 0.1549,
+        "mean_cos": 0.4623,
+        "min_snr": 0.924,
+        "note": "a low cos here means the codec, not the axis, decides what ships"
+      }
+    }
+  ],
+  "arm_failures": [],
+  "rounds": [
+    {
+      "round": 1,
+      "scales": [
+        1.0
+      ],
+      "arms": 2,
+      "failures": 0,
+      "front": [],
+      "screened": 0,
+      "tokens": 0,
+      "front_states": []
+    }
+  ],
+  "refinement": [],
+  "confirmation": [],
+  "winner": null,
+  "tokens": {
+    "search": 0,
+    "screen": 0,
+    "screen_cached": 0,
+    "evidence_tokens": 0,
+    "budget": 0,
+    "budget_left": 0,
+    "screen_rows": 0,
+    "probe_rows": 1,
+    "screen_k": 100,
+    "escalate_to": 600,
+    "per_arm": {},
+    "server_load_seconds": null,
+    "serve": {
+      "binary": null,
+      "ctx": 4096,
+      "ngl": 99,
+      "adapters_loaded": 0,
+      "lib_dirs": []
+    },
+    "screen_blast": null,
+    "ladder_cache_hits": {
+      "base": 0,
+      "arm": 6,
+      "screen": 0
+    }
+  },
+  "elapsed_s": 61.3,
+  "next": [
+    "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf --in-place --records /home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/records.pt --shape <shape> --scale <scale> --gguf-targets auto"
+  ],
+  "notes": [
+    "round 1 is prefill-only: a full shape x strength ladder costs ZERO generated tokens.",
+    "round 2 decodes the Pareto front only (screen rows x --screen-k), classifies every prefix by refusal shape and counts the tokens each verdict cost; undecided rows are continued before they are called undecided.",
+    "the winner is the LOWEST-PERPLEXITY arm whose screen left no refusal and nothing undecided, so the token spend selects the set and perplexity picks inside it.",
+    "a screen verdict is a screening signal (R2/R6): certification stays the agent shape read on merged bytes at one pinned serve config.",
+    "an adapter curve is a screening approximation, not the export delta (R8); the winner is re-measured on the merged bytes before it is called done.",
+    "the adapter factors must come from PRIMAL (HF) weights (--hf): on a fork whose converter folds tensors into the gguf basis, factors built from the folded weight apply a rotated functional, and the ladder then ranks an edit that is not the one the merge ships.",
+    "the ladder applied a PRECOMPUTED axis from /home/dario/.agentboard/worktrees/t_2088fc50/runs/p4/axes-rdo.pt (key 'axes', sha256 0838820a994f): the contrast mean was never fitted in this run, so this table ranks the supplied direction over shapes and strengths.",
+    "no arm both stayed inside the drift budget and moved the refusal branch; the 0 branch-moving arm(s) above are the candidates to widen the budget for, and a tone-only table means the edit does not target the branch."
+  ]
+}

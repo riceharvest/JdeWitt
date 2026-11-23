@@ -391,7 +391,8 @@ def score_command(args) -> dict:
                         "delta_bad_minus_good": delta},
             "prefill_count": prefills, "tokens_generated": 0,
             "hooks_removed": handles_removed, "weights_written": False,
-            "sign": "positive delta = the axis removes more refusal margin on harmful rows than on harmless rows",
+            "sign": "drop = margin_before - margin_after; NEGATIVE delta = the projection lifts Sure "
+                    "relative to cannot more on harmful rows than on harmless ones",
             "note": METHOD_NOTE,
         }
         out = Path(args.out)

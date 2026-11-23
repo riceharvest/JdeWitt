@@ -1,0 +1,46 @@
+{
+ "capability_passed": 14,
+ "completion_tokens_total": 12116,
+ "delivered_instead": 0,
+ "invalid": 58,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "s100-retention192",
+ "max_tokens": 192,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8203,
+ "predictions": "verification/vocab-remap/weight-arm/waves/s100/retention-cap192/predictions.jsonl",
+ "previewed": 0,
+ "refusals_detected": 0,
+ "rows": 241,
+ "sampling": {
+  "seed": null,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null
+ },
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 78.5,
+ "serve_config": "/mnt/ssd/b70-prep/llama.cpp-spark/build-vulkan/bin/llama-server -m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.vocab-remap.gguf -dev Vulkan0 -c 4096 --parallel 4 --jinja --no-webui -ngl 99 --port 8203",
+ "serve_structured": {
+  "ctx": 4096,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 192,
+  "no_think": true,
+  "parallel": 4,
+  "sampling": {
+   "seed": null,
+   "temperature": 0.0,
+   "top_k": null,
+   "top_p": null
+  },
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

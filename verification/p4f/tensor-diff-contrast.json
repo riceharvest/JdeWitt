@@ -1,0 +1,418 @@
+{
+  "before": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "after": "runs/p4/merged-contrast.gguf",
+  "tensor_count_before": 226,
+  "tensor_count_after": 226,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 226,
+    "bit_identical": 170,
+    "value_differs": 56,
+    "shape_changed": 0,
+    "codec_unsupported": 0,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 56,
+    "min": 0.012709,
+    "median": 0.023828,
+    "max": 0.042453
+  },
+  "differing_tensors": [
+    {
+      "name": "blk.2.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.042453,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.23.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.038108,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.3.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.036256,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.20.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.03376,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.20.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.032677,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.5.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.031181,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.8.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.030973,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.11.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.030481,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.1.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.030474,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.4.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.029994,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.6.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.029961,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.0.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.029717,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.21.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.02925,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.5.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.028941,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.1.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.028539,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.0.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.027764,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.2.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.027146,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.7.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.026439,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.3.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.026304,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.10.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.026071,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.23.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.025704,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.14.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.025595,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.9.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.024935,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.8.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.024744,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.24.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.02447,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.25.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.024202,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.27.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.023866,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.18.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023828,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.21.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023712,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.17.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.023708,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.7.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023674,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.24.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023564,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.10.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023415,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.22.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.023322,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.12.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.02329,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.16.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.02326,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.15.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.022435,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.12.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.02229,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.13.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.022246,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.9.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.021838,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.26.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.021198,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.11.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.020573,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.13.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.019748,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.6.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.019686,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.25.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.019517,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.4.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.019056,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.14.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.018354,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.018264,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.19.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.018008,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.19.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.017247,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.16.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.017105,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.17.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.016358,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.27.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.015888,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.26.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.014893,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.18.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.014701,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.22.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.012709,
+      "same_dtype": true
+    }
+  ],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}

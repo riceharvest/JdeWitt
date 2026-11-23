@@ -1,0 +1,74 @@
+{
+ "kind": "p4f-builds",
+ "base": {
+  "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "bytes": 1107458592
+ },
+ "builds": {
+  "contrast": {
+   "argv": "python -m jdewitt.spanfit build --gguf-in runs/p4/merged-contrast.gguf --in-place --axes runs/p4/axes-contrast.pt --scale 1.0 --shape perlayer --gguf-targets auto --no-dequant-cache",
+   "source_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "artifact": "runs/p4/merged-contrast.gguf",
+   "artifact_sha256": "97c07108605c50b152342aa2fc8e0aea8911bdd2f282189944bbc61f61c180b7",
+   "tensors_changed": 56,
+   "changed_blocks_total": 1713021,
+   "all_other_bytes_verbatim": true,
+   "bytes_added": 0,
+   "revert_sidecar": "runs/p4/merged-contrast.gguf.revert.npz",
+   "revert_sidecar_bytes": 326120287,
+   "elapsed_s": 368.1
+  },
+  "rdo": {
+   "argv": "python -m jdewitt.spanfit build --gguf-in runs/p4/merged-rdo.gguf --in-place --axes runs/p4/axes-rdo.pt --scale 1.0 --shape perlayer --gguf-targets auto --no-dequant-cache",
+   "source_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "artifact": "runs/p4/merged-rdo.gguf",
+   "artifact_sha256": "d83988cffb53f28a5949387edc0cd59d21f0b6f6ef4d14e5aa2d67db578b3063",
+   "tensors_changed": 56,
+   "changed_blocks_total": 1726397,
+   "all_other_bytes_verbatim": true,
+   "bytes_added": 0,
+   "revert_sidecar": "runs/p4/merged-rdo.gguf.revert.npz",
+   "revert_sidecar_bytes": 326120289,
+   "elapsed_s": 298.0
+  },
+  "rdo-s020": {
+   "argv": "python -m jdewitt.spanfit build --gguf-in runs/p4/merged-rdo-s020.gguf --in-place --axes runs/p4/axes-rdo.pt --scale 0.20 --shape perlayer --gguf-targets auto --no-dequant-cache",
+   "source_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "artifact": "runs/p4/merged-rdo-s020.gguf",
+   "artifact_sha256": "4becf65c3f531c12f6340c677930bc6ff70d118d4ded0e8b4a4c771316c0391a",
+   "tensors_changed": 56,
+   "changed_blocks_total": 1371597,
+   "all_other_bytes_verbatim": true,
+   "bytes_added": 0,
+   "revert_sidecar": "runs/p4/merged-rdo-s020.gguf.revert.npz",
+   "revert_sidecar_bytes": 326120286,
+   "elapsed_s": 236.6
+  }
+ },
+ "revert_checks": {
+  "contrast": {
+   "restored_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "tiles_restored": 56,
+   "equal_to_base": true
+  },
+  "rdo": {
+   "restored_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "tiles_restored": 56,
+   "equal_to_base": true
+  },
+  "rdo-s020": {
+   "restored_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "tiles_restored": 56,
+   "equal_to_base": true
+  }
+ },
+ "untouched": {
+  "tensors": 226,
+  "bit_identical": 170,
+  "value_differs": 56,
+  "shape_changed": 0,
+  "packed_size_changed": 0,
+  "per_arm": "runs/p4/tensor-diff-<arm>.json"
+ }
+}

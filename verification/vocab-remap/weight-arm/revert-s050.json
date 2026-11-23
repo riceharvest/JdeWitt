@@ -1,0 +1,9 @@
+{
+  "artifact": "/mnt/ssd/hermes/profiles/ab-run-2385/cache/scratch/wa/revert-check-s050.gguf",
+  "sidecar": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.vocab-remap-s050.gguf.revert.npz",
+  "tiles_restored": 869516,
+  "restored_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "patched_sha256": "94181911279149734f329489beffc7b72d755d46c3505ed2460406fa5770d5db",
+  "original_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "byte_exact": true
+}

@@ -1,0 +1,201 @@
+{
+ "artifacts": {
+  "base": {
+   "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+   "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+  },
+  "contrast": {
+   "path": "runs/p4/merged-contrast.gguf",
+   "sha256": "97c07108605c50b152342aa2fc8e0aea8911bdd2f282189944bbc61f61c180b7"
+  },
+  "rdo": {
+   "path": "runs/p4/merged-rdo.gguf",
+   "sha256": "d83988cffb53f28a5949387edc0cd59d21f0b6f6ef4d14e5aa2d67db578b3063"
+  },
+  "rdo-s015": {
+   "path": "runs/p4/merged-rdo-s015.gguf",
+   "sha256": "d0cf7c6d95124e21f6b41349e7a28ca0f5326c5b32a5a42b443c287c0e1a7759"
+  },
+  "rdo-s020": {
+   "path": "runs/p4/merged-rdo-s020.gguf",
+   "sha256": "4becf65c3f531c12f6340c677930bc6ff70d118d4ded0e8b4a4c771316c0391a"
+  },
+  "rdo-s035": {
+   "path": "runs/p4/merged-rdo-s035.gguf",
+   "sha256": "0cb62c9f9ee8bb30f3d071265cdd2cbf46ecc2dc28691d17ea6d9988d997f7aa"
+  }
+ },
+ "base": {
+  "control": {
+   "ppl": 23.1502,
+   "uncertainty": 3.34649
+  },
+  "delivery": {
+   "ppl": 9.4067,
+   "uncertainty": 1.13047
+  },
+  "refusal": {
+   "ppl": 6.4587,
+   "uncertainty": 0.69261
+  }
+ },
+ "base_br": -0.376,
+ "config": {
+  "ctx": 512,
+  "ngl": 0,
+  "perplexity": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+  "threads": 16
+ },
+ "corpora": {
+  "control": {
+   "path": "runs/p4/corpora/ppl-control.txt",
+   "sha256": "57e458d9e47fb95f4299e8b3516280bf4220d1cb5ac086684703be0c9a271632"
+  },
+  "delivery": {
+   "path": "runs/p4/corpora/ppl-delivery.txt",
+   "sha256": "de77bc046826ba5661f67c85016a30d0a1fcd9403b0113698a8e4ef0568eb816"
+  },
+  "refusal": {
+   "path": "runs/p4/corpora/ppl-refusal.txt",
+   "sha256": "d8f951b8f8102345e096665ae4fe646664eb09db99120d8bf047146bfa0172d5"
+  }
+ },
+ "drift_noise_ln": 0.1485,
+ "drift_noise_ln_source": "max(abs(uncertainty)/ppl) over base and arm readings, this run",
+ "generated_tokens": 0,
+ "metrics": {
+  "base": {
+   "br": -0.376,
+   "delta_br": 0.0,
+   "drift_ln": 0.0,
+   "readings": {
+    "control": {
+     "ppl": 23.1502,
+     "seconds": 3.6,
+     "uncertainty": 3.34649
+    },
+    "delivery": {
+     "ppl": 9.4067,
+     "seconds": 3.6,
+     "uncertainty": 1.13047
+    },
+    "refusal": {
+     "ppl": 6.4587,
+     "seconds": 3.6,
+     "uncertainty": 0.69261
+    }
+   }
+  },
+  "contrast": {
+   "br": -0.3401,
+   "delta_br": 0.0359,
+   "drift_ln": 0.1104,
+   "readings": {
+    "control": {
+     "ppl": 25.8512,
+     "seconds": 3.6,
+     "uncertainty": 3.83866
+    },
+    "delivery": {
+     "ppl": 12.2961,
+     "seconds": 3.6,
+     "uncertainty": 1.58222
+    },
+    "refusal": {
+     "ppl": 8.7513,
+     "seconds": 3.7,
+     "uncertainty": 1.01124
+    }
+   }
+  },
+  "rdo": {
+   "br": -0.2745,
+   "delta_br": 0.1015,
+   "drift_ln": 0.3797,
+   "readings": {
+    "control": {
+     "ppl": 33.8421,
+     "seconds": 3.8,
+     "uncertainty": 4.87912
+    },
+    "delivery": {
+     "ppl": 15.5555,
+     "seconds": 3.7,
+     "uncertainty": 1.93722
+    },
+    "refusal": {
+     "ppl": 11.8217,
+     "seconds": 3.6,
+     "uncertainty": 1.45176
+    }
+   }
+  },
+  "rdo-s015": {
+   "br": -0.3619,
+   "delta_br": 0.0141,
+   "drift_ln": -0.0097,
+   "readings": {
+    "control": {
+     "ppl": 22.9259,
+     "seconds": 3.6,
+     "uncertainty": 3.28068
+    },
+    "delivery": {
+     "ppl": 9.391,
+     "seconds": 3.6,
+     "uncertainty": 1.1305
+    },
+    "refusal": {
+     "ppl": 6.5392,
+     "seconds": 3.6,
+     "uncertainty": 0.70021
+    }
+   }
+  },
+  "rdo-s020": {
+   "br": -0.3166,
+   "delta_br": 0.0594,
+   "drift_ln": 0.0008,
+   "readings": {
+    "control": {
+     "ppl": 23.1695,
+     "seconds": 3.6,
+     "uncertainty": 3.32422
+    },
+    "delivery": {
+     "ppl": 9.088,
+     "seconds": 3.6,
+     "uncertainty": 1.07299
+    },
+    "refusal": {
+     "ppl": 6.6215,
+     "seconds": 3.6,
+     "uncertainty": 0.71414
+    }
+   }
+  },
+  "rdo-s035": {
+   "br": -0.2621,
+   "delta_br": 0.1139,
+   "drift_ln": 0.0057,
+   "readings": {
+    "control": {
+     "ppl": 23.2828,
+     "seconds": 3.6,
+     "uncertainty": 3.30551
+    },
+    "delivery": {
+     "ppl": 8.9581,
+     "seconds": 3.6,
+     "uncertainty": 1.04908
+    },
+    "refusal": {
+     "ppl": 6.8928,
+     "seconds": 3.6,
+     "uncertainty": 0.75394
+    }
+   }
+  }
+ },
+ "note": "prefill-only: llama-perplexity scores a corpus in one pass; zero output tokens. drift_ln is ln PPL control of the file minus the pristine base; delta_br is the (refusal-delivery) BR shift, positive = movement toward the removal branch."
+}
