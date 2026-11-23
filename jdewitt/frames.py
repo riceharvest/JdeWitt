@@ -198,7 +198,10 @@ def render_frame(tokenizer, frame: Frame, prompt: str, system: str, raw: bool = 
     from .chat import render_chat
 
     if frame.seed is None:
-        if raw:
+        if raw or getattr(tokenizer, "chat_template", None) is None:
+            # Same fallback the plain path takes (capture.render_prompt): a
+            # tokenizer without a chat template is sent the text as-is, so a
+            # frame record and its plain sibling stay the same prompt.
             return frame.wrap(prompt), "raw"
         return render_chat(tokenizer, frame.wrap(prompt), system=system), "chat"
     if raw:

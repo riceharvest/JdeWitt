@@ -240,6 +240,52 @@ def read_answers(path):
     return answers
 
 
+def read_mirror_answers(path):
+    """[(row id, frame name, answer)] from a delivery-mirror JSONL.
+
+    A mirror entry is a real delivery of that request, produced elsewhere (the
+    published oracle, a jailbreak capture) and carried here as TEXT. The capture
+    teacher-forces it under the PLAIN prompt with a distinct frame label, so the
+    pair contrast is answer content only -- the label is provenance, not a
+    wrapper. ``none`` is refused: it is the refusal side's label.
+    """
+    entries = []
+    for number, line in enumerate(Path(path).read_text().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"{path}:{number} is not JSON: {error}") from error
+        row_id, frame, answer = row.get("id"), row.get("frame"), row.get("answer")
+        if not isinstance(row_id, str) or not row_id:
+            raise ValueError(f"{path}:{number}: id must be a nonempty string")
+        if not isinstance(frame, str) or not frame or frame == "none":
+            raise ValueError(f"{path}:{number}: frame must be a nonempty name other than 'none'")
+        if not isinstance(answer, str) or not answer.strip():
+            raise ValueError(f"{path}:{number}: answer must be nonempty text")
+        entries.append((row_id, frame, answer))
+    if not entries:
+        raise ValueError(f"{path} carries no id+frame+answer rows")
+    return entries
+
+
+def mirror_frame(name):
+    """A provenance-only frame: the plain prompt, a borrowed answer.
+
+    ``render_frame`` renders this exactly like the plain prompt (seed None, one
+    ``{prompt}`` slot), so a mirror record's residual is read on the same text a
+    plain record would use. The name only keys the pair.
+    """
+    from .frames import Frame
+
+    return Frame(name=name, template="{prompt}", seed=None,
+                 provenance=("answer-mirror: the delivery answer was produced elsewhere "
+                             "and is teacher-forced here under the plain prompt"),
+                 measured="not a jailbreak frame; a pair-side provenance label")
+
+
 def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
                 ctx_size, system, raw, device, settle=True, settle_min_tokens=24,
                 answer_text=None, margin_pairs=None, frame=None):
@@ -376,11 +422,19 @@ def capture_command(args):
                    else frames_module.parse_frames(getattr(args, "frame", "none")))
     frame_by_name = {frame.name: frame for frame in local_frames} if local_frames else dict(frames_module.FRAMES)
     framed_names = tuple(name for name in frame_names if name != "none")
+    mirror_by_id = {}
+    for row_id, mirror_name, mirror_answer in (
+            read_mirror_answers(args.mirror_answers) if getattr(args, "mirror_answers", None) else ()):
+        if mirror_name in frame_by_name or mirror_name in mirror_by_id:
+            raise ValueError(f"mirror frame {mirror_name!r} collides with a pinned frame name")
+        if row_id in mirror_by_id:
+            raise ValueError(f"mirror answers name row {row_id!r} twice")
+        mirror_by_id[row_id] = (mirror_frame(mirror_name), mirror_answer)
     exclude_families = tuple(f.strip() for f in (getattr(args, "exclude_families", "") or "").split(",") if f.strip())
     exclude_categories = tuple(c.strip() for c in (getattr(args, "exclude_categories", "") or "").split(",") if c.strip())
     rows, filtered, excluded = read_rows(args.suite, kinds, args.limit, exclude_families, exclude_categories)
     protected_skipped = {}
-    if framed_names:
+    if framed_names or mirror_by_id:
         # The seed/fiction frames stay off the protective families permanently:
         # a framed capture there is the one contrast this project never builds.
         kept = []
@@ -487,6 +541,11 @@ def capture_command(args):
             plans.append((None, answers[row.get("id")]))
         for name in framed_names:
             plans.append((frame_by_name[name], None))
+        mirror = mirror_by_id.get(row.get("id"))
+        if mirror is not None:
+            # The delivery side of a pair whose answer was produced elsewhere:
+            # teacher-forced under the plain prompt, labelled for provenance.
+            plans.append((mirror[0], mirror[1]))
         for frame, banked in plans:
             if frame is None and args.answers and row.get("id") not in answers:
                 answers_missing += 1
@@ -657,15 +716,20 @@ def capture_command(args):
             f"python -m jdewitt.spanfit build --gguf-in <artifact.gguf> --in-place "
             f"--records {out} --shape perlayer --scale 1.0 --gguf-targets auto",
         ]
-    if framed_names and getattr(args, "pairs_out", None):
+    if (framed_names or mirror_by_id) and getattr(args, "pairs_out", None):
         # One pair per (suite id, frame) whose framed answer is a shape-delivery
-        # CANDIDATE, against the plain answer the capture already holds. The
-        # verdict stays null: the shape screen nominates, the agent read decides.
+        # CANDIDATE, against the plain answer the capture already holds. A mirror
+        # record is a candidate by construction (the answer was hand-read as a
+        # delivery elsewhere), so it is written with a null verdict too: the read
+        # still has to be recorded here (R2).
         from .delivery_pairs import make_pair, summarize as summarize_pairs, write_pairs
+        mirror_names = {frame.name for frame, _ in mirror_by_id.values()}
         plain_by_id = {meta["prompt_id"]: meta for meta, _ in records if meta["frame"] == "none"}
         pairs, candidates = [], []
         for meta, _ in records:
-            if meta["frame"] == "none" or meta["kind"] != "refusal" or meta["label"] != "deliver":
+            if meta["frame"] == "none" or meta["kind"] != "refusal":
+                continue
+            if meta["label"] != "deliver" and meta["frame"] not in mirror_names:
                 continue
             plain = plain_by_id.get(meta["prompt_id"])
             candidates.append({"prompt_id": meta["prompt_id"], "frame": meta["frame"],
@@ -684,11 +748,13 @@ def capture_command(args):
             pair = make_pair(
                 prompt_id=meta["prompt_id"], prompt=meta["prompt"],
                 kind=meta["kind"], family_id=meta.get("family_id"), category=meta.get("category"),
-                source={"kind": "capture", "model": args.model, "revision": identity["revision"],
-                        "suite": str(args.suite), "suite_sha256": identity["suite_sha256"],
-                        "records": str(out), "locus": args.locus,
-                        "plain_answer": ("banked" if plain is not None and plain["answer_source"] == "banked"
-                                         else "generated" if plain is not None else "missing")},
+                source=dict({"kind": "capture", "model": args.model, "revision": identity["revision"],
+                             "suite": str(args.suite), "suite_sha256": identity["suite_sha256"],
+                             "records": str(out), "locus": args.locus,
+                             "plain_answer": ("banked" if plain is not None and plain["answer_source"] == "banked"
+                                              else "generated" if plain is not None else "missing")},
+                            **({"mirror_answers": str(args.mirror_answers),
+                                "mirror_frames": sorted(mirror_names)} if mirror_names else {})),
                 refusal=_side(plain), delivery=_side(meta))
             pairs.append(pair)
         pairs_dir = Path(args.pairs_out)
