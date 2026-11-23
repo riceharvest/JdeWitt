@@ -96,6 +96,13 @@ same rows, `probe_underdetermined_layers` = all 28 (66 labelled rows / 2048 dims
 the probe is heavily underdetermined and the refinement is in-sample). A3 is therefore
 the RDO selector *as this capture can honestly fit it*, not RDO under a holdout design.
 
+The fitted file's bytes: `runs/p4/axes-rdo.pt` sha256
+`d9d9266cab93a059d8ecae8c1d4645fee5f2b8a4fda0b120e144417b298a0055`
+(fitted from `runs/p4/records-rdo-none.pt` sha256
+`c863fdb2a1db0061dcb7c933a062b66f1e60f1297bfae859b8593b575372144e`); both are carried
+in `ladder-table.json` so P4f can refit or verify the direction without the raw run
+directory.
+
 ## Ladder (all four runs)
 
 ```

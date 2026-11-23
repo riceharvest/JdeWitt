@@ -717,7 +717,10 @@
      }
     }
    ],
-   "tune_json": "verification/p4e/tune-a3.json"
+   "tune_json": "verification/p4e/tune-a3.json",
+   "axes_file": "runs/p4/axes-rdo.pt",
+   "axes_file_sha256": "d9d9266cab93a059d8ecae8c1d4645fee5f2b8a4fda0b120e144417b298a0055",
+   "axes_fit_records_sha256": "c863fdb2a1db0061dcb7c933a062b66f1e60f1297bfae859b8593b575372144e"
   },
   "a4": {
    "selector": "contrast mean",
