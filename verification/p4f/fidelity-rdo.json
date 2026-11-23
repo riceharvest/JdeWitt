@@ -1,0 +1,494 @@
+{
+ "arm": "rdo",
+ "axes": {
+  "layers": 28,
+  "path": "runs/p4/axes-rdo.pt",
+  "sha256": "d9d9266cab93a059d8ecae8c1d4645fee5f2b8a4fda0b120e144417b298a0055",
+  "width": 2048
+ },
+ "axis_space": "output",
+ "base": {
+  "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+ },
+ "merged": {
+  "path": "runs/p4/merged-rdo.gguf",
+  "sha256": "d83988cffb53f28a5949387edc0cd59d21f0b6f6ef4d14e5aa2d67db578b3063"
+ },
+ "per_tensor": [
+  {
+   "cos": 0.2821,
+   "edited_type": "Q4_K",
+   "name": "blk.0.attn_output.weight",
+   "norm_ratio": 0.6862,
+   "snr": 0.961,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8438,
+   "edited_type": "Q6_K",
+   "name": "blk.0.ffn_down.weight",
+   "norm_ratio": 1.0681,
+   "snr": 1.718,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.3705,
+   "edited_type": "Q4_K",
+   "name": "blk.1.attn_output.weight",
+   "norm_ratio": 0.7595,
+   "snr": 0.993,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8532,
+   "edited_type": "Q6_K",
+   "name": "blk.1.ffn_down.weight",
+   "norm_ratio": 1.0697,
+   "snr": 1.769,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.5437,
+   "edited_type": "Q4_K",
+   "name": "blk.2.attn_output.weight",
+   "norm_ratio": 0.9186,
+   "snr": 1.088,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8479,
+   "edited_type": "Q6_K",
+   "name": "blk.2.ffn_down.weight",
+   "norm_ratio": 1.0645,
+   "snr": 1.745,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.4867,
+   "edited_type": "Q4_K",
+   "name": "blk.3.attn_output.weight",
+   "norm_ratio": 0.8557,
+   "snr": 1.054,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4572,
+   "edited_type": "Q4_K",
+   "name": "blk.3.ffn_down.weight",
+   "norm_ratio": 0.8229,
+   "snr": 1.04,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4604,
+   "edited_type": "Q4_K",
+   "name": "blk.4.attn_output.weight",
+   "norm_ratio": 0.8363,
+   "snr": 1.037,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3686,
+   "edited_type": "Q4_K",
+   "name": "blk.4.ffn_down.weight",
+   "norm_ratio": 0.7555,
+   "snr": 0.993,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4615,
+   "edited_type": "Q4_K",
+   "name": "blk.5.attn_output.weight",
+   "norm_ratio": 0.8409,
+   "snr": 1.036,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8853,
+   "edited_type": "Q6_K",
+   "name": "blk.5.ffn_down.weight",
+   "norm_ratio": 1.0627,
+   "snr": 2.007,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.4585,
+   "edited_type": "Q4_K",
+   "name": "blk.6.attn_output.weight",
+   "norm_ratio": 0.8404,
+   "snr": 1.034,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3709,
+   "edited_type": "Q4_K",
+   "name": "blk.6.ffn_down.weight",
+   "norm_ratio": 0.7581,
+   "snr": 0.994,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4219,
+   "edited_type": "Q4_K",
+   "name": "blk.7.attn_output.weight",
+   "norm_ratio": 0.812,
+   "snr": 1.013,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4432,
+   "edited_type": "Q4_K",
+   "name": "blk.7.ffn_down.weight",
+   "norm_ratio": 0.8257,
+   "snr": 1.026,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4277,
+   "edited_type": "Q4_K",
+   "name": "blk.8.attn_output.weight",
+   "norm_ratio": 0.8096,
+   "snr": 1.019,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9073,
+   "edited_type": "Q6_K",
+   "name": "blk.8.ffn_down.weight",
+   "norm_ratio": 1.0565,
+   "snr": 2.237,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.4252,
+   "edited_type": "Q4_K",
+   "name": "blk.9.attn_output.weight",
+   "norm_ratio": 0.8063,
+   "snr": 1.018,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4519,
+   "edited_type": "Q4_K",
+   "name": "blk.9.ffn_down.weight",
+   "norm_ratio": 0.8328,
+   "snr": 1.031,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4991,
+   "edited_type": "Q4_K",
+   "name": "blk.10.attn_output.weight",
+   "norm_ratio": 0.8652,
+   "snr": 1.063,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5428,
+   "edited_type": "Q4_K",
+   "name": "blk.10.ffn_down.weight",
+   "norm_ratio": 0.9023,
+   "snr": 1.094,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3677,
+   "edited_type": "Q4_K",
+   "name": "blk.11.attn_output.weight",
+   "norm_ratio": 0.7542,
+   "snr": 0.993,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.905,
+   "edited_type": "Q6_K",
+   "name": "blk.11.ffn_down.weight",
+   "norm_ratio": 1.056,
+   "snr": 2.212,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.4026,
+   "edited_type": "Q4_K",
+   "name": "blk.12.attn_output.weight",
+   "norm_ratio": 0.7855,
+   "snr": 1.008,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4097,
+   "edited_type": "Q4_K",
+   "name": "blk.12.ffn_down.weight",
+   "norm_ratio": 0.795,
+   "snr": 1.01,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4141,
+   "edited_type": "Q4_K",
+   "name": "blk.13.attn_output.weight",
+   "norm_ratio": 0.7873,
+   "snr": 1.016,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4652,
+   "edited_type": "Q4_K",
+   "name": "blk.13.ffn_down.weight",
+   "norm_ratio": 0.8279,
+   "snr": 1.045,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4858,
+   "edited_type": "Q4_K",
+   "name": "blk.14.attn_output.weight",
+   "norm_ratio": 0.841,
+   "snr": 1.06,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9142,
+   "edited_type": "Q6_K",
+   "name": "blk.14.ffn_down.weight",
+   "norm_ratio": 1.0497,
+   "snr": 2.335,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.5169,
+   "edited_type": "Q4_K",
+   "name": "blk.15.attn_output.weight",
+   "norm_ratio": 0.8822,
+   "snr": 1.074,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.419,
+   "edited_type": "Q4_K",
+   "name": "blk.15.ffn_down.weight",
+   "norm_ratio": 0.7907,
+   "snr": 1.019,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4279,
+   "edited_type": "Q4_K",
+   "name": "blk.16.attn_output.weight",
+   "norm_ratio": 0.806,
+   "snr": 1.021,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3918,
+   "edited_type": "Q4_K",
+   "name": "blk.16.ffn_down.weight",
+   "norm_ratio": 0.758,
+   "snr": 1.01,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3667,
+   "edited_type": "Q4_K",
+   "name": "blk.17.attn_output.weight",
+   "norm_ratio": 0.7561,
+   "snr": 0.992,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8683,
+   "edited_type": "Q6_K",
+   "name": "blk.17.ffn_down.weight",
+   "norm_ratio": 1.0598,
+   "snr": 1.878,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.5708,
+   "edited_type": "Q4_K",
+   "name": "blk.18.attn_output.weight",
+   "norm_ratio": 0.9188,
+   "snr": 1.121,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5615,
+   "edited_type": "Q4_K",
+   "name": "blk.18.ffn_down.weight",
+   "norm_ratio": 0.85,
+   "snr": 1.141,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.6512,
+   "edited_type": "Q4_K",
+   "name": "blk.19.attn_output.weight",
+   "norm_ratio": 0.9598,
+   "snr": 1.221,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5475,
+   "edited_type": "Q4_K",
+   "name": "blk.19.ffn_down.weight",
+   "norm_ratio": 0.8574,
+   "snr": 1.12,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5648,
+   "edited_type": "Q4_K",
+   "name": "blk.20.attn_output.weight",
+   "norm_ratio": 0.8997,
+   "snr": 1.123,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9047,
+   "edited_type": "Q6_K",
+   "name": "blk.20.ffn_down.weight",
+   "norm_ratio": 1.0518,
+   "snr": 2.215,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.5173,
+   "edited_type": "Q4_K",
+   "name": "blk.21.attn_output.weight",
+   "norm_ratio": 0.8596,
+   "snr": 1.085,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5097,
+   "edited_type": "Q4_K",
+   "name": "blk.21.ffn_down.weight",
+   "norm_ratio": 0.8163,
+   "snr": 1.095,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4438,
+   "edited_type": "Q4_K",
+   "name": "blk.22.attn_output.weight",
+   "norm_ratio": 0.8198,
+   "snr": 1.029,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.3962,
+   "edited_type": "Q4_K",
+   "name": "blk.22.ffn_down.weight",
+   "norm_ratio": 0.7412,
+   "snr": 1.019,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.571,
+   "edited_type": "Q4_K",
+   "name": "blk.23.attn_output.weight",
+   "norm_ratio": 0.9134,
+   "snr": 1.124,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8596,
+   "edited_type": "Q6_K",
+   "name": "blk.23.ffn_down.weight",
+   "norm_ratio": 1.0596,
+   "snr": 1.821,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.42,
+   "edited_type": "Q4_K",
+   "name": "blk.24.attn_output.weight",
+   "norm_ratio": 0.7918,
+   "snr": 1.02,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8534,
+   "edited_type": "Q6_K",
+   "name": "blk.24.ffn_down.weight",
+   "norm_ratio": 1.0588,
+   "snr": 1.783,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.3727,
+   "edited_type": "Q4_K",
+   "name": "blk.25.attn_output.weight",
+   "norm_ratio": 0.7376,
+   "snr": 1.003,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8577,
+   "edited_type": "Q6_K",
+   "name": "blk.25.ffn_down.weight",
+   "norm_ratio": 1.0553,
+   "snr": 1.814,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.3651,
+   "edited_type": "Q4_K",
+   "name": "blk.26.attn_output.weight",
+   "norm_ratio": 0.7479,
+   "snr": 0.993,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8449,
+   "edited_type": "Q6_K",
+   "name": "blk.26.ffn_down.weight",
+   "norm_ratio": 1.0567,
+   "snr": 1.736,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.338,
+   "edited_type": "Q4_K",
+   "name": "blk.27.attn_output.weight",
+   "norm_ratio": 0.7268,
+   "snr": 0.982,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.919,
+   "edited_type": "Q6_K",
+   "name": "blk.27.ffn_down.weight",
+   "norm_ratio": 1.0309,
+   "snr": 2.433,
+   "source_type": "Q6_K"
+  }
+ ],
+ "scale": 1.0,
+ "summary": {
+  "codec_event": true,
+  "errors": [],
+  "max_cos": 0.919,
+  "mean_cos": 0.5577,
+  "min_cos": 0.2821,
+  "min_edit_cos_floor": 0.9,
+  "min_snr": 0.961,
+  "note": "a tensor below the floor cannot hold this edit: that is a CODEC event, labelled as one, not a reason to raise the scale",
+  "per_type": {
+   "Q4_K": {
+    "max_cos": 0.6512,
+    "mean_cos": 0.4516,
+    "min_cos": 0.2821,
+    "tensors": 42
+   },
+   "Q6_K": {
+    "max_cos": 0.919,
+    "mean_cos": 0.876,
+    "min_cos": 0.8438,
+    "tensors": 14
+   }
+  },
+  "tensors": 56
+ }
+}

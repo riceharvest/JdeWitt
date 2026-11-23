@@ -1,0 +1,418 @@
+{
+  "before": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "after": "runs/p4/merged-rdo-s020.gguf",
+  "tensor_count_before": 226,
+  "tensor_count_after": 226,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 226,
+    "bit_identical": 170,
+    "value_differs": 56,
+    "shape_changed": 0,
+    "codec_unsupported": 0,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 56,
+    "min": 0.002175,
+    "median": 0.003083,
+    "max": 0.005503
+  },
+  "differing_tensors": [
+    {
+      "name": "blk.27.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.005503,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.14.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.005254,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.11.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.004811,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.8.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.004756,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.20.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.004603,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.19.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.004548,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.18.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.0041,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.18.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.004006,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.10.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003968,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.20.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003819,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.19.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003799,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.2.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003797,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.5.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.003797,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.23.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003721,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.21.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003624,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.21.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003518,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.15.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003507,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.3.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003378,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.13.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003324,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.5.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003284,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.10.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.00328,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.14.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.00323,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.17.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.003227,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.4.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003224,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.9.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003147,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.7.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003143,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.25.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.003083,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.6.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003083,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.23.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.003019,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.003002,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.22.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002994,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.16.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002992,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.7.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002955,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.8.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002929,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.3.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002927,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.12.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002872,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.9.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002861,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.24.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002843,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.24.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.002828,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.12.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002822,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.16.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002789,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.13.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002751,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.26.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.002708,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.22.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002684,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.11.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002624,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.2.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.002587,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.1.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.002571,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.17.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002538,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.25.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002518,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.1.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002506,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.4.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002407,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.0.ffn_down.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.002393,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.6.ffn_down.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002391,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.26.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002338,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.27.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002256,
+      "same_dtype": true
+    },
+    {
+      "name": "blk.0.attn_output.weight",
+      "dtype_before": "Q4_K",
+      "dtype_after": "Q4_K",
+      "rel_rms": 0.002175,
+      "same_dtype": true
+    }
+  ],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}
