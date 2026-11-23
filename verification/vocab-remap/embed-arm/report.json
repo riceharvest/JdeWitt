@@ -554,7 +554,7 @@
       "rows": 20,
       "rows_with_edits": 20,
       "rows_with_rewritten_text": 20,
-      "sha256": "a62acf4775d4ed92874d6e8b9a0b6c75fec2ea4ca30ff4982711c44ed146a622",
+      "sha256": "2b0266c93d034319accb3998da575d1981e9e03ce08d73c1149af460aa614902",
       "source": "verification/vocab-remap/embed-arm/prompt-diffs.json",
       "token_delta": -15
     },
