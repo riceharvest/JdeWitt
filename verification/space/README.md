@@ -26,3 +26,31 @@ The fixture is committed and regenerable:
 `make_fixture.py` writes the 2-layer GGUF, `bank/fixture-bank.tar` (fixed member
 mtime, so its sha256 is reproducible), the entry that pins that sha256, and
 `bank-bad-digest/` with a one-byte-flipped copy pinned at the good digest.
+
+# staging gate
+
+`python scripts/space_stage.py --out DIR` writes the tree an account owner
+pushes: `README.md` (Spaces YAML: gradio, `app_file: app.py`, a `models:` list
+built from the bank's bases), `requirements.txt` (numpy, gguf, huggingface_hub,
+gradio — no torch pin, no transformers, no llama stack), a thin `app.py`, a
+vendored `jdewitt/` import closure, `spaces/bank/` verbatim, `.gitignore` and the
+AGPL licence text. The Space is buildable without pip-installing this repo, so
+the XPU torch pin in `pyproject.toml` never reaches a CUDA ZeroGPU image.
+
+It refuses to stage on a local import the tree cannot supply, an import the
+requirements do not ship, any `/mnt/`, `/home/`, board card id or the banned word
+in a staged text file, a tree over 5 MB outside the bank, or a non-empty target.
+
+`stage.json` is the gate run, taken from two real stages into fresh directories:
+
+- `diff_r_identical` — the two trees are byte-identical;
+- `sanitisation.matches` — empty for the four refused shapes;
+- `app_parses` — `ast.parse` on the staged `app.py`;
+- `staged_import` — `import jdewitt.space_loop` with the staged tree on
+  `sys.path` succeeds and pulls neither gradio nor torch;
+- `ruff` — `ruff check jdewitt scripts`, exit 0.
+
+The coverage loop itself (`jdewitt/space_loop.py`) answers from the bank alone:
+`inspect(repo, revision, quant)` returns a covered entry or a typed `BANK_MISS` /
+`UNSUPPORTED_QUANT`, with the licence `UNVERIFIED` and the edit state `none`
+until those gates land.
