@@ -1,0 +1,48 @@
+{
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7",
+  "checked": [
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/adapter.json",
+      "schema": "adapter.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/evidence.json",
+      "schema": "evidence.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/files.json",
+      "schema": "files.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/plan-card.json",
+      "schema": "plan-card.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/signature.json",
+      "schema": "signature.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/twin.json",
+      "schema": "twin.json",
+      "valid": true,
+      "problems": []
+    }
+  ],
+  "missing_schemas": [
+    "matrix.json",
+    "packet.json",
+    "scoring-manifest.json"
+  ],
+  "valid": true,
+  "note": "Shape and version only for release artifacts; adapter.json also gets its R8 card semantics, twin.json its codec-realized/behaviour split, and plan-card.json its signed-meta/payload agreement. Digests and claim chains are checked by release verify commands."
+}

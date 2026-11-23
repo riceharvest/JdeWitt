@@ -1,0 +1,1 @@
+41e45c4cbde776129eeb0989bbd5daed75f38adcd84b4fd899090baf0fa72526  /home/dario/.agentboard/p7-t_3bb401d4/spoiled/Spark-X2.6-1.7B-Q4_K_M.gguf

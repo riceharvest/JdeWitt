@@ -1,0 +1,24 @@
+{
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7",
+  "repro": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/repro.json",
+  "repro_digest": "73d6ded2638fd2636f537e10ae9f9cf561df25cd0060bf9eb812b0170f736a91",
+  "binding_digest": "459eaf5644155081849ff1a63c502da0ee9c6bd64106df09c1baec8e287159aa",
+  "operand_count": 201,
+  "base": {
+    "name": "Spark-X2.6-1.7B-Q4_K_M.gguf",
+    "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+    "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+    "bytes": 1107458592,
+    "arch": "spark2_5",
+    "file_type": "MOSTLY_Q4_K_M",
+    "quant_types": {
+      "F32": 57,
+      "Q4_K": 140,
+      "Q6_K": 29
+    },
+    "tensors": 226,
+    "observed": true,
+    "source": "evaluation.json base.path"
+  },
+  "next": "release-repro /home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7 --check"
+}

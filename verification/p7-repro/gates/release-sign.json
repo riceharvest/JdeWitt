@@ -1,0 +1,11 @@
+{
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7",
+  "repro": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/repro.json",
+  "repro_digest": "73d6ded2638fd2636f537e10ae9f9cf561df25cd0060bf9eb812b0170f736a91",
+  "binding_digest": "459eaf5644155081849ff1a63c502da0ee9c6bd64106df09c1baec8e287159aa",
+  "signature_digest": "73d6ded2638fd2636f537e10ae9f9cf561df25cd0060bf9eb812b0170f736a91",
+  "public_key_sha256": "b1ad47c1f66f485f3a925fe45d1f100f5bbee08af38beedd1819dee8dcc25498",
+  "operand_count": 201,
+  "next": "release-repro /home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7 --check",
+  "note": "Signs byte reproducibility, not model quality; store the public key where buyers can pin it."
+}

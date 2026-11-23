@@ -1,0 +1,11 @@
+{
+  "valid": true,
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7",
+  "files": 11,
+  "bytes": 1108285703,
+  "release_identity": "9964a63f35379fa59ef682c5b002276379599481ee8cfce2e890cf0156ad5613",
+  "ledger_present": true,
+  "scope": "File integrity only, not independent proof of model quality or authenticity",
+  "evidence_entries": 1,
+  "ledger_digest": "a710f68c76da4c30e7dff86654c1e4bd9906846ef1bbf0e10cdbadc7307af2d9"
+}

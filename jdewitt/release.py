@@ -631,6 +631,10 @@ def keygen(path):
 # release payload: `verify_release` re-hashes the inventory, and a seal that appeared
 # in it would make the release invalid the moment it was signed.
 REPRO_SEAL_FILES = ('repro.json', 'repro-spec.json')
+# Version 3 keeps the version-2 operand set and leaves the base artifact's
+# resolution hint (name, path, source) out of `binding_digest`, so the seal travels
+# with the bytes rather than with the directory the signer happened to store them in.
+REPRO_VERSION = 3
 _MISSING = object()
 
 # Paths worth trying when an evaluation record pins no argv under `repro.serve_argv`.
@@ -791,33 +795,94 @@ def _file_with_digest(directory, wanted):
     return None
 
 
-def _repro_base(directory, evaluation, spec):
-    """The user's quant artifact: name, digest, size, GGUF header and observed quant types."""
+def _base_location(directory, evaluation, spec, base=None):
+    """Where this host can read the base artifact's bytes, and which declaration named it.
+
+    The base is the buyer's own quant, so it is named by digest and never shipped in
+    the release: the order is an explicit ``--base``, the repro spec, a ``base.gguf``
+    placed in the release directory, any file inside the release with the declared
+    digest, then the path the evaluation declares. Missing candidates are reported,
+    not guessed past; a local copy wins over the author's absolute host path, so a
+    copied directory is checked against its own bytes.
+    """
+    directory = Path(directory)
     declared = spec.get('base', spec.get('base_artifact'))
     declared_path = _declared_path(declared)
     declared_sha = declared.get('sha256') if isinstance(declared, dict) else None
-    twin = _json_if(Path(directory) / 'twin.json') or {}
+    twin = _json_if(directory / 'twin.json') or {}
+    twin_base = twin.get('base') if isinstance(twin.get('base'), dict) else {}
+    document = evaluation if isinstance(evaluation, dict) else {}
+    eval_base = document.get('base') if isinstance(document.get('base'), dict) else {}
+    wanted = (declared_sha if isinstance(declared_sha, str) else None) \
+        or (eval_base.get('sha256') if isinstance(eval_base.get('sha256'), str) else None) \
+        or (twin_base.get('sha256') if isinstance(twin_base.get('sha256'), str) else None)
+    tried = []
+
+    def usable(path, source):
+        tried.append(str(path))
+        if path.is_symlink():
+            raise ValueError(f'base artifact {path} must be a regular file, not a symlink')
+        return {'path': path, 'source': source, 'tried': tried} if path.is_file() else None
+
+    if base is not None:
+        path = Path(base)
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f'--base {path} is not a readable regular file; an explicit '
+                             f'override is never silently replaced by another copy')
+        return {'path': path, 'source': '--base', 'tried': [str(path)]}
+    if declared_path is not None:
+        found = usable(_resolve(directory, declared_path), 'repro spec')
+        if found is not None:
+            return found
+    found = usable(directory / 'base.gguf', 'base.gguf in release directory')
+    if found is not None:
+        return found
+    if wanted:
+        match = _file_with_digest(directory, wanted)
+        if match is not None:
+            tried.append(str(match))
+            return {'path': match, 'source': 'release directory digest', 'tried': tried}
+    for key in ('base_artifact', 'base_artifact_path'):
+        if isinstance(document.get(key), str) and document[key].strip():
+            found = usable(_resolve(directory, document[key]), f'evaluation.json {key}')
+            if found is not None:
+                return found
+    eval_path = _declared_path(eval_base)
+    if eval_path is not None:
+        found = usable(_resolve(directory, eval_path), 'evaluation.json base.path')
+        if found is not None:
+            return found
+    return {'path': None, 'source': None, 'tried': tried}
+
+
+def _repro_base(directory, evaluation, spec, base=None, observe_base=True, tolerant=False):
+    """The user's quant artifact: name, digest, size, GGUF header and observed quant types.
+
+    ``observe_base=False`` keeps a version-2 seal's digest-only claim: the digest is
+    re-derived from what the release declares, and no file is read. When a file is
+    observed, its digest must agree with every digest the release declares for the
+    base; the build path refuses a different artifact, while ``--check`` reports it
+    as a moved operand with both digests.
+    """
+    directory = Path(directory)
+    declared = spec.get('base', spec.get('base_artifact'))
+    declared_sha = declared.get('sha256') if isinstance(declared, dict) else None
+    twin = _json_if(directory / 'twin.json') or {}
     twin_base = twin.get('base')
     if not isinstance(twin_base, dict):
         twin_base = {}
+    document = evaluation if isinstance(evaluation, dict) else {}
+    eval_base = document.get('base') if isinstance(document.get('base'), dict) else {}
     twin_sha = twin_base.get('sha256') if isinstance(twin_base.get('sha256'), str) else None
-    source = 'repro spec'
-    path = _resolve(directory, declared_path) if declared_path else None
-    if path is None:
-        for key in ('base_artifact', 'base_artifact_path'):
-            if isinstance(evaluation.get(key), str) and evaluation[key].strip():
-                path, source = _resolve(directory, evaluation[key]), f'evaluation.json {key}'
-                break
-    if path is None:
-        match = _file_with_digest(directory, declared_sha or twin_sha)
-        if match is not None:
-            path, source = match, 'release directory digest'
-    if path is None:
-        fallback = Path(directory) / 'base.gguf'
-        if fallback.is_file():
-            path, source = fallback, 'base.gguf in release directory'
-    if path is None:
-        declared_digest = declared_sha or twin_sha
+    eval_sha = eval_base.get('sha256') if isinstance(eval_base.get('sha256'), str) else None
+    declared_sha = declared_sha if isinstance(declared_sha, str) else None
+    declared = [sha for sha in (declared_sha, eval_sha, twin_sha) if sha]
+    if len(set(declared)) > 1:
+        raise ValueError('release declares different base digests: '
+                         + ', '.join(f'{sha[:12]}…' for sha in declared)
+                         + ' (repro spec / evaluation.json / twin.json disagree)')
+    declared_digest = declared[0] if declared else None
+    if not observe_base:
         if not declared_digest:
             raise ValueError('no base artifact: declare repro.base (evaluation.json or '
                              'repro-spec.json), ship base.gguf, or record twin.json.base.sha256')
@@ -827,15 +892,28 @@ def _repro_base(directory, evaluation, spec):
                 'tensors': twin_base.get('tensor_count'),
                 'observed': False,
                 'source': 'twin.json.base digest; the artifact is not shipped, so it cannot be re-hashed'}
-    path = Path(path)
-    if path.is_symlink() or not path.is_file():
-        raise ValueError(f'base artifact {path} must be an existing regular file')
+    location = _base_location(directory, evaluation, spec, base)
+    path = location['path']
+    if path is None:
+        if not declared_digest:
+            raise ValueError('no base artifact: declare repro.base (evaluation.json or '
+                             'repro-spec.json), ship base.gguf, or record twin.json.base.sha256')
+        return {'name': twin_base.get('file') or twin_base.get('name'), 'path': None,
+                'sha256': declared_digest, 'bytes': None, 'arch': twin_base.get('arch'),
+                'file_type': None, 'quant_types': None,
+                'tensors': twin_base.get('tensor_count'),
+                'observed': False,
+                'source': 'twin.json.base digest; the artifact is not shipped, so it cannot be re-hashed'}
+    observed_sha = sha256_file(path)
+    if declared_digest and observed_sha != declared_digest and not tolerant:
+        raise ValueError(f'base artifact {path} hashes to {observed_sha[:12]}… but the release '
+                         f'declares {declared_digest[:12]}…; refusing to index a different base')
     facts = _gguf_facts(path)
     return {'name': path.name, 'path': _portable_path(directory, path),
-            'sha256': sha256_file(path), 'bytes': path.stat().st_size,
+            'sha256': observed_sha, 'bytes': path.stat().st_size,
             'arch': facts['arch'], 'file_type': facts['file_type'],
             'quant_types': facts['quant_types'], 'tensors': facts['tensors'],
-            'observed': True, 'source': source}
+            'observed': True, 'source': location['source']}
 
 
 def _repro_plan(directory, evaluation, spec):
@@ -1038,22 +1116,30 @@ def _repro_runtime(directory, evaluation, spec):
             'backend': backend or 'unknown'}
 
 
-def build_repro(directory, tolerant=False):
+def build_repro(directory, tolerant=False, base=None, version=REPRO_VERSION,
+                observe_base=None):
     """Machine-readable reproduction index over every operand a release depends on.
 
     Version 2 keeps every version-1 field (release identity, index/evaluation/README
     digests, release file digests, ledger digest) and adds `operands`: the base GGUF,
     the plan card, each suite, each serve argv, the per-tensor codec table, and the
-    tool/runtime that produced the index. `binding_digest` covers the portable
-    operands only, so a signature can be checked on hardware whose Python or backend
-    differs without pretending those are release bytes. With ``tolerant=True`` a
-    missing or unreadable operand is recorded as ``{error: ...}`` instead of raising,
-    which is how `release-repro --check` names every move at once.
+    tool/runtime that produced the index. Version 3 makes the base operand portable:
+    its bytes are hashed from the copy this host can read (``--base``, the
+    evaluation's declared path, ``base.gguf``) while the sealed record keeps the
+    digest and facts; the resolution hint (file name, path, which declaration named
+    it) is left out of `binding_digest` so a buyer who stores the same bytes under
+    another name can still verify the signature. `binding_digest` covers the portable operands only, so a
+    signature can be checked on hardware whose Python or backend differs without
+    pretending those are release bytes. With ``tolerant=True`` a missing or
+    unreadable operand is recorded as ``{error: ...}`` instead of raising, which is
+    how `release-repro --check` names every move at once.
     """
     directory = Path(directory)
     record = json.loads((directory / 'files.json').read_text())
     evaluation, spec = _repro_spec(directory)
-    repro = {'version': 2,
+    if observe_base is None:
+        observe_base = True
+    repro = {'version': version,
              'release_identity': record['release_identity'],
              'files_index_digest': record['record_digest'],
              'evaluation_sha256': sha256_file(directory / 'evaluation.json'),
@@ -1063,9 +1149,8 @@ def build_repro(directory, tolerant=False):
     if ledger is not None:
         repro['ledger_digest'] = ledger['ledger_digest']
     operands = {}
-    for key, builder in (('base', _repro_base), ('plan', _repro_plan),
-                         ('suites', _repro_suites), ('serve_argv', _repro_serve_argv),
-                         ('codec', _repro_codec)):
+    for key, builder in (('plan', _repro_plan), ('suites', _repro_suites),
+                         ('serve_argv', _repro_serve_argv), ('codec', _repro_codec)):
         try:
             operands[key] = builder(directory, evaluation, spec)
         except Exception as error:
@@ -1077,6 +1162,13 @@ def build_repro(directory, tolerant=False):
             if not tolerant:
                 raise ValueError(value['card_problem'])
             operands[key] = dict(value)
+    try:
+        operands['base'] = _repro_base(directory, evaluation, spec, base=base,
+                                       observe_base=observe_base, tolerant=tolerant)
+    except Exception as error:
+        if not tolerant:
+            raise
+        operands['base'] = {'error': f'{type(error).__name__}: {error}'}
     operands['tool'] = _repro_tool()
     operands['runtime'] = _repro_runtime(directory, evaluation, spec)
     repro['operands'] = operands
@@ -1086,12 +1178,17 @@ def build_repro(directory, tolerant=False):
 
 
 def _portable_repro(repro):
-    """The part of a v2 index that describes release bytes rather than the host that read them."""
+    """The part of an index that describes release bytes rather than the host that read them."""
     view = {key: value for key, value in repro.items()
             if key not in {'repro_digest', 'binding_digest'}}
     operands = dict(view.get('operands') or {})
     operands.pop('tool', None)
     operands.pop('runtime', None)
+    if int(view.get('version') or 0) >= 3 and isinstance(operands.get('base'), dict):
+        base = dict(operands['base'])
+        for hint in ('path', 'source', 'name'):
+            base.pop(hint, None)
+        operands['base'] = base
     view['operands'] = operands
     return view
 
@@ -1139,10 +1236,10 @@ def _write_repro_file(path, repro):
                                        sort_keys=True, allow_nan=False) + '\n')
 
 
-def write_repro(directory, out=None):
+def write_repro(directory, out=None, base=None):
     """Build the reproduction index and write it as repro.json (the build path)."""
     directory = Path(directory)
-    repro = build_repro(directory)
+    repro = build_repro(directory, base=base)
     out = Path(out) if out is not None else directory / 'repro.json'
     if out.is_symlink():
         raise ValueError('repro.json cannot be a symlink')
@@ -1150,6 +1247,7 @@ def write_repro(directory, out=None):
     return {'directory': str(directory.resolve()), 'repro': str(out.resolve()),
             'repro_digest': repro['repro_digest'], 'binding_digest': repro['binding_digest'],
             'operand_count': _operand_count(repro),
+            'base': repro['operands']['base'],
             'next': f'release-repro {directory} --check'}
 
 
@@ -1187,7 +1285,7 @@ def _signature_record(directory):
     return record
 
 
-def sign_release(directory, secret_path):
+def sign_release(directory, secret_path, base=None):
     """Sign the release reproduction index with an Ed25519 key. Refuses to guess or create a key."""
     import base64
     import tempfile
@@ -1196,7 +1294,7 @@ def sign_release(directory, secret_path):
     if not secret.is_file():
         raise FileNotFoundError(f'Signing key not found: {secret} (create one with release-keygen)')
     verify_release(directory)
-    repro = build_repro(directory)
+    repro = build_repro(directory, base=base)
     message = json.dumps(repro, sort_keys=True, separators=(',', ':'))
     with tempfile.TemporaryDirectory() as tmp:
         message_path = Path(tmp) / 'message'
@@ -1221,7 +1319,7 @@ def sign_release(directory, secret_path):
             'note': 'Signs byte reproducibility, not model quality; store the public key where buyers can pin it.'}
 
 
-def verify_signature(directory, public_path=None):
+def verify_signature(directory, public_path=None, base=None):
     """Verify a release signature; with public_path also pin authenticity to that key."""
     directory = Path(directory)
     record = _signature_record(directory)
@@ -1231,7 +1329,17 @@ def verify_signature(directory, public_path=None):
         if payload != repro:
             raise ValueError('Signature payload does not match current release state')
     else:
-        repro = build_repro(directory)
+        sealed_base = (payload.get('operands') or {}).get('base')
+        sealed_base = sealed_base if isinstance(sealed_base, dict) else {}
+        observe = bool(sealed_base.get('observed'))
+        repro = build_repro(directory, base=base, version=int(payload['version']),
+                            observe_base=observe)
+        actual_base = (repro.get('operands') or {}).get('base') or {}
+        if observe and not actual_base.get('observed'):
+            raise ValueError(
+                f'base artifact {sealed_base.get("name") or "the base"} sha256 '
+                f'{str(sealed_base.get("sha256"))[:12]}… is not readable on this host; '
+                f'pass --base PATH with those exact bytes')
         if payload.get('binding_digest') != repro.get('binding_digest'):
             raise ValueError('Signature payload does not match current release state')
     if public_path is not None:
@@ -1245,18 +1353,24 @@ def verify_signature(directory, public_path=None):
                             'signature math verified; not checked against a pinned public key'}
 
 
-def check_repro(directory, strict_provenance=False):
+def check_repro(directory, strict_provenance=False, base=None):
     """Re-hash every operand and compare it with the seal; name each moved operand by JSON path.
 
     The seal is signature.json's payload when present (the signed index), otherwise
     repro.json. Release files are re-hashed from disk rather than compared with
     files.json, so a changed artifact is a move even if its index entry was rewritten.
-    Tool/runtime values describe the box that built the index, not release bytes: they
-    are reported as `provenance_drift` and only fail with ``strict_provenance``.
+    The base artifact is checked at the strength the seal claims: when the seal names
+    the base's bytes, a copy on this host is re-hashed (``--base``, the path the
+    release declares, or ``base.gguf`` in the directory) and a missing copy is
+    reported as UNMEASURED with the path it looked for; a digest-only seal is
+    compared on its digest alone. Tool/runtime values describe the box that built the
+    index, not release bytes: they are reported as `provenance_drift` and only fail
+    with ``strict_provenance``.
     """
     directory = Path(directory)
     if directory.is_symlink() or not directory.is_dir():
-        raise ValueError('Release must be a regular directory')
+        raise ValueError(f'UNMEASURED: release directory {directory} does not exist or is not '
+                         f'a regular directory; nothing was re-derived')
     signature_path = directory / 'signature.json'
     repro_path = directory / 'repro.json'
     if signature_path.is_file():
@@ -1275,7 +1389,26 @@ def check_repro(directory, strict_provenance=False):
     if expected.get('version') == 1:
         raise ValueError('repro index version 1 carries no operands; rebuild it with '
                          'release-repro DIR --out repro.json')
-    actual = build_repro(directory, tolerant=True)
+    sealed_base = (expected.get('operands') or {}).get('base')
+    sealed_base = sealed_base if isinstance(sealed_base, dict) else {}
+    observe_base = base is not None or bool(sealed_base.get('observed'))
+    actual = build_repro(directory, tolerant=True, base=base,
+                         version=int(expected.get('version') or REPRO_VERSION),
+                         observe_base=observe_base)
+    actual_base = (actual.get('operands') or {}).get('base')
+    actual_base = actual_base if isinstance(actual_base, dict) else {}
+    unresolved_base = bool(sealed_base.get('observed')) and not actual_base.get('observed')
+    base_file, tried_paths = None, []
+    if actual_base.get('observed') or unresolved_base:
+        try:
+            evaluation, spec = _repro_spec(directory)
+            location = _base_location(directory, evaluation, spec, base)
+        except (ValueError, OSError):
+            location = {'path': None, 'source': None, 'tried': []}
+        tried_paths = location['tried']
+        if location['path'] is not None:
+            base_file = {'path': str(location['path'].resolve()), 'source': location['source'],
+                         'sha256': actual_base.get('sha256'), 'bytes': actual_base.get('bytes')}
     moved, drift, problems = [], [], []
     files_checked = 0
     for name, metadata in sorted((expected.get('files') or {}).items()):
@@ -1300,9 +1433,15 @@ def check_repro(directory, strict_provenance=False):
         moved.append({'operand': key,
                       'expected': (expected.get('operands') or {}).get(key),
                       'actual': broken[key]})
+    # A version-3 seal leaves the base's resolution hint out of binding_digest on
+    # purpose: where the bytes sit is not an operand, the digest is.
+    hint_leaves = {'base.path', 'base.source', 'base.name'} \
+        if int(expected.get('version') or 0) >= 3 else set()
     for operand in sorted(set(expected_flat) | set(actual_flat)):
         root = operand.split('.', 1)[0].split('[', 1)[0]
-        if root in broken:
+        if root in broken or operand in hint_leaves:
+            continue
+        if unresolved_base and root == 'base':
             continue
         if expected_flat.get(operand, _MISSING) == actual_flat.get(operand, _MISSING):
             continue
@@ -1318,6 +1457,12 @@ def check_repro(directory, strict_provenance=False):
             problems.append({'operand': key, 'problem': value['error']})
         elif isinstance(value, dict) and isinstance(value.get('card_problem'), str):
             problems.append({'operand': key, 'problem': value['card_problem']})
+    if unresolved_base:
+        problems.append({'operand': 'base', 'problem':
+                         f"UNMEASURED: the seal names {sealed_base.get('name') or 'the base'} "
+                         f"sha256 {sealed_base.get('sha256')} but this host cannot read it "
+                         f"({', '.join(tried_paths) if tried_paths else 'no candidate path'}); "
+                         f"pass --base PATH with those exact bytes"})
     if seal == 'signature.json' and repro_path.is_file():
         shipped = json.loads(repro_path.read_text())
         if shipped.get('repro_digest') != expected.get('repro_digest'):
@@ -1332,12 +1477,15 @@ def check_repro(directory, strict_provenance=False):
             'checked': {'files': files_checked, 'operands': len(expected_flat)},
             'resolved': {key: (actual.get('operands') or {}).get(key)
                          for key in ('base', 'plan', 'suites', 'serve_argv', 'codec')},
+            'base_file': base_file,
             'moved': moved, 'provenance_drift': drift, 'problems': problems,
             'next': (f'release-repro {directory} --check' if not valid else
                      'release-verify-signature DIR --public PUB.pem; verify-release DIR'),
             'note': ('Every operand re-hashed from the release directory and the paths the '
-                     'index names; tool/runtime differences are provenance drift, not release '
-                     'bytes, and fail only with --strict-provenance.')}
+                     'index names; base bytes are read from --base, the declared path or '
+                     'base.gguf and are UNMEASURED when absent; tool/runtime differences are '
+                     'provenance drift, not release bytes, and fail only with '
+                     '--strict-provenance.')}
 
 
 def verify_release(directory,expected_identity=None):

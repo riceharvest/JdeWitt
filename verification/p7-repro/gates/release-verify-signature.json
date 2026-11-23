@@ -1,0 +1,8 @@
+{
+  "valid": true,
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7",
+  "repro_digest": "73d6ded2638fd2636f537e10ae9f9cf561df25cd0060bf9eb812b0170f736a91",
+  "release_identity": "9964a63f35379fa59ef682c5b002276379599481ee8cfce2e890cf0156ad5613",
+  "binding_digest": "459eaf5644155081849ff1a63c502da0ee9c6bd64106df09c1baec8e287159aa",
+  "authenticity": "verified against pinned public key"
+}

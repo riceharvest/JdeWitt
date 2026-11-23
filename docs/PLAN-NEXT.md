@@ -1528,3 +1528,39 @@ and no published directory. Behaviour numbers in the fixture (0.215 adapter /
 0.119 merged, ratio 0.553) are quoted from "Where we are short" item 3, not
 measured here; the real merged-twin run stays GATED in the
 adapter-vs-merged card.
+
+### The repro index re-hashes the buyer's base on the real release (2026-11-23)
+
+P7 ran the index against the signed Spark-X2.6-1.7B-Q4_K_M release dir
+(`verification/releases/spark-1.7b-q4km-p6`, identity `9964a63f…`) instead of a
+synthetic fixture. Version 3 records the base operand at the strength the bytes
+allow: `_repro_base` resolves the base from `--base`, the repro spec, a `base.gguf`
+inside the release, any release file carrying the declared digest, then
+`evaluation.json`'s `base.path`; the observed record keeps name, digest, bytes,
+architecture, declared file type, per-tensor quant counts and tensor count, and the
+build refuses a file whose digest contradicts the release's declared base. The file
+name, path and the declaration that named them are hints, not operands, so version 3
+leaves them out of `binding_digest`: a buyer who stores the same bytes under another
+name still verifies the signature. `release-sign`, `release-repro` and
+`release-verify-signature` take `--base`; `--check` reports `base_file` (the path it
+read, so `sha256sum` can be compared beside it), and a seal that names base bytes
+this host cannot read is an UNMEASURED problem naming the expected digest and the
+paths it tried — never a silent pass and never a fallback to another copy. Version-2
+seals keep their semantics: the shipped P6 `repro.json`/`signature.json` still check
+0 and verify against the pinned key without reading any base file.
+
+Measured on the real dir (`verification/p7-repro/EVIDENCE.md`, raw stdout in
+`gates/`): 201 operands (8 release files + 193 operand leaves), base sha256
+`80ff5222…` equal to `sha256sum` of the 1,107,458,592-byte
+`Spark-X2.6-1.7B-Q4_K_M.gguf`, plan bundle `b57dac81…` key `6aedfc200b76e5a7`, one
+serve argv (22 tokens), and 36 codec rows read from the twin header — 27 Q4_K
+(cos 0.2152–0.4717) and 9 Q6_K (0.8118–0.8858), with every row's quant type checked
+against the artifact. The release declares no suite rows, so `suites` is `null`: the
+four behaviour probes live in the gated measured record (`c39e69b2…`), not in the
+release, and the index does not invent an operand a stranger could not re-derive.
+Copying the dir and flipping one byte at offset 500,000,000 of a copy of the base
+makes `--check` exit 1 with a single `base.sha256` row carrying both digests
+(`80ff5222…` → `41e45c4c…`), both via `--base` and via a `base.gguf` placed in the
+copy; the untampered dir still exits 0, and `release-verify-signature --public`
+still passes after signing the new payload with the pinned key (`b1ad47c1…`). A
+missing release dir or a missing explicit `--base` exits 1 with the path named.

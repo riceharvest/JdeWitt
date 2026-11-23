@@ -1,0 +1,2 @@
+fc0b1a7f7ff8919a6a29f6356acdbfdf51bb8cdd348be53e7332230bb2e097b3  /home/dario/.agentboard/p7-t_3bb401d4/release-spark-p7/model-merged.gguf
+80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad  /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf

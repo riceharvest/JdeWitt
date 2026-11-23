@@ -1,0 +1,304 @@
+{
+  "valid": false,
+  "directory": "/home/dario/.agentboard/p7-t_3bb401d4/release-flipped-base",
+  "seal": "signature.json",
+  "operand_count": 201,
+  "checked": {
+    "files": 8,
+    "operands": 193
+  },
+  "resolved": {
+    "base": {
+      "name": "Spark-X2.6-1.7B-Q4_K_M.gguf",
+      "path": "/home/dario/.agentboard/p7-t_3bb401d4/spoiled/Spark-X2.6-1.7B-Q4_K_M.gguf",
+      "sha256": "41e45c4cbde776129eeb0989bbd5daed75f38adcd84b4fd899090baf0fa72526",
+      "bytes": 1107458592,
+      "arch": "spark2_5",
+      "file_type": "MOSTLY_Q4_K_M",
+      "quant_types": {
+        "F32": 57,
+        "Q4_K": 140,
+        "Q6_K": 29
+      },
+      "tensors": 226,
+      "observed": true,
+      "source": "--base"
+    },
+    "plan": {
+      "bundle": "plan-card.tar",
+      "bundle_sha256": "b57dac813dac29b969fbad6eb1c0bfbb3fb9b84f6bf2c7d4d479bec4ab83edf5",
+      "registry_key": "6aedfc200b76e5a7",
+      "manifest_payload_digest": "a90c37469e41c9da1673fee63d08f07662c110db5cdc9c371359168dae406bb3",
+      "meta_digest": "05b4a0bae69e552bf4032b72a512bd311396fc3a197c3910434396e073121cf8"
+    },
+    "suites": null,
+    "serve_argv": {
+      "default": [
+        "/mnt/ssd/b70-code/verify-release/llama-b70-vulkan-ubuntu24-x64/llama-server",
+        "-m",
+        "/mnt/ssd/models/spark/p6/merged-twin.gguf",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "51661",
+        "-c",
+        "4096",
+        "-ngl",
+        "999",
+        "--parallel",
+        "1",
+        "--no-webui",
+        "--no-warmup",
+        "--device",
+        "Vulkan1",
+        "--split-mode",
+        "none",
+        "--jinja",
+        "-lv",
+        "4"
+      ]
+    },
+    "codec": {
+      "artifact": {
+        "name": "model-merged.gguf",
+        "path": "model-merged.gguf",
+        "sha256": "fc0b1a7f7ff8919a6a29f6356acdbfdf51bb8cdd348be53e7332230bb2e097b3"
+      },
+      "tensors": [
+        {
+          "name": "blk.10.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4451,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.10.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4717,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.11.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3637,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.11.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8858,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.12.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3971,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.12.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4235,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.13.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3915,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.13.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3699,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.14.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3374,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.14.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8632,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.15.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4023,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.15.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3572,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.16.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3681,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.16.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3009,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.17.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3193,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.17.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8533,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.18.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4095,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.18.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3398,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.19.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4415,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.19.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4333,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.20.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4483,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.20.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.876,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.21.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4106,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.21.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3689,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.22.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.4315,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.22.ffn_down.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.2152,
+          "bytes": 7667712
+        },
+        {
+          "name": "blk.23.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.3386,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.23.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8287,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.24.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.2434,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.24.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8179,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.25.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.2542,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.25.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8189,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.26.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.2735,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.26.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8118,
+          "bytes": 11182080
+        },
+        {
+          "name": "blk.27.attn_output.weight",
+          "quant": "Q4_K",
+          "realized_cos": 0.2779,
+          "bytes": 2359296
+        },
+        {
+          "name": "blk.27.ffn_down.weight",
+          "quant": "Q6_K",
+          "realized_cos": 0.8487,
+          "bytes": 11182080
+        }
+      ]
+    }
+  },
+  "base_file": {
+    "path": "/home/dario/.agentboard/p7-t_3bb401d4/spoiled/Spark-X2.6-1.7B-Q4_K_M.gguf",
+    "source": "--base",
+    "sha256": "41e45c4cbde776129eeb0989bbd5daed75f38adcd84b4fd899090baf0fa72526",
+    "bytes": 1107458592
+  },
+  "moved": [
+    {
+      "operand": "base.sha256",
+      "expected": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+      "actual": "41e45c4cbde776129eeb0989bbd5daed75f38adcd84b4fd899090baf0fa72526"
+    }
+  ],
+  "provenance_drift": [],
+  "problems": [],
+  "next": "release-repro /home/dario/.agentboard/p7-t_3bb401d4/release-flipped-base --check",
+  "note": "Every operand re-hashed from the release directory and the paths the index names; base bytes are read from --base, the declared path or base.gguf and are UNMEASURED when absent; tool/runtime differences are provenance drift, not release bytes, and fail only with --strict-provenance."
+}
