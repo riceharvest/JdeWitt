@@ -448,7 +448,8 @@ def panel_sections(result):
         {'id': 'coverage', 'body': result.get('label')},
         {'id': 'caveat', 'body': caveat},
         {'id': 'start'},
-        {'id': 'file', 'body': (result.get('files') or {}).get('artifact')},
+        {'id': 'file', 'body': (Path(files['artifact']).name
+                                 if (files := result.get('files') or {}).get('artifact') else None)},
     ]
 
 

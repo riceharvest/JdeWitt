@@ -44,7 +44,7 @@
       },
       {
         "id": "file",
-        "body": "/mnt/ssd/hermes/profiles/ab-run-2580/cache/scratch/jdewitt-space-dry-zch0073d/banked_unmeasured/deliver-job-20261123T191030-1249614/model-Q4_K_M-banked.gguf"
+        "body": "model-Q4_K_M-banked.gguf"
       }
     ],
     "quant_control": [
@@ -91,7 +91,7 @@
           {
             "step": "licence",
             "state": "ok",
-            "seconds": 0.0,
+            "seconds": 0.001,
             "detail": "LICENCE_ACCEPTED: jdewitt/loop-fixture declares licence 'apache-2.0', which is on the bank's allow-list.",
             "code": null
           },
@@ -105,21 +105,21 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.593,
+            "seconds": 1.557,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 fcb07fb169244d85",
             "code": null
           },
           {
             "step": "package",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "3 files, 861440 artifact bytes",
             "code": null
           }
@@ -190,21 +190,21 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.046,
+            "seconds": 0.042,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.003,
+            "seconds": 0.001,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 a31ab457828ca25e",
             "code": null
           },
           {
             "step": "package",
             "state": "ok",
-            "seconds": 0.003,
+            "seconds": 0.002,
             "detail": "3 files, 861440 artifact bytes",
             "code": null
           }
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed in 10.56s"
+      "summary": "66 passed in 10.62s"
     },
     "stage": {
       "files": 44,
