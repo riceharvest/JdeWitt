@@ -1,0 +1,9 @@
+{
+  "artifact": "verification/vocab-remap/weights/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-remap.gguf",
+  "sidecar": "verification/vocab-remap/weights/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-remap.gguf.revert.npz",
+  "tiles_restored": 1229,
+  "restored_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "patched_sha256": "00bdd8fc03a2be57ae319e55f223af4d7b7796d47ccb8752598cd7f2260c3c40",
+  "original_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "byte_exact": true
+}
