@@ -87,6 +87,32 @@ def _add_packed(writer, name, raw, ggml_shape, qtype):
                       raw_shape=(rows, bytes_per_row), raw_dtype=qtype)
 
 
+def axis_fingerprint(edits, names=None):
+    """Digest of the axis -> tensor map: what anyone can recompute from the two files.
+
+    ``edits`` is the same map ``rewrite_with_edits`` takes. Only entries that carry
+    a (axis, space) tuple contribute, and only those in ``names`` (the tensors the
+    writer actually re-encoded) are hashed, so the digest describes the edit as it
+    landed rather than the request.
+    """
+    import hashlib
+
+    digest = hashlib.sha256()
+    layer_norms = {}
+    for name in sorted(names if names is not None else edits):
+        entry = edits[name]
+        if not isinstance(entry, tuple):
+            continue
+        axis = np.asarray(entry[0], dtype=np.float32)
+        axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
+        digest.update(name.encode())
+        digest.update(np.round(axis, 6).tobytes())
+        layer = int(name.split('.')[1])
+        layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
+    return {'edit_sha256': digest.hexdigest()[:32],
+            'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms}
+
+
 def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                        edit_type='q6_k', renormalize=False, verify_untouched=True,
                        repair='none', norm_clamp=(0.9, 1.1), claims=None):
@@ -116,15 +142,15 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     if repair not in REPAIR_MODES:
         raise ValueError(f'repair must be one of {", ".join(REPAIR_MODES)}, not {repair!r}')
     renormalize = renormalize or repair != 'none'
-    target_name = canonical_type(edit_type)
+    preserve = str(edit_type).strip().lower() == 'preserve'
+    target_name = None if preserve else canonical_type(edit_type)
     from .quants import CODECS as _WRITABLE
 
-    if target_name not in _WRITABLE:
+    if not preserve and target_name not in _WRITABLE:
         raise ValueError(f'cannot WRITE {target_name}: this build encodes {", ".join(sorted(_WRITABLE))}. '
                          f'The source artifact can be any type; only the re-encoded tensors '
                          f'have to be.')
     from .quants import type_id_for_name, type_name_for_id
-    target_id = type_id_for_name(target_name)
     header = parse_container(src)
     header['source'] = str(src)
     started = time.monotonic()
@@ -136,6 +162,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             if name not in edits:
                 continue
             dtype = type_name_for_id(tensor['qtype'])
+            write_name = dtype if preserve else target_name
+            if preserve and write_name not in _WRITABLE:
+                raise ValueError(f'cannot PRESERVE the codec of {name}: {write_name} has no '
+                                 f'encoder in this build (encodes {", ".join(sorted(_WRITABLE))}); '
+                                 f'pass an explicit --edit-type instead of shipping a type nobody '
+                                 f'measured')
             nbytes = tensor_nbytes(tensor['dims'], tensor['qtype'])
             handle.seek(header['data_base'] + tensor['offset'])
             raw = np.frombuffer(handle.read(nbytes), dtype=np.uint8)
@@ -158,15 +190,15 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                 row_scale = before / np.maximum(after, 1e-12)
                 edited = edited * row_scale
                 ratios_by_layer.setdefault(int(name.split('.')[1]), []).append(row_scale.reshape(-1))
-            _tb, new_block_els, quantize_fn, _dq = QUANT_CODECS[target_name]
+            _tb, new_block_els, quantize_fn, _dq = QUANT_CODECS[write_name]
             flat = np.ascontiguousarray(edited.reshape(-1), dtype=np.float32)
             padded = flat.size + (-flat.size) % new_block_els
             if padded != flat.size:
                 flat = np.concatenate([flat, np.zeros(padded - flat.size, dtype=np.float32)])
             packed = np.asarray(quantize_fn(flat), dtype=np.uint8).reshape(-1)
             payloads[name] = packed
-            qtypes[name] = target_id
-            edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': target_name,
+            qtypes[name] = type_id_for_name(write_name)
+            edited_rows.append({'name': name, 'from_dtype': dtype, 'to_dtype': write_name,
                                 'bytes_before': int(nbytes), 'bytes_after': int(packed.size)})
             if repair != 'none':
                 edited_rows[-1]['row_scale_min'] = round(float(row_scale.min()), 6)
@@ -208,23 +240,11 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     # untouched count, the axis digest and its per-layer norm). Anyone can recompute
     # it from the two files, so "this is a fresh edit" stops being a matter of trust —
     # the same idea as publishing "81 matrices changed, 1,111 tensors untouched".
-    import hashlib
-
-    digest = hashlib.sha256()
-    layer_norms = {}
-    for name in sorted(matrices):
-        entry = edits[name]
-        if isinstance(entry, tuple):
-            axis = np.asarray(entry[0], dtype=np.float32)
-            axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
-            digest.update(name.encode())
-            digest.update(np.round(axis, 6).tobytes())
-            layer = int(name.split('.')[1])
-            layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
-    fingerprint = {'edit_sha256': digest.hexdigest()[:32],
+    fingerprint = {**axis_fingerprint(edits, matrices),
                    'edited': len(matrices), 'untouched': len(header['tensors']) - len(payloads),
-                   'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms,
-                   'scale': scale, 'axis_space': axis_space, 'edit_type': target_name,
+                   'scale': scale, 'axis_space': axis_space,
+                   'edit_type': 'preserve' if preserve else target_name,
+                   'edit_type_per_tensor': {row['name']: row['to_dtype'] for row in edited_rows},
                    'repair': repair_block}
     # The fingerprint travels WITH the artifact: a claim nobody can check is marketing,
     # and `verify --claim` can only compare fields it can find in the file.

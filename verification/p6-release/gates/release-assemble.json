@@ -1,0 +1,15 @@
+{
+  "valid": true,
+  "directory": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6",
+  "files": 9,
+  "bytes": 1108266855,
+  "release_identity": "3613753a618fe79e353966c96be024b5daea5184b3c15ec06f1cddd50ac71702",
+  "ledger_present": true,
+  "scope": "File integrity only, not independent proof of model quality or authenticity",
+  "evidence_entries": 1,
+  "ledger_digest": "bc9af6b82396f7291aca41baad2b4bfd8d05ed609e43524622a6ae543c583b36",
+  "plan_card_key": "6aedfc200b76e5a7",
+  "plan_card_payload_sha256": "a90c37469e41c9da1673fee63d08f07662c110db5cdc9c371359168dae406bb3",
+  "twin_artifact_sha256": "fc0b1a7f7ff8919a6a29f6356acdbfdf51bb8cdd348be53e7332230bb2e097b3",
+  "adapter_sha256": "be7e35213f163e779df136f0f6c534e71e156b2653f21d52eef4e6cb8e5ce137"
+}

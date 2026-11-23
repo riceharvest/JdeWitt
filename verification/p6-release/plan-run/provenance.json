@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "config": {
+    "model": "/mnt/ssd/models/Spark-X2.6-1.7B",
+    "method": "perlayer",
+    "rank": 1,
+    "seed": null,
+    "method_options": {
+      "footprint": "10-27",
+      "profile": "flat",
+      "basis": "artifact",
+      "layer_indices": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27
+      ],
+      "fit": "spanfit.per_layer_axes over the capture records"
+    }
+  },
+  "resolved_revision": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "directions_digest": "32cb983f051fb9265db278f9f138350c13ea736a899708715f2bcff06b2bfeef",
+  "source_files": {
+    "records": "8c9d657d7c8474c7c41f7cf7197a5b89c64677490b8e3f3b9ae7230882e6b3c9",
+    "measured": "c39e69b2b0827ea357ec903b7f563a0beb611f0181bcad38b2198e9d26852440"
+  },
+  "note": "registered from the measured fit so the plan card ships with the artifacts built from it; gates are the measured p6-runtime-equivalence record"
+}

@@ -1,0 +1,19 @@
+{
+  "files": {
+    "README.md": {
+      "bytes": 718,
+      "sha256": "e4df7f1eab21eafd1b4b48082493fa149f5d3cc20a7ed478c9a2f0cd482ea8ff"
+    },
+    "evaluation.json": {
+      "bytes": 463,
+      "sha256": "a32bdf9454e4621474840dbdf3f6d1f98f8f18b1565821a668f814536dd1d536"
+    },
+    "model.gguf": {
+      "bytes": 3420932640,
+      "sha256": "9261f37b336443b81d2018c887ede3248cbef7d7666cdc6ca382c79264940db2"
+    }
+  },
+  "record_digest": "ce3aa9f746ac9b186d8c6ff2c862495a7d2fce9fa262b08c20c33d682755290f",
+  "release_identity": "385a819de7ae30abd8140291ef71a6097f8ea8bccc0d12146a02fbc12b0b099f",
+  "version": 1
+}

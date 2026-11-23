@@ -1,0 +1,48 @@
+{
+  "directory": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6",
+  "checked": [
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/adapter.json",
+      "schema": "adapter.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/evidence.json",
+      "schema": "evidence.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/files.json",
+      "schema": "files.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/plan-card.json",
+      "schema": "plan-card.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/signature.json",
+      "schema": "signature.json",
+      "valid": true,
+      "problems": []
+    },
+    {
+      "file": "verification/releases/spark-1.7b-q4km-p6/twin.json",
+      "schema": "twin.json",
+      "valid": true,
+      "problems": []
+    }
+  ],
+  "missing_schemas": [
+    "matrix.json",
+    "packet.json",
+    "scoring-manifest.json"
+  ],
+  "valid": true,
+  "note": "Shape and version only for release artifacts; adapter.json also gets its R8 card semantics, twin.json its codec-realized/behaviour split, and plan-card.json its signed-meta/payload agreement. Digests and claim chains are checked by release verify commands."
+}

@@ -143,7 +143,13 @@ def load_plan(registry, key, expect=None, device='cpu'):
     if payload.is_symlink() or not payload.is_file() or file_digest(payload) != meta['payload_sha256']:
         raise RegistryError(f'plan {key} payload integrity mismatch')
     value = torch.load(payload, map_location=device, weights_only=True)
-    directions, audit = value
+    # pipeline.save_checkpoint writes the fit plan dict itself; an audit tuple is
+    # accepted too. Unpacking unconditionally made every real payload fail with
+    # "too many values to unpack" (a dict iterates its keys).
+    if isinstance(value, (tuple, list)) and len(value) == 2:
+        directions, audit = value
+    else:
+        directions, audit = value, None
     basis = directions.get('basis') if isinstance(directions, dict) else None
     geometry = {}
     if isinstance(basis, torch.Tensor) and basis.ndim == 3:
