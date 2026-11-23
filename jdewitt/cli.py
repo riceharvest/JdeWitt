@@ -129,7 +129,7 @@ def build_parser():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
-    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --weights edits the table rows of the artifact weights, --remap on|off decodes with the bias applied or withheld')
+    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --weights edits the table rows of the artifact weights, --remap on|off decodes with the bias applied or withheld, --embed on|off rewrites the prompt ids so the model reads the affirmative (input side)')
     vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
     vremap.add_argument('--dry-run',action='store_true',help='Plan per-step suppression/forced replacement over probes with a live llama-server /tokenize; audits declining base answers')
     vremap.add_argument('--suite',type=Path,help='Probe JSONL for --dry-run (one row per line with id and prompt)')
@@ -140,14 +140,22 @@ def build_parser():
     vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
     vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
     vremap.add_argument('--remap',choices=['on','off'],help='Decode driver: apply the table bias (on) or run the identical loop with no bias (off); writes rows.jsonl and run.json under --out')
+    vremap.add_argument('--embed',choices=['on','off'],help='Input side: rewrite the prompt token ids so the model reads the affirmative where the prompt says the denial (on) or send them unchanged (off). No logit_bias is applied in either arm; the only difference is the id list the server reads. Writes rows.jsonl and run.json under --out')
+    vremap.add_argument('--affirmative',type=Path,help='--embed: affirmative map override; default is the packaged assets/vocab-remap-affirmative.json')
     vremap.add_argument('--weights',type=Path,help='Weight side: the table as a row edit of the artifact token embedding / output head. Prints the dry run (rows touched, realized cos, bytes re-encoded, codec per tensor) and with --apply writes a NEW artifact plus a revert sidecar')
     vremap.add_argument('--apply',action='store_true',help='--weights: write --out instead of only printing the dry run; never edits the input in place')
     vremap.add_argument('--strength',type=float,default=1.0,help='--weights: per-row projection strength in [0,1] (1 removes the row, below 1 down-weights it)')
     vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log); the new GGUF for --weights --apply')
     vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
     vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
-    vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
+    vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap/--embed prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
     vremap.add_argument('--no-think',action='store_true',help='--remap chat template: render with enable_thinking=false (artifacts whose template names it; keeps the answer opener inside the cap)')
+    vremap.add_argument('--ctx',type=int,default=4096,help='--embed: serve context (-c) of the started server; the pinned cert default is 4096')
+    vremap.add_argument('--parallel',type=int,default=4,help='--embed: server slots (--parallel) of the started server; the pinned cert default is 4')
+    vremap.add_argument('--ngl',type=int,default=99,help='--embed: GPU layers (-ngl) of the started server; the B70 gate uses 99')
+    vremap.add_argument('--device',help='--embed: llama.cpp device selector (--device), e.g. Vulkan1 on the B70; omit to let the build choose')
+    vremap.add_argument('--limit',type=int,default=0,help='--embed: decode only the first N rows (timing probe)')
+    vremap.add_argument('--plain-check',type=int,default=0,help='--embed: also run a plain text-prompt greedy wave on the first N rows and record whether the id arm reproduces it token-for-token')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -824,12 +832,25 @@ def main():
             from .architectures import architecture_catalog
             result=architecture_catalog()
         elif args.command=='vocab-remap':
-            modes=[bool(args.list),bool(args.dry_run),args.remap is not None,bool(args.weights)]
+            modes=[bool(args.list),bool(args.dry_run),args.remap is not None,bool(args.weights),args.embed is not None]
             if sum(modes)!=1:
-                raise ValueError('pass exactly one of --list, --dry-run, --remap on|off or --weights')
+                raise ValueError('pass exactly one of --list, --dry-run, --remap on|off, --embed on|off or --weights')
             if args.apply and not args.weights:
                 raise ValueError('--apply belongs to --weights; no other vocab-remap mode writes an artifact')
-            if args.remap is not None:
+            if args.affirmative is not None and args.embed is None:
+                raise ValueError('--affirmative belongs to --embed; no other vocab-remap mode reads it')
+            if args.embed is not None:
+                from .vocabremap_embed import vocab_remap_embed_arm
+                if len(args.artifact)!=1:
+                    raise ValueError('--embed needs exactly one --artifact GGUF')
+                result=vocab_remap_embed_arm(table=args.table,affirmative=args.affirmative,artifact=args.artifact[0],
+                                             suite=args.suite,out=args.out,mode=args.embed,
+                                             max_tokens=args.max_tokens,serve=args.serve,
+                                             port=(args.port[0] if args.port else None),template=args.template,
+                                             limit=args.limit,plain_check=args.plain_check,ctx=args.ctx,
+                                             parallel=args.parallel,ngl=args.ngl,device=args.device)
+                exit_code=0 if result['verdict']['complete'] else 1
+            elif args.remap is not None:
                 from .vocabremap import vocab_remap_decode
                 if len(args.artifact)!=1:
                     raise ValueError('--remap needs exactly one --artifact GGUF')

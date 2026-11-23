@@ -794,10 +794,18 @@ def _wait_healthy(port, process, log_path, timeout=180.0):
     raise RuntimeError(f'llama-server on port {port} did not become healthy in {timeout:.0f}s: {_log_tail(log_path)}')
 
 
-def start_server(serve, artifact, port, log_path):
-    """Start the artifact on a loopback port and wait for /health; return the process handle."""
-    argv = [str(serve), '-m', str(Path(artifact).resolve()), '-ngl', '0', '-c', '2048',
-            '--parallel', '1', '--host', '127.0.0.1', '--port', str(port)]
+def start_server(serve, artifact, port, log_path, ctx=2048, parallel=1, ngl=0, device=None):
+    """Start the artifact on a loopback port and wait for /health; return the process handle.
+
+    The defaults are the CPU reference serve the decode and retention arms use. A gate that
+    pins a different serve config (METHODOLOGY R9) passes ``ctx``/``parallel``/``ngl``/
+    ``device`` explicitly, and the argv is recorded by the caller, so the number and the
+    config it was measured at travel together.
+    """
+    argv = [str(serve), '-m', str(Path(artifact).resolve()), '-ngl', str(ngl), '-c', str(ctx),
+            '--parallel', str(parallel), '--host', '127.0.0.1', '--port', str(port)]
+    if device:
+        argv[1:1] = ['--device', str(device)]
     env = {key: value for key, value in os.environ.items() if not key.startswith(('LLAMA_', 'HF_TOKEN'))}
     Path(log_path).parent.mkdir(parents=True, exist_ok=True)
     handle = open(log_path, 'w')

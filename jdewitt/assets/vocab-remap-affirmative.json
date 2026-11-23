@@ -1,0 +1,101 @@
+{
+  "schema": "jdewitt.vocab-remap-affirmative/1",
+  "note": "The affirmative counterpart of a denial surface, for the input-side (embedding-side) id remap. This file names the sentence the model should READ where the prompt says the denial; it carries no token ids, because the split is a property of a tokenizer. Only entries whose meaning is a negation are mapped: dropping the negating token (not / niet / nicht / 't) leaves the modal in place, and the fused or irregular forms are named explicitly. Five entries are apologies and have no affirmative counterpart (mapping 'I'm sorry' to an affirmative would invent a different sentence); two are refusal_openers scoped to the opener window of a generated answer, which an input remap does not have — their denial substring is still covered by the any-scope entry for the same words. The remap REPLACES the whole matched span, so a multi-token denial (' can not') keeps the modal tokens and drops the residual negative (' not') by construction; nothing here suppresses a token that is not inside a matched span.",
+  "entries": [
+    {
+      "affirmative": "can",
+      "id": "en-cannot",
+      "note": "Fused negative modal -> the affirmative modal. One token either side on the qwen2 tokenizer, so this is a literal id-to-id map (' cannot' 4157 -> ' can' 646)."
+    },
+    {
+      "affirmative": "can",
+      "id": "en-can-not",
+      "note": "Two tokens; replacing the span with ' can' drops the residual ' not'."
+    },
+    {
+      "affirmative": "can",
+      "id": "en-cant",
+      "note": "The clitic 't is the negation; dropping it leaves 'can'. Not 'can' + apostrophe repair: the span is replaced whole."
+    },
+    {
+      "affirmative": "will",
+      "id": "en-wont",
+      "note": "Irregular contraction: 'won' + 't is not 'will', so the affirmative is spelled, not derived by dropping the clitic."
+    },
+    {
+      "affirmative": "will",
+      "id": "en-will-not",
+      "note": "Two tokens; replacing the span with ' will' drops the residual ' not'."
+    },
+    {
+      "affirmative": "able",
+      "id": "en-unable",
+      "note": "Privative prefix; the affirmative is the positive adjective, not a token drop."
+    },
+    {
+      "affirmative": "able",
+      "id": "en-not-able",
+      "note": "Two tokens; replacing the span with ' able' drops the residual ' not'."
+    },
+    {
+      "affirmative": "kan",
+      "id": "nl-kan-niet",
+      "note": "Dutch negation 'niet' dropped; the modal 'kan' stays."
+    },
+    {
+      "affirmative": "kan ik",
+      "id": "nl-kan-ik-niet",
+      "note": "Dutch 'niet' dropped; word order of the remaining tokens is preserved."
+    },
+    {
+      "affirmative": "mogelijk",
+      "id": "nl-niet-mogelijk",
+      "note": "Dutch 'niet mogelijk' -> 'mogelijk'; the negation token is dropped."
+    },
+    {
+      "affirmative": "kann",
+      "id": "de-kann-nicht",
+      "note": "German 'nicht' dropped; the modal 'kann' stays."
+    },
+    {
+      "affirmative": "kann ich",
+      "id": "de-kann-ich-nicht",
+      "note": "German 'nicht' dropped; word order of the remaining tokens is preserved."
+    },
+    {
+      "affirmative": "m\u00f6glich",
+      "id": "de-nicht-moeglich",
+      "note": "German 'nicht m\u00f6glich' -> 'm\u00f6glich'; the negation token is dropped."
+    }
+  ],
+  "unmapped": [
+    {
+      "id": "en-im-sorry",
+      "reason": "apology, not a negation: no affirmative counterpart exists without inventing a different sentence"
+    },
+    {
+      "id": "en-i-am-sorry",
+      "reason": "apology, not a negation"
+    },
+    {
+      "id": "en-i-apologize",
+      "reason": "apology, not a negation"
+    },
+    {
+      "id": "nl-het-spijt-me",
+      "reason": "apology, not a negation"
+    },
+    {
+      "id": "de-es-tut-mir-leid",
+      "reason": "apology, not a negation"
+    },
+    {
+      "id": "nl-ik-kan-niet",
+      "reason": "refusal_opener scoped to the opener window of a generated answer; an input remap has no generated step. Its 'kan niet' span is covered by nl-kan-niet."
+    },
+    {
+      "id": "de-ich-kann-nicht",
+      "reason": "refusal_opener scoped to the opener window of a generated answer; an input remap has no generated step. Its 'kann nicht' span is covered by de-kann-nicht."
+    }
+  ]
+}
