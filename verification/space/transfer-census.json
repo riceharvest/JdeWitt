@@ -1,0 +1,651 @@
+{
+ "base_requants_dropped": [
+  {
+   "base_model": null,
+   "downloads": 1100354,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "a06e946bb6b655725eafa393f4a9745d460374c9"
+  },
+  {
+   "base_model": null,
+   "downloads": 140243,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen_Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "bartowski/Qwen_Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "ae44f08e1392f39c0e474af10c3ff8355c8b6688"
+  },
+  {
+   "base_model": null,
+   "downloads": 130045,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "lmstudio-community/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "4edb920b6f14e3b9284d4502a6485103d72cde05"
+  },
+  {
+   "base_model": null,
+   "downloads": 63216,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507.Q4_K_M.gguf"
+   ],
+   "repo": "MaziyarPanahi/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "aec29f0e8c31130ba811bec2c774c2ef44888f55"
+  },
+  {
+   "base_model": null,
+   "downloads": 7943,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-2507-Instruct-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf"
+   ],
+   "repo": "HauhauCS/Qwen3-4B-2507-Instruct-Uncensored-HauhauCS-Aggressive",
+   "revision": "ce36938d2edf886ddefc0d3136744b1b6777198b"
+  },
+  {
+   "base_model": null,
+   "downloads": 4884,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen_Qwen3-4B-Instruct-2507_Q4_K_M.gguf"
+   ],
+   "repo": "Alcoft/Qwen_Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "a64a0b923d348706fcd3550d3f41b86ca9b903b7"
+  },
+  {
+   "base_model": null,
+   "downloads": 3274,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-heretic-Q4_K_M.gguf"
+   ],
+   "repo": "saidutta69/Qwen3-4B-Instruct-2507-heretic",
+   "revision": "25917bb02ff6d7e36452cbae6c166cefcfc16db0"
+  },
+  {
+   "base_model": null,
+   "downloads": 2994,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "qwen3-4b-instruct-2507-q4_K_M.gguf"
+   ],
+   "repo": "fzhnk/qwen3-4b-instruct-2507-gguf",
+   "revision": "9dd09a101cf5d79ffbebec7993b88bf7dfe61278"
+  },
+  {
+   "base_model": null,
+   "downloads": 1960,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "jc-builds/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "4e6afbc2cf425128ec54bd934d9bf2d644e50448"
+  },
+  {
+   "base_model": null,
+   "downloads": 1845,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "b374b9c2b665709d2ef157c4f9e432e8ed9c9745"
+  },
+  {
+   "base_model": null,
+   "downloads": 1561,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Abliterated-Q4_K_M.gguf"
+   ],
+   "repo": "IamLucif3r/Qwen3-4B-Instruct-2507-Abliterated",
+   "revision": "c3248878a96c4b72cb4d2eb79069389c5827dbb9"
+  },
+  {
+   "base_model": null,
+   "downloads": 1142,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-i1-GGUF",
+   "revision": "f5c97ed13c55f68c38313edb296e760e53db04e8"
+  },
+  {
+   "base_model": null,
+   "downloads": 947,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "qwen3-4b-instruct-2507-q4_k_m.gguf"
+   ],
+   "repo": "LaksKodi/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "1309d975e4064f69c0af3bca0593d9541e1972d2"
+  },
+  {
+   "base_model": null,
+   "downloads": 930,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "qwen3-4b-instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "Open4bits/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "f02f858cc88bea2dd40391c72eba7510d6a97f70"
+  },
+  {
+   "base_model": null,
+   "downloads": 888,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-2507-Instruct-Uncensored-HauhauCS-Aggressive-Q4_K_M.gguf"
+   ],
+   "repo": "Unrestricted/Qwen3-4B-2507-Instruct-Uncensored-HauhauCS-Aggressive",
+   "revision": "ae6a5a7074456389eb4a89f8bc897f09bcca8fe2"
+  },
+  {
+   "base_model": null,
+   "downloads": 860,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "mmnga/Qwen3-4B-Instruct-2507-gguf",
+   "revision": "c1405acde3ff15e3c6df0a77f1bf2529e2c98c3e"
+  },
+  {
+   "base_model": null,
+   "downloads": 724,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "cmp-nct/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "89bc79156d82ffd4cf723c4e5a4d22eb5d5006f4"
+  },
+  {
+   "base_model": null,
+   "downloads": 704,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "DhruvalLabs/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "262722d3c007899a3c13a71cfa88013e450a503b"
+  },
+  {
+   "base_model": null,
+   "downloads": 684,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "gabriellarson/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "11eb710320d468b5297476457839b0a19b6587dc"
+  },
+  {
+   "base_model": null,
+   "downloads": 671,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507.Q4_K_M.gguf"
+   ],
+   "repo": "prithivMLmods/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "d32c1fd3209392ba9546bc84c1f1bf63f60d719d"
+  },
+  {
+   "base_model": null,
+   "downloads": 650,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "qwen3-4b-instruct-2507-q4_k_m.gguf"
+   ],
+   "repo": "yuko29hu/Qwen3-4B-Instruct-2507-Q4_K_M-GGUF",
+   "revision": "ec3821c4a649ff0e21ea755fa0e78ec9d93e7f0a"
+  },
+  {
+   "base_model": null,
+   "downloads": 640,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "Khawarr/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "1820df4d5c70ec34d81cd0955cc1809b9b5e05f2"
+  },
+  {
+   "base_model": null,
+   "downloads": 636,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-gguf-Q4_K_M_GXL.gguf",
+    "Qwen3-4B-Instruct-2507-gguf-Q4_K_M_HXL.gguf"
+   ],
+   "repo": "marcelone/Qwen3-4B-Instruct-2507-gguf",
+   "revision": "efd4f032550e69301351aa584b328ed3639b9e2c"
+  },
+  {
+   "base_model": null,
+   "downloads": 480,
+   "is_base_requant": true,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "Jeney/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "b4fc3bb18a3ad825c65cfe774df6cd78ad4033b9"
+  }
+ ],
+ "chosen": {
+  "base_model": "huihui-ai/Huihui-Qwen3-4B-Instruct-2507-abliterated",
+  "bytes": 2497281312,
+  "downloads": 37904,
+  "file": "Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf",
+  "is_base_requant": false,
+  "q4_k_m_files": [
+   "Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf"
+  ],
+  "repo": "mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF",
+  "revision": "c9e90669eeb205d5af35c28a3e9983fc9293c2ec",
+  "sha256": "b1324e2f1bd2e0610d591f54f93e38d90b187f69d1f215f4cace349eade678d7"
+ },
+ "fine_tune_candidates": [
+  {
+   "base_model": "huihui-ai/Huihui-Qwen3-4B-Instruct-2507-abliterated",
+   "bytes": 2497281312,
+   "downloads": 37904,
+   "file": "Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf",
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF",
+   "revision": "c9e90669eeb205d5af35c28a3e9983fc9293c2ec",
+   "sha256": "b1324e2f1bd2e0610d591f54f93e38d90b187f69d1f215f4cace349eade678d7"
+  },
+  {
+   "base_model": null,
+   "downloads": 13366,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "p-e-w_Qwen3-4B-Instruct-2507-heretic-Q4_K_M.gguf"
+   ],
+   "repo": "bartowski/p-e-w_Qwen3-4B-Instruct-2507-heretic-GGUF",
+   "revision": "374467f099f99156987afeeea6df5bc1f090ff4b"
+  },
+  {
+   "base_model": null,
+   "downloads": 5426,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-abliterated-GGUF",
+   "revision": "54904b52cb21861d3aa1b0e69181b0f04c870070"
+  },
+  {
+   "base_model": null,
+   "downloads": 2560,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Rennervate-Qwen3-4B-Instruct-2507-Refusal-Suppressed.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Rennervate-Qwen3-4B-Instruct-2507-Refusal-Suppressed-i1-GGUF",
+   "revision": "931fb960a26e3239887889879552d211cc91ff96"
+  },
+  {
+   "base_model": null,
+   "downloads": 2551,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "ArityFlow-Qwen3-4B-Instruct-2507-RolePlay.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/ArityFlow-Qwen3-4B-Instruct-2507-RolePlay-GGUF",
+   "revision": "ac43b4fb3e5d5a5e7ee6c7a3453f96ab6e00b9ff"
+  },
+  {
+   "base_model": null,
+   "downloads": 2514,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-abliterated.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-abliterated-i1-GGUF",
+   "revision": "a2be273a6c2aa1de4c06fd5c82f49ffc4d304b9e"
+  },
+  {
+   "base_model": null,
+   "downloads": 2299,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Huihui-Qwen3-4B-Instruct-2507-abliterated.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-i1-GGUF",
+   "revision": "f51dd3a753953bd9a7563d91a75bbe0915e17ba1"
+  },
+  {
+   "base_model": null,
+   "downloads": 1826,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "huihui-qwen3-4b-instruct-2507-abliterated-q4_k_m.gguf"
+   ],
+   "repo": "mahdisml/Huihui-Qwen3-4B-Instruct-2507-abliterated-Q4_K_M-GGUF",
+   "revision": "1cbc997dbe95f5ec9b196bb79090328519363b84"
+  },
+  {
+   "base_model": null,
+   "downloads": 1670,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "ArityFlow-Qwen3-4B-Instruct-2507-RolePlay.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/ArityFlow-Qwen3-4B-Instruct-2507-RolePlay-i1-GGUF",
+   "revision": "4f50f2abff1481acf1ed32bb235ecda744adb4a0"
+  },
+  {
+   "base_model": null,
+   "downloads": 1418,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Tralalabs_Qwen3-2507-4B-Instruct-Haiku-4.5-Merged-Q4_K_M.gguf"
+   ],
+   "repo": "bartowski/Tralalabs_Qwen3-2507-4B-Instruct-Haiku-4.5-Merged-GGUF",
+   "revision": "f1632cd3fcc4c2a5a42c938f10f58838e0962c2e"
+  },
+  {
+   "base_model": null,
+   "downloads": 1338,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "a-ivanovitch/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "e3bf5ff7c55fe87d098e7a67fe261b72a26a54d7"
+  },
+  {
+   "base_model": null,
+   "downloads": 1326,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "huihui-ai.Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf"
+   ],
+   "repo": "DevQuasar/huihui-ai.Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF",
+   "revision": "1c69f8a13e0f7d3c63e7fd1512c5a9aca7121104"
+  },
+  {
+   "base_model": null,
+   "downloads": 1254,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "model-Q4_K_M.gguf"
+   ],
+   "repo": "tinyopsec/Qwen3-4B-Instruct-2507-heretic-GGUF",
+   "revision": "d829fd2ba3a7f61caec44d26e90603f831260c7a"
+  },
+  {
+   "base_model": null,
+   "downloads": 1196,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Gemini-3-Pro-Preview-Distill.q4_k_m.gguf"
+   ],
+   "repo": "TeichAI/Qwen3-4B-Instruct-2507-Gemini-3-Pro-Preview-Distill-GGUF",
+   "revision": "bc99a1b6a2dfc16121cf5040637cf882d74801c3"
+  },
+  {
+   "base_model": null,
+   "downloads": 1186,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-20250808-233922-0.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-20250808-233922-0-i1-GGUF",
+   "revision": "18771f649838f014c97984331e47fd847f4f1313"
+  },
+  {
+   "base_model": null,
+   "downloads": 1092,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Polaris-Alpha-Distill-Heretic-Abliterated.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-Polaris-Alpha-Distill-Heretic-Abliterated-GGUF",
+   "revision": "4c594667a4598203900f04ee8c5feb87549e168b"
+  },
+  {
+   "base_model": null,
+   "downloads": 1079,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "model-Q4_K_M.gguf"
+   ],
+   "repo": "tinyopsec/Qwen3-4B-Instruct-2507-abliterated-GGUF",
+   "revision": "d36084e8fa75d47e74dc9b26240394e3f74a5098"
+  },
+  {
+   "base_model": null,
+   "downloads": 955,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-heretic-v4.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-heretic-v4-GGUF",
+   "revision": "4cfb02298039b3386d0a1bdf1b665e6f0c3c4622"
+  },
+  {
+   "base_model": null,
+   "downloads": 933,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+   ],
+   "repo": "voconly-org/Qwen3-4B-Instruct-2507-Q4_K_M-GGUF",
+   "revision": "b0ae7bf9731abba127637b7dd037331d24beef7f"
+  },
+  {
+   "base_model": null,
+   "downloads": 879,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-heretic.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-heretic-GGUF",
+   "revision": "7a992a7622cef2a223ca68744c898c4298f8ddd0"
+  },
+  {
+   "base_model": null,
+   "downloads": 716,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Rennervate-Qwen3-4B-Instruct-2507-Refusal-Suppressed.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Rennervate-Qwen3-4B-Instruct-2507-Refusal-Suppressed-GGUF",
+   "revision": "e98ff37dfb4ea68e336ba7231efe4331371bc8f7"
+  },
+  {
+   "base_model": null,
+   "downloads": 689,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-Claude-Haiku-4.5-Distill.q4_k_m.gguf"
+   ],
+   "repo": "TeichAI/Qwen3-4B-Instruct-2507-Claude-Haiku-4.5-Distill-GGUF",
+   "revision": "1a9ca840d4c46b906bd2cb0f860c1964e3bef98a"
+  },
+  {
+   "base_model": null,
+   "downloads": 670,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-q4_k_m.gguf"
+   ],
+   "repo": "Mungert/Qwen3-4B-Instruct-2507-GGUF",
+   "revision": "ec85e0c4ae5c1d1e467dd98a0af99983358b4680"
+  },
+  {
+   "base_model": null,
+   "downloads": 666,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Josiefied-Qwen3-4B-Instruct-2507-abliterated-v1.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Josiefied-Qwen3-4B-Instruct-2507-abliterated-v1-GGUF",
+   "revision": "2645ecd11723474ec6cfa50de5c2fc6bc84ae65e"
+  },
+  {
+   "base_model": null,
+   "downloads": 657,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Josiefied-Qwen3-4B-Instruct-2507-abliterated-v1.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Josiefied-Qwen3-4B-Instruct-2507-abliterated-v1-i1-GGUF",
+   "revision": "d6e6cd27304197c29a22526d182bcbe416dfcaab"
+  },
+  {
+   "base_model": null,
+   "downloads": 629,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Human-Like-DPO-Qwen3-4B-Instruct-2507.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Human-Like-DPO-Qwen3-4B-Instruct-2507-i1-GGUF",
+   "revision": "bfa4a4c0db904063c0f29dc4d005b388c6546e0a"
+  },
+  {
+   "base_model": null,
+   "downloads": 625,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Josiefied-Qwen3-4B-Instruct-2507-gabliterated-v2.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Josiefied-Qwen3-4B-Instruct-2507-gabliterated-v2-i1-GGUF",
+   "revision": "721597b7ae43520c5baddb8df27cae3ec053822b"
+  },
+  {
+   "base_model": null,
+   "downloads": 589,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-20250808-233922-0.i1-Q4_K_M.gguf"
+   ],
+   "repo": "guray16/Qwen3-4B-Instruct-2507-20250808-233922-0-i1-GGUF",
+   "revision": "ca6b78fbab9de7c5ba26a0e6d46d231b2f9ded48"
+  },
+  {
+   "base_model": null,
+   "downloads": 562,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-20250808-233922-0.Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-20250808-233922-0-GGUF",
+   "revision": "fb9e590b62cd7d243935883b800dbf9af0cb6729"
+  },
+  {
+   "base_model": null,
+   "downloads": 510,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "PeoplesDaily-Qwen3-4B-Instruct-2507.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/PeoplesDaily-Qwen3-4B-Instruct-2507-i1-GGUF",
+   "revision": "b81391893b41bd66b20e79179e810684aedfaf2d"
+  },
+  {
+   "base_model": null,
+   "downloads": 510,
+   "is_base_requant": false,
+   "q4_k_m_files": [
+    "Qwen3-4B-Instruct-2507-noslop.i1-Q4_K_M.gguf"
+   ],
+   "repo": "mradermacher/Qwen3-4B-Instruct-2507-noslop-i1-GGUF",
+   "revision": "200f7fa2cd09455f6fa4493752f685b768766d9f"
+  }
+ ],
+ "identity": {
+  "base_config": {
+   "architectures": [
+    "Qwen3ForCausalLM"
+   ],
+   "head_dim": 128,
+   "hidden_size": 2560,
+   "intermediate_size": 9728,
+   "model_type": "qwen3",
+   "num_attention_heads": 32,
+   "num_hidden_layers": 36,
+   "num_key_value_heads": 8,
+   "rope_theta": 5000000,
+   "tie_word_embeddings": true,
+   "vocab_size": 151936
+  },
+  "base_tokenizer_json_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+  "configs_identical": true,
+  "fine_tune_config": {
+   "architectures": [
+    "Qwen3ForCausalLM"
+   ],
+   "head_dim": 128,
+   "hidden_size": 2560,
+   "intermediate_size": 9728,
+   "model_type": "qwen3",
+   "num_attention_heads": 32,
+   "num_hidden_layers": 36,
+   "num_key_value_heads": 8,
+   "rope_theta": 5000000,
+   "tie_word_embeddings": true,
+   "vocab_size": 151936
+  },
+  "fine_tune_repo": "huihui-ai/Huihui-Qwen3-4B-Instruct-2507-abliterated",
+  "fine_tune_revision": "c9bd464550d4078c72af0dd22aa18d0437868ce3",
+  "fine_tune_tokenizer_json_sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
+  "gguf": {
+   "base": {
+    "architecture": "qwen3",
+    "chat_template_chars": 4051,
+    "chat_template_sha256": "c979e0e71a3e21b8f208e6ab120d5cb29327885f29d2a8b18fda67a723798e18",
+    "eos_token_id": 151645,
+    "n_tensors": 398,
+    "n_tokens": 151936,
+    "path": "/mnt/ssd/models/unsloth-qwen3-4b-q4km/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "token_array_sha256": "c6308f3391fb99bbe62a283fff4931dd16df646d09fee0a7841d8111935a7969"
+   },
+   "candidate": {
+    "architecture": "qwen3",
+    "chat_template_chars": 4040,
+    "chat_template_sha256": "40c21f34cf67d8c760ef72f8ad3ae5afad514299d4b06e91dd9a8d705af7b541",
+    "eos_token_id": 151645,
+    "n_tensors": 398,
+    "n_tokens": 151936,
+    "path": "/mnt/ssd/models/finetune/Huihui-Qwen3-4B-Instruct-2507-abliterated.Q4_K_M.gguf",
+    "token_array_sha256": "c6308f3391fb99bbe62a283fff4931dd16df646d09fee0a7841d8111935a7969"
+   }
+  },
+  "gguf_token_arrays_identical": true,
+  "tokenizer_json_identical": true
+ },
+ "query": {
+  "api": "https://huggingface.co/api/models",
+  "direction": "desc",
+  "limit": 100,
+  "rows_returned": 100,
+  "search": "Qwen3-4B-Instruct-2507",
+  "sort": "downloads"
+ },
+ "question": "top-downloaded fine-tune of the covered base that ships a Q4_K_M GGUF",
+ "refused_candidates": [],
+ "rule": [
+  "order by downloads",
+  "drop repos whose base_model is the base itself with relation quantized (requants of the base, not fine-tunes)",
+  "take the highest downloads that ships a *Q4_K_M*.gguf",
+  "refuse a candidate whose config or tokenizer differs from the base"
+ ],
+ "schema": "jdewitt-transfer-census-v1"
+}
