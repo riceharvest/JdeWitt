@@ -50,6 +50,13 @@ hide a codec floor, and a type the entry did not measure is never substituted. A
 named `--edit-type` must be inside `edit.types` (`EDIT_TYPE_NOT_ALLOWED` otherwise).
 Every refusal happens before the writer opens `--out`.
 
+Feeding the command a file that already carries this entry's edit (its
+`jdewitt.fingerprint` matches the axis, space, per-kind strength and layers) is a
+`status: already_applied` no-op: the output is a byte copy of the input and nothing
+is re-applied. That guard exists because cos CANNOT see a double application — two
+copies of the same removal leave the stored change parallel to the intent, so the
+report would read 1.0 while the file holds two removals.
+
 The JSON reports the bank key, base repo/revision, bundle sha256, the entry's
 measurement state, the footprint and the entry rows it landed on, the type ladder
 and its probe readings, per-tensor intended-vs-delivered `cos` and `snr`, chosen

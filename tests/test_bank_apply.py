@@ -181,6 +181,37 @@ def test_strength_scale_multiplies_the_entry_per_kind(tmp_path):
     assert {row['intended_strength'] for row in report['edited']['tensors']} == {0.75, 0.375}
 
 
+def test_projected_footprint_is_placed_on_the_entry_rows_end_to_end():
+    """§5.1: a projected footprint spans the entry's own footprint, endpoints kept."""
+    from jdewitt.bank_apply import _row_by_layer
+
+    # The roadmap example: a 36-layer entry footprint 15-35 on an 18-layer artifact.
+    projected = _row_by_layer({'footprint': {'first': 15, 'last': 35},
+                               'layers': list(range(8, 18)), 'entry': {'key': 'k'}})
+    assert projected[8] == 15 and projected[17] == 35
+    assert list(projected) == list(range(8, 18))
+    # Same depth -> identity, no drift.
+    identity = _row_by_layer({'footprint': {'first': 10, 'last': 12},
+                              'layers': [10, 11, 12], 'entry': {'key': 'k'}})
+    assert identity == {10: 10, 11: 11, 12: 12}
+    # A single-layer footprint lands on the entry's first row, never outside it.
+    single = _row_by_layer({'footprint': {'first': 34, 'last': 35},
+                            'layers': [3], 'entry': {'key': 'k'}})
+    assert single == {3: 34}
+
+
+def test_reapplying_an_entry_to_its_own_output_is_a_byte_copy_no_op(tmp_path):
+    """cos cannot see a double application, so the second run must not write one."""
+    first = bank_apply(BANK, ENTRY, GGUF, tmp_path / 'a.gguf')
+    again = bank_apply(BANK, ENTRY, tmp_path / 'a.gguf', tmp_path / 'b.gguf')
+    assert again['applied'] is False
+    assert again['already_applied'] is True
+    assert again['edited']['count'] == 0
+    assert again['output_sha256'] == first['output_sha256']
+    assert again['output_sha256'] == again['input_sha256']
+    assert (tmp_path / 'b.gguf').read_bytes() == (tmp_path / 'a.gguf').read_bytes()
+
+
 def test_applying_the_entry_imports_no_tokenizer_or_transformers(tmp_path):
     """The Space runs this with no model server, no transformers and no tokenizer.
 

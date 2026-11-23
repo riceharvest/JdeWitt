@@ -43,7 +43,9 @@ says so (``removal_measured: false``).
 """
 from __future__ import annotations
 
+import json
 import os
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -251,6 +253,103 @@ def _build_edits(resolved, basis, plan_rows, strength_scale):
     return edits, scales, axis, strength, layer_rows, space
 
 
+def _stored_fingerprint(path):
+    """The ``jdewitt.fingerprint`` kv a previous edit wrote into the artifact, if any.
+
+    Read here rather than imported from ``planapply`` (its ``_stored_fingerprint``):
+    plan-apply is a sibling consumer, not a dependency, and a Space command must not
+    break because another card removes or moves it.
+    """
+    from gguf import GGUFReader
+
+    field = GGUFReader(str(path)).fields.get('jdewitt.fingerprint')
+    if field is None:
+        return None
+    raw = field.contents()
+    if isinstance(raw, (bytes, bytearray)):
+        raw = bytes(raw).decode('utf-8', 'replace')
+    try:
+        value = json.loads(str(raw))
+    except (TypeError, ValueError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _already_applied(resolved, entry, gguf, out, stored, plan_key, meta, installed,
+                     strength, strength_scale, edits, layer_rows, started):
+    """The one JSON for an artifact that already carries this entry's edit.
+
+    Honest shape: nothing was rewritten, so there is no delivered edit to measure and
+    the cos block is null rather than copied from a previous run. The output is a byte
+    copy of the input, which is why ``output_sha256`` equals ``input_sha256``.
+    """
+    untouched_count = resolved['artifact']['tensors']
+    return {
+        'command': 'bank-apply',
+        'schema': SCHEMA,
+        'applied': False,
+        'already_applied': True,
+        'ok': True,
+        'status': 'already_applied',
+        'entry_key': entry['key'],
+        'bundle_sha256': resolved['bundle']['sha256'],
+        'base': entry['base'],
+        'bank': {'dir': str(resolved['bank']), 'entry': entry['key'], 'base': entry['base'],
+                 'bundle': {'file': resolved['bundle']['file'],
+                            'sha256': resolved['bundle']['sha256'],
+                            'verified': resolved['bundle']['verified'],
+                            'plan_key': plan_key,
+                            'plan_meta_digest': meta.get('meta_digest'),
+                            'payload_sha256': meta.get('payload_sha256'),
+                            'installed_into_temp_registry': installed.get('installed')}},
+        'artifact': {'input': str(gguf), 'output': str(out),
+                     'architecture': resolved['artifact']['architecture'],
+                     'layers': resolved['artifact']['layers'],
+                     'hidden': resolved['artifact']['hidden'],
+                     'tensors': untouched_count,
+                     'source_types': resolved['artifact']['source_types']},
+        'entry': {'key': entry['key'], 'base': entry['base'],
+                  'measurement': resolved['measurement'], 'edit': resolved['edit'],
+                  'strength': strength, 'strength_scale': strength_scale,
+                  'strength_note': 'the entry the file already carries; nothing re-applied'},
+        'footprint': {'first': int(resolved['footprint']['first']),
+                      'last': int(resolved['footprint']['last']),
+                      'fraction': resolved['footprint']['fraction'],
+                      'projected': bool(resolved['footprint']['projected']),
+                      'artifact_layers': resolved['layers'],
+                      'entry_rows': [layer_rows[layer] for layer in resolved['layers']]},
+        'edit_type': {'mode': 'skipped', 'chosen': (stored or {}).get('edit_type'),
+                      'floor': float(resolved['edit'].get('min_cos') or 0.95),
+                      'candidates': [], 'readings': [], 'floor_cleared': None,
+                      'note': 'the artifact already carries this edit (jdewitt.fingerprint); '
+                              'no probe was run and nothing was rewritten'},
+        'edited': {'count': 0, 'tensors': [], 'min_cos': None, 'mean_cos': None,
+                   'min_snr': None, 'floor': float(resolved['edit'].get('min_cos') or 0.95),
+                   'floor_met': None, 'below_floor': [], 'by_kind': {},
+                   'note': 'applying the same axis to its own output would remove the same '
+                           'direction twice; cos cannot see that, which is why it is refused '
+                           'as a no-op instead'},
+        'untouched': {'count': untouched_count, 'verified': True, 'mismatched': [],
+                      'missing': [],
+                      'method': 'no rewrite: the output is a byte copy of the input, so every '
+                                'tensor is identical by construction'},
+        'targets': {'names': sorted(edits), 'layer_count': len(resolved['layers']),
+                    'tensor_count': len(edits)},
+        'fingerprint': stored,
+        'bytes_in': gguf.stat().st_size, 'bytes_out': out.stat().st_size,
+        'input_sha256': file_digest(gguf), 'output_sha256': file_digest(out),
+        'wall_seconds': round(time.monotonic() - started, 2),
+        'removal_measured': False,
+        'claims': {
+            'removal': 'not measured and not claimed: removal is GATED behind a real serve '
+                       'config and a judge wave, and this command has no model',
+            'no_op': 'the file already carries this entry; use the pristine base to '
+                     're-measure the delivered edit'},
+        'next': [f'jdewitt gguf-inspect {out}',
+                 '# re-run on the PRISTINE artifact to measure the delivered edit again'],
+    }
+
+
 def _check_paths(gguf, out):
     if not gguf.is_file():
         raise FileNotFoundError(str(gguf))
@@ -323,6 +422,32 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
         edits, scales, axis, strength, layer_rows, space = _build_edits(
             resolved, basis, plan_rows, strength_scale)
 
+        # Already applied? The artifact carries its own edit fingerprint, and checked
+        # BEFORE the codec probe and the writer: cos cannot see a double application
+        # (removing the same direction twice leaves the change parallel to the intent,
+        # so the report would read 1.0 while the file holds two removals). Re-running
+        # an entry on its own output is a byte copy with the stored edit reported.
+        from .rewrite import axis_fingerprint
+
+        fingerprint = axis_fingerprint(edits)
+        stored = _stored_fingerprint(gguf)
+        already = bool(isinstance(stored, dict)
+                       and stored.get('edit_sha256') == fingerprint['edit_sha256']
+                       and stored.get('axis_space') == space
+                       and stored.get('scale_per_tensor') == scales
+                       and sorted(stored.get('layers') or []) == fingerprint['layers'])
+        if already:
+            temp_path = out.with_name(f'{out.name}.partial-{os.getpid()}')
+            try:
+                shutil.copyfile(gguf, temp_path)
+                os.replace(temp_path, out)
+            finally:
+                if temp_path.exists():
+                    temp_path.unlink()
+            return _already_applied(resolved, entry, gguf, out, stored, plan_key, meta,
+                                    installed, strength, float(strength_scale), edits,
+                                    layer_rows, started)
+
         groups = {}
         for kind, names in resolved['targets'].items():
             groups[kind] = {'names': names, 'scale': strength[kind],
@@ -370,6 +495,8 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
     report = {
         'command': 'bank-apply',
         'schema': SCHEMA,
+        'applied': True,
+        'already_applied': False,
         'entry_key': entry['key'],
         'bundle_sha256': resolved['bundle']['sha256'],
         'base': entry['base'],

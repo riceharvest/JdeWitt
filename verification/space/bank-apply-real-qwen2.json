@@ -1,6 +1,8 @@
 {
   "command": "bank-apply",
   "schema": "jdewitt-bank-apply-v1",
+  "applied": true,
+  "already_applied": false,
   "entry_key": "qwen2/synthetic-f10l12",
   "bundle_sha256": "f8016ba8b6509cf8f9364e8b3ca8e2d13cf8b068d75b79b4f66009d747ac4c91",
   "base": {
@@ -271,7 +273,9 @@
   "bytes_out": 1052026272,
   "input_sha256": "4537de221ae1e9146317ea756958252ea6e7a3feb8f38a3c21cc60614f0c2cb4",
   "output_sha256": "f1388e9a1aae9dba2c0a709bce4aba734f25dc2609b5dba0222c081daaf636a4",
-  "wall_seconds": 143.69,
+  "wall_seconds": 105.32,
+  "ok": true,
+  "status": "applied",
   "removal_measured": false,
   "claims": {
     "removal": "not measured and not claimed: removal is GATED behind a real serve config and a judge wave, and this command has no model",
