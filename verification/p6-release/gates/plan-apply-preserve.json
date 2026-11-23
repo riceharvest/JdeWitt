@@ -625,7 +625,7 @@
   },
   "bytes_in": 1107458592,
   "bytes_out": 1107460512,
-  "elapsed_s": 164.5,
+  "elapsed_s": 146.5,
   "determinism": {
     "input_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
     "output_sha256": "4538622683765bc6031037b5cbf3c7cad8a17632642868c08fd8f367c72ad871",

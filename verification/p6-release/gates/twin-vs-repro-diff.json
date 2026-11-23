@@ -1,5 +1,5 @@
 {
-  "before": "/mnt/ssd/models/spark/p6/merged-twin.gguf",
+  "before": "verification/releases/spark-1.7b-q4km-p6/model-merged.gguf",
   "after": "/tmp/repro.gguf",
   "tensor_count_before": 226,
   "tensor_count_after": 226,
