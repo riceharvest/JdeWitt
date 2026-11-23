@@ -84,7 +84,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.006,
+            "seconds": 0.004,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -105,21 +105,21 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.554,
+            "seconds": 1.537,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 fcb07fb169244d85",
             "code": null
           },
           {
             "step": "package",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "3 files, 861440 artifact bytes",
             "code": null
           }
@@ -169,7 +169,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -183,21 +183,21 @@
           {
             "step": "download",
             "state": "ok",
-            "seconds": 0.0,
+            "seconds": 0.001,
             "detail": "295488 bytes, sha256 f96a4612b2f6f115",
             "code": null
           },
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.043,
+            "seconds": 0.04,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.003,
+            "seconds": 0.001,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 a31ab457828ca25e",
             "code": null
           },
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed, 1 skipped in 10.29s"
+      "summary": "66 passed, 1 skipped in 11.90s"
     },
     "stage": {
       "files": 44,
