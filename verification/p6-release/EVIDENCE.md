@@ -1,4 +1,4 @@
-# Phase-6 release gate evidence (t_a44a4d22)
+# Phase-6 release gate evidence
 
 Release directory (on disk, excluded from git because it is 2.2 GB of model
 bytes): `verification/releases/spark-1.7b-q4km-p6`.
