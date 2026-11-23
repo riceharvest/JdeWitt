@@ -1,0 +1,65 @@
+{
+ "schema": "jdewitt.merge-cert-blocked/1",
+ "card": "t_b821d858",
+ "scope": "P5's one merge test (pair axis at the certified footprint) plus the 24-family content read and the zero-generation BR probe.",
+ "date_utc": "2026-11-23T01:55:00Z",
+ "outcome": "not_run",
+ "headline": "The card did not run. Its run gate requires the dependency's decision to be 'orthogonal'; the dependency returned 'insufficient'. No cos exists, so neither the orthogonal branch (merge) nor the dead branch (tone result) applies.",
+ "gate_precondition": {
+  "card_rule": "Run ONLY if the previous card's decision is 'orthogonal' (mean |cos| <= 0.3 vs the oracle axis). If 'dead', do not run: record the cos and report a tone result.",
+  "dependency": "t_627ca2c9 (P5 fit: pair-diff axis vs the banked oracle axis)",
+  "observed_decision": "insufficient",
+  "observed_returncode": 3,
+  "observed_cos": [],
+  "observed_mean_cos": null,
+  "observed_mean_abs_cos": null,
+  "source": "ab/t_627ca2c9:verification/p5/pair-axis-check.json (the committed packet, read directly)",
+  "why_neither_branch_applies": "There is no cos number at all. 'Insufficient' is a data-absence outcome, not a measurement. Reading it as 'orthogonal' would spend a merge on an axis that was never fitted; reading it as 'dead' would report a tone result with a fabricated cos.",
+  "decision_line": "insufficient: 0 vetted delivery pairs (< 10) - no axis fitted, no cos computed, no merge spent"
+ },
+ "blockers": [
+  {
+   "id": "no-pair-axis",
+   "blocker": "Zero vetted delivery pairs; a pair axis cannot be fitted.",
+   "evidence": "pairs.jsonl holds 1 candidate read 'other' -> by_verdict other=1, vetted=0, n_vetted_pairs=0. Threshold min_vetted_pairs=10.",
+   "source": "ab/t_627ca2c9:verification/p5/pair-axis-check.json"
+  },
+  {
+   "id": "no-oracle-axes",
+   "blocker": "The banked oracle axes tensor is not on this host.",
+   "evidence": "verification/q3-4b-oracle-control/q3oaxes135/ contains only predictions.jsonl and wave.json; no .pt axes file.",
+   "recovery": "scripts/recover_oracle_axes.py <out.pt> <base.gguf> <oracle.gguf> -- requires both ggufs, neither present here."
+  },
+  {
+   "id": "no-base-artifact",
+   "blocker": "The base artifact this card must copy does not exist on this host.",
+   "evidence": "verification/q3-4b-holdout/hold-base.wave.json pins -m /mnt/ssd/hermes/models/q3-4b-base-q8.gguf; that directory does not exist (ls: cannot access). find /mnt/ssd -maxdepth 4 -name '*q3-4b*.gguf' returns nothing."
+  },
+  {
+   "id": "no-ancestry-artifact",
+   "blocker": "The certified ancestry q3-4b-f15s15-l935 whose footprint/scale the build would reuse is not on this host.",
+   "evidence": "no q3-4b gguf of any kind found under /mnt/ssd."
+  },
+  {
+   "id": "no-read-instrument",
+   "blocker": "Gate 2 requires scripts/delivery_read_packet.py to read the 24 answers; it is absent from master's tree.",
+   "evidence": "git ls-files shows no such path on master; it exists only on other branches' history (commits 28996ac, ed04bf2, ...), none merged here.",
+   "note": "Even with a successful build, the wave's answers could not be read to verdicts by the instrument the card names."
+  },
+  {
+   "id": "pairs-code-unmerged",
+   "blocker": "spanfit's pairs=True fit path is only on the unmerged dependency branch.",
+   "evidence": "master:jdewitt/spanfit.py has no pairs= argument; ab/t_627ca2c9 does. The dep noted merge-back was skipped because this worktree is dirty."
+  }
+ ],
+ "what_was_not_done": [
+  "No artifact built (no base, no ancestry, no axis).",
+  "No gguf-revert, no preview_edit cos per edited tensor.",
+  "No cert wave on verification/screens/q3-holdout-24.jsonl.",
+  "No 24-family content-rate or McNemar.",
+  "No 241-row retention suite, paired sign test, or median answer length.",
+  "No zero-generation BR probe."
+ ],
+ "not_a_claim": "Nothing here is evidence about the pair axis, the merge, retention, or refusal. It records only that the card's inputs do not exist on this host, so the card could not run and did not run.",
+ "next_artifact_needed": ">=10 vetted delivery pairs plus a restored oracle axes .pt on a host holding the q3 base and oracle ggufs; then re-open this card so its precondition can be evaluated against a real cos."
+}
