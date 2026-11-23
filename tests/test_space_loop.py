@@ -191,6 +191,52 @@ def test_an_uncovered_architecture_is_refused_before_the_download(tmp_path, hub)
     assert result['workspace_deleted'] is True
 
 
+def test_a_quant_the_entry_does_not_cover_is_refused_before_the_download(tmp_path, hub):
+    """The disabled file stays pickable; picking it is refused by code, not hidden."""
+    result = loop.start_job(BASE, 'base-rev', 'model-Q8_0.gguf', 'Q8_0',
+                            bank_dir=FIXTURE_BANK, hub=hub, root=tmp_path)
+    assert result['label'] == 'refused'
+    assert result['refusal']['code'] == 'UNSUPPORTED_QUANT'
+    assert 'q8_0' in result['refusal']['message'].casefold()
+    assert 'download' not in [step['step'] for step in result['steps']]
+
+
+def test_the_live_header_read_is_sparse_and_bounded(tmp_path, monkeypatch):
+    """The Hub seam: a prefix is read, the copy is padded, no tensor bytes move."""
+    import huggingface_hub
+
+    source = (FIXTURE / 'repos' / 'jdewitt__loop-fixture' / 'model-Q4_K_M.gguf').read_bytes()
+
+    class FakeFileSystem:
+        def open(self, path, mode):
+            import io
+            return io.BytesIO(source)
+
+    monkeypatch.setattr(huggingface_hub, 'HfFileSystem', FakeFileSystem)
+    dest = tmp_path / 'header.gguf'
+    written = loop.LiveHub().header(BASE, 'model-Q4_K_M.gguf', 'base-rev', dest, size=len(source))
+    assert written == len(source) < loop.HEADER_READ_CAP
+    assert dest.stat().st_size == len(source)
+    assert dest.read_bytes() == source  # the fixture is smaller than the cap
+
+
+def test_the_live_download_moves_the_file_after_the_gates(tmp_path, monkeypatch):
+    import huggingface_hub
+
+    source = FIXTURE / 'repos' / 'jdewitt__loop-fixture' / 'model-Q4_K_M.gguf'
+
+    def fake_download(repo_id, filename, revision=None, local_dir=None):
+        target = Path(local_dir) / filename
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(source.read_bytes())
+        return str(target)
+
+    monkeypatch.setattr(huggingface_hub, 'hf_hub_download', fake_download)
+    dest = tmp_path / 'input.gguf'
+    loop.LiveHub().download(BASE, 'model-Q4_K_M.gguf', 'base-rev', dest)
+    assert dest.read_bytes() == source.read_bytes()
+
+
 def test_an_unlisted_licence_is_refused_before_the_download(tmp_path):
     def mutate(document):
         document['repos'][BASE]['licence'] = 'some-proprietary-licence'
