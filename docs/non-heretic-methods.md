@@ -203,6 +203,11 @@ revert only (`verification/vocab-remap/weights/`), and both the weight and serve
 claims stay GATED. The table is the reviewable artifact: 20 entries, no
 replacement, each surface resolvable per tokenizer
 (`verification/vocab-remap/list.json`, `verification/vocab-remap/dryrun.json`).
+Reproduce the dry run against the file, not the directory:
+`--suite verification/vocab-remap/probes/probes.jsonl` reproduces
+`dryrun.json`'s ten-row plan, while `verification/vocab-remap/probes/` also
+holds the 24-row multilingual suite that landed later, so `--probes` on the
+directory returns 34 rows.
 
 ## Cross-model evidence, 2026 (the actual "best across models" question)
 
