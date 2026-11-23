@@ -38,7 +38,11 @@ def method_catalog():
                                'entrypoint': 'run' if name in IMPLEMENTED else 'train' if name in TRAINING_METHODS else None,
                                'notes': {'som': 'Deterministic 1-D SOM over harmful family means, then subtract harmless centroid; orthonormalized directions.',
                                          'leace': 'Linear covariance erasure, no affine mean-restoration term.',
-                                         'ara': 'Bounded KNN low-rank module-I/O optimization, then layer-strength search; dense modules only.'}.get(name,'')}
+                                         'ara': 'Bounded KNN low-rank module-I/O optimization, then layer-strength search; dense modules only.',
+                                         'rdo': 'Selector, not an edit: fits an axis (jdewitt.rdo; the paper\'s idea, not its operator). '
+                                                'The P4f merged-bytes ladder did not show lower drift at equal removal beyond the '
+                                                'ladder noise on Spark 1.7B Q4_K_M, so it stays an axis source, not an implemented edit. '
+                                                'Falsifier: runs/p4/selection.json (committed copy verification/p4f/selection.json).'}.get(name,'')}
                         for name, urls in SOURCES.items()},
             'edit_surface': {
                 'scope': 'Which projections are edited. Both sides remove the same direction; they differ in where it is removed.',
