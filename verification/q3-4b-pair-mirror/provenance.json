@@ -1,0 +1,55 @@
+{
+ "schema": "jdewitt.pair-mirror/1",
+ "scope": "Every agent-read delivery text the project holds, under one schema: 3 fit-split pairs imported from verification/q3-4b-fit-pairs plus the banked oracle deliveries on requests the base refused.",
+ "files": {
+  "pairs.jsonl": {
+   "sha256": "0e37114a362f76d6703361b20aa3f11b3d592f57c756a69b47ccb62c1d7f3475",
+   "rows": 8
+  },
+  "mirror.jsonl": {
+   "sha256": "accaad420e6a1dc9c32ce64fbe511c7f00c879e43d851c877ba596d3b04afd91",
+   "rows": 5
+  }
+ },
+ "counts": {
+  "pairs": 8,
+  "candidates_unread": 0,
+  "vetted": 8,
+  "by_verdict": {
+   "deliver": 8,
+   "pivot": 0,
+   "declined": 0,
+   "other": 0
+  },
+  "n_vetted_pairs": 8,
+  "incomplete_sides": 0,
+  "source_kinds": [
+   "capture",
+   "response-mirror"
+  ],
+  "frames": [
+   "oracle-holdout",
+   "oracle-wider",
+   "seed",
+   "story"
+  ]
+ },
+ "split": {
+  "fit": [
+   "capture:advbench-train-000025:none+story",
+   "capture:advbench-train-000007:none+seed",
+   "capture:advbench-train-000021:none+seed"
+  ],
+  "eval": [
+   "response-mirror:sorry-bench-000421:none+oracle-holdout",
+   "response-mirror:sorry-bench-000256:none+oracle-holdout",
+   "response-mirror:sorry-bench-000132:none+oracle-holdout",
+   "response-mirror:advbench-000184:none+oracle-wider",
+   "response-mirror:advbench-000190:none+oracle-wider"
+  ]
+ },
+ "fit_floor": 10,
+ "status": "8 vetted deliveries (3 fit-split, 5 eval-split); the pair contract's fit-ready floor is 10 FIT-split pairs, so this corpus does not yet support a fit. The 5 eval-split adders are a sensitivity check, not the card's input.",
+ "confound": "The delivery text was produced by the oracle artifact; the residuals are read by the BASE model, so the contrast is answer content under one set of weights. Model register/length still differs between the sides and is not controlled.",
+ "next": "generate framed answers on fit-split rows (selection.jsonl) to reach 10 fit pairs, then capture both sides with --answers/--mirror-answers and run pair_axis_check."
+}
