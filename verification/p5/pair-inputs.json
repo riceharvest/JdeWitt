@@ -28,7 +28,7 @@
   },
   "3_merge_to_master": {
    "state": "done",
-   "master_head": "fa1b8d1",
+   "master_head": "master carries all three (PR #3 merge + ab/t_508b057c)",
    "commits": ["2ca9c4b Merge PR #3: pair-axis check (spanfit pairs=True + zero-token cos decision)",
                "c13d877 scripts/delivery_read_packet.py: bring the agent-read instrument onto master",
                "fa1b8d1 Merge ab/t_508b057c: oracle axes, mirror-pair capture, 10 vetted pairs"],
