@@ -49,7 +49,12 @@ def _quant_update(view):
 
 def refresh(repo):
     """Repo id -> (quant choices, coverage verdict, licence line). Metadata only."""
-    view = space_loop.preview((repo or '').strip(), None, bank_dir=BANK)
+    repo = (repo or '').strip()
+    if not repo:
+        empty = gr.update(choices=[], value=None)
+        return (empty, 'Coverage: enter owner/name (the shipped bank has no base until '
+                       'Phase 1 seeds it).', 'Licence: not read yet.')
+    view = space_loop.preview(repo, None, bank_dir=BANK)
     verdict = view['coverage_line']
     if view.get('refusal'):
         verdict = space_loop.refusal_copy(view['refusal']['code'], view['refusal']['message'])
