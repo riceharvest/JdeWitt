@@ -85,12 +85,92 @@ def group_means(records: list[tuple], label: str) -> torch.Tensor:
     return torch.stack(arrs)
 
 
+def _row_tensor(rec) -> torch.Tensor:
+    """One stored row as a [L,W] float64 tensor (capture tensor or {layer: vec})."""
+    if torch.is_tensor(rec):
+        return rec.double()
+    if isinstance(rec, dict):
+        return torch.stack([torch.as_tensor(np.asarray(rec[k])).double()
+                            for k in sorted(rec, key=int)])
+    raise SystemExit(f"a residual row is {type(rec).__name__}, not a tensor or a {{layer: vec}} dict")
+
+
+def _prompt_id(meta):
+    if isinstance(meta, dict):
+        return meta.get("prompt_id") if meta.get("prompt_id") is not None else meta.get("id")
+    return None
+
+
+def paired_contrasts(records: list[tuple], label_bad: str = "bad",
+                     label_good: str = "deliver") -> tuple[torch.Tensor, list]:
+    """Per-pair differences [N,L,W] and the prompt ids they came from.
+
+    A delivery pair is the SAME harmful request answered twice, so the contrast is
+    delivery-row minus refusal-row for one ``meta['prompt_id']``. Pairing by group
+    mean instead (``pairs=False``) lets a frame's wording shift, or a different mix
+    of requests on each side, sit inside the axis; the pair difference cancels both.
+    The refusal side is the plain (``frame == 'none'``) row when the capture has one;
+    a single other candidate is used, and more than one is refused as ambiguous.
+    """
+    bad_by_prompt: dict = {}
+    for meta, rec in records:
+        if _label(meta) == label_bad:
+            pid = _prompt_id(meta)
+            if pid is None:
+                raise SystemExit("pairs=True needs meta['prompt_id'] on every record; "
+                                 "a row without one cannot be matched to its request")
+            bad_by_prompt.setdefault(pid, []).append((meta, rec))
+
+    contrasts, used = [], []
+    for meta, rec in records:
+        if _label(meta) != label_good:
+            continue
+        pid = _prompt_id(meta)
+        if pid is None:
+            raise SystemExit("pairs=True needs meta['prompt_id'] on every record; "
+                             "a row without one cannot be matched to its request")
+        candidates = bad_by_prompt.get(pid, [])
+        if not candidates:
+            raise SystemExit(f"pairs=True: no {label_bad!r} row for prompt_id={pid!r}; "
+                             f"the {label_good!r} row has no refusal side to subtract")
+        plain = [c for c in candidates if (c[0].get("frame") if isinstance(c[0], dict) else None) == "none"]
+        if len(plain) == 1:
+            chosen = plain[0]
+        elif len(candidates) == 1:
+            chosen = candidates[0]
+        elif len(plain) > 1:
+            raise SystemExit(f"pairs=True: prompt_id={pid!r} has {len(plain)} plain "
+                             f"{label_bad!r} rows; the pair is ambiguous")
+        else:
+            raise SystemExit(f"pairs=True: prompt_id={pid!r} has {len(candidates)} "
+                             f"{label_bad!r} rows and none is the plain side; the pair is ambiguous")
+        good_row, bad_row = _row_tensor(rec), _row_tensor(chosen[1])
+        if good_row.shape != bad_row.shape:
+            raise SystemExit(f"pairs=True: prompt_id={pid!r} sides disagree on shape "
+                             f"{tuple(good_row.shape)} vs {tuple(bad_row.shape)}")
+        contrasts.append(good_row - bad_row)
+        used.append(pid)
+    if not contrasts:
+        raise SystemExit(f"pairs=True: no {label_good!r} rows in {len(records)} records, "
+                         f"so there is no pair to contrast")
+    return torch.stack(contrasts), used
+
+
 def per_layer_axes(records: list[tuple], label_bad: str = "bad",
-                    label_good: str = "good") -> torch.Tensor:
-    """Normalized per-layer refusal axis M[L,W] from (meta, rec) pairs."""
-    bad = group_means(records, label_bad)
-    good = group_means(records, label_good)
-    M = (bad.mean(0) - good.mean(0))
+                   label_good: str = "good", pairs: bool = False) -> torch.Tensor:
+    """Normalized per-layer refusal axis M[L,W] from (meta, rec) pairs.
+
+    ``pairs=False`` (default) keeps the original group-mean contrast: mean(bad) -
+    mean(good). ``pairs=True`` averages per-request contrasts instead, so the
+    delivery-minus-refusal difference is taken inside one prompt before it is
+    pooled (``paired_contrasts``). Rows are unit-normalized per layer either way.
+    """
+    if pairs:
+        M = paired_contrasts(records, label_bad, label_good)[0].mean(0)
+    else:
+        bad = group_means(records, label_bad)
+        good = group_means(records, label_good)
+        M = (bad.mean(0) - good.mean(0))
     M = M / M.norm(dim=1, keepdim=True).clamp_min(1e-12)
     return M.float()
 
