@@ -108,6 +108,28 @@ Currently checkable in a fresh clone:
   removal count. Refusal text and the dead screen are committed under
   `verification/instrument-gates/`.
 
+- **Vocabulary surgery is a wording layer, not a removal.** `jdewitt vocab-remap
+  --remap on|off` is a client-side reference harness, not a patched sampler: one
+  token loop around a served artifact, a 20-entry denial table
+  (`jdewitt/assets/vocab-remap-denial.json`) as the only policy artifact, and every
+  suppression recorded with the row it changed. On the ten authored probes,
+  table-named denial surfaces fall from 8/10 (no remap) to 0/10 (remap), and the
+  shipped word check still detects denial on 6/10 against 7/10.
+  Content is 0/10 in both arms: the model re-expresses the denial in wording the
+  table does not name (`can’t` in the decode wave, `keine` in the German repeat)
+  rather than delivering the request, so no row moves from wording to content.
+  Retention is the same 96/241 rows in both arms on the 241-row capability suite
+  (0 discordant pairs, exact McNemar test p = 1.0), with 2 of 20 table entries
+  firing on 3 rows and the rest never exposed. Limits: the decode side is a
+  reference harness, not a patched sampler shipped to a runtime; the weight-side
+  row edit is measured for storage only (byte-exact revert on the Qwen2.5-0.5B
+  IQ3_M file) and every weight, removal or served claim from this method is
+  GATED. Evidence:
+  `verification/vocab-remap/audit.json` (side-by-side labels),
+  `verification/vocab-remap/retention.json`, the token inventory and reachability
+  plan `verification/vocab-remap/{list,dryrun}.json`, and the multilingual
+  falsifier `verification/vocab-remap/multilingual.json`.
+
 Held for honesty, not as evidence: the **Qwen2.5-1.5B 40/40 + 24/24
 held-out**, the **MiniCPM-V 4.7 36/40**, and the **Spark-X2.6-1.7B /
 LFM3-1.7B** rows were taken before the 2026-11-17 row-kind scoring fix, and

@@ -129,8 +129,59 @@ def encodable_types():
     return sorted(CODECS)
 
 
+def _cos(realized, intended):
+    """cos between a realized change and the change that was asked for.
+
+    The one formula ``preview_edit`` and ``compare_edit`` report per tensor; it is
+    repeated per row by their ``rows=`` forms, so it lives in one place.
+    """
+    realized_norm = float(np.linalg.norm(realized))
+    intended_norm = float(np.linalg.norm(intended))
+    if realized_norm <= 0 or intended_norm <= 0:
+        return 0.0
+    return float((np.asarray(realized) * np.asarray(intended)).sum()
+                 / (realized_norm * intended_norm))
+
+
+def _block_spans(rows, row_len, n, block_els):
+    """Block-aligned flat element spans that cover the given rows, merged.
+
+    A quantized block is the codec's unit, so a row whose width is not a whole
+    number of blocks shares its edge block with a neighbour; measuring the edit
+    means re-encoding that whole block, exactly as the writer does. Adjacent and
+    overlapping spans are merged so no block is counted twice.
+    """
+    spans = []
+    for row in rows:
+        row = int(row)
+        if row < 0 or row * row_len >= n:
+            raise ValueError(f'row {row} is outside a tensor of {n // row_len} rows '
+                             f'(row width {row_len}, {n} values)')
+        start = row * row_len // block_els * block_els
+        end = min(n, -(-((row + 1) * row_len) // block_els) * block_els)
+        if spans and start <= spans[-1][1]:
+            spans[-1][1] = max(spans[-1][1], end)
+        else:
+            spans.append([start, end])
+    return [(int(start), int(end)) for start, end in spans]
+
+
+def _slice_pieces(pieces, start, end):
+    """Concatenate the measured realized/intended slices covering [start, end)."""
+    realized, intended = [], []
+    for piece_start, piece_realized, piece_intended in pieces:
+        piece_end = piece_start + piece_realized.size
+        low, high = max(start, piece_start), min(end, piece_end)
+        if low < high:
+            realized.append(piece_realized[low - piece_start:high - piece_start])
+            intended.append(piece_intended[low - piece_start:high - piece_start])
+    if not realized:
+        raise ValueError(f'no measured span covers elements [{start}, {end})')
+    return np.concatenate(realized), np.concatenate(intended)
+
+
 def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, blocks=32,
-                 renormalize=False, target_type=None):
+                 renormalize=False, target_type=None, rows=None):
     """Simulate an in-place edit on sampled tensors: does it survive the codec?
 
     ``edits`` maps a tensor name to a float32 delta of that tensor's logical shape
@@ -156,6 +207,16 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
     codec quantizes every block independently, so a spread of blocks is a faithful
     sample of its behaviour, while re-encoding 18M elements of an ffn_down tile per
     arm costs a minute of numpy per arm.
+
+    ``rows`` names logical row indices per tensor (``{name: [i, ...]}``) for an
+    edit that lives in a few rows of a big matrix: an unembedding row edit touches
+    48 of 151,936 rows, and the even spread above would land on untouched rows and
+    report cos 0 for an edit that is entirely present. The sample becomes the
+    block-aligned spans covering exactly those rows (a row whose width is not a
+    whole number of blocks shares its edge block with a neighbour, and that whole
+    block is what the writer re-encodes), and every touched row is reported
+    separately. The row detail carries ``retained_scale`` — the edited row's norm
+    over the base row's — which is the realized form of a per-row down-weight.
     """
     from gguf import GGUFReader
 
@@ -163,7 +224,7 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
     chosen = [name for name in (names or edits) if name in edits]
     if limit:
         chosen = chosen[:limit]
-    rows = []
+    reports = []
     for name in chosen:
         tensor = next((item for item in reader.tensors if item.name == name), None)
         if tensor is None:
@@ -206,20 +267,30 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
                                  f'pass target_type to preview the re-encode that would ship')
             _bb, window_els, encode, decode = codec
         n = base.size
-        window_len = int(blocks) * window_els
-        span = max(0, n - window_len)
-        offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // window_els * window_els,
-                             span - span % window_els)
-                          for step in range(max(1, windows))})
-        realised_parts, delta_parts = [], []
-        for offset in offsets:
-            end = min(n, offset + window_len)
-            chunk = (end - offset) // window_els * window_els
+        row_ids = None if rows is None else rows.get(name)
+        if row_ids is None:
+            window_len = int(blocks) * window_els
+            span = max(0, n - window_len)
+            offsets = sorted({min(int(round(span * step / max(1, windows - 1))) // window_els * window_els,
+                                 span - span % window_els)
+                              for step in range(max(1, windows))})
+            spans = [(offset, min(n, offset + window_len)) for offset in offsets]
+        else:
+            if isinstance(edit, tuple):
+                raise ValueError(f'{name}: rows= measures a row-scoped delta, not a (axis, space) '
+                                 f'projection')
+            if len(shape) != 2:
+                raise ValueError(f'{name}: rows= needs a 2-D tensor, shape is {list(shape)}')
+            spans = _block_spans(sorted({int(row) for row in row_ids}), int(shape[1]), n, window_els)
+        realised_parts, delta_parts, starts = [], [], []
+        for start, end in spans:
+            chunk = (end - start) // window_els * window_els
             if chunk <= 0:
                 continue
-            reencoded = decode(encode(wanted[offset:offset + chunk].copy()), chunk)
-            realised_parts.append(reencoded.astype(np.float32) - flat_base[offset:offset + chunk])
-            delta_parts.append(flat_delta[offset:offset + chunk])
+            reencoded = decode(encode(wanted[start:start + chunk].copy()), chunk)
+            realised_parts.append(reencoded.astype(np.float32) - flat_base[start:start + chunk])
+            delta_parts.append(flat_delta[start:start + chunk])
+            starts.append(start)
         if not realised_parts:
             continue
         realized = np.concatenate(realised_parts)
@@ -228,34 +299,63 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         noise = realized - delta_flat
         noise_norm = float(np.linalg.norm(noise))
         realised_norm = float(np.linalg.norm(realized))
-        cos = (float((realized * delta_flat).sum() / (realised_norm * delta_norm + 1e-12))
-               if delta_norm > 0 and realised_norm > 0 else 0.0)
-        rows.append({'name': name, 'qtype': dtype, 'shape': list(shape),
-                     'cos': round(cos, 4),
-                     'norm_ratio': round(realised_norm / (delta_norm + 1e-12), 4),
-                     'snr': round(delta_norm / (noise_norm + 1e-12), 3),
-                     'delta_norm': round(delta_norm, 4),
-                     'noise_norm': round(noise_norm, 4),
-                     'windows': len(offsets), 'blocks_per_window': int(blocks)})
-    cosines = [row['cos'] for row in rows]
-    return {'tensors': rows, 'sampled': len(rows),
+        cos = _cos(realized, delta_flat)
+        report = {'name': name, 'qtype': dtype, 'shape': list(shape),
+                  'cos': round(cos, 4),
+                  'norm_ratio': round(realised_norm / (delta_norm + 1e-12), 4),
+                  'snr': round(delta_norm / (noise_norm + 1e-12), 3),
+                  'delta_norm': round(delta_norm, 4),
+                  'noise_norm': round(noise_norm, 4),
+                  'windows': len(starts), 'blocks_per_window': int(blocks)}
+        if row_ids is not None:
+            pieces = list(zip(starts, realised_parts, delta_parts))
+            detail, touched_real, touched_intended = [], [], []
+            for row in sorted({int(r) for r in row_ids}):
+                start, end = row * int(shape[1]), (row + 1) * int(shape[1])
+                row_real, row_intended = _slice_pieces(pieces, start, end)
+                touched_real.append(row_real)
+                touched_intended.append(row_intended)
+                base_row = flat_base[start:end]
+                detail.append({'row': row,
+                               'cos': round(_cos(row_real, row_intended), 4),
+                               'norm_ratio': round(float(np.linalg.norm(row_real))
+                                                   / (float(np.linalg.norm(row_intended)) + 1e-12), 4),
+                               'retained_scale': round(float(np.linalg.norm(base_row + row_real))
+                                                       / (float(np.linalg.norm(base_row)) + 1e-12), 6)})
+            report.update({'row_scoped': True, 'rows_touched': len(detail),
+                           'blocks_touched': int(sum((end - start) // window_els
+                                                     for start, end in spans)),
+                           'cos_touched_rows': round(_cos(np.concatenate(touched_real),
+                                                          np.concatenate(touched_intended)), 4),
+                           'row_detail': detail})
+        reports.append(report)
+    cosines = [row['cos'] for row in reports]
+    return {'tensors': reports, 'sampled': len(reports),
             'min_cos': min(cosines) if cosines else None,
             'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
-            'min_snr': min((row['snr'] for row in rows), default=None),
+            'min_snr': min((row['snr'] for row in reports), default=None),
             'note': 'a low cos here means the codec, not the axis, decides what ships'}
 
 
-def compare_edit(source, edited, edits, names=None, limit=None, renormalize=False, scale=1.0):
+def compare_edit(source, edited, edits, names=None, limit=None, renormalize=False, scale=1.0,
+                 rows=None):
     """What did the SHIPPED file keep of the intended edit?
 
     ``source`` is the pristine artifact the project started from, ``edited`` is the
     file that will be served, and ``edits`` is {name: (axis, space)} — the projection
-    the ladder chose. ``scale`` is the strength the writer applied; leaving it at 1.0
+    the ladder chose — or {name: float32 delta}, the same dual form the writers take.
+    ``scale`` is the strength the writer applied; leaving it at 1.0
     while the artifact was written at another strength would compare the stored edit
     against a projection nobody asked for. The realized change is dequant(edited) -
     dequant(source), so this is the only number that describes the delivered edit; an
     adapter curve describes the wanted one. Use it after merge+requantize to prove the
     pipeline kept the edit and to name the tensors that lost it.
+
+    ``rows`` ({name: [i, ...]}) reports each named logical row separately, plus a
+    ``cos_touched_rows`` aggregate. The tensor-level ``cos`` stays over the whole
+    tensor, which is the honest delivered number — a writer that requantizes the
+    whole matrix adds codec drift on untouched rows, and that drift is part of
+    what ships; the row aggregate isolates the edit itself.
     """
     from gguf import GGUFReader
 
@@ -276,16 +376,25 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
     chosen = [name for name in (names or edits) if name in edits]
     if limit:
         chosen = chosen[:limit]
-    rows = []
+    reports = []
     for name in chosen:
         base, source_type = load(source, name)
         final, edited_type = load(edited, name)
         if base.shape != final.shape:
-            rows.append({'name': name, 'error': f'shape changed: {base.shape} -> {final.shape}'})
+            reports.append({'name': name, 'error': f'shape changed: {base.shape} -> {final.shape}'})
             continue
-        axis, space = edits[name]
-        axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
-        intended = axis_delta(axis, base, scale, space)
+        edit = edits[name]
+        if isinstance(edit, tuple):
+            axis, space = edit
+            axis = np.asarray(axis, dtype=np.float32)  # (W,) or (k, W): never flatten a subspace
+            intended = axis_delta(axis, base, scale, space)
+        else:
+            if renormalize:
+                raise ValueError(f'{name}: renormalize applies to a (axis, space) projection; '
+                                 f'a delta already carries its row scaling')
+            intended = np.asarray(edit, dtype=np.float32).reshape(base.shape)
+            if not np.isfinite(intended).all():
+                raise ValueError(f'{name}: intended delta contains NaN/Inf')
         if renormalize:
             edited_base = base + intended
             before = np.linalg.norm(base, axis=1, keepdims=True)
@@ -295,14 +404,35 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
         intended_norm = float(np.linalg.norm(intended))
         realized_norm = float(np.linalg.norm(realized))
         noise_norm = float(np.linalg.norm(realized - intended))
-        cos = (float((realized * intended).sum() / (realized_norm * intended_norm + 1e-12))
-               if realized_norm > 0 and intended_norm > 0 else 0.0)
-        rows.append({'name': name, 'cos': round(cos, 4),
-                     'source_type': source_type, 'edited_type': edited_type,
-                     'norm_ratio': round(realized_norm / (intended_norm + 1e-12), 4),
-                     'snr': round(intended_norm / (noise_norm + 1e-12), 3)})
-    cosines = [row['cos'] for row in rows if 'cos' in row]
-    return {'tensors': rows, 'sampled': len(rows),
+        report = {'name': name, 'cos': round(_cos(realized, intended), 4),
+                  'source_type': source_type, 'edited_type': edited_type,
+                  'norm_ratio': round(realized_norm / (intended_norm + 1e-12), 4),
+                  'snr': round(intended_norm / (noise_norm + 1e-12), 3)}
+        row_ids = None if rows is None else rows.get(name)
+        if row_ids is not None:
+            if base.ndim != 2:
+                raise ValueError(f'{name}: rows= needs a 2-D tensor, shape is {list(base.shape)}')
+            detail, touched_real, touched_intended = [], [], []
+            for row in sorted({int(i) for i in row_ids}):
+                if row < 0 or row >= base.shape[0]:
+                    raise ValueError(f'{name}: row {row} is outside {base.shape[0]} rows')
+                row_real, row_intended = realized[row], intended[row]
+                touched_real.append(row_real)
+                touched_intended.append(row_intended)
+                base_row = base[row]
+                detail.append({'row': row,
+                               'cos': round(_cos(row_real, row_intended), 6),
+                               'norm_ratio': round(float(np.linalg.norm(row_real))
+                                                   / (float(np.linalg.norm(row_intended)) + 1e-12), 6),
+                               'retained_scale': round(float(np.linalg.norm(final[row]))
+                                                       / (float(np.linalg.norm(base_row)) + 1e-12), 6)})
+            report.update({'rows_touched': len(detail),
+                           'cos_touched_rows': round(_cos(np.concatenate(touched_real),
+                                                          np.concatenate(touched_intended)), 6),
+                           'row_detail': detail})
+        reports.append(report)
+    cosines = [row['cos'] for row in reports if 'cos' in row]
+    return {'tensors': reports, 'sampled': len(reports),
             'min_cos': min(cosines) if cosines else None,
             'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
             'note': 'delivered edit vs intended projection; low cos means the file, '
@@ -751,15 +881,22 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
 
 
 def revert_inplace(path, sidecar):
-    """Write an in-place patch's saved pre-patch bytes back, then drop the sidecar."""
+    """Write an in-place patch's saved pre-patch bytes back, then drop the sidecar.
+
+    The restored file's digest is reported, and when the sidecar carries
+    ``original_sha256`` (an out-of-place ship that was reverted into place, or any
+    writer that recorded its input) the returned ``byte_exact`` says whether the
+    artifact is now the exact pre-edit file rather than asking the caller to trust
+    that the saved ranges were all that changed.
+    """
     path, sidecar = Path(path), Path(sidecar)
     for candidate in (path, sidecar):
         if not candidate.is_file():
             raise ValueError(f'{candidate} does not exist')
     payload = np.load(sidecar)
     offsets, lengths, data = payload['offsets'], payload['lengths'], payload['data']
-    if 'sha256' in payload:
-        recorded = str(payload['sha256'])
+    recorded = str(payload['sha256']) if 'sha256' in payload else None
+    if recorded is not None:
         current = _sha256(path)
         if current != recorded:
             raise ValueError(f'{path} changed since the patch (sha256 {current[:16]} != recorded '
@@ -774,7 +911,16 @@ def revert_inplace(path, sidecar):
         f.flush()
         os.fsync(f.fileno())
     sidecar.unlink()
-    return {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored}
+    restored_sha256 = _sha256(path)
+    result = {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored,
+              'restored_sha256': restored_sha256}
+    if recorded is not None:
+        result['patched_sha256'] = recorded
+    if 'original_sha256' in payload:
+        original = str(payload['original_sha256'])
+        result['original_sha256'] = original
+        result['byte_exact'] = restored_sha256 == original
+    return result
 
 
 def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None, dequant_cache=None):

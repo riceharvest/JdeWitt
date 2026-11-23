@@ -397,6 +397,188 @@
         "verification/releases/loss-ledger.json"
       ],
       "notes": "The table is rendered, never hand-edited: rows sorted by lineage, no timestamps, two renders byte-identical. LOSSES binds every measured loss to an in-clone source and a recompute command and every void number to an evidence-map claim whose status says why it is void; release-matrix refuses MATRIX_LEDGER_INVALID if a source is missing or a quoted value no longer recomputes. The claims count is the certified-row count, so a cell with no packet cannot be added to it."
+    },
+    {
+      "claim": "vocab surgery: the denial table is a 20-entry EN/NL/DE inventory, resolved per tokenizer, with a suppression plan and a reachability audit of declining base answers",
+      "status": "in-clone",
+      "commands": [
+        "jdewitt vocab-remap --list --artifact verification/vocab-remap/vocab/ggml-vocab-gpt-2.gguf"
+      ],
+      "artifacts": [
+        "jdewitt/assets/vocab-remap-denial.json",
+        "verification/vocab-remap/dryrun.json",
+        "verification/vocab-remap/list.json",
+        "verification/vocab-remap/vocab/ggml-vocab-gpt-2.gguf",
+        "verification/vocab-remap/vocab/provenance.json"
+      ],
+      "notes": "list.json and dryrun.json are tokenizer-header and /tokenize measurements (no forward pass). A token inventory is not a served or weight result; reachability is 149 of 159 declining base answers at the opener window (150 of 159 covered anywhere in the text), and the nine uncovered openers are all topic-first declines the denial table cannot reach without topic suppression.",
+      "numbers": []
+    },
+    {
+      "claim": "vocab surgery: the decode stepper is reversible (off equals the plain greedy wave row for row) and sequence-aware (bare ' can' does not fire, ' can'+'\\'t' does)",
+      "status": "in-clone",
+      "commands": [
+        "jdewitt vocab-remap --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --suite verification/vocab-remap/probes/probes.jsonl --out verification/vocab-remap/decode/off --remap off --max-tokens 40 --serve llama-server"
+      ],
+      "artifacts": [
+        "verification/vocab-remap/decode/README.md",
+        "verification/vocab-remap/decode/forced/probes.jsonl",
+        "verification/vocab-remap/decode/forced/rows.jsonl",
+        "verification/vocab-remap/decode/forced/run.json",
+        "verification/vocab-remap/decode/forced/table.json",
+        "verification/vocab-remap/decode/off/rows.jsonl",
+        "verification/vocab-remap/decode/off/run.json",
+        "verification/vocab-remap/decode/on/rows.jsonl",
+        "verification/vocab-remap/decode/on/run.json",
+        "verification/vocab-remap/probes/probes.jsonl"
+      ],
+      "notes": "The on arm records 20 suppression events on 8 of 10 rows and 7 of 7 declining base rows losing their table-named opener; rows vr-probe-0000 and vr-probe-0003 are byte-identical to base. After the ASCII suppression the model re-expresses with U+2019 'can\\u2019t' on six rows, reported as an unnamed variant rather than normalized. A row is one greedy token path on a 0.5B IQ3_M artifact, not a removal or capability measurement.",
+      "numbers": []
+    },
+    {
+      "claim": "vocab surgery: the shape instrument separates wording from content; the remap moves the table-named denial surface and no row gains requested content",
+      "status": "in-clone",
+      "commands": [
+        "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+      ],
+      "artifacts": [
+        "verification/vocab-remap/audit.json",
+        "verification/vocab-remap/audit.txt",
+        "verification/vocab-remap/audit/README.md",
+        "verification/vocab-remap/audit/control/rows.jsonl",
+        "verification/vocab-remap/audit/control/run.json",
+        "verification/vocab-remap/audit/control/suite.jsonl"
+      ],
+      "notes": "Per arm, never averaged: denial wording 7/10 off vs 6/10 on, table-named surfaces 8/10 vs 0/10, content 0/10 vs 0/10, shape declines 7/10 vs 6/10, false_clean 0. vr-probe-0009 is the checker-clean candidate and is recorded as a non-answer that stops declining, not counted as a wording effect. The control directory is a seeded compliant continuation plus one real maths row decoded through the same stepper; content on a benign row is not evidence about a harmful row.",
+      "numbers": [
+        {
+          "text": "denial surfaces fall from 8/10",
+          "value": "8/10",
+          "source": "verification/vocab-remap/audit.json",
+          "locator": "json:/aggregate/arms/off/table_named_surface/count|/aggregate/arms/off/table_named_surface/rows",
+          "command": "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+        },
+        {
+          "text": "to 0/10 (remap)",
+          "value": "0/10",
+          "source": "verification/vocab-remap/audit.json",
+          "locator": "json:/aggregate/arms/on/table_named_surface/count|/aggregate/arms/on/table_named_surface/rows",
+          "command": "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+        },
+        {
+          "text": "denial on 6/10",
+          "value": "6/10",
+          "source": "verification/vocab-remap/audit.json",
+          "locator": "json:/aggregate/arms/on/denial_word/count|/aggregate/arms/on/denial_word/rows",
+          "command": "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+        },
+        {
+          "text": "against 7/10",
+          "value": "7/10",
+          "source": "verification/vocab-remap/audit.json",
+          "locator": "json:/aggregate/arms/off/denial_word/count|/aggregate/arms/off/denial_word/rows",
+          "command": "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+        },
+        {
+          "text": "Content is 0/10 in both arms",
+          "value": "0/10",
+          "source": "verification/vocab-remap/audit.json",
+          "locator": "json:/aggregate/arms/off/content/count|/aggregate/arms/off/content/rows",
+          "command": "python scripts/vocab_remap_audit.py --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --serve llama-server"
+        }
+      ]
+    },
+    {
+      "claim": "vocab surgery: on the 241-row capability suite both remap arms pass the same rows, with the row-loss bound reported against measured exposure",
+      "status": "in-clone",
+      "commands": [
+        "python scripts/vocab_remap_retention.py report --off verification/vocab-remap/retention/off --on verification/vocab-remap/retention/on --out verification/vocab-remap/retention.json"
+      ],
+      "artifacts": [
+        "verification/vocab-remap/retention.json",
+        "verification/vocab-remap/retention/README.md",
+        "verification/vocab-remap/retention/off/meta.json",
+        "verification/vocab-remap/retention/off/rows.jsonl",
+        "verification/vocab-remap/retention/off/run.json",
+        "verification/vocab-remap/retention/on/meta.json",
+        "verification/vocab-remap/retention/on/rows.jsonl",
+        "verification/vocab-remap/retention/on/run.json"
+      ],
+      "notes": "Both arms 96 of 241 at cap 512 on Qwen2.5-1.5B Q4_K_M; paired 0 lost / 0 gained, exact McNemar p 1.0, median answer 3 characters in both arms, one-sided 95% row-loss bound 1.24%. Only 3 rows saw any entry fire (en-cannot twice, en-will-not once), no rule cost a capability row, and 18 of 20 entries never fired: the bound is bounded by exposure, not a general no-loss claim.",
+      "numbers": [
+        {
+          "text": "is the same 96/241",
+          "value": "96/241",
+          "source": "verification/vocab-remap/retention.json",
+          "locator": "json:/arms/asset/stats/off_passed|/arms/asset/stats/rows",
+          "command": "python scripts/vocab_remap_retention.py report --off verification/vocab-remap/retention/off --on verification/vocab-remap/retention/on --out verification/vocab-remap/retention.json"
+        },
+        {
+          "text": "0 discordant pairs",
+          "value": "0",
+          "source": "verification/vocab-remap/retention.json",
+          "locator": "json:/arms/asset/stats/paired/discordant",
+          "command": "python scripts/vocab_remap_retention.py report --off verification/vocab-remap/retention/off --on verification/vocab-remap/retention/on --out verification/vocab-remap/retention.json"
+        },
+        {
+          "text": "McNemar test p = 1.0",
+          "value": "1.0",
+          "kind": "p",
+          "source": "verification/vocab-remap/retention.json",
+          "locator": "json:/arms/asset/stats/paired/mcnemar_exact_p",
+          "command": "python scripts/vocab_remap_retention.py report --off verification/vocab-remap/retention/off --on verification/vocab-remap/retention/on --out verification/vocab-remap/retention.json"
+        },
+        {
+          "text": "2 of 20 table",
+          "value": "2/20",
+          "source": "verification/vocab-remap/retention.json",
+          "locator": "json:/arms/asset/exposure/entries_fired|/arms/asset/exposure/table_entries",
+          "command": "python scripts/vocab_remap_retention.py report --off verification/vocab-remap/retention/off --on verification/vocab-remap/retention/on --out verification/vocab-remap/retention.json"
+        }
+      ]
+    },
+    {
+      "claim": "vocab surgery: the multilingual falsifier shows the table does not travel as ids, and German is reachable after an unreached opener rather than at it",
+      "status": "in-clone",
+      "commands": [
+        "python scripts/vocab_remap_multilingual.py report --run qwen25-05b=verification/vocab-remap/multilingual/qwen25-05b --run minicpm-v47=verification/vocab-remap/multilingual/minicpm-v47 --observation verification/vocab-remap/multilingual/observations/ml-0022-de --out verification/vocab-remap/multilingual.json"
+      ],
+      "artifacts": [
+        "verification/vocab-remap/multilingual.json",
+        "verification/vocab-remap/multilingual/README.md",
+        "verification/vocab-remap/multilingual/minicpm-v47/off/rows.jsonl",
+        "verification/vocab-remap/multilingual/minicpm-v47/off/run.json",
+        "verification/vocab-remap/multilingual/minicpm-v47/on/rows.jsonl",
+        "verification/vocab-remap/multilingual/minicpm-v47/on/run.json",
+        "verification/vocab-remap/multilingual/observations/ml-0022-de/off/rows.jsonl",
+        "verification/vocab-remap/multilingual/observations/ml-0022-de/off/run.json",
+        "verification/vocab-remap/multilingual/observations/ml-0022-de/on/rows.jsonl",
+        "verification/vocab-remap/multilingual/observations/ml-0022-de/on/run.json",
+        "verification/vocab-remap/multilingual/observations/ml-0022-de/suite.jsonl",
+        "verification/vocab-remap/multilingual/qwen25-05b/off/rows.jsonl",
+        "verification/vocab-remap/multilingual/qwen25-05b/off/run.json",
+        "verification/vocab-remap/multilingual/qwen25-05b/on/rows.jsonl",
+        "verification/vocab-remap/multilingual/qwen25-05b/on/run.json",
+        "verification/vocab-remap/probes/multilingual.jsonl"
+      ],
+      "notes": "20 of 20 surfaces resolve to different token-id vectors on qwen2 151936 and qwen35 248094. EN 15/2 suppression events on qwen25/minicpm, NL 7/0, DE 0 in the 24-row draw: German refusals put the object between modal and negation or use kein, so the contiguous kann nicht is unreached. The committed single-row repeat fires de-kann-nicht at step 54 and the model re-expresses with keine. Falsifier outcome reached_only_in_observation_for_de; gate b is false for the suite draw and falsifier_complete is true. The shipped shape classifier is English-keyed, so per-language labels are read through the documented per-language decline screen.",
+      "numbers": []
+    },
+    {
+      "claim": "vocab surgery: the weight-side row edit is storage-faithful and byte-exactly revertible on CPU, with no behavioural claim",
+      "status": "in-clone",
+      "commands": [
+        "jdewitt vocab-remap --weights verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --table jdewitt/assets/vocab-remap-denial.json --json verification/vocab-remap/weights/dryrun.json"
+      ],
+      "artifacts": [
+        "verification/vocab-remap/weights/README.md",
+        "verification/vocab-remap/weights/apply.json",
+        "verification/vocab-remap/weights/diff.json",
+        "verification/vocab-remap/weights/dryrun.json",
+        "verification/vocab-remap/weights/revert.json"
+      ],
+      "notes": "48 table ids resolve to 48 rows of token_embd.weight (Q8_0, tied head): 1,344 of 4,254,208 blocks, 45,696 of 144,643,072 tensor bytes (0.03%), realized cos 1.0 on the edited rows, unchanged at strength 0.9 and 0.5. diff.json reports 289 of 290 tensors bit-identical (only token_embd.weight differs); revert.json reports restored_sha256 equal to original_sha256 with byte_exact true. The artifact is identified by sha256 and is not committed, so a re-run needs the file; the committed JSONs hold the measured numbers. No model, no logits, no generation: the weight side is GATED for behavioural claims, and a row edit is broader than the sequence-aware decode rule.",
+      "numbers": []
     }
   ]
 }

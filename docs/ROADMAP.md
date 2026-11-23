@@ -256,6 +256,42 @@ Done gate: content-rate delivery on the hand-read 24-family set at >= 3x the
 base's rate, with retention inside the same gate as every other arm. Below that
 it is a tone result and is reported as one.
 
+## Phase 5b — Vocabulary surgery: the wording last mile (CODE, GATED for served claims)
+
+A cheap layer that makes the wording axis explicit; it is not a substitute for the
+removal phases above. A denial-word table (20 EN/NL/DE surfaces) is resolved
+against the served tokenizer and a client-side single-token loop biases the token
+that completes a listed sequence; `--remap on|off` is the only difference between
+the arms. The measured result is a wording result: table-named surfaces 8/10 → 0/10
+on the ten authored probes, denial wording 7/10 → 6/10, content 0/10 → 0/10, and
+the same 96/241 capability rows in both arms (0 discordant, p = 1). The table is
+the artifact a reviewer can read (`jdewitt/assets/vocab-remap-denial.json`); the
+measurement is `verification/vocab-remap/audit.json` and
+`verification/vocab-remap/retention.json`.
+
+CODE (CPU, no model forward): the token inventory on three tokenizers
+(`verification/vocab-remap/list.json`, 0 rules that can never fire), the
+per-prompt suppression plan and reachability audit
+(`verification/vocab-remap/dryrun.json`: 149 of 159 declining base answers have a
+table-reachable opener, 93.7%), the decode stepper and its off-arm reversal
+(`verification/vocab-remap/decode/`), the shape audit
+(`verification/vocab-remap/audit.json`), the 241-row retention falsifier
+(`verification/vocab-remap/retention.json`), the EN/NL/DE falsifier
+(`verification/vocab-remap/multilingual.json`: 20/20 surfaces resolve to different
+ids across two vocabularies; German is exposure-limited in the 24-row draw and
+reachable after an unreached opener), and the weight-side row edit measured for
+storage only (`verification/vocab-remap/weights/`: 48 rows, 1,344 of 4,254,208
+Q8_0 blocks, 1.0 realized cos, 289 of 290 tensors bit-identical, byte-exact
+revert).
+
+GATED (needs a real serve and a behavioural read): any claim that this removes
+denials (the audit's content axis is 0/10 in both arms, so the result is wording,
+not removal); any weight-side behavioural claim; stacking the remap under a
+certified removal arm; and every served claim about a runtime other than the
+reference loop. Done gate: a stacked arm that clears the same shape/content and
+retention gates as the fitted arms, with the remap's contribution separated by its
+off arm, or the line reports "wording only" and nothing stronger.
+
 ## Phase 6 — Delivery formats that do not fight the codec (CODE, GATED for claims)
 
 - Adapter release as a first-class artifact: rank-1 files apply exactly on any

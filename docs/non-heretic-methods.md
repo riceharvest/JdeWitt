@@ -148,6 +148,67 @@ treat all numbers as their claim):
   the retention axis** in the only cross-architecture study that measured
   it; optimisation/search depth buys removal, not preservation.
 
+## Vocabulary surgery: a wording instrument, and the shape instrument that shows it
+
+`jdewitt vocab-remap` rewrites the model's *wording*, not its policy. It is not a
+fitted axis and not an edit of the served artifact's behaviour: it is a client-side
+single-token loop that suppresses the token completing a table-listed denial
+surface (`jdewitt/assets/vocab-remap-denial.json`, 20 entries in EN/NL/DE), with an
+optional forced replacement. `--remap on|off` flips one bias map; the decode loop is
+the same code in both arms.
+
+That placement is the point. A denial word is an output token pattern, and a table
+of such patterns can be made to fire with near-perfect precision: on ten authored
+probes the table-named surface disappears from every base refusal that carried one
+(`verification/vocab-remap/decode/on/run.json`: 7 of 7 declining rows lost the
+surface, 20 suppression events on 8 rows). A word-rate screen would call that
+removal. It is not. The same rows carry no requested content: the audit's content
+instrument reads 0/10 in both arms and the content-effect verdict count is 0
+(`verification/vocab-remap/audit.json`). The model re-expresses the denial in
+wording the table does not name — U+2019 `can’t` on six rows, `keine` in the German
+single-row repeat — which is the method's own table gap, reported rather than
+normalized (`verification/vocab-remap/decode/README.md`;
+`verification/vocab-remap/multilingual.json`).
+
+The shape instrument is what makes the difference visible, and it is the same
+lesson as the README's retraction. There, a word list scored "Absolutely not." as
+refusal removed; here, a counter that only watched the table's ASCII surfaces would
+score the suppressed `can't` as success while the denial survived as `can’t`. Run
+both axes side by side and the audit separates them per row: denial wording
+7/10 → 6/10, table-named surfaces 8/10 → 0/10, content
+0/10 → 0/10, shape declines 7/10 → 6/10 (`verification/vocab-remap/audit.json`,
+`aggregate.arms`). The row closest to a false clean (`vr-probe-0009`: the checker is
+clean and the table surface is gone) is reported as a non-answer that stops
+declining by shape, not counted as a wording effect. That is the retraction rule
+applied before the claim, not after it.
+
+The retention falsifier puts a bound on the cost: both arms pass the same 96 of 241
+capability rows, paired 0 lost / 0 gained, exact McNemar p = 1, median answer
+length 3 characters in both arms, and the one-sided 95% row-loss bound is 1.24%
+(`verification/vocab-remap/retention.json`). Only 3 of 241 rows saw any table entry
+fire, and 18 of 20 entries never fired, so that bound is a bound on exposure, not a
+general no-loss statement. The multilingual falsifier then shows the instrument does
+not travel as ids: all 20 surfaces resolve to different token-id vectors on the two
+tokenizers (`verification/vocab-remap/multilingual.json`, gate a), EN and NL move on
+wording only, and the German denial is not reached at its opener in the 24-row draw
+— the committed single-row repeat fires `de-kann-nicht` at step 54 and the model
+re-expresses with `keine`, so German is reachable after an unreached opener, not at
+it (gate b is false for the suite draw; `falsifier_complete` is true).
+
+What this does not do: it does not remove the refusal policy, it does not deliver
+content, and it does not survive as a claim about a served runtime. `--remap` is a
+reference harness around a served artifact, not a patched sampler; the weight-side
+row edit (`vocab-remap --weights`) is measured for storage fidelity and byte-exact
+revert only (`verification/vocab-remap/weights/`), and both the weight and served
+claims stay GATED. The table is the reviewable artifact: 20 entries, no
+replacement, each surface resolvable per tokenizer
+(`verification/vocab-remap/list.json`, `verification/vocab-remap/dryrun.json`).
+Reproduce the dry run against the file, not the directory:
+`--suite verification/vocab-remap/probes/probes.jsonl` reproduces
+`dryrun.json`'s ten-row plan, while `verification/vocab-remap/probes/` also
+holds the 24-row multilingual suite that landed later, so `--probes` on the
+directory returns 34 rows.
+
 ## Cross-model evidence, 2026 (the actual "best across models" question)
 
 Two studies by the same single author — useful, but single-operator and

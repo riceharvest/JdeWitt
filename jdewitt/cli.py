@@ -129,7 +129,7 @@ def build_parser():
     sub.add_parser('about',help='Installation/provenance metadata as JSON, no model loads')
     sub.add_parser('methods',help='List implemented and researched methods as JSON, no model loads')
     sub.add_parser('architectures',help='List adapter layouts and verification limits as JSON')
-    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --remap on|off decodes with the bias applied or withheld')
+    vremap=sub.add_parser('vocab-remap',help='Denial-word table: --list resolves ids/splits per GGUF tokenizer, --dry-run plans biases over a served tokenizer, --weights edits the table rows of the artifact weights, --remap on|off decodes with the bias applied or withheld')
     vremap.add_argument('--list',action='store_true',help='Resolve the table against every --artifact vocabulary and print one JSON')
     vremap.add_argument('--dry-run',action='store_true',help='Plan per-step suppression/forced replacement over probes with a live llama-server /tokenize; audits declining base answers')
     vremap.add_argument('--suite',type=Path,help='Probe JSONL for --dry-run (one row per line with id and prompt)')
@@ -140,7 +140,10 @@ def build_parser():
     vremap.add_argument('--artifact',type=Path,action='append',default=[],help='GGUF whose tokenizer is read (repeatable; header metadata only)')
     vremap.add_argument('--json',type=Path,help='Also write the same JSON to this path')
     vremap.add_argument('--remap',choices=['on','off'],help='Decode driver: apply the table bias (on) or run the identical loop with no bias (off); writes rows.jsonl and run.json under --out')
-    vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log)')
+    vremap.add_argument('--weights',type=Path,help='Weight side: the table as a row edit of the artifact token embedding / output head. Prints the dry run (rows touched, realized cos, bytes re-encoded, codec per tensor) and with --apply writes a NEW artifact plus a revert sidecar')
+    vremap.add_argument('--apply',action='store_true',help='--weights: write --out instead of only printing the dry run; never edits the input in place')
+    vremap.add_argument('--strength',type=float,default=1.0,help='--weights: per-row projection strength in [0,1] (1 removes the row, below 1 down-weights it)')
+    vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log); the new GGUF for --weights --apply')
     vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
     vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
     vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
@@ -821,9 +824,11 @@ def main():
             from .architectures import architecture_catalog
             result=architecture_catalog()
         elif args.command=='vocab-remap':
-            modes=[bool(args.list),bool(args.dry_run),args.remap is not None]
+            modes=[bool(args.list),bool(args.dry_run),args.remap is not None,bool(args.weights)]
             if sum(modes)!=1:
-                raise ValueError('pass exactly one of --list, --dry-run or --remap on|off')
+                raise ValueError('pass exactly one of --list, --dry-run, --remap on|off or --weights')
+            if args.apply and not args.weights:
+                raise ValueError('--apply belongs to --weights; no other vocab-remap mode writes an artifact')
             if args.remap is not None:
                 from .vocabremap import vocab_remap_decode
                 if len(args.artifact)!=1:
@@ -832,6 +837,11 @@ def main():
                                           remap=args.remap,max_tokens=args.max_tokens,serve=args.serve,
                                           port=(args.port[0] if args.port else None),template=args.template,
                                           no_think=args.no_think)
+                exit_code=0 if result['verdict']['ok'] else 1
+            elif args.weights:
+                from .vocabremap_weights import vocab_remap_weights
+                result=vocab_remap_weights(weights=args.weights,table=args.table,out=args.out,
+                                           apply=args.apply,strength=args.strength,json_out=args.json)
                 exit_code=0 if result['verdict']['ok'] else 1
             elif args.dry_run:
                 from .vocabremap import vocab_remap_dry_run
