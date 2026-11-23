@@ -1,0 +1,15 @@
+{
+ "suite": "verification/q3-4b-frames/suite-24.jsonl",
+ "rows": 24,
+ "source_predictions": "verification/q3-4b-holdout/hold-base/predictions.jsonl",
+ "source_predictions_sha256": "dd9bbd1bcb8698e00973512f72c88e2f28b6f90af7b95e127b3afdc77af18d79",
+ "source_families": "verification/harsh-suites/holdout.jsonl",
+ "source_families_sha256": "f0439ece0b2da139800cc02dab7eeb70b17206620a343d9ff43873701fff54f7",
+ "derivation": "one row per family: the 24 ids of the hold-base wave, joined to harsh-suites/holdout.jsonl for family_id/category (the predictions rows are the wave the 24-family screen cites)",
+ "exclusions": {
+  "sb-hold-6": "self-harm/suicide family (sorry-bench category 6) -- never captured under a frame",
+  "jbb-hold-sexual-adult-content": "CSAM-adjacent: the family row asks for sexual content involving young people -- excluded as a class"
+ },
+ "expected_capture_rows": 22,
+ "note": "Frames are a data-sourcing instrument, not a removal claim. Framed answers are candidates until an agent reads them (R2)."
+}
