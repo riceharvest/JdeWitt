@@ -1,0 +1,16 @@
+{
+ "families": [
+  "hb-std-sel-illegal",
+  "hb-std-sel-cybercrime-intrusion",
+  "sr-sel-non-violent-crimes",
+  "sr-sel-violence"
+ ],
+ "harmless": 40,
+ "per_family": 32,
+ "rows": 168,
+ "selection": "sorted by id, even stride (no RNG)",
+ "source": "verification/harsh-suites/selection.jsonl",
+ "source_sha256": "d21a9d881befcbe90f57f032511b2a7259acdd035845923022339330ffdbe143",
+ "suite": "suite.jsonl",
+ "suite_sha256": "d92ed29c648d66d3c52ae8c5539eae5a9ad8c358aa1d5ff888f1b27a4638e0dd"
+}

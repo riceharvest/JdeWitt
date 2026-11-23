@@ -1,0 +1,433 @@
+{
+ "batch": 16,
+ "configs": {
+  "features=128,k=2": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.607307,
+     "fvu_per_seed": [
+      0.605628,
+      0.611571,
+      0.607307
+     ],
+     "pca_control_fvu": 0.763635
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.857776,
+     "fvu_per_seed": [
+      0.870383,
+      0.857776,
+      0.83589
+     ],
+     "pca_control_fvu": 0.908708
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": true,
+     "fvu_median": 0.800015,
+     "fvu_per_seed": [
+      0.804161,
+      0.774781,
+      0.800015
+     ],
+     "pca_control_fvu": 0.804436
+    },
+    "sr-sel-violence": {
+     "beats_control": true,
+     "fvu_median": 0.705386,
+     "fvu_per_seed": [
+      0.783512,
+      0.705386,
+      0.702341
+     ],
+     "pca_control_fvu": 0.746358
+    }
+   },
+   "families_total": 4,
+   "wins": 4
+  },
+  "features=128,k=4": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.601692,
+     "fvu_per_seed": [
+      0.601692,
+      0.590332,
+      0.619406
+     ],
+     "pca_control_fvu": 0.704751
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.822709,
+     "fvu_per_seed": [
+      0.822709,
+      0.821602,
+      0.827478
+     ],
+     "pca_control_fvu": 0.846015
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.772189,
+     "fvu_per_seed": [
+      0.764586,
+      0.772189,
+      0.808764
+     ],
+     "pca_control_fvu": 0.751611
+    },
+    "sr-sel-violence": {
+     "beats_control": false,
+     "fvu_median": 0.675163,
+     "fvu_per_seed": [
+      0.675163,
+      0.649992,
+      0.687058
+     ],
+     "pca_control_fvu": 0.634481
+    }
+   },
+   "families_total": 4,
+   "wins": 2
+  },
+  "features=256,k=2": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.62674,
+     "fvu_per_seed": [
+      0.596536,
+      0.65031,
+      0.62674
+     ],
+     "pca_control_fvu": 0.763635
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.829394,
+     "fvu_per_seed": [
+      0.829394,
+      0.820082,
+      0.839853
+     ],
+     "pca_control_fvu": 0.908708
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.805457,
+     "fvu_per_seed": [
+      0.769429,
+      0.807023,
+      0.805457
+     ],
+     "pca_control_fvu": 0.804436
+    },
+    "sr-sel-violence": {
+     "beats_control": true,
+     "fvu_median": 0.657463,
+     "fvu_per_seed": [
+      0.654161,
+      0.657463,
+      0.708777
+     ],
+     "pca_control_fvu": 0.746358
+    }
+   },
+   "families_total": 4,
+   "wins": 3
+  },
+  "features=256,k=8": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": false,
+     "fvu_median": 0.599149,
+     "fvu_per_seed": [
+      0.605841,
+      0.599149,
+      0.58525
+     ],
+     "pca_control_fvu": 0.598788
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": false,
+     "fvu_median": 0.794062,
+     "fvu_per_seed": [
+      0.814399,
+      0.791087,
+      0.794062
+     ],
+     "pca_control_fvu": 0.684953
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.764305,
+     "fvu_per_seed": [
+      0.747568,
+      0.764305,
+      0.796673
+     ],
+     "pca_control_fvu": 0.6659
+    },
+    "sr-sel-violence": {
+     "beats_control": false,
+     "fvu_median": 0.646023,
+     "fvu_per_seed": [
+      0.665786,
+      0.640759,
+      0.646023
+     ],
+     "pca_control_fvu": 0.557352
+    }
+   },
+   "families_total": 4,
+   "wins": 0
+  },
+  "features=32,k=2": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.63315,
+     "fvu_per_seed": [
+      0.63315,
+      0.689456,
+      0.618899
+     ],
+     "pca_control_fvu": 0.763635
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.833033,
+     "fvu_per_seed": [
+      0.811338,
+      0.85736,
+      0.833033
+     ],
+     "pca_control_fvu": 0.908708
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.805278,
+     "fvu_per_seed": [
+      0.805278,
+      0.964973,
+      0.785843
+     ],
+     "pca_control_fvu": 0.804436
+    },
+    "sr-sel-violence": {
+     "beats_control": true,
+     "fvu_median": 0.683638,
+     "fvu_per_seed": [
+      0.695981,
+      0.683638,
+      0.679334
+     ],
+     "pca_control_fvu": 0.746358
+    }
+   },
+   "families_total": 4,
+   "wins": 3
+  },
+  "features=512,k=2": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.624673,
+     "fvu_per_seed": [
+      0.624673,
+      0.616953,
+      0.643149
+     ],
+     "pca_control_fvu": 0.763635
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.833066,
+     "fvu_per_seed": [
+      0.841345,
+      0.832842,
+      0.833066
+     ],
+     "pca_control_fvu": 0.908708
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": true,
+     "fvu_median": 0.802437,
+     "fvu_per_seed": [
+      0.809485,
+      0.802437,
+      0.789275
+     ],
+     "pca_control_fvu": 0.804436
+    },
+    "sr-sel-violence": {
+     "beats_control": true,
+     "fvu_median": 0.667021,
+     "fvu_per_seed": [
+      0.66286,
+      0.697627,
+      0.667021
+     ],
+     "pca_control_fvu": 0.746358
+    }
+   },
+   "families_total": 4,
+   "wins": 4
+  },
+  "features=64,k=2": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.606174,
+     "fvu_per_seed": [
+      0.606174,
+      0.61733,
+      0.6051
+     ],
+     "pca_control_fvu": 0.763635
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": false,
+     "fvu_median": 0.919315,
+     "fvu_per_seed": [
+      0.937965,
+      0.919315,
+      0.837838
+     ],
+     "pca_control_fvu": 0.908708
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": true,
+     "fvu_median": 0.803107,
+     "fvu_per_seed": [
+      0.74458,
+      0.803107,
+      0.816864
+     ],
+     "pca_control_fvu": 0.804436
+    },
+    "sr-sel-violence": {
+     "beats_control": true,
+     "fvu_median": 0.67871,
+     "fvu_per_seed": [
+      0.67871,
+      0.677066,
+      0.810353
+     ],
+     "pca_control_fvu": 0.746358
+    }
+   },
+   "families_total": 4,
+   "wins": 3
+  },
+  "features=64,k=4": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.595039,
+     "fvu_per_seed": [
+      0.583869,
+      0.620717,
+      0.595039
+     ],
+     "pca_control_fvu": 0.704751
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": true,
+     "fvu_median": 0.798267,
+     "fvu_per_seed": [
+      0.804715,
+      0.770786,
+      0.798267
+     ],
+     "pca_control_fvu": 0.846015
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.794918,
+     "fvu_per_seed": [
+      0.795199,
+      0.762125,
+      0.794918
+     ],
+     "pca_control_fvu": 0.751611
+    },
+    "sr-sel-violence": {
+     "beats_control": false,
+     "fvu_median": 0.637599,
+     "fvu_per_seed": [
+      0.631962,
+      0.662315,
+      0.637599
+     ],
+     "pca_control_fvu": 0.634481
+    }
+   },
+   "families_total": 4,
+   "wins": 2
+  },
+  "features=64,k=8": {
+   "families": {
+    "hb-std-sel-cybercrime-intrusion": {
+     "beats_control": true,
+     "fvu_median": 0.555294,
+     "fvu_per_seed": [
+      0.553738,
+      0.555294,
+      0.564878
+     ],
+     "pca_control_fvu": 0.598788
+    },
+    "hb-std-sel-illegal": {
+     "beats_control": false,
+     "fvu_median": 0.749345,
+     "fvu_per_seed": [
+      0.749345,
+      0.744755,
+      0.750394
+     ],
+     "pca_control_fvu": 0.684953
+    },
+    "sr-sel-non-violent-crimes": {
+     "beats_control": false,
+     "fvu_median": 0.714208,
+     "fvu_per_seed": [
+      0.70842,
+      0.714208,
+      0.753907
+     ],
+     "pca_control_fvu": 0.6659
+    },
+    "sr-sel-violence": {
+     "beats_control": false,
+     "fvu_median": 0.593828,
+     "fvu_per_seed": [
+      0.604475,
+      0.593828,
+      0.58739
+     ],
+     "pca_control_fvu": 0.557352
+    }
+   },
+   "families_total": 4,
+   "wins": 1
+  }
+ },
+ "device_seconds": 288.082,
+ "generated_tokens": 0,
+ "holdout_every": 4,
+ "layer": 10,
+ "lr": 0.001,
+ "rows": 158,
+ "rule": "median-of-seeds held-out FVU < rank-k PCA control; pick lowest median FVU among configs that win in >= 3/4 families",
+ "seeds": [
+  20261123,
+  20261124,
+  20261125
+ ],
+ "steps": 1200,
+ "wall_seconds": 289.834
+}

@@ -1,0 +1,10 @@
+features=32,k=2  wins 3/4  hb-std-sel-ill:0.833/0.909  hb-std-sel-cyb:0.633/0.764  sr-sel-non-vio:0.805/0.804  sr-sel-violenc:0.684/0.746
+features=64,k=2  wins 3/4  hb-std-sel-ill:0.919/0.909  hb-std-sel-cyb:0.606/0.764  sr-sel-non-vio:0.803/0.804  sr-sel-violenc:0.679/0.746
+features=64,k=4  wins 2/4  hb-std-sel-ill:0.798/0.846  hb-std-sel-cyb:0.595/0.705  sr-sel-non-vio:0.795/0.752  sr-sel-violenc:0.638/0.634
+features=64,k=8  wins 1/4  hb-std-sel-ill:0.749/0.685  hb-std-sel-cyb:0.555/0.599  sr-sel-non-vio:0.714/0.666  sr-sel-violenc:0.594/0.557
+features=128,k=2 wins 4/4  hb-std-sel-ill:0.858/0.909  hb-std-sel-cyb:0.607/0.764  sr-sel-non-vio:0.800/0.804  sr-sel-violenc:0.705/0.746
+features=128,k=4 wins 2/4  hb-std-sel-ill:0.823/0.846  hb-std-sel-cyb:0.602/0.705  sr-sel-non-vio:0.772/0.752  sr-sel-violenc:0.675/0.634
+features=256,k=2 wins 3/4  hb-std-sel-ill:0.829/0.909  hb-std-sel-cyb:0.627/0.764  sr-sel-non-vio:0.805/0.804  sr-sel-violenc:0.657/0.746
+features=256,k=8 wins 0/4  hb-std-sel-ill:0.794/0.685  hb-std-sel-cyb:0.599/0.599  sr-sel-non-vio:0.764/0.666  sr-sel-violenc:0.646/0.557
+features=512,k=2 wins 4/4  hb-std-sel-ill:0.833/0.909  hb-std-sel-cyb:0.625/0.764  sr-sel-non-vio:0.802/0.804  sr-sel-violenc:0.667/0.746
+device seconds 288.1; generated tokens 0; wrote verification/p5/sae/capacity-sweep.json

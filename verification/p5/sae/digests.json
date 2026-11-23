@@ -1,0 +1,14 @@
+{
+ "checkpoints": {
+  "hb-std-sel-cybercrime-intrusion": "25e7f133d872e63631a5cba4f13ac88a1980777d5f11b8cdab51360c3df0992e",
+  "hb-std-sel-illegal": "701abdbb6149d5e6bdfeded68fbe91e234993d701dd8b1cc4eb17cba79376a7c",
+  "sr-sel-non-violent-crimes": "9946e02cb8091b182fb4a929b15a36db226bb5d162f2b7921df4ede2e0f44c0f",
+  "sr-sel-violence": "089e0c1ebdac8928e31eab63adee2f4e2c0cdc8e6e36d3eb60101daf64a1059f"
+ },
+ "feature_table_sha256": "1bd80f527de46fe9894d84f9435126fd1da69ec31400ef7c3cd7c1756514161a",
+ "inputs": {
+  "residuals": "verification/p5/sae/residuals-layer10.npz",
+  "residuals_sha256": "88f06eb584433120e019efb22bf33480bf9d73f5382497a65b0d51be106e0beb"
+ },
+ "train_report_sha256": "62724b2443804ae4b9dd337c4aa71c34555bf48965c5b19da1179e9d587f343c"
+}
