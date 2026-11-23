@@ -495,6 +495,7 @@ def build_parser():
     capture.add_argument('--settle-min-tokens',type=int,default=24,help='do not settle before this many generated tokens')
     capture.add_argument('--no-settle',dest='settle',action='store_false',help='always decode to --max-tokens (the token-expensive, fully-determined label path)')
     capture.add_argument('--answers',type=Path,default=None,help='jsonl with id+answer (a banked predictions.jsonl): reuse those answers and spend ZERO output tokens on those rows')
+    capture.add_argument('--mirror-answers',type=Path,default=None,help='delivery-mirror jsonl (id+frame+answer): a real delivery of that request produced elsewhere, teacher-forced under the plain prompt with that frame as provenance; each becomes a pair candidate against the plain answer')
     capture.add_argument('--frame',default='none',help='jailbreak frame(s) for the delivery side: none (today\'s behaviour), story, redteam, seed, or a comma list; pinned text + provenance in jdewitt/frames.py')
     capture.add_argument('--frame-file',type=Path,default=None,help='local pinned frame list (JSONL objects or one JSON list) instead of --frame; each entry needs name + template with one {prompt}, optional seed')
     capture.add_argument('--pairs-out',type=Path,default=None,help='directory for the candidate pair JSONL (pairs.jsonl, verdict null) in the jdewitt/delivery_pairs.py schema; every shape-delivery candidate is written against its plain answer')
