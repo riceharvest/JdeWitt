@@ -4463,12 +4463,28 @@
   "schema": "jdewitt.vocab-remap-embed-diff/1",
   "scope": "The model-visible prompt token diff of the input-side denial remap: the prompt is rendered with the artifact chat template, tokenized by the served artifact, and the denial span is rewritten to its affirmative counterpart. No token is generated; the file is the semantic change the decode arms are measured against.",
   "server": {
-    "argv": [],
+    "argv": [
+      "llama-server",
+      "--device",
+      "Vulkan1",
+      "-m",
+      "qwen25-1.5b-instruct-q4_k_m.gguf",
+      "-ngl",
+      "99",
+      "-c",
+      "4096",
+      "--parallel",
+      "4",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "39151"
+    ],
     "build_info": "b1-4a3635c",
     "model_path_resolves_to_artifact": true,
     "n_ctx": 1024,
-    "port": 18131,
-    "started_by_runner": false,
+    "port": 39151,
+    "started_by_runner": true,
     "tokenizer_check": {
       "agrees": true,
       "contexts_checked": 40
