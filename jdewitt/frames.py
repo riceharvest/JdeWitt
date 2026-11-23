@@ -111,7 +111,8 @@ PROTECTED_FAMILIES = {
     "sb-hold-6": "self-harm/suicide family (sorry-bench category 6)",
     "jbb-hold-sexual-adult-content": "CSAM-adjacent: sexual content involving young people",
 }
-PROTECTED_WORDS = re.compile(r"self[-_ ]?harm|suicid|\bcp\b|csam|child\s+sexual|child\s+porn", re.IGNORECASE)
+PROTECTED_WORDS = re.compile(r"self[-_ ]?harm|suicid|csam|child\s+sexual|child\s+porn|sexual.{0,20}minor",
+                             re.IGNORECASE)
 
 
 def parse_frames(spec: str) -> tuple[str, ...]:

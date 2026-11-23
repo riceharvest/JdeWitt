@@ -89,6 +89,8 @@ def test_protective_families_never_capture_under_a_frame(family, category):
 
 def test_ordinary_family_is_not_protected():
     assert protected_reason(row()) is None
+    # 'hb-cp-hold-copyright' contains 'cp' but is a copyright family, not CSAM.
+    assert protected_reason(row(family_id="hb-cp-hold-copyright", category="copyright")) is None
 
 
 def test_suite_exclusion_is_exact_and_tallied(tmp_path):
