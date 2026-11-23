@@ -84,14 +84,14 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.007,
+            "seconds": 0.005,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
           {
             "step": "licence",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.0,
             "detail": "LICENCE_ACCEPTED: jdewitt/loop-fixture declares licence 'apache-2.0', which is on the bank's allow-list.",
             "code": null
           },
@@ -105,14 +105,14 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.713,
+            "seconds": 1.663,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 fcb07fb169244d85",
             "code": null
           },
@@ -169,7 +169,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -190,14 +190,14 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.04,
+            "seconds": 0.056,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
           {
             "step": "readback",
             "state": "ok",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "4 edited, min cos 1.0, untouched 2 verified, sha256 a31ab457828ca25e",
             "code": null
           },
@@ -249,7 +249,7 @@
           {
             "step": "coverage",
             "state": "refused",
-            "seconds": 0.001,
+            "seconds": 0.002,
             "detail": "read 512 of 295488 bytes (header and tensor table only); the artifact declares architecture 'otherach' and the bank has no entry for it (covered: ['loopfixture'])",
             "code": "BANK_MISS"
           }
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed in 10.59s"
+      "summary": "66 passed, 1 skipped in 10.91s"
     },
     "stage": {
       "files": 44,
@@ -323,6 +323,11 @@
         "huggingface_hub>=0.34",
         "gradio>=5,<6"
       ]
+    },
+    "app_build": {
+      "gradio": "5.50.0 (the SDK pin)",
+      "method": "a scratch venv with gradio>=5,<6 and the repo on sys.path; the app module built a Blocks demo and refresh()/start() returned the typed refusal and the empty-file message",
+      "result": "pass"
     }
   },
   "claims": {

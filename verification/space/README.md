@@ -134,7 +134,10 @@ What the run proves, with no GPU, no socket and no Hub download:
 - the quant control keeps `model-Q8_0.gguf` in the list, disabled with the reason,
   instead of hiding it;
 - the staged tree carries `spaces/app.py` verbatim, vendors `gguf_types.py` and
-  vendors no `quantize.py` (the llama-quantize wrapper with its local paths).
+  vendors no `quantize.py` (the llama-quantize wrapper with its local paths);
+- the page itself builds under the pinned Gradio 5.50 (a scratch venv: the module
+  constructs the Blocks demo, `refresh` returns a typed refusal for a bad repo id
+  and `start` refuses an empty file choice before running anything).
 
 `fixtures/loop/` regenerates with the project venv (torch is needed for the plan
 bundle):

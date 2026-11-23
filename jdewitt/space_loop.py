@@ -1004,7 +1004,8 @@ def preview(repo, revision=None, *, bank_dir=None, hub=None):
     try:
         licence = hub.licence(repo, revision, bank_dir=bank_path)
         view['licence'] = licence
-        view['licence_line'] = (f"Licence: `{licence.get('licence')}` — {licence.get('reason')}")
+        stated = licence.get('licence') or 'none in the card'
+        view['licence_line'] = f"Licence: `{stated}` — {licence.get('reason')}"
     except Exception as error:
         view['licence_line'] = f'Licence: not read ({type(error).__name__}: {error})'
     if entry is None:

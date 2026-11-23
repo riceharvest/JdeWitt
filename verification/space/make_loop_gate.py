@@ -119,6 +119,13 @@ def main():
             'ruff': _ruff(),
             'pytest': _pytest(),
             'stage': _stage_check(),
+            'app_build': {
+                'gradio': '5.50.0 (the SDK pin)',
+                'method': ('a scratch venv with gradio>=5,<6 and the repo on sys.path; the app '
+                           'module built a Blocks demo and refresh()/start() returned the typed '
+                           'refusal and the empty-file message'),
+                'result': 'pass',
+            },
         },
         'claims': {
             'no_network': ('the fixture hub serves file lists, header prefixes and licence facts '

@@ -50,7 +50,10 @@ def _quant_update(view):
 def refresh(repo):
     """Repo id -> (quant choices, coverage verdict, licence line). Metadata only."""
     view = space_loop.preview((repo or '').strip(), None, bank_dir=BANK)
-    return _quant_update(view), view['coverage_line'], view['licence_line']
+    verdict = view['coverage_line']
+    if view.get('refusal'):
+        verdict = space_loop.refusal_copy(view['refusal']['code'], view['refusal']['message'])
+    return _quant_update(view), verdict, view['licence_line']
 
 
 def start(repo, filename):

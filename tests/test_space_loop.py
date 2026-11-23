@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 """The Space loop: three labels from measurement.state, the card, the dry run."""
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess
@@ -334,6 +335,22 @@ def test_the_app_renders_the_caveat_above_the_file_control():
     start = source.index("run = gr.Button('Start'")
     artifact = source.index('artifact = gr.File')
     assert caveat < start < artifact
+
+
+def test_the_app_builds_under_the_pinned_gradio():
+    """Skipped unless Gradio is installed; run once with gradio 5.50 (the SDK pin)."""
+    pytest.importorskip('gradio')
+    sys.path.insert(0, str(REPO))
+    spec = importlib.util.spec_from_file_location('space_app_under_test', REPO / 'spaces' / 'app.py')
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.demo is not None
+    update, verdict, _licence = module.refresh('not a repo')
+    assert update['__type__'] == 'update'
+    assert verdict.startswith('`INPUT_ERROR`:')
+    assert module.start('owner/name', '') == (
+        'Choose a .gguf file from the list first.', None, None, 'Nothing ran.')
 
 
 def test_the_app_and_the_loop_carry_no_banned_promise():
