@@ -67,3 +67,26 @@ hold — not a claim that anything was removed.
 
 Evidence: `verification/space/bank-apply-*.json`; the fixtures and their
 generators live in `verification/space/fixtures/`.
+
+## The measurement block
+
+`measurement.state` carries one of §9's labels. When it is
+`measured_artifact_class`, `artifact_class` names the exact class and the row the
+card prints; `config` repeats the serve config:
+
+```json
+"measurement": {
+  "state": "measured_artifact_class",
+  "artifact_class": {"repo": "…", "revision": "…", "quant": "Q4_K_M",
+                     "argv": "-c 4096 --parallel 4",
+                     "harmful": [40, 40], "held_out": [120, 120],
+                     "retention": [241, 241], "drift": 0.0058},
+  "config": "-c 4096 --parallel 4"
+}
+```
+
+The Space prints `measured_artifact_class` only for that exact repo, revision and
+quant; any other artifact the same entry covers resolves to `banked_unmeasured`,
+because an entry never lends a measured row to a file it did not run.
+`space_loop.artifact_label` is the one place that narrows the state, and
+`jdewitt space-dry-run` renders both outcomes beside a refusal.
