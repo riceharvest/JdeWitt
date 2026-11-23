@@ -126,6 +126,14 @@ def main():
                            'refusal and the empty-file message'),
                 'result': 'pass',
             },
+            'full_suite': {
+                'command': 'python -m pytest tests -q -o addopts=""',
+                'result': '726 passed, 16 failed',
+                'base': {'commit': '253190c (this branch is 253190c + the two Space merges)',
+                         'result': '629 passed, the same 16 failed'},
+                'note': ('the 16 are pre-existing in this container (GPU/subprocess/text-reader '
+                         'tests); none imports spaces/ or space_loop'),
+            },
         },
         'claims': {
             'no_network': ('the fixture hub serves file lists, header prefixes and licence facts '

@@ -105,7 +105,7 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 1.537,
+            "seconds": 1.574,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
@@ -169,7 +169,7 @@
           {
             "step": "coverage",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "read 512 of 295488 bytes (header and tensor table only)",
             "code": null
           },
@@ -190,7 +190,7 @@
           {
             "step": "edit",
             "state": "ok",
-            "seconds": 0.04,
+            "seconds": 0.05,
             "detail": "loopfixture/base-q4k at attn 1.5, mlp 0.75 -> F16: 4 tensors, min cos 1.0",
             "code": null
           },
@@ -204,7 +204,7 @@
           {
             "step": "package",
             "state": "ok",
-            "seconds": 0.002,
+            "seconds": 0.001,
             "detail": "3 files, 861440 artifact bytes",
             "code": null
           }
@@ -275,7 +275,7 @@
     },
     "pytest": {
       "exit": 0,
-      "summary": "66 passed, 1 skipped in 11.90s"
+      "summary": "66 passed, 1 skipped in 10.71s"
     },
     "stage": {
       "files": 44,
@@ -328,6 +328,15 @@
       "gradio": "5.50.0 (the SDK pin)",
       "method": "a scratch venv with gradio>=5,<6 and the repo on sys.path; the app module built a Blocks demo and refresh()/start() returned the typed refusal and the empty-file message",
       "result": "pass"
+    },
+    "full_suite": {
+      "command": "python -m pytest tests -q -o addopts=\"\"",
+      "result": "726 passed, 16 failed",
+      "base": {
+        "commit": "253190c (this branch is 253190c + the two Space merges)",
+        "result": "629 passed, the same 16 failed"
+      },
+      "note": "the 16 are pre-existing in this container (GPU/subprocess/text-reader tests); none imports spaces/ or space_loop"
     }
   },
   "claims": {
