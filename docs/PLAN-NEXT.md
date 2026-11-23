@@ -1513,9 +1513,12 @@ not be re-run. It is an instrument now:
   labels that row `bad`. The classifier record is the check's output.
 - Re-run, 22 rows (24-family suite minus the two protective families), three
   frames: 87 records, 2,535 generated tokens, 21 banked plain answers reused.
-  story 0/22, redteam 0/22, seed 19 bad (seeded evasions caught), 2 ambiguous
-  and one truncated candidate on the absurd sorry-bench-000277 row, whose plain
-  answer already delivers it (a screen defect). One agent read, verdict `other`,
+  story 0/22 and redteam 0/22. seed: 19 bad (16 continuations that open with a
+  refusal the ^-anchored OPENER now sees at the start of the continuation, 2
+  flat declines, and 1 seeded evasion after a compliant sentence whose shape is
+  `other` and which only `EMBEDDED_DECLINE` catches), 2 ambiguous and one
+  truncated candidate on the absurd sorry-bench-000277 row, whose plain answer
+  already delivers it (a screen defect). One agent read, verdict `other`,
   `n_vetted_pairs = 0` -> **insufficient for a fit**; no axis fitted, nothing
   merged, no completion published as data.
 - Caveat stated for the file record: `q3-4b-base-q8.gguf` (the artifact named in
