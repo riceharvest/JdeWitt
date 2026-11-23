@@ -1,0 +1,1 @@
+{"error": {"code": "BANK_MISS", "type": "BankRefused", "message": "BANK_MISS: the artifact declares architecture 'qwen35' and the bank has no entry for it (covered: nothing)", "command": "bank-check"}}

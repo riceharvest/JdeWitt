@@ -1,0 +1,1 @@
+{"error": {"code": "BUNDLE_BAD_DIGEST", "type": "BankRefused", "message": "BUNDLE_BAD_DIGEST: entry 'bankfixture/f00l01-fixture' pins bundle 'fixture-bank-corrupt.tar' at sha256 095074f7740a53967e77a8b26c7c7816be31d2989edc7ad6877e586c9574e3a2, but the file hashes to 146fc06b355dcec0c9164362608c0b55fbe1d2e81aed5403f9e635810a15e494", "command": "bank-check"}}

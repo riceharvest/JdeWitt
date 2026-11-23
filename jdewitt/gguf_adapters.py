@@ -29,12 +29,20 @@ weights: A = d @ W and the served W is quantized, so write adapters computed
 against dequantized served weights (serve_factors), never against the
 full-precision originals.
 """
-import re
 import torch
 from pathlib import Path
-from gguf import GGUFReader, GGUFWriter
+from gguf import GGUFWriter
 
 from .errors import NoVerifiedAdapter
+# Geometry reading lives in a torch-free module; re-exported here so existing
+# callers (capture, spanfit, tune, planapply, scripts) keep their imports.
+from .ggufgeom import (WRITEBACK_TENSOR, discover_writeback_targets,
+                       gguf_weight_shapes, inferred_hidden_width)
+
+__all__ = ['HF_TO_LLAMA', 'WRITEBACK_TENSOR', 'discover_writeback_targets',
+           'gguf_weight_shapes', 'inferred_hidden_width', 'artifact_adapter_view',
+           'resolve_gguf_names', 'serve_factors', 'per_direction_adapters',
+           'write_adapter', 'served_deltas']
 
 # editor source_key component -> llama.cpp tensor suffix. Deliberately narrow:
 # an unmapped or absent tensor raises, because a silently skipped target means a
@@ -43,78 +51,6 @@ HF_TO_LLAMA = (
     ('self_attn.o_proj', 'attn_output'),
     ('mlp.down_proj', 'ffn_down'),
 )
-
-# Canonical residual-write suffixes llama.cpp uses across architectures. Every
-# one of these is a projection whose OUTPUT is the residual stream: attention
-# output, SSM out on hybrid/recurrent blocks, FFN down. Discovery is by name
-# because two projections can share the hidden width (q_proj on MHA models) and
-# an axis captured in residual space is meaningless in query space, so a pure
-# dimension rule would edit the wrong matrix while passing every shape check.
-WRITEBACK_TENSOR = re.compile(
-    r'^(attn_output|attn_out|ssm_out|ffn_down|w2|o_proj|down_proj)$')
-
-
-def discover_writeback_targets(shapes, width):
-    """{layer: [gguf tensor names]} discovered from the artifact itself.
-
-    ``shapes`` is gguf_weight_shapes() output: name -> (in, out), so a tensor
-    writes the residual stream when shape[1] == hidden width. This replaces the
-    per-model source-key table: the artifact says which writeback projections it
-    carries and where they live, on any architecture, with nothing typed by
-    hand. Names that write a hidden-wide vector but are not residual-write
-    projections are reported separately rather than edited.
-    """
-    by_layer, unmapped = {}, []
-    for name, dims in shapes.items():
-        match = re.match(r'^blk\.(\d+)\.(.+)\.weight$', name)
-        if match is None or len(dims) != 2:
-            continue
-        layer, suffix = int(match.group(1)), match.group(2).split('.')[-1]
-        if int(dims[1]) != int(width):
-            continue
-        if not WRITEBACK_TENSOR.match(suffix):
-            unmapped.append(name)
-            continue
-        by_layer.setdefault(layer, []).append(name)
-    return {'targets': {layer: sorted(names) for layer, names in sorted(by_layer.items())},
-            'unmapped_writeback_width': sorted(unmapped)}
-
-def gguf_weight_shapes(artifact, reader=None):
-    """name -> (in, out) in ggml/gguf dimension order for every 2D weight.
-
-    GGUF stores linear weights transposed from torch, so GGUFReader .shape is
-    [in, out]: blk.5.ffn_down = (10240, 2560) = (ffn, hidden) on spark2_5, and
-    qwen3-4b blk.9.attn_output = (4096, 2560) = (heads*head_dim, hidden). The
-    torch layout is the reversed pair, which is what ggufio.dequantize_tensor
-    hands back. ``reader`` lets a caller that already parsed the header share it.
-    """
-    reader = reader or GGUFReader(str(artifact))
-    shapes = {}
-    for t in reader.tensors:
-        if len(t.shape) == 2:
-            shapes[t.name] = tuple(t.shape)  # (out, in)
-    return shapes
-
-def inferred_hidden_width(shapes):
-    """Modal output width of the residual-write projections the artifact carries.
-
-    The artifact never states its hidden size; its writeback projections do, and
-    the majority width is the residual stream's (a partial file still has more
-    agreeing tensors than disagreeing ones). None when no writeback name is
-    present at all — then there is nothing to infer from, which is itself the
-    finding.
-    """
-    widths = {}
-    for name, dims in shapes.items():
-        match = re.match(r'^blk\.\d+\.(.+)\.weight$', name)
-        if match is None or len(dims) != 2:
-            continue
-        if not WRITEBACK_TENSOR.match(match.group(1).split('.')[-1]):
-            continue
-        widths[int(dims[1])] = widths.get(int(dims[1]), 0) + 1
-    if not widths:
-        return None
-    return max(widths.items(), key=lambda item: item[1])[0]
 
 
 def artifact_adapter_view(shapes):
