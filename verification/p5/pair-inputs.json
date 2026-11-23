@@ -2,7 +2,7 @@
  "schema": "jdewitt.pair-inputs/1",
  "card": "t_508b057c",
  "scope": "Inputs the P5 merge card (t_b821d858) needs: vetted delivery pairs, the restored oracle axes tensor, and the pair-axis code on master.",
- "date_utc": "2026-11-23T15:50:00Z",
+ "date_utc": "2026-11-23T16:55:00Z",
  "deliverables": {
   "1_vetted_pairs": {
    "state": "partial",
@@ -11,8 +11,8 @@
    "by_verdict": {"deliver": 8, "pivot": 0, "declined": 0, "other": 0},
    "split": {"fit": 3, "eval": 5},
    "floor": 10,
-   "gap": "7 fit-split pairs. The 5 additions are eval-split rows (sb-hold-*, adv-hold-*), i.e. the 24-family cert set itself; fitting on them and then certifying there would be circular, so they are a sensitivity check, not the card's input.",
-   "why_not_more": "Banked real deliveries are exhausted: 101 unique base-declining/oracle-nondecline rows were screened and read (every 'procedural' shape was a pivot/reframe); the base's own framed capture measured ~4 real deliveries/100 rows, so the remaining 7 need generation on the fit split (78-row suite prepared at verification/q3-4b-pair-fit/suite.jsonl).",
+   "gap": "7 fit-split pairs. The 5 additions are eval-split rows (sb-hold-*, adv-hold-*), i.e. the 24-family cert set itself; fitting on them and then certifying there would be circular, so they are a sensitivity check, not the card's gate input.",
+   "why_not_more": "Banked real deliveries are exhausted: 101 unique base-declining/oracle-nondecline rows were screened and read (every 'procedural' shape was a pivot/reframe); the base's own framed capture measured ~4 real deliveries/100 rows, so the remaining 7 need generation on the fit split (78-row suite at verification/q3-4b-pair-fit/suite.jsonl, 30-row first round running).",
    "how_verified": "Every verdict is an agent read with a reason in the record (reader hermes#2555); the schema is checked by jdewitt.delivery_pairs.read_pairs; counts printed by summarize()."
   },
   "2_oracle_axes": {
@@ -36,21 +36,32 @@
    "tests": "pytest tests/test_pair_axis_check.py tests/test_spanfit.py tests/test_frames.py -> 30 passed"
   }
  },
+ "sensitivity_cos": {
+  "packet": "verification/p5/pair-axis-check-sensitivity.json",
+  "records": "verification/q3-4b-pair-mirror/records.pt",
+  "n_pairs": 8,
+  "min_vetted_used": 8,
+  "mean_cos": -0.080812,
+  "mean_abs_cos": 0.243363,
+  "min_abs_cos": 0.11155,
+  "layers": 27,
+  "decision": "orthogonal",
+  "reading": "At n=8 the pair-diff delivery axis sits at mean |cos| 0.243 vs the recovered oracle axis, under the 0.3 orthogonal threshold. This is the direction answer the merge card asked for, at a sample below its 10-pair floor and partly on cert rows: use it to justify ONE merge test (orthogonal branch), not as the gate-legal fit.",
+  "not_a_claim": "The corpus is not fit-split-clean (5/8 eval rows). A cert read on the 24 families after a merge fitted on them would be circular; the fit-split round must be completed before the content-rate claim."
+ },
  "blocked_on": {
-  "what": "a real mean |cos| from scripts/pair_axis_check.py",
-  "why": "no cos can be computed without residual records, and every capture path is GPU-only (jdewitt.hf.resolve_backend forbids CPU fallback; the 3060 is not the sanctioned backend).",
+  "what": "a gate-legal fit (>=10 FIT-split vetted pairs) and its cos at the default floor",
+  "why": "7 more fit-split real deliveries are needed; each ~100 framed rows yields ~4. Generation on the 3060 is running for 30 rows x 4 conditions (plain + story/redteam/seed); the rest needs another round, ideally on the B70.",
   "lock": "lab-gpu b70 refused: b70 lock held by pid 2436206 (reader sweep) since 2026-11-23 14:19.",
-  "not_done": ["fit-split framed capture (78-row suite ready, needs generation)", "residual capture of the 8 mirrored pairs (zero generation, needs a GPU)", "pair_axis_check run"]
+  "not_done": ["fit-split round to 10 deliveries", "gate-legal pair_axis_check at the default floor", "any merge or content read (the downstream card)"]
  },
  "resume_commands": [
-  "cd /home/dario/.agentboard/worktrees/<this-task-worktree>  # branch ab/t_508b057c",
-  "# (a) zero-token: capture both sides of the 8 vetted pairs, then a sensitivity cos (below the 10 floor, eval-split)",
-  "lab-gpu b70 --need-gib 12 -- env PYTHONPATH=$PWD /mnt/ssd/dev\\ workspace/JdeWitt/.venv/bin/python -m jdewitt.capture --model /mnt/ssd/models/Qwen3-4B-Instruct-2507 --suite verification/q3-4b-pair-mirror/suite.jsonl --answers verification/q3-4b-pair-mirror/refusals.jsonl --mirror-answers verification/q3-4b-pair-mirror/mirror.jsonl --out verification/q3-4b-pair-mirror/records.pt --ctx-size 8192 --locus answer --max-tokens 512",
-  "python scripts/pair_axis_check.py --records verification/q3-4b-pair-mirror/records.pt --verdicts verification/q3-4b-pair-mirror/pairs.jsonl --oracle verification/q3-4b-oracle-control/q3oaxes135 --min-vetted 8 --out verification/p5/pair-axis-check-sensitivity.json",
-  "# (b) the card's actual input: framed capture on the fit split, vet candidates, capture, fit at the 10 floor",
-  "lab-gpu b70 --need-gib 12 -- env PYTHONPATH=$PWD /mnt/ssd/dev\\ workspace/JdeWitt/.venv/bin/python -m jdewitt.capture --model /mnt/ssd/models/Qwen3-4B-Instruct-2507 --suite verification/q3-4b-pair-fit/suite.jsonl --frame story,redteam,seed --out verification/q3-4b-pair-fit/records.pt --ctx-size 8192 --max-tokens 512 --pairs-out verification/q3-4b-pair-fit/capture",
+  "cd /home/dario/.agentboard/worktrees/t_508b057c  # branch ab/t_508b057c",
+  "# fit-split framed capture (plain + 3 pinned frames); the first round ran --limit 30",
+  "PYTHONPATH=$PWD /mnt/ssd/ablator-cuda/.venv/bin/python -m jdewitt capture --model /mnt/ssd/models/Qwen3-4B-Instruct-2507 --suite verification/q3-4b-pair-fit/suite.jsonl --frame none,story,redteam,seed --out verification/q3-4b-pair-fit/records.pt --ctx-size 4096 --locus answer --allow-cuda --dtype bfloat16 --max-tokens 512 --pairs-out verification/q3-4b-pair-fit/capture",
   "python scripts/delivery_pairs.py list verification/q3-4b-pair-fit/capture/pairs.jsonl  # then vet each candidate (R2)",
+  "# gate-legal run once >=10 fit-split deliveries exist",
   "python scripts/pair_axis_check.py --records <fit+mirror records> --verdicts <corpus with >=10 fit deliveries> --oracle verification/q3-4b-oracle-control/q3oaxes135"
  ],
- "not_a_claim": "No cos, no merge, no content rate. The pair axis remains unfitted; this packet records what exists and exactly what is missing."
+ "not_a_claim": "No merge, no content rate, no removal claim. The sensitivity cos is a direction measurement at n=8; everything else is staged."
 }
