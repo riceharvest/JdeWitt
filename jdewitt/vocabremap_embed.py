@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from pathlib import Path
 
 from .vocabremap import (_completion, _contexts_for, _candidate, _portable_path,
@@ -220,21 +221,97 @@ def decode_ids_steps(port, tokens, prompt_ids, max_tokens):
             'text': detokenize(emitted, tokens)}
 
 
-def grep_wave(port, prompt, max_tokens):
-    """The plain text-prompt greedy control wave the id loop must reproduce."""
+def grep_wave(port, prompt, max_tokens, tokens):
+    """The plain text-prompt greedy control wave the id loop must reproduce.
+
+    The ids are read from the per-token probabilities (``n_probs=1``) because this
+    llama-server build leaves the plain ``tokens`` field empty on a multi-token
+    completion; the text is the server's own ``content``.
+    """
     response = _completion(port, {'prompt': prompt, 'n_predict': max_tokens, 'temperature': 0.0,
-                                  'cache_prompt': False, 'n_probs': 1})
-    return {'ids': [int(value) for value in response.get('tokens') or []],
-            'text': response.get('content') or ''}
+                                  'cache_prompt': True, 'n_probs': 1})
+    probabilities = response.get('completion_probabilities') or []
+    ids = []
+    for item in probabilities:
+        token_id = item.get('id') if isinstance(item, dict) else None
+        if type(token_id) is not int or not _piece_bytes(token_id, tokens):
+            break
+        ids.append(token_id)
+    return {'ids': ids, 'text': response.get('content') or '', 'stop_type': response.get('stop_type')}
 
 
-def _plain_response_ids(response):
-    return [int(value) for value in response.get('tokens') or []]
+def _portable_argv(serve, artifact, port, ctx, parallel, ngl, device):
+    """The loader argv as committed evidence: binary name and repository-relative paths, never absolute."""
+    argv = [Path(serve).name]
+    if device:
+        argv += ['--device', str(device)]
+    return argv + ['-m', _portable_path(artifact), '-ngl', str(ngl), '-c', str(ctx), '--parallel', str(parallel),
+                   '--host', '127.0.0.1', '--port', str(port)]
+
+
+def _load_arm_rows(path, mode):
+    """Rows already written by an interrupted arm, dropping a half-written trailing line."""
+    if not path.exists():
+        return []
+    kept = []
+    changed = False
+    for line in path.read_text().splitlines():
+        if not line.strip():
+            changed = True
+            continue
+        try:
+            kept.append(json.loads(line))
+        except json.JSONDecodeError:
+            changed = True
+    if changed:
+        path.write_text(''.join(json.dumps(row, sort_keys=True, allow_nan=False) + '\n' for row in kept))
+    if any(row.get('mode') != mode for row in kept):
+        raise ValueError(f'{path} holds rows from another arm; refusing to mix them')
+    return kept
+
+
+class _DeterministicJudge:
+    """Capability rows never consult a judge; score_response only reads scoring_mode here."""
+
+    scoring_mode = 'refusal-check'
+
+    def check(self, answer, language):  # pragma: no cover - capability rows never call this
+        raise RuntimeError('this arm grades capability rows only; no refusal check is run')
+
+    def classify(self, prompt, answer, language):  # pragma: no cover - never called
+        raise RuntimeError('this arm grades capability rows only; no judge is called')
+
+
+def grade_capability_rows(rows, suite_rows):
+    """Grade stored answers with the shipped score_response: a pure function of the text.
+
+    The decode loop writes text; the pass/fail axis is computed here (and by the ``grade``
+    script subcommand) from the same text and suite row, so a re-grade cannot change what
+    was decoded. Only math/code rows are graded; a refusal row would need a judge.
+    """
+    from .evaluation import score_response
+    by_id = {row['id']: row for row in suite_rows}
+    judge = _DeterministicJudge()
+    graded = 0
+    for row in rows:
+        task = by_id.get(row['id'])
+        if task is None or task.get('kind') not in ('math', 'code'):
+            continue
+        finish = 'stop' if row.get('stop') is not None else 'length'
+        scored = score_response(task, {'content': row.get('text') or '', 'finish_reason': finish,
+                                      'completion_tokens': row.get('n_tokens')}, judge)
+        row['answer'] = scored.get('answer')
+        row['status'] = scored.get('status')
+        row['passed'] = scored.get('passed')
+        row['degenerate'] = scored.get('degenerate')
+        row['grade'] = (scored.get('grade') or {}).get('reason') if task['kind'] == 'code' else None
+        graded += 1
+    return graded
 
 
 def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=None, out=None, mode='off',
                           max_tokens=512, serve=None, port=None, template='chat', limit=0,
-                          plain_check=0, ctx=4096, parallel=4, ngl=99, device=None):
+                          plain_check=0, ctx=4096, parallel=4, ngl=99, device=None, resume=False):
     """Decode one arm of the input-side remap: the only difference is whether the prompt ids are rewritten."""
     if mode not in ('on', 'off'):
         raise ValueError('--embed must be on or off')
@@ -266,9 +343,11 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
     started = None
     try:
         if serve is not None:
+            if port is None:
+                from .vocabremap import _free_port
+                port = _free_port()
             started = start_server(serve, artifact, port, out / 'server.log', ctx=ctx, parallel=parallel,
                                    ngl=ngl, device=device)
-            port = started['port']
         if not isinstance(port, int) or not 0 < port < 65536:
             raise ValueError(f'--port must be an integer in 1..65535, got {port!r}')
         props = verify_artifact_identity(port, artifact)
@@ -278,8 +357,14 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                              f'header ({len(served_check["mismatches"])} of {served_check["contexts_checked"]} '
                              'contexts); refusing to record rows from another tokenizer')
         items = affirmative_items(entries, affirmative_document, port)
-        rows = []
-        for number, task in enumerate(rows_in, 1):
+        rows_path = out / 'rows.jsonl'
+        done = _load_arm_rows(rows_path, mode) if resume else []
+        if rows_path.exists() and not resume:
+            raise ValueError(f'{rows_path} exists; pass --resume to continue that arm or pick a fresh --out')
+        done_ids = {row['id'] for row in done}
+        pending = [task for task in rows_in if task['id'] not in done_ids]
+        rows = list(done)
+        for number, task in enumerate(pending, 1):
             rendered = (apply_chat_template(port, task['prompt']) if template == 'chat' else task['prompt'])
             before = served_tokenize(port, rendered, parse_special=True)
             if mode == 'on':
@@ -303,7 +388,8 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                 'unmatched_entries': unmatched if mode == 'on' else [],
                 'prompt_text_before': _ids_text(before, tokens),
                 'prompt_text_after': _ids_text(after, tokens),
-                'text': loop['text'], 'n_tokens': len(loop['ids']), 'stop': loop['stop'],
+                'text': loop['text'], 'answer_ids': loop['ids'], 'n_tokens': len(loop['ids']),
+                'stop': loop['stop'],
                 'completion_requests': loop['completion_requests'],
                 'seconds': loop['seconds'],
                 'prompt_n_first_step': loop['steps'][0]['prompt_n'] if loop['steps'] else None,
@@ -313,21 +399,40 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                                                  if type(step['cache_n']) is int), default=None),
             }
             if number <= plain_check:
-                plain = grep_wave(port, rendered, max_tokens)
+                plain = grep_wave(port, rendered, max_tokens, tokens)
+                ids_wave = grep_wave(port, list(after), max_tokens, tokens)
+                divergence = next((index for index, (left, right) in enumerate(zip(plain['ids'], loop['ids']))
+                                   if left != right), None)
                 record['plain'] = {'ids': plain['ids'], 'text': plain['text'],
-                                   'equals_loop': plain['ids'] == loop['ids']}
+                                   'equals_loop': plain['ids'] == loop['ids'],
+                                   'first_divergence': divergence,
+                                   'lengths': {'plain': len(plain['ids']), 'loop': len(loop['ids'])},
+                                   'ids_wave_equals_loop': ids_wave['ids'] == loop['ids'],
+                                   'ids_wave_equals_text_wave': ids_wave['ids'] == plain['ids'],
+                                   'ids_wave_length': len(ids_wave['ids'])}
             rows.append(record)
-            if number % 10 == 0 or number == len(rows_in):
+            with rows_path.open('a') as handle:
+                handle.write(json.dumps(record, sort_keys=True, allow_nan=False) + '\n')
+                handle.flush()
+                os.fsync(handle.fileno())
+            if number % 10 == 0 or number == len(pending):
                 generated = sum(row['n_tokens'] for row in rows)
                 elapsed = time.monotonic() - began
-                print(f'[{mode}] {number}/{len(rows_in)} rows  {generated} tokens  '
+                print(f'[{mode}] {number}/{len(pending)} rows  {generated} tokens  '
                       f'{generated / max(elapsed, 1e-9):.1f} tok/s  last={task["id"]}', flush=True)
     finally:
         if started is not None:
             stop_server(started)
-    rows_path = out / 'rows.jsonl'
-    rows_path.write_text(''.join(json.dumps(row, sort_keys=True, allow_nan=False) + '\n' for row in rows))
+    graded = grade_capability_rows(rows, rows_in)
+    if graded:
+        rows_path.write_text(''.join(json.dumps(row, sort_keys=True, allow_nan=False) + '\n' for row in rows))
     edited = [row for row in rows if row['edits']]
+    scored_rows = [row for row in rows if 'passed' in row]
+    by_kind = {}
+    for kind in sorted({row.get('kind') for row in scored_rows}):
+        subset = [row for row in scored_rows if row.get('kind') == kind]
+        by_kind[kind] = {'rows': len(subset), 'passed': sum(1 for row in subset if row.get('passed') is True),
+                         'invalid': sum(1 for row in subset if row.get('status') != 'ok')}
     report = {
         'schema': ARM_SCHEMA,
         'mode': mode,
@@ -345,7 +450,8 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                         'sha256': hashlib.sha256(raw_affirmative).hexdigest(),
                         'entries': len(affirmative_document['entries']),
                         'unmapped': affirmative_document.get('unmapped', [])},
-        'server': {'argv': started['argv'] if started is not None else [],
+        'server': {'argv': (_portable_argv(serve, artifact, port, ctx, parallel, ngl, device)
+                            if started is not None else []),
                    'port': port, 'started_by_runner': started is not None,
                    'model_path_reported': props['model_path_reported'],
                    'model_path_resolves_to_artifact': props['model_path_resolves_to_artifact'],
@@ -358,6 +464,14 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                    'device': device, 'prompt_sent_as': 'ids',
                    'logit_bias': 'none in either arm'},
         'rows_file': {'path': 'rows.jsonl', 'sha256': _sha256_file(rows_path), 'rows': len(rows)},
+        'resumed_rows': len(done),
+        'scores': {'graded_rows': graded,
+                   'passed': sum(1 for row in scored_rows if row.get('passed') is True),
+                   'invalid': sum(1 for row in scored_rows if row.get('status') != 'ok'),
+                   'by_kind': by_kind,
+                   'note': ('capability rows are graded from the stored answer text by the shipped '
+                            'jdewitt.evaluation.score_response; a row is a pass only when status=ok and '
+                            'passed=true. A refusal-kind row is not graded here.')},
         'metrics': {'generated_tokens': sum(row['n_tokens'] for row in rows),
                     'completion_requests': sum(row['completion_requests'] for row in rows),
                     'rows_input_changed': len(edited),
@@ -365,6 +479,14 @@ def vocab_remap_embed_arm(table=None, affirmative=None, artifact=None, suite=Non
                     'prompt_tokens_after': sum(row['prompt_tokens_after'] for row in rows),
                     'plain_checked_rows': min(plain_check, len(rows)),
                     'plain_equals_loop': sum(1 for row in rows if row.get('plain', {}).get('equals_loop')),
+                    'ids_wave_equals_loop': sum(1 for row in rows
+                                                if row.get('plain', {}).get('ids_wave_equals_loop')),
+                    'ids_wave_equals_text_wave': sum(1 for row in rows
+                                                     if row.get('plain', {}).get('ids_wave_equals_text_wave')),
+                    'plain_first_divergence': [{'id': row['id'],
+                                                'at': row['plain'].get('first_divergence')}
+                                               for row in rows if row.get('plain')
+                                               and not row['plain'].get('equals_loop')],
                     'wall_seconds': round(time.monotonic() - began, 3)},
         'verdict': {'complete': len(rows) == len(rows_in),
                     'note': 'an arm is complete only when it holds every suite row it names'},

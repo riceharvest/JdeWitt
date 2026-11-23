@@ -156,6 +156,7 @@ def build_parser():
     vremap.add_argument('--device',help='--embed: llama.cpp device selector (--device), e.g. Vulkan1 on the B70; omit to let the build choose')
     vremap.add_argument('--limit',type=int,default=0,help='--embed: decode only the first N rows (timing probe)')
     vremap.add_argument('--plain-check',type=int,default=0,help='--embed: also run a plain text-prompt greedy wave on the first N rows and record whether the id arm reproduces it token-for-token')
+    vremap.add_argument('--resume',action='store_true',help='--embed: continue an interrupted arm in --out instead of refusing the existing rows.jsonl')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -848,7 +849,8 @@ def main():
                                              max_tokens=args.max_tokens,serve=args.serve,
                                              port=(args.port[0] if args.port else None),template=args.template,
                                              limit=args.limit,plain_check=args.plain_check,ctx=args.ctx,
-                                             parallel=args.parallel,ngl=args.ngl,device=args.device)
+                                             parallel=args.parallel,ngl=args.ngl,device=args.device,
+                                             resume=args.resume)
                 exit_code=0 if result['verdict']['complete'] else 1
             elif args.remap is not None:
                 from .vocabremap import vocab_remap_decode
