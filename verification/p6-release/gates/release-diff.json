@@ -1,0 +1,141 @@
+{
+  "left": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/releases/spark-1.7b-q4km-p6",
+  "right": "/home/dario/.agentboard/worktrees/t_a44a4d22/verification/p6-release/competitor-fixture",
+  "release_identities": {
+    "left": "3613753a618fe79e353966c96be024b5daea5184b3c15ec06f1cddd50ac71702",
+    "right": "385a819de7ae30abd8140291ef71a6097f8ea8bccc0d12146a02fbc12b0b099f",
+    "same": false
+  },
+  "files": {
+    "only_in_left": [
+      "adapter.gguf",
+      "adapter.json",
+      "model-merged.gguf",
+      "plan-card.json",
+      "plan-card.tar",
+      "twin.json"
+    ],
+    "only_in_right": [
+      "model.gguf"
+    ],
+    "changed": [
+      {
+        "name": "README.md",
+        "left_sha256": "2677b21c80a292b13179ef662b8bad0681881d7135db84fa9130fe205c65873e",
+        "right_sha256": "e4df7f1eab21eafd1b4b48082493fa149f5d3cc20a7ed478c9a2f0cd482ea8ff"
+      },
+      {
+        "name": "evaluation.json",
+        "left_sha256": "5e7223e909d9097c6486234c5f64645d5d746c1a1be246a2b2e1c31bbd80cc15",
+        "right_sha256": "a32bdf9454e4621474840dbdf3f6d1f98f8f18b1565821a668f814536dd1d536"
+      }
+    ],
+    "identical": 0
+  },
+  "named_differences": [
+    {
+      "kind": "adapter",
+      "change": "only_in_left",
+      "files": [
+        "adapter.gguf",
+        "adapter.json"
+      ],
+      "detail": "adapter present in the left release and absent from the right"
+    },
+    {
+      "kind": "claims",
+      "change": "changed",
+      "files": [
+        "evaluation.json"
+      ],
+      "detail": "claims files share a name but not their sha256 across the two releases"
+    },
+    {
+      "kind": "codec-realized",
+      "change": "only_in_left",
+      "files": [
+        "twin.json"
+      ],
+      "detail": "codec-realized present in the left release and absent from the right"
+    },
+    {
+      "kind": "identity",
+      "change": "changed",
+      "files": [
+        "README.md"
+      ],
+      "detail": "identity files share a name but not their sha256 across the two releases"
+    },
+    {
+      "kind": "merged",
+      "change": "only_in_left",
+      "files": [
+        "model-merged.gguf"
+      ],
+      "detail": "merged present in the left release and absent from the right"
+    },
+    {
+      "kind": "merged",
+      "change": "only_in_right",
+      "files": [
+        "model.gguf"
+      ],
+      "detail": "merged present in the right release and absent from the left"
+    },
+    {
+      "kind": "plan",
+      "change": "only_in_left",
+      "files": [
+        "plan-card.json",
+        "plan-card.tar"
+      ],
+      "detail": "plan present in the left release and absent from the right"
+    },
+    {
+      "kind": "identity",
+      "change": "changed",
+      "files": [
+        "files.json"
+      ],
+      "detail": "release identity differs: the two releases do not bind the same evaluation record and README"
+    },
+    {
+      "kind": "identity",
+      "change": "changed",
+      "files": [
+        "signature.json"
+      ],
+      "detail": "one release is unsigned"
+    },
+    {
+      "kind": "claims",
+      "change": "changed",
+      "files": [
+        "evidence.json"
+      ],
+      "detail": "claim ledgers differ: 0 entry/entries only on the right, 1 only on the left"
+    }
+  ],
+  "unnamed_differences": [],
+  "valid": true,
+  "claims": {
+    "identical": 0,
+    "added_on_right": [],
+    "added_on_left": [
+      {
+        "seq": 1,
+        "claim": "Release assembled: adapter, merged twin, plan card and their labels bind these exact bytes; codec-realized numbers are separated from behaviour claims"
+      }
+    ]
+  },
+  "ledger_digests": {
+    "left": "bc9af6b82396f7291aca41baad2b4bfd8d05ed609e43524622a6ae543c583b36",
+    "right": null
+  },
+  "signatures": {
+    "left": true,
+    "right": false,
+    "same_public_key": false
+  },
+  "note": "Byte-level digests compared from each release record; contents of changed files are never printed. Every difference is named by kind; an entry that cannot be classified lands in unnamed_differences and makes valid false."
+}

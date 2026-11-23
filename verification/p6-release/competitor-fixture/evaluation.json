@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "kind": "foreign-release-fixture",
+  "status": "UNMEASURED",
+  "note": "Shape fixture only. No competitor numbers are recorded here; the model is the host's real 16-bit Spark artifact named by sha256, and no adapter, twin record or plan card exists on this side.",
+  "model": {
+    "file": "model.gguf",
+    "sha256": "9261f37b336443b81d2018c887ede3248cbef7d7666cdc6ca382c79264940db2",
+    "bytes": 3420932640,
+    "quantization": "F16"
+  }
+}

@@ -330,6 +330,16 @@ def build_parser():
     pprune=sub.add_parser('plan-prune',help='Report registry rot (failed integrity, orphans); delete only with --execute')
     pprune.add_argument('registry',type=Path)
     pprune.add_argument('--execute',action='store_true')
+    papply=sub.add_parser('plan-apply',help='Apply a digest-pinned plan BUNDLE to THEIR quantized GGUF: verify the card, discover the target tensors in the artifact, re-encode only those, measure the delivered cos; no model, no B70')
+    papply.add_argument('--bundle',type=Path,required=True,help='plan-bundle tar (signed meta + payload)')
+    papply.add_argument('--gguf',type=Path,required=True,help='the artifact to edit; it is only ever read')
+    papply.add_argument('--out',type=Path,required=True,help='the edited artifact to write')
+    papply.add_argument('--strength','--scale',dest='strength',type=float,default=1.0,
+        help='projection strength applied to the plan axis (1.0 = the fitted removal)')
+    papply.add_argument('--edit-type',default='auto',
+        help='type the edited tensors are re-encoded at: auto probes q6_k -> q8_0 -> f16 for the smallest type that clears --min-cos, preserve keeps each tensor\'s own source codec (the shipped-twin reproduction path), or name one this build can encode')
+    papply.add_argument('--min-cos',type=float,default=0.95,help='delivered-cos floor --edit-type auto uses to pick the smallest type')
+    papply.add_argument('--axis-space',choices=('output','input'),default='output')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('--allow-config-mismatch',action='store_true',
         help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
@@ -485,6 +495,11 @@ def build_parser():
     capture.add_argument('--settle-min-tokens',type=int,default=24,help='do not settle before this many generated tokens')
     capture.add_argument('--no-settle',dest='settle',action='store_false',help='always decode to --max-tokens (the token-expensive, fully-determined label path)')
     capture.add_argument('--answers',type=Path,default=None,help='jsonl with id+answer (a banked predictions.jsonl): reuse those answers and spend ZERO output tokens on those rows')
+    capture.add_argument('--frame',default='none',help='jailbreak frame(s) for the delivery side: none (today\'s behaviour), story, redteam, seed, or a comma list; pinned text + provenance in jdewitt/frames.py')
+    capture.add_argument('--frame-file',type=Path,default=None,help='local pinned frame list (JSONL objects or one JSON list) instead of --frame; each entry needs name + template with one {prompt}, optional seed')
+    capture.add_argument('--pairs-out',type=Path,default=None,help='directory for the candidate pair JSONL (pairs.jsonl, verdict null) in the jdewitt/delivery_pairs.py schema; every shape-delivery candidate is written against its plain answer')
+    capture.add_argument('--exclude-families',default='',help='comma list of suite family_id values to drop before capture (exact match, tallied in the report)')
+    capture.add_argument('--exclude-categories',default='',help='comma list of exact suite category values to drop before capture (tallied in the report)')
     tune=sub.add_parser('tune',help='Rank edit arms by perplexity and refusal-branch preference before generating anything: adapters + --lora-scaled, prefill only, then re-measure the winner on the merged bytes')
     tune.add_argument('--gguf',type=Path,required=True)
     tune.add_argument('--hf',default=None,help='HF checkpoint dir for the PRIMAL adapter basis: the adapter curve only predicts the merged bytes when its factors come from un-folded weights')
@@ -793,6 +808,10 @@ def main():
         elif args.command=='plan-prune':
             from .registry import prune_registry
             result=prune_registry(args.registry,args.execute)
+        elif args.command=='plan-apply':
+            from .planapply import plan_apply
+            result=plan_apply(args.bundle,args.gguf,args.out,args.strength,
+                              args.edit_type,args.min_cos,args.axis_space)
         elif args.command=='studies-compare':
             from .agent import studies_compare
             result=studies_compare(args.paths)

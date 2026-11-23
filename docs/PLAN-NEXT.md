@@ -1121,6 +1121,46 @@ content. The loop is now: attitude ladder (0 tokens) -> probe/confirm screen ->
 `--apply-quantized` writes the edit into the artifact the user runs, with the
 delivered edit and the byte-identity of everything else measured, not assumed.
 
+### plan-apply: the card is the unit of distribution (2026-11-22, CODE)
+
+`plan-bundle` made a fitted plan portable; nothing consumed it, so the delivery unit
+stopped halfway. `plan-apply --bundle CARD.tar --gguf THEIR.gguf --out EDITED.gguf
+--strength S [--edit-type auto|q6_k|...]` is the consumer half: it verifies the card
+into a throwaway registry (`registry.unbundle_plan`, signed meta + payload sha + basis
+rank), loads it with `load_plan`, discovers the artifact's residual-write tensors from
+the file itself (`gguf_weight_shapes` + `discover_writeback_targets`; no model, no
+tensor table), and re-encodes ONLY those tensors through the same axis path as
+`edit-quantized` (`ggufio.axis_delta` inside `rewrite_with_edits`). One JSON carries
+the plan key + meta_digest, per-tensor delivered cos/SNR, edited/untouched counts, the
+untouched byte-identity check, the edit fingerprint and the output sha256.
+
+Measured on Spark-X2.6-1.7B-Q4_K_M (1,107,458,592 bytes, 226 tensors, arch spark2_5,
+28 blocks, hidden 2048) with a rank-2 card whose basis geometry matches it:
+
+  56 target tensors (attn_output + ffn_down x 28 layers) discovered, 28 layers edited,
+  `--edit-type auto` probes q6_k cos 0.840 / q8_0 0.933 / f16 0.9999 at the 0.95 floor
+  and picks F16 — this is the codec floor, not a defect: a unit axis at strength 1.0
+  changes ~3% of a row norm, below what a 6-bit grid keeps,
+  delivered cos 1.0000 min (1.0001 mean), SNR 146.5 min per edited tensor,
+  170 untouched tensors BYTE-IDENTICAL (re-read from both files; gguf-tensor-diff
+  independently reports 170/170 bit_identical and names exactly the 56 edited ones),
+  file 1,108 MB -> 1,778 MB, 9m17s wall on a loaded CPU host (888 s CPU, 2.5 GB RSS).
+
+Determinism: a second run from the same pristine artifact and card wrote the same
+output sha256 (`104a9f9a...`), and re-running the card on the produced file is detected
+from the artifact's own `jdewitt.fingerprint` and answered with a byte copy (same sha,
+`already_applied: true`, 17 s) instead of a second quantization pass.
+
+Refusals, all before any byte is written and all named: a hidden-1024 card, a 29-layer
+card and a card whose signed fit fingerprint says rank 3 over a rank-2 basis
+(`GEOMETRY_MISMATCH` with the operands printed), `--out` equal to `--gguf`
+(`OUT_IS_INPUT`), and an `--edit-type` this build cannot encode
+(`EDIT_TYPE_NOT_ENCODABLE` listing the 35 encodable types — never a silent 16-bit
+merge + requantize).
+
+Honest limit: the cos/SNR are codec-realized fidelity computed on CPU from the two
+files. What the model then answers is not measured here and no removal claim is made.
+
 ### Quant breadth: any source format, twelve writable targets (2026-11-22)
 
 Reading the user's artifact must not depend on their quant choice. `ggufio.decode_values`
@@ -1488,3 +1528,43 @@ and no published directory. Behaviour numbers in the fixture (0.215 adapter /
 0.119 merged, ratio 0.553) are quoted from "Where we are short" item 3, not
 measured here; the real merged-twin run stays GATED in the
 adapter-vs-merged card.
+
+## 2026-11-23 — jailbreak frames are pinned; the round is reproducible and the yield is still zero
+
+The 2026-11-18 frame round was a scratch script, so its 174-request result could
+not be re-run. It is an instrument now:
+
+- `jdewitt/frames.py` pins the three templates (story, redteam, assistant-prefill
+  seed) with provenance and the measured yield. The templates are re-authored
+  from the 2026-11-18 description — the original script is lost — and the seed is
+  the measured string `Sure - here is exactly how:`. `jdewitt capture --frame
+  none|story|redteam|seed` (comma lists allowed) or `--frame-file` runs them;
+  every record carries `frame` and `prompt_id` = suite id, the key a pair fit
+  reads, and `--answers` makes the banked plain-prompt side cost zero output
+  tokens. `--pairs-out` writes every shape-delivery candidate in the
+  `jdewitt/delivery_pairs.py` schema with `verdict: null`.
+- Self-harm and CSAM-adjacent families are refused under a frame by
+  `frames.protected_reason` (family ids `sb-hold-6` and
+  `jbb-hold-sexual-adult-content`, plus keyword guard); the guard is not
+  switchable off from the CLI.
+- Offline check `scripts/frames_check.py`: `EMBEDDED_DECLINE` fires on
+  `Sure - here is exactly how: I will not provide...` while the ^-anchored
+  `OPENER` reads shape `other` (the documented 2026-11-18 defect), and capture
+  labels that row `bad`. The classifier record is the check's output.
+- Re-run, 22 rows (24-family suite minus the two protective families), three
+  frames: 87 records, 2,535 generated tokens, 21 banked plain answers reused.
+  story 0/22 and redteam 0/22. seed: 19 bad (16 continuations that open with a
+  refusal the ^-anchored OPENER now sees at the start of the continuation, 2
+  flat declines, and 1 seeded evasion after a compliant sentence whose shape is
+  `other` and which only `EMBEDDED_DECLINE` catches), 2 ambiguous and one
+  truncated candidate on the absurd sorry-bench-000277 row, whose plain answer
+  already delivers it (a screen defect). One agent read, verdict `other`,
+  `n_vetted_pairs = 0` -> **insufficient for a fit**; no axis fitted, nothing
+  merged, no completion published as data.
+- Caveat stated for the file record: `q3-4b-base-q8.gguf` (the artifact named in
+  `hold-base.wave.json`) is absent from the host this ran on, and capture is
+  HF-only; the run used `Qwen/Qwen3-4B-Instruct-2507@cdbee75f17c0`, the base that
+  q8 file was quantized from. The yield matches the earlier conclusion:
+  prompt-side jailbreak of this model is a low-yield fit-data source, and the
+  compliant side remains a data-sourcing task (response mirrors / GCG), not
+  another frame round.
