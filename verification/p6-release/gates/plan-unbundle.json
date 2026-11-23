@@ -1,0 +1,12 @@
+{
+  "into": "/tmp/reg",
+  "key": "6aedfc200b76e5a7",
+  "installed": true,
+  "payload_sha256": "a90c37469e41c9da1673fee63d08f07662c110db5cdc9c371359168dae406bb3",
+  "meta_digest": "05b4a0bae69e552bf4032b72a512bd311396fc3a197c3910434396e073121cf8",
+  "geometry": {
+    "layers": 18,
+    "rank": 1,
+    "hidden": 2048
+  }
+}
