@@ -144,6 +144,21 @@ EXPLAINER = {
     'BUNDLE_BAD_DIGEST': {
         'meaning': 'A bank entry\'s bundle is missing or does not hash to the digest the entry pins.',
         'agent_action': 'Restore the bundle from the bank release and re-verify its sha256; never apply an axis whose bytes are not the measured ones.'},
+    'CODEC_FLOOR': {
+        'meaning': 'The edit does not survive any storage type the entry allows at its own edit.min_cos; nothing is written.',
+        'agent_action': 'Keep the artifact unedited or fit the entry for a higher-bit artifact class. Do not raise the strength or drop the floor to force a write: that ships an edit nobody measured.'},
+    'EDIT_TYPE_NOT_ALLOWED': {
+        'meaning': 'The requested --edit-type is outside the types the bank entry measured for this artifact class.',
+        'agent_action': 'Pass auto (the ladder intersects the entry\'s types) or one of the entry\'s edit.types; do not widen the entry to the type you want.'},
+    'BUNDLE_REFUSED': {
+        'meaning': 'A bank entry\'s bundle did not install, verify, or carry the key/geometry the entry claims; nothing is written.',
+        'agent_action': 'Re-import the bundle from the bank release and re-pin its sha256 in bank.json; a bundle that disagrees with its entry is not the axis that was measured.'},
+    'OUT_IS_INPUT': {
+        'meaning': 'The requested --out is the input artifact; bank-apply never edits the file it read.',
+        'agent_action': 'Write to a new path; the input must stay readable for the delivered-cos measurement.'},
+    'OUT_DIRECTORY_MISSING': {
+        'meaning': 'The requested --out names a directory that does not exist.',
+        'agent_action': 'Create the directory or write inside an existing one; nothing was written.'},
 }
 
 
@@ -239,10 +254,28 @@ class BankRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class BankApplyRefused(ValueError):
+    """A resolved bank entry still cannot be applied to this artifact; named why.
+
+    Distinct from ``BankRefused`` (the bank cannot describe the artifact at all):
+    here the entry and the bundle are the bytes the bank pins, and the refusal is
+    about the write itself. CODEC_FLOOR: no type the entry allows stores the edit
+    at ``edit.min_cos`` — raising the strength to hide that is exactly what this
+    code exists to prevent. EDIT_TYPE_NOT_ALLOWED: a named type outside the
+    entry's measured set. BUNDLE_REFUSED: the bundle does not install, verify, or
+    carry the key/geometry the entry claims. OUT_IS_INPUT / OUT_DIRECTORY_MISSING:
+    the requested output cannot be written without touching the input or a missing
+    directory. Every one is raised before the writer opens ``out``.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
-                             MatrixRefused, ReleaseRefused, BankRefused)):
+                             MatrixRefused, ReleaseRefused, BankRefused, BankApplyRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

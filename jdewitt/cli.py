@@ -343,6 +343,15 @@ def build_parser():
     bcheck=sub.add_parser('bank-check',help='Resolve a Space bank entry against a GGUF from its header + tensor table only: entry, target tensor names, layers, per-kind strength, edit types, or one typed refusal (BANK_MISS / GEOMETRY_MISMATCH / UNSUPPORTED_QUANT / BUNDLE_BAD_DIGEST)')
     bcheck.add_argument('--bank',type=Path,required=True,help='bank directory holding bank.json')
     bcheck.add_argument('--gguf',type=Path,required=True,help='artifact to check; its header is read, its tensor data never is')
+    bapply=sub.add_parser('bank-apply',help='Apply one Space bank entry to THEIR quantized GGUF: resolve from the header, install the digest-pinned bundle into a throwaway registry, re-encode only the footprint tensors at a per-kind strength, measure the delivered cos per tensor; one JSON, no model, no tokenizer, no server')
+    bapply.add_argument('--bank',type=Path,required=True,help='bank directory holding bank.json and the entry bundles')
+    bapply.add_argument('--entry',required=True,help='bank entry key to apply (bank.json entries[].key)')
+    bapply.add_argument('--gguf',type=Path,required=True,help='the artifact to edit; it is only ever read')
+    bapply.add_argument('--out',type=Path,required=True,help='the edited artifact to write')
+    bapply.add_argument('--edit-type',default='auto',
+        help='auto probes the entry\'s types smallest-first (q6_k -> q8_0 -> f16) and picks the first that clears the entry\'s edit.min_cos, refusing with CODEC_FLOOR when none does; or name a type the entry measured')
+    bapply.add_argument('--strength-scale',type=float,default=1.0,
+        help='multiplies the entry\'s per-kind strength (1.0 = the banked edit; never raised to hide a codec floor)')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('--allow-config-mismatch',action='store_true',
         help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
@@ -819,6 +828,10 @@ def main():
         elif args.command=='bank-check':
             from .bank import bank_check
             result=bank_check(args.bank,args.gguf)
+        elif args.command=='bank-apply':
+            from .bank_apply import bank_apply
+            result=bank_apply(args.bank,args.entry,args.gguf,args.out,
+                              args.edit_type,args.strength_scale)
         elif args.command=='studies-compare':
             from .agent import studies_compare
             result=studies_compare(args.paths)
