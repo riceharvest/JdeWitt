@@ -334,7 +334,7 @@ def build_parser():
     papply.add_argument('--strength','--scale',dest='strength',type=float,default=1.0,
         help='projection strength applied to the plan axis (1.0 = the fitted removal)')
     papply.add_argument('--edit-type',default='auto',
-        help='type the edited tensors are re-encoded at: auto probes q6_k -> q8_0 -> f16 for the smallest type that clears --min-cos, or name one this build can encode')
+        help='type the edited tensors are re-encoded at: auto probes q6_k -> q8_0 -> f16 for the smallest type that clears --min-cos, preserve keeps each tensor\'s own source codec (the shipped-twin reproduction path), or name one this build can encode')
     papply.add_argument('--min-cos',type=float,default=0.95,help='delivered-cos floor --edit-type auto uses to pick the smallest type')
     papply.add_argument('--axis-space',choices=('output','input'),default='output')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')

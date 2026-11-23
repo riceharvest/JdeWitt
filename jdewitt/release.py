@@ -518,16 +518,100 @@ def release_diff(a, b):
                                 for d, e in sorted(left_claims.items(), key=lambda de: de[1].get('seq', 0)) if d not in right_claims]}
     left_key = (left['signature'] or {}).get('public_key_pem')
     right_key = (right['signature'] or {}).get('public_key_pem')
+    named, unnamed = _classify_differences(left, right, only_a, only_b, changed,
+                                           left_key, right_key)
     return {'left': str(a.resolve()), 'right': str(b.resolve()),
             'release_identities': {'left': left['identity'], 'right': right['identity'],
                                    'same': left['identity'] == right['identity']},
             'files': {'only_in_left': only_a, 'only_in_right': only_b, 'changed': changed,
                       'identical': len(set(left['files']) & set(right['files'])) - len(changed)},
+            'named_differences': named,
+            'unnamed_differences': unnamed,
+            'valid': not unnamed,
             'claims': claims,
             'ledger_digests': {'left': left['ledger_digest'], 'right': right['ledger_digest']},
             'signatures': {'left': bool(left['signature']), 'right': bool(right['signature']),
                            'same_public_key': left_key is not None and left_key == right_key},
-            'note': 'Byte-level digests compared from each release record; contents of changed files are never printed.'}
+            'note': 'Byte-level digests compared from each release record; contents of changed '
+                    'files are never printed. Every difference is named by kind; an entry that '
+                    'cannot be classified lands in unnamed_differences and makes valid false.'}
+
+
+# File name -> the release claim whose absence/change the difference IS. A
+# competitor-shaped release (a 16-bit model, no adapter, no plan card) differs
+# from ours in exactly these named ways; anything this table cannot classify is
+# reported as unnamed instead of being silently absorbed.
+_RELEASE_DIFFERENCE_KINDS = {
+    'adapter.gguf': 'adapter',
+    'adapter.json': 'adapter',
+    'model-merged.gguf': 'merged',
+    'plan-card.tar': 'plan',
+    'plan-card.json': 'plan',
+    'twin.json': 'codec-realized',
+    'evaluation.json': 'claims',
+    'evidence.json': 'claims',
+    'README.md': 'identity',
+    'files.json': 'identity',
+}
+
+
+def _difference_kind(name):
+    kind = _RELEASE_DIFFERENCE_KINDS.get(name)
+    if kind:
+        return kind
+    if name.endswith('.gguf'):
+        return 'merged'
+    if name.endswith('.json'):
+        return 'claims'
+    return None
+
+
+def _classify_differences(left, right, only_a, only_b, changed, left_key, right_key):
+    """Name every difference by release claim; refuse to absorb the rest.
+
+    ``named_differences`` groups file-set and digest differences under the claim
+    they belong to (adapter / merged / plan / claims / identity / codec-realized),
+    and adds the structural facts (a different release identity, a different
+    signing key, a claim ledger that is not shared). ``unnamed_differences``
+    carries whatever the name table cannot explain, so ``valid`` is true only
+    when the comparison has accounted for every byte-level difference.
+    """
+    named, unnamed = [], []
+    groups = {}
+    for change, names in (('only_in_left', only_a), ('only_in_right', only_b),
+                          ('changed', [row['name'] for row in changed])):
+        for name in names:
+            kind = _difference_kind(name)
+            if kind is None:
+                unnamed.append({'change': change, 'name': name})
+                continue
+            groups.setdefault((kind, change), []).append(name)
+    for (kind, change), names in sorted(groups.items()):
+        if change == 'only_in_left':
+            detail = f'{kind} present in the left release and absent from the right'
+        elif change == 'only_in_right':
+            detail = f'{kind} present in the right release and absent from the left'
+        else:
+            detail = f'{kind} files share a name but not their sha256 across the two releases'
+        named.append({'kind': kind, 'change': change, 'files': sorted(names), 'detail': detail})
+    if left['identity'] != right['identity']:
+        named.append({'kind': 'identity', 'change': 'changed', 'files': ['files.json'],
+                      'detail': 'release identity differs: the two releases do not bind the same '
+                                'evaluation record and README'})
+    if left_key != right_key:
+        named.append({'kind': 'identity', 'change': 'changed', 'files': ['signature.json'],
+                      'detail': ('one release is unsigned' if left_key is None or right_key is None
+                                 else 'the two releases are signed by different public keys')})
+    if left['ledger_digest'] != right['ledger_digest']:
+        added = len([e for e in right['entries'] if e.get('digest')
+                     not in {x.get('digest') for x in left['entries']}])
+        removed = len([e for e in left['entries'] if e.get('digest')
+                       not in {x.get('digest') for x in right['entries']}])
+        named.append({'kind': 'claims', 'change': 'changed', 'files': ['evidence.json'],
+                      'detail': f'claim ledgers differ: {added} entry/entries only on the right, '
+                                f'{removed} only on the left'})
+    return named, unnamed
+
 
 
 def keygen(path):

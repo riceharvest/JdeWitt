@@ -130,6 +130,16 @@ def _select_edit_type(gguf, edits, probes, strength, edit_type, min_cos):
     from .ggufio import preview_edit
     from .quantize import canonical_type
 
+    if edit_type == 'preserve':
+        # The shipped-twin path: each edited tensor keeps the codec it already
+        # carries, so a card whose twin was written that way reproduces byte for
+        # byte. Source types without an encoder are refused by the writer, which
+        # names the tensor; silently widening them to 16-bit would ship an edit
+        # nobody measured.
+        return {'mode': 'preserve', 'floor': min_cos, 'chosen': 'preserve',
+                'probes': [], 'readings': [], 'floor_cleared': None,
+                'note': 'each edited tensor is re-encoded in its own source codec; no probe, '
+                        'because preserving a codec has no type ladder to choose from'}
     if edit_type != 'auto':
         chosen = _canonical_edit_type(edit_type)
         return {'mode': 'explicit', 'floor': min_cos, 'chosen': chosen,
@@ -249,32 +259,56 @@ def plan_apply(bundle, gguf, out, strength=1.0, edit_type='auto', min_cos=0.95,
             raise PlanApplyRefused('PLAN_HAS_NO_3D_BASIS', f'plan {key} basis has shape {basis.shape}, not [layers,rank,hidden]')
 
         # --- targets, discovered from the artifact ---------------------------------
+        # A plan payload may name the layers its rows belong to; the basis rows are
+        # then that layer list, not 0..n-1. Reading the list from the payload (which
+        # the card's manifest pins by sha256) keeps a footprint plan like 10-27 from
+        # being re-indexed onto layers 0-17, which would edit the wrong weights.
+        plan_rows = loaded['plan'].get('layers') if isinstance(loaded['plan'], dict) else None
+        if plan_rows is None:
+            layer_rows = list(range(plan_layers))
+        else:
+            if (not isinstance(plan_rows, list) or len(plan_rows) != plan_layers
+                    or any(type(layer) is not int for layer in plan_rows)
+                    or plan_rows != sorted(set(plan_rows))):
+                raise PlanApplyRefused(
+                    'PLAN_LAYER_INDICES_INVALID',
+                    f'plan {key} carries layer indices {plan_rows!r}; expected {plan_layers} '
+                    f'strictly increasing integers matching the basis rows')
+            layer_rows = list(plan_rows)
+            if any(layer < 0 or layer >= geometry['layers'] for layer in layer_rows):
+                raise PlanApplyRefused(
+                    'GEOMETRY_MISMATCH',
+                    f'plan {key} names layers {layer_rows[:4]}... outside {gguf} '
+                    f'(0..{geometry["layers"] - 1}); nothing written')
         shapes = gguf_weight_shapes(str(gguf))
         discovered = discover_writeback_targets(shapes, plan_hidden)
         targets = discovered['targets']
-        covered = [layer for layer in range(plan_layers) if layer in targets]
+        covered = [layer for layer in layer_rows if layer in targets]
         if not covered:
             raise PlanApplyRefused(
                 'NO_TARGET_TENSORS',
-                f'plan {key} covers layers 0..{plan_layers - 1} at width {plan_hidden}, but '
+                f'plan {key} covers layers {layer_rows[:4]}'
+                f'{"..." if len(layer_rows) > 4 else ""} at width {plan_hidden}, but '
                 f'{gguf} exposes no residual-write projection at that width '
                 f'(layers with targets: {sorted(targets)[:4]}'
                 f'{"..." if len(targets) > 4 else ""}); nothing written')
-        missing = [layer for layer in range(plan_layers) if layer not in targets]
+        missing = [layer for layer in layer_rows if layer not in targets]
         if missing:
             # A card is applied whole or not at all: editing a subset of the layers
             # the fit searched would ship an artifact whose edit differs from the
             # card's, which is the one thing this command exists to rule out.
             raise PlanApplyRefused(
                 'TARGET_COVERAGE_INCOMPLETE',
-                f'plan {key} covers layers 0..{plan_layers - 1} at width {plan_hidden}, but '
+                f'plan {key} covers layers {layer_rows[:4]}'
+                f'{"..." if len(layer_rows) > 4 else ""} at width {plan_hidden}, but '
                 f'{gguf} exposes no residual-write projection for layers '
                 f'{missing[:8]}{"..." if len(missing) > 8 else ""} '
                 f'({len(missing)} of {plan_layers}); refusing a partial edit, nothing written')
         edits = {}
+        row_of = {layer: position for position, layer in enumerate(layer_rows)}
         for layer in covered:
             for name in targets[layer]:
-                edits[name] = (basis[layer], axis_space)
+                edits[name] = (basis[row_of[layer]], axis_space)
         probes = []
         for position in sorted({0, len(covered) // 2, len(covered) - 1}):
             for name in targets[covered[position]]:
