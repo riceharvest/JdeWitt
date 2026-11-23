@@ -25,8 +25,8 @@ arm directories.
     342 752 576 bytes, qwen2 tokenizer, 151 936 ids, serve `b10514-4a3635c32`.
   - `verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf`, sha256 `67dd31f5…`,
     672 004 000 bytes, qwen35 tokenizer, 248 094 ids, serve `b1-f336359`
-    (`/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-server`; the older CPU
-    build does not carry the qwen35 arch).
+    (a `llama.cpp-minicpm47` CPU build; the older CPU build does not carry the
+    qwen35 arch).
 - cap `--max-tokens 96`, temperature 0, one greedy decode per row, CPU only.
 - MiniCPM-V 4.7 is a thinker: its template opens `<think>`. The card renders it
   with `enable_thinking=false` (`--no-think`) so the answer starts at the opener
@@ -35,10 +35,10 @@ arm directories.
 
 ## Reproduce
 
-    SERVE_QWEN=/home/dario/llama.cpp-spark/build-cpu/bin/llama-server
-    SERVE_MINI=/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-server
-    M_QWEN="/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf"
-    M_MINI="/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf"
+    SERVE_QWEN=/path/to/llama-server          # build b10514-4a3635c32, CPU build
+    SERVE_MINI=/path/to/llama-server-minicpm47 # the qwen35-capable CPU build
+    M_QWEN=verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf
+    M_MINI=verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf
     SUITE=verification/vocab-remap/probes/multilingual.jsonl
 
     for ARM in off on; do

@@ -14,8 +14,8 @@ on and off. Gate: `verification/vocab-remap/retention.json`.
 
 - suite `verification/capability/capability-run-en.jsonl` (241 rows: 180 maths,
   61 code), graded by the shipped `jdewitt.evaluation.score_response`.
-- artifact `/mnt/ssd/models/qwen25-1.5b-instruct-q4_k_m.gguf`
-  (sha256 `4537de22…c2cb4`), converted from Qwen2.5-1.5B-Instruct f16 and
+- artifact `qwen25-1.5b-instruct-q4_k_m.gguf` (outside the clone; identified by
+  sha256 `4537de22…c2cb4`), converted from Qwen2.5-1.5B-Instruct f16 and
   quantized Q4_K_M; Qwen2 tokenizer, the same as the 0.5B used for the decode
   probes.
 - server llama-server `b10514-4a3635c32`, CPU build, `-ngl 0`, `-c 2048`,
@@ -31,8 +31,8 @@ loop; the only difference is `--remap`.
 
 ## Reproduce
 
-    SERVE=/home/dario/llama.cpp-spark/build-cpu/bin/llama-server
-    M=/mnt/ssd/models/qwen25-1.5b-instruct-q4_k_m.gguf
+    SERVE=/path/to/llama-server           # build b10514-4a3635c32, CPU build
+    M=/path/to/qwen25-1.5b-instruct-q4_k_m.gguf   # outside the clone; sha256 above
 
     python scripts/vocab_remap_retention.py arm --artifact "$M" --serve "$SERVE" \
         --out verification/vocab-remap/retention/off --remap off --max-tokens 512
