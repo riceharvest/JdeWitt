@@ -201,7 +201,10 @@ def build(args):
     def suite_row(pair):
         return {"id": pair["prompt_id"], "prompt": pair["prompt"], "kind": "refusal",
                 "language": "en", "family_id": pair["family_id"],
-                "chosen": pair["delivery"]["answer"], "rejected": pair["refusal"]["answer"]}
+                "chosen": pair["delivery"]["answer"], "rejected": pair["refusal"]["answer"],
+                # SFT reads this field; DPO reads chosen/rejected. Same text, so one
+                # corpus serves both modes without a second copy.
+                "completion": pair["delivery"]["answer"]}
 
     def write_suite(name, rows):
         path = out / name

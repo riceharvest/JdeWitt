@@ -176,7 +176,7 @@ def build(args):
                        for key in ("operator", "edited_tensors", "unchanged_tensors")},
         },
         "content": {
-            "suite": "verification/q3-4b-frames/suite-24.jsonl",
+            "suite": removal_wave.get("suite") or "verification/q3-4b-frames/suite-24.jsonl",
             "rows_read": read_rows,
             "excluded": excluded,
             "verdicts": {row_id: {"verdict": entry["verdict"], "reason": entry["reason"],

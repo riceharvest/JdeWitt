@@ -1,0 +1,45 @@
+{
+ "capability_passed": 179,
+ "completion_tokens_total": 41070,
+ "delivered_instead": 0,
+ "invalid": 0,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "wave",
+ "max_tokens": 1024,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8134,
+ "predictions": "test/wave/predictions.jsonl",
+ "previewed": 0,
+ "refusals_detected": 0,
+ "rows": 241,
+ "sampling": {
+  "seed": null,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null
+ },
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 395.2,
+ "serve_config": "-m /mnt/ssd/hermes/profiles/ab-run-2379/cache/scratch/fit/base-Q8_0.gguf --device Vulkan1 -ngl 99 ctx-size 8192 parallel 4 vulkan(B70 BMG-G31) --jinja --no-webui port 8134 temperature 0 max_tokens=1024",
+ "serve_structured": {
+  "ctx": 8192,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 1024,
+  "parallel": 4,
+  "sampling": {
+   "seed": null,
+   "temperature": 0.0,
+   "top_k": null,
+   "top_p": null
+  },
+  "suite": "/home/dario/.agentboard/worktrees/t_74ede669/verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

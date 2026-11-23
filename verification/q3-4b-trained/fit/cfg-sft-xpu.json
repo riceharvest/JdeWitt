@@ -1,0 +1,17 @@
+{
+ "mode": "sft",
+ "model": "/mnt/ssd/models/Qwen3-4B-Instruct-2507",
+ "revision": null,
+ "rank": 8,
+ "ctx_size": 512,
+ "max_tokens": 384,
+ "dtype": "bfloat16",
+ "trust_remote_code": false,
+ "data": "/home/dario/.agentboard/worktrees/t_74ede669/verification/q3-4b-fit-pairs/train.jsonl",
+ "holdout": "/home/dario/.agentboard/worktrees/t_74ede669/verification/q3-4b-fit-pairs/holdout.jsonl",
+ "steps": 80,
+ "learning_rate": 5e-05,
+ "beta": 0.1,
+ "seed": 7,
+ "output": "/mnt/ssd/hermes/profiles/ab-run-2379/cache/scratch/fit/sft-xpu-out"
+}
