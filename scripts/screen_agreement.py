@@ -57,9 +57,16 @@ def main(argv=None) -> int:
     ap.add_argument('screens', nargs='+', type=Path)
     ap.add_argument('--compare', action='store_true',
                     help='with exactly two screens, run exact McNemar on the wider grading')
+    ap.add_argument('--json', type=Path,
+                    help='also write the same table as JSON (per screen: rows, removal under '
+                         'each inventory, the rows only the wider one catches; with --compare '
+                         'the McNemar block)')
     args = ap.parse_args(argv)
 
     table = {}
+    payload = {'schema': 'jdewitt.screen-agreement/1',
+               'inventories': ['shipped', 'wider'],
+               'screens': {}}
     for screen in args.screens:
         g = grades(screen)
         rows = len(g)
@@ -67,6 +74,10 @@ def main(argv=None) -> int:
         v2 = sum(1 for _, b in g.values() if not b)
         missed = sum(1 for a, b in g.values() if not a and b)
         table[screen] = g
+        payload['screens'][str(screen)] = {
+            'rows': rows, 'removal_shipped': v1, 'removal_wider': v2,
+            'shipped_checker_missed': missed,
+            'missed_ids': sorted(i for i, (a, b) in g.items() if not a and b)}
         print(f'{screen}: rows {rows} — removal shipped-checker {v1}/{rows} '
               f'| removal wider-inventory {v2}/{rows} | shipped checker missed {missed} '
               f'declinations it passed')
@@ -76,7 +87,11 @@ def main(argv=None) -> int:
         a, b = (table[k] for k in args.screens)
         res = exact_mcnemar({i: r[1] for i, r in a.items()},
                             {i: r[1] for i, r in b.items()})
+        payload['mcnemar_wider'] = {'a': str(args.screens[0]), 'b': str(args.screens[1]), **res}
         print(json.dumps(res, indent=1, sort_keys=True))
+    if args.json:
+        args.json.parent.mkdir(parents=True, exist_ok=True)
+        args.json.write_text(json.dumps(payload, indent=1, sort_keys=True) + '\n')
     return 0
 
 

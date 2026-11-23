@@ -1,0 +1,33 @@
+{
+  "before": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "after": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.vocab-remap.gguf",
+  "tensor_count_before": 226,
+  "tensor_count_after": 226,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 226,
+    "bit_identical": 225,
+    "value_differs": 1,
+    "shape_changed": 0,
+    "codec_unsupported": 0,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 1,
+    "min": 0.018403,
+    "median": 0.018403,
+    "max": 0.018403
+  },
+  "differing_tensors": [
+    {
+      "name": "token_embd.weight",
+      "dtype_before": "Q6_K",
+      "dtype_after": "Q6_K",
+      "rel_rms": 0.018403,
+      "same_dtype": true
+    }
+  ],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}
