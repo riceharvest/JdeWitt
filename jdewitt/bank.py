@@ -189,23 +189,37 @@ def _verify_bundle(bank_dir, entry):
     return {'file': bundle['file'], 'sha256': actual, 'verified': True}
 
 
-def resolve(bank_dir, gguf):
+def resolve(bank_dir, gguf, key=None):
     """Resolve one artifact against the bank, or raise the typed refusal.
 
     Checks run in the order a Space needs them: the architecture must be covered at
     all, then geometry/footprint, then source decodability, then the bundle digest
     (the axis is never read, so a bad bundle cannot have been applied).
+
+    ``key`` restricts the candidate entries to one, so `bank-apply --entry` resolves
+    the entry the user named instead of the first one that fits the geometry. An
+    unknown key is a BANK_MISS like an uncovered architecture: the caller asked for
+    something the bank does not hold.
     """
     bank_dir, gguf = Path(bank_dir), Path(gguf)
     document = load_bank(bank_dir)
+    entries = document['entries']
+    if key is not None:
+        entries = [entry for entry in entries if str(entry['key']) == str(key)]
+        if not entries:
+            carried = [str(entry['key']) for entry in document['entries']]
+            raise BankRefused(
+                'BANK_MISS',
+                f'the bank at {bank_dir} holds no entry {key!r} '
+                f'(carried: {", ".join(carried) if carried else "nothing"})')
     reader = GGUFReader(str(gguf))
     architecture = _declared(reader, 'architecture')
     architecture = None if architecture is None else str(architecture)
 
-    by_arch = [entry for entry in document['entries']
+    by_arch = [entry for entry in entries
                if str(entry['architecture']) == architecture]
     if not by_arch:
-        covered = sorted({str(entry['architecture']) for entry in document['entries']})
+        covered = sorted({str(entry['architecture']) for entry in entries})
         raise BankRefused(
             'BANK_MISS',
             f'the artifact declares architecture {architecture!r} and the bank has no entry '
@@ -314,6 +328,6 @@ def resolve(bank_dir, gguf):
     }
 
 
-def bank_check(bank_dir, gguf):
+def bank_check(bank_dir, gguf, key=None):
     """CLI entry: the resolved report, or a `BankRefused` the envelope names."""
-    return resolve(bank_dir, gguf)
+    return resolve(bank_dir, gguf, key)
