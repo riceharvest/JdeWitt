@@ -1,0 +1,1 @@
+{"error": {"code": "GEOMETRY_MISMATCH", "type": "BankRefused", "message": "GEOMETRY_MISMATCH: the artifact's writeback tensors are 64-wide but architecture 'applyfixture' entries are fitted at hidden [128]", "command": "bank-apply"}}

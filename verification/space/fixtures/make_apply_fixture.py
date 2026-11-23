@@ -150,6 +150,17 @@ def main():
     (DEST / 'bank.json').write_text(
         json.dumps({'schema': 'jdewitt-space-bank-v1',
                     'entries': [entry(written['bundle_sha256'])]}, indent=2) + '\n')
+
+    # A copy of the SAME good bundle with an entry whose geometry disagrees with the
+    # fixture: bank-apply must refuse before writing a byte.
+    bad = HERE / 'bank-apply-bad-geometry'
+    bad.mkdir(parents=True, exist_ok=True)
+    mismatched = entry(written['bundle_sha256'])
+    mismatched['geometry'] = {'layers': LAYERS, 'hidden': HIDDEN * 2,
+                              'hidden_source': 'artifact'}
+    (bad / 'bank.json').write_text(
+        json.dumps({'schema': 'jdewitt-space-bank-v1', 'entries': [mismatched]}, indent=2) + '\n')
+    (bad / BUNDLE).write_bytes((DEST / BUNDLE).read_bytes())
     print(json.dumps({'bank': str(DEST), 'gguf': str(GGUF), 'entry': ENTRY_KEY,
                       'bundle_sha256': written['bundle_sha256']}, indent=2))
 

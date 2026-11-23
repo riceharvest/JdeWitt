@@ -425,6 +425,9 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
         'bytes_in': rewrite.get('bytes_in'), 'bytes_out': rewrite.get('bytes_out'),
         'input_sha256': file_digest(gguf), 'output_sha256': file_digest(out),
         'wall_seconds': round(time.monotonic() - started, 2),
+        'ok': bool(untouched.get('verified')) and (min(cosines) if cosines else 0.0) >= floor,
+        'status': ('applied' if (min(cosines) if cosines else 0.0) >= floor
+                   else 'applied_below_floor'),
         'removal_measured': False,
         'claims': {
             'removal': 'not measured and not claimed: removal is GATED behind a real serve '
