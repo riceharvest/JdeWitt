@@ -1,0 +1,46 @@
+{
+ "schema": "jdewitt.pair-axis-check/1",
+ "scope": "Zero-token decision: cos(pair-diff delivery axis, banked oracle axis). No model loaded, no merge spent, no completion generated.",
+ "date_utc": "2026-11-23T00:48:35Z",
+ "records": {
+  "rows": 87,
+  "labels": {
+   "bad": 84,
+   "ambiguous": 2,
+   "deliver": 1
+  },
+  "layers": 36,
+  "width": 2560,
+  "path": "verification/q3-4b-frames/frames.pt",
+  "sha256": "b7b0c033e23d95e467b5702a569d49bcc38c93fcabe0493c620089252e4bd5c4"
+ },
+ "verdicts": {
+  "pairs": 1,
+  "by_verdict": {
+   "deliver": 0,
+   "pivot": 0,
+   "declined": 0,
+   "other": 1
+  },
+  "unread": 0,
+  "vetted": 1,
+  "n_vetted_pairs": 0,
+  "path": "verification/q3-4b-frames/pairs.jsonl",
+  "sha256": "f1ea6257e230fa6283e9f8f73fb1fee6875906c501df8eb1ae8d2b075cd78847"
+ },
+ "thresholds": {
+  "dead_mean_abs_cos": 0.9,
+  "orthogonal_mean_abs_cos": 0.3,
+  "min_vetted_pairs": 10
+ },
+ "oracle_arg": "verification/q3-4b-oracle-control/q3oaxes135",
+ "oracle_key_arg": null,
+ "decision": "insufficient",
+ "decision_line": "insufficient: 0 vetted delivery pairs (< 10) - no axis fitted, no cos computed, no merge spent",
+ "cos": [],
+ "mean_cos": null,
+ "mean_abs_cos": null,
+ "min_cos": null,
+ "min_abs_cos": null,
+ "elapsed_s": 1.061
+}
