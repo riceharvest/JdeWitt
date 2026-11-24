@@ -1,0 +1,73 @@
+# P7 minicpm wave run — failed at STEP 2 (refit capture), 2026-11-24 05:48 CET
+# Card t_13c5ac6b (split card 2/3, gpu). Launcher pid 2217329 =
+#   lab-gpu b70 --need-gib 8 -- bash verification/p7-minicpm/run_waves.sh
+# Worktree /home/dario/.agentboard/worktrees/t_13c5ac6b  branch ab/t_13c5ac6b
+# Attempt 1 (02:26) was refused (exit 75, holder 2060592); this launcher waited in
+# lab-gpu's FIFO (LAB_GPU_WAIT_MIN=360), got the b70 at 05:48:53 and died 05:49.
+
+STEP 1 operands: PASS (base gguf 67dd31f5...40be 672,004,000 B, fit-suite 60 rows
+e2e83db8..., heldout-24f 120 rows 9eb470f9..., HF checkpoint config
+20ed1fe7... revision 286817f1...).
+
+STEP 2 refit: FAILED on the first generate call. `uv run python -m jdewitt.cli capture`
+loaded the checkpoint as MiniCPMV4_7Model (the bare multimodal base class) and then
+raised AttributeError on model.generate(). Full traceback is in run.log (committed
+beside this file).
+
+Last lines of run.log:
+
+    [transformers] MiniCPMV4_7Model LOAD REPORT from: /mnt/ssd/models/MiniCPM-V-4.7-1B
+    lm_head.weight | UNEXPECTED
+    ...
+      File ".../jdewitt/capture.py", line 555, in capture_command
+        captured, reason = capture_one(
+      File ".../jdewitt/capture.py", line 334, in capture_one
+        sequence = model.generate(
+    AttributeError: 'MiniCPMV4_7Model' object has no attribute 'generate'
+
+## Root cause (measured with this worktree's .venv: transformers 5.20.0, torch 2.14.1+xpu)
+
+jdewitt/capture.py:472 tries factories in this order: (AutoModelForCausalLM, AutoModel).
+For this checkpoint:
+
+    cfg class MiniCPMV4_7Config  model_type minicpmv4_7
+    AutoModelForCausalLM._model_mapping[type(cfg)] -> KeyError   (not registered)
+    AutoModel._model_mapping[type(cfg)]             -> transformers...MiniCPMV4_7Model
+    transformers.MiniCPMV4_7ForConditionalGeneration exists: True
+    config.json architectures = ['MiniCPMV4_7ForConditionalGeneration']
+
+so the fallback silently loads the headless base model (lm_head UNEXPECTED in the load
+report), which has no .generate. This is a loader gap in jdewitt capture, not a prep
+defect in run_waves.sh and not a GPU/b70 problem: the same argv fails deterministically.
+
+The nesting helpers already cope with a multimodal config (hidden_width / expected_layers
+read config.text_config; 1024 x 24 per verification/minicpm-v47/summary.json, where this
+checkpoint was previously loaded and residual-captured on the b70). Only the model class
+factory is missing.
+
+## What was NOT produced (0 of everything)
+
+- verification/p7-minicpm/waves/ is empty: no base-removal-4096p4, base-retention-4096p4,
+  removal-4096p4, heldout-4096p4, retention-4096p4, removal-2048p2
+  (no wave.json, no predictions.jsonl) -> 0 rows, 0 tokens.
+- /mnt/ssd/p7-minicpm/ holds only base.gguf (672,004,000 B): no refit-records.pt,
+  no refit-records.capture.json, no refit-axes.pt, no merged arm gguf.
+- no fidelity.json, drift.json, shape-audit-{removal,heldout}.json, comparison.json,
+  spec.json; progress.txt ends at "STEP 2 refit: capture ..." (no "=== done").
+
+## State left behind
+
+- No llama-server of this job on :8134 (ss shows the port free); the b70 flock was
+  released when the launcher exited — no idle server holds the lock.
+- prep script untouched; bash -n still clean; run_waves.sh resumes at step 2 once a
+  capture exists (step 1 re-verifies operands in ~1 s).
+
+## Fix that unblocks it (a code card, not this wave card)
+
+Add the config-declared class to capture's factory list (after AutoModelForCausalLM,
+before the bare AutoModel fallback), e.g. try getattr(transformers, config.architectures[0])
+when it exists, and prefer a class that has .generate. Verify without a GPU: factory
+resolves to MiniCPMV4_7ForConditionalGeneration for this config, find_layer_stack finds
+24 x 1024 in its text backbone, writeback_targets non-empty on every block, and a
+2-row CPU capture smoke writes records + a fit_usable report. Then this wave card
+relaunches run_waves.sh unchanged and the real 60-row capture happens on the b70.
