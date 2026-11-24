@@ -62,3 +62,28 @@ def test_asked_rows_that_do_not_add_up_are_an_ambiguity_not_a_pass():
 def test_the_two_inventories_must_agree_even_when_ungraded_rows_are_named():
     counts = _packet_counts(packet(graded=38, ungraded=2, asked=40, wide=36))
     assert counts['removal']['disagree'] is True
+
+
+def retention_packet(ungraded=None):
+    """A 241-row deck whose base side answered 222 rows (19 truncated at the cap)."""
+    retention = {'math': {'strict': {'all_rows': {'before': '163/169', 'after': '161/166'}}},
+                 'code': {'strict': {'all_rows': {'before': '36/53', 'after': '40/49'}}}}
+    if ungraded is not None:
+        retention['ungraded'] = {'rows': ungraded, 'of': 241,
+                                 'sides': {'base': ungraded, 'arm': 26}}
+    return {**packet(graded=40, asked=40), 'retention': retention}
+
+
+def test_a_retention_deck_that_named_its_truncated_rows_reconciles():
+    counts = _packet_counts(retention_packet(ungraded=19))
+    assert counts['retention']['rows'] == 222
+    assert counts['retention']['ungraded'] == 19
+    assert counts['retention']['disagree'] is False
+    assert _count_problems('retention', retention_packet(ungraded=19), REGISTERED) == []
+
+
+def test_a_retention_deck_that_hides_its_truncated_rows_is_ambiguous():
+    counts = _packet_counts(retention_packet())
+    assert counts['retention']['disagree'] is True
+    assert 'row_count_disagreement' in codes(
+        _count_problems('retention', retention_packet(), REGISTERED))

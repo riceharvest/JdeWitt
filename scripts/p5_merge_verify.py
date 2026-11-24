@@ -49,7 +49,6 @@ def tensor_bytes(path: Path) -> dict[str, bytes]:
 
 
 def main(argv=None) -> int:
-    import numpy as np
     import torch
     from jdewitt.ggufio import preview_edit
 
