@@ -292,3 +292,88 @@ under `~/b70_prep/splits/t_75155e9e/out/`; the paths are in the JSON's `evidence
 block. Regenerate a verdict file's score with `scripts/delivery_read_packet.py
 score --pair-basis read` (the default now; `--pair-basis ok` is the old silently
 narrow pairing that left 2 of 40 rows on this wave).
+
+# The OAuth delivery: a repo in the visitor's account (v1.1, card 13)
+
+`jdewitt/space_deliver.py` is §8's v1.1 path, behind the flag `JW_OAUTH_PUSH`
+(off unless a Space variable sets it). The visitor signs in with `hf_oauth`
+(`hf_oauth_scopes: [write-repos]`), the module creates
+`jdewitt-<base>-<quant>` under that account, streams the artifact, the generated
+card, the sidecar and `SHA256SUMS` (plus a `.revert.npz` sidecar only when one
+exists and is under a 1 GiB cap), commits, makes the repo public, and prints the
+repo URL and the commit sha. The Space's own copy is temporary and deleted with
+the job.
+
+`verification/space/oauth-upload.json` is the card. It merges three live runs
+against `darioooooo0o` (the `hf_oauth` token the live Space issued, auth type
+`oauth`, `write-repos`):
+
+| run | artifact | bytes | transfer | upload | MB/s | commit wall | fetch-back | gguf-inspect |
+|---|---|---|---:|---|---:|---:|---:|---|---|
+| `oauth-2.8gb` | the 4B Q8_0 self-apply artifact (real) | 2,798,248,544 | basic | 25.84 s | **108.3** | 31.4 s | 98.9 MB/s | 398 tensors, `qwen3` |
+| `oauth-5.5gb` | 5.5 GB-class GGUF probe | 5,500,000,704 | multipart | 371.0 s | 14.8 | 379.2 s | 89.7 MB/s | 11 tensors, `jdewittprobe` |
+| `oauth-5.5gb-keepalive` | same file, shipped module | 5,500,000,704 | multipart | **116.8 s** | **47.1** | 141.6 s | 75.0 MB/s | 11 tensors, `jdewittprobe` |
+
+Every row was fetched back from its public repo, hashed, and `gguf-inspect`ed:
+the sha256 equals the uploaded file's and the tensor table reads. Repos:
+`darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0` (`170c0eed`),
+`darioooooo0o/jdewitt-transfer-probe-5.5gb` (`f0157559`, pre-fix),
+`darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive` (`05ace3a0`).
+
+What the runs settled, in the order they bit:
+
+1. **The Hub refuses one basic PUT above 5 GB.** HTTP 400: "You need to configure
+   your repository to enable upload of files > 5GB." The first 5.5 GB attempt hit
+   this after creating the repo; the module deleted the repo and re-read it as
+   gone. The shipped path advertises `basic` under 5 GB and `basic` + `multipart`
+   above, and the over-5 GB object goes out as 16 MB parts against the URLs the
+   batch hands back.
+2. **Connection reuse is the difference between the flag off and on.** Sequential
+   part PUTs on a fresh TLS connection per part measured 14.8 MB/s — 371 s for
+   5.5 GB, over the five-minute window. One keep-alive connection per host took
+   the same file to 47.1 MB/s, 117 s. Both numbers are in the card; the second is
+   the shipped module, the first is kept as the measurement that found the defect.
+3. **The window:** 5.5 GB fits the 300 s promise with **183 s of headroom** on
+   this host's uplink. That is not the Space's own uplink — the container leg
+   measured in `live-run.json` is the *download* (437 MB/s) — so the verdict is
+   "the flag can be on, and the container-side push is the next number to take".
+   It stays off by default (`JW_OAUTH_PUSH` unset; the staged README asks for
+   `write-repos` only with `--oauth-push`): the download is the anonymous path,
+   and a scope should be requested only where it is used. The five-minute promise
+   still fails for the 4B edit itself (964.95 s, `live-run.json`): the transfer
+   was never the binding constraint.
+4. **Cancel and kill are different.** Cancel (button) and any exception delete
+   the repo and re-read it as 404; the tests drive both. A hard `kill -9` cannot
+   run that code: it left a **private** repo with only `.gitattributes` and a
+   `.upload.lock` naming a dead pid. The next upload takes a lock over when its
+   pid is dead, and the repo is never made public, so nothing half-finished is
+   ever visible as a delivery. That is the limit, stated.
+
+The 5.5 GB payload is a **valid GGUF transfer probe, not a 7B model**: the bank
+has one entry (Qwen3-4B-Instruct-2507), so a 7B artifact is `BANK_MISS` and the
+Space cannot produce the 7B q8_0 output §8 estimates. What transfers is the byte
+class, and the fetch-back proves those bytes landed whole
+(`cards/transfer-probe-5.5gb.md` says this where the visitor can read it). The
+2.8 GB row is the real product artifact, uploaded with the card the self-apply
+run's numbers support.
+
+The `.revert.npz` cap (1 GiB) is covered by the unit tests: a sidecar over the
+cap is skipped and the result names why. No live run carried one because
+`bank-apply` does not emit a revert sidecar; the live rows carry the loop's
+`card.md`, `sidecar.json` and `SHA256SUMS`.
+
+Per-file progress is the bytes the process actually moved (8 MiB reads handed to
+the socket), with a 15-second rate window and `remaining/rate`; one upload runs
+at a time across threads and processes; `REPO_EXISTS` refuses to overwrite a
+previous delivery. `tests/test_space_deliver.py` drives all of that over a local
+HTTP stand-in for the four Hub endpoints.
+
+Regenerate:
+
+    python verification/space/oauth-upload/run_upload.py \
+        --artifact FILE --base-repo OWNER/NAME --quant Q8_0 --label NAME \
+        --card CARD.md --out verification/space/oauth-upload
+    python verification/space/oauth-upload/make_report.py
+
+`run_upload.py` reads the token from `$HF_TOKEN` or the local Hub token file and
+never writes it to the run JSON.

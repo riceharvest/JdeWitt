@@ -1,0 +1,18 @@
+{
+  "artifact": {
+    "bytes": 2798248544,
+    "file": "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+    "sha256": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed"
+  },
+  "claims": {
+    "landed": "re-fetched from the public repo and gguf-inspect clean",
+    "upload": "bytes and seconds measured on this host by the delivery module"
+  },
+  "delivery": {
+    "flag": "JW_OAUTH_PUSH",
+    "held": "the Space held a temporary copy; the repo is the delivery",
+    "repo_name": "jdewitt-qwen3-4b-instruct-2507-q8_0"
+  },
+  "kind": "oauth-upload-verification",
+  "schema": "jdewitt-space-sidecar-v1"
+}

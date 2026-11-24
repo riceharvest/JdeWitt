@@ -9,10 +9,9 @@ one upload at a time, a repo deleted on failure — are all properties of the wi
 """
 import hashlib
 import json
+import os
 import threading
-import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 
 import pytest
 
@@ -27,6 +26,10 @@ class FakeHub:
         self.deleted = []
         self.put_bytes = {}
         self.put_complete = {}
+        self.completed = {}
+        self.part_bytes = {}
+        self.multipart_oids = set()
+        self.chunk_size = 1 << 20
         self.fail_put = None       # (oid, after_bytes) -> drop the connection
         self.requested = []
         self.lock = threading.Lock()
@@ -77,12 +80,32 @@ class FakeHub:
                     repo = self.path[:-len('.git/info/lfs/objects/batch')].lstrip('/')
                     with hub.lock:
                         hub.requested.extend(document['objects'])
-                    objects = [{
-                        'oid': obj['oid'], 'size': obj['size'], 'authenticated': True,
-                        'actions': {'upload': {
-                            'href': f'http://127.0.0.1:{hub.port}/put/{obj["oid"]}',
-                            'header': {'X-Test': '1'}}}} for obj in document['objects']]
+                    objects = []
+                    for obj in document['objects']:
+                        if obj['oid'] in hub.multipart_oids:
+                            parts = -(-obj['size'] // hub.chunk_size)
+                            header = {'chunk_size': str(hub.chunk_size)}
+                            header.update({f'{index:05d}': (
+                                f'http://127.0.0.1:{hub.port}/part/{obj["oid"]}/{index}')
+                                for index in range(1, parts + 1)})
+                            objects.append({
+                                'oid': obj['oid'], 'size': obj['size'], 'authenticated': True,
+                                'actions': {'upload': {
+                                    'href': f'http://127.0.0.1:{hub.port}/complete/{obj["oid"]}',
+                                    'header': header}}})
+                        else:
+                            objects.append({
+                                'oid': obj['oid'], 'size': obj['size'], 'authenticated': True,
+                                'actions': {'upload': {
+                                    'href': f'http://127.0.0.1:{hub.port}/put/{obj["oid"]}',
+                                    'header': {'X-Test': '1'}}}})
                     return self._json(200, {'transfer': 'basic', 'objects': objects})
+                if self.path.startswith('/complete/'):
+                    oid = self.path[len('/complete/'):]
+                    document = json.loads(raw)
+                    with hub.lock:
+                        hub.completed[oid] = document
+                    return self._json(200, {})
                 if self.path.endswith('/commit/main'):
                     repo = self.path[len('/api/models/'):-len('/commit/main')]
                     entries = [json.loads(line) for line in raw.decode().splitlines() if line]
@@ -95,6 +118,22 @@ class FakeHub:
                 return self._json(404, {'error': 'no route'})
 
             def do_PUT(self):
+                if self.path.startswith('/part/'):
+                    _, _, oid, number = self.path.split('/')
+                    length = int(self.headers.get('Content-Length') or 0)
+                    moved = 0
+                    while moved < length:
+                        block = self.rfile.read(min(1 << 20, length - moved))
+                        if not block:
+                            break
+                        moved += len(block)
+                    with hub.lock:
+                        hub.part_bytes[(oid, int(number))] = moved
+                    self.send_response(200)
+                    self.send_header('ETag', f'"part-{number}"')
+                    self.send_header('Content-Length', '0')
+                    self.end_headers()
+                    return
                 if self.path.startswith('/put/'):
                     oid = self.path[len('/put/'):]
                     length = int(self.headers.get('Content-Length') or 0)
@@ -218,12 +257,14 @@ def test_chunked_body_stops_reading_when_cancelled(tmp_path):
     cancel = threading.Event()
     progress = sd.Progress([('big.bin', path.stat().st_size)])
     progress.start_file(0)
-    body = sd._ChunkedBody(path, progress, cancel=cancel)
+    handle = open(path, 'rb')
+    body = sd._ChunkedBody(handle, progress, cancel=cancel)
     body.read(1024)
     cancel.set()
     with pytest.raises(sd.Cancelled):
         body.read(1024)
     body.close()
+    handle.close()
 
 
 def test_deliver_uploads_every_file_commits_and_publishes(hub, tmp_path):
@@ -295,6 +336,44 @@ def test_a_second_upload_is_refused_while_one_runs(hub, tmp_path):
         release.set()
         thread.join(timeout=20)
     assert sd.current_upload() is None
+
+
+def test_a_file_over_the_basic_limit_goes_multipart_with_per_part_bytes(hub, tmp_path):
+    """The Hub refuses one PUT above 5 GB; the multipart path is the 5.5 GB carrier."""
+    files = _files(tmp_path, sizes=(2 * hub.chunk_size + 1234, 10, 10))
+    oid = hashlib.sha256(files['model-Q8_0-banked.gguf'].read_bytes()).hexdigest()
+    hub.multipart_oids.add(oid)
+    events = []
+    result = sd.deliver(files, token='oauth-token', base_repo='a/multipart', quant='Q8_0',
+                        api=hub.api, root=tmp_path, on_progress=events.append)
+    assert result['files'][0]['transfer'] == 'multipart'
+    assert result['files'][0]['done'] == result['files'][0]['total']
+    parts = hub.completed[oid]['parts']
+    assert [part['partNumber'] for part in parts] == [1, 2, 3]
+    assert hub.part_bytes[(oid, 1)] == hub.chunk_size
+    assert hub.part_bytes[(oid, 3)] == 1234
+    assert sum(hub.part_bytes[(oid, n)] for n in (1, 2, 3)) == files[
+        'model-Q8_0-banked.gguf'].stat().st_size
+    assert hub.commit[result['repo_id']]['entries'][1]['value']['oid'] == oid
+
+
+def test_a_lock_left_by_a_dead_process_is_taken_over(hub, tmp_path):
+    """A hard kill leaves the file, not a two-hour outage."""
+    root = tmp_path / 'root'
+    root.mkdir()
+    (root / '.upload.lock').write_text('999999')
+    path = sd._acquire_process_slot(root)
+    assert path.read_text() == str(os.getpid())
+    path.unlink()
+
+
+def test_a_lock_held_by_a_live_process_refuses(hub, tmp_path):
+    root = tmp_path / 'root'
+    root.mkdir()
+    (root / '.upload.lock').write_text(str(os.getpid()))
+    with pytest.raises(sd.DeliveryRefused) as refusal:
+        sd._acquire_process_slot(root)
+    assert refusal.value.code == 'UPLOAD_BUSY'
 
 
 def test_an_existing_repo_is_never_overwritten(hub, tmp_path):

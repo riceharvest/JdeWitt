@@ -354,10 +354,37 @@ measured 3.49 GB, and the download estimate moves to 35-116 s at the same rates,
 window.)
 
 **v1.1: OAuth push**, adopted only if the 4.5 GB direct-download case fails in a live run. It is
-supported: `hf_oauth: true`, `hf_oauth_scopes: [write-repos]`. The app would create
-`jdewitt-<base>-<quant>` under the visitor's account, upload the GGUF + card + digests (+ sidecar
-if under a size cap), and show per-file progress. Conditions: resumable upload, a hard cap on
-concurrent jobs, and the card must say the Space only ever held a temporary copy.
+supported: `hf_oauth: true`, `hf_oauth_scopes: [write-repos]`. The app creates
+`jdewitt-<base>-<quant>` under the visitor's account, uploads the GGUF + card + digests (+ a
+`.revert.npz` sidecar if under a 1 GiB cap), and shows per-file progress. Conditions: a hard cap on
+concurrent uploads, a cancel that leaves no repo, and the card must say the Space only ever held a
+temporary copy. All of that is built behind `JW_OAUTH_PUSH` (`jdewitt/space_deliver.py`,
+`scripts/space_stage.py --oauth-push`), because the live run's direct download did **not** fail:
+it moved 2.5 GB at 437 MB/s. What failed in that run was the edit leg (§11), which no output path
+fixes.
+
+**Measured, 2026-11-24** (`verification/space/oauth-upload.json`; three runs against one real
+personal account through the `hf_oauth` token the live Space issued):
+
+| artifact | bytes | transfer | upload | MB/s | commit wall |
+|---|---:|---|---:|---:|---:|
+| 4B Q8_0 self-apply (real product artifact) | 2,798,248,544 | basic | 25.84 s | 108.3 | 31.4 s |
+| 5.5 GB-class GGUF probe, pre-fix | 5,500,000,704 | multipart | 371.0 s | 14.8 | 379.2 s |
+| 5.5 GB-class GGUF probe, shipped | 5,500,000,704 | multipart | **116.8 s** | **47.1** | 141.6 s |
+
+Three things the card records rather than assumes. The Hub **refuses one basic PUT above 5 GB**
+(HTTP 400, "configure your repository to enable upload of files > 5GB"), so objects over it go out
+as 16 MB multipart parts and the first 5.5 GB attempt deleted its repo when the batch refused.
+Sequential parts on a fresh connection per part ran at 14.8 MB/s and missed the window; one
+keep-alive connection per host is what brought 5.5 GB to 117 s, **183 s inside the 300 s promise**.
+And the 5.5 GB payload is a valid GGUF transfer probe, not a 7B edit: with one 4B entry in the
+bank, a 7B artifact is `BANK_MISS`, so the byte class is what this measures. The container's own
+uplink is not measured — the container leg in `live-run.json` is the download — so the flag may be
+turned on, and the container-side push is the next number to take. It stays **off by default**
+(`JW_OAUTH_PUSH` unset, and `scripts/space_stage.py` writes the scope lines only with
+`--oauth-push`): the download serves an anonymous visitor, and asking for `write-repos` is a
+promise the Space should make only where it is going to use it.
+
 
 **What the visitor sees during the upload/download:** a stage line, bytes moved and total, a rate
 and a remaining-time estimate computed from the bytes actually moved (never a constant), and the
@@ -449,9 +476,10 @@ it may write a file.
 
 ### Phase 4 — delivery and coverage widen
 
-OAuth `write-repos` push if direct download fails at 4.5 GB; a second bank family only after the
-transfer gate passes on the first one; every new entry carries its own measured row or ships as
-`banked_unmeasured`.
+OAuth `write-repos` push if direct download fails at 4.5 GB — **built and measured**
+(`space_deliver.py`, `verification/space/oauth-upload.json`: 5.5 GB in 117 s, flag off by default);
+a second bank family only after the transfer gate passes on the first one; every new entry carries
+its own measured row or ships as `banked_unmeasured`.
 
 ## 11. What would prove this roadmap wrong
 
@@ -474,6 +502,11 @@ transfer gate passes on the first one; every new entry carries its own measured 
   request window.** Then "one click, five minutes" is false for every model above ~1.5 GB, and the
   honest product is a button that produces a *reproducible command* the visitor runs themselves,
   not a file. That would be a different roadmap.
+  **Half measured, half not.** The push carries 5.5 GB in 117 s from the harness host
+  (`verification/space/oauth-upload.json`), which fits the five-minute promise with 183 s to spare,
+  and the direct download moved 2.5 GB at 437 MB/s in the live Space. Neither of those is a
+  *container-side* push: that number is not taken yet. The clause that is measured false is the
+  edit (§11, first bullet above), not the transfer.
 - **The quota is 300 s/day per account.** A visitor cannot iterate: one attempt, then tomorrow.
   Any UI that implies retry-until-it-works is lying.
 

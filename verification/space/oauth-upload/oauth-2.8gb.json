@@ -1,0 +1,282 @@
+{
+  "account": {
+    "auth": "oauth",
+    "expires_at": "2026-12-18T15:51:57.000Z",
+    "name": "darioooooo0o"
+  },
+  "delivery": {
+    "account": {
+      "auth": "oauth",
+      "expires_at": "2026-12-18T15:51:57.000Z",
+      "name": "darioooooo0o",
+      "type": "user"
+    },
+    "bytes": 2798250958,
+    "bytes_per_second": 89589290.2,
+    "commit_sha": "170c0eed7c20bff443876da48642380f74e4c40f",
+    "commit_url": "https://huggingface.co/darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0/commit/170c0eed7c20bff443876da48642380f74e4c40f",
+    "files": [
+      {
+        "bytes_per_second": 108296606.8,
+        "done": 2798248544,
+        "name": "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+        "seconds": 25.839,
+        "state": "done",
+        "total": 2798248544,
+        "transfer": "basic"
+      },
+      {
+        "bytes_per_second": 5116.6,
+        "done": 1527,
+        "name": "card.md",
+        "seconds": 0.298,
+        "state": "done",
+        "total": 1527,
+        "transfer": "basic"
+      },
+      {
+        "bytes_per_second": 2348.7,
+        "done": 620,
+        "name": "sidecar.json",
+        "seconds": 0.264,
+        "state": "done",
+        "total": 620,
+        "transfer": "basic"
+      },
+      {
+        "bytes_per_second": 907.7,
+        "done": 267,
+        "name": "SHA256SUMS",
+        "seconds": 0.294,
+        "state": "done",
+        "total": 267,
+        "transfer": "basic"
+      }
+    ],
+    "flag": "JW_OAUTH_PUSH",
+    "repo_id": "darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0",
+    "repo_url": "https://huggingface.co/darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0",
+    "schema": "jdewitt-space-delivery-v1",
+    "sha256": {
+      "SHA256SUMS": "05db78311d00ab73b660f27858a2dba0dbb71a9c28155edb152dac258131a9ce",
+      "card.md": "a716b9ed5660c60af4370b4b5d966f064855d78ee0826d4fee797af22d3009dc",
+      "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed",
+      "sidecar.json": "ff998d5c4477363bc17986fac29bc35b72bb430524d61aca78eeb7cfaf28092a"
+    },
+    "skipped": [],
+    "upload_seconds": 26.695,
+    "visibility": "public",
+    "visibility_error": null,
+    "wall_seconds": 31.234
+  },
+  "fetched_back": {
+    "bytes": 2798248544,
+    "bytes_per_second": 98880798.1,
+    "declared_bytes": 2798248544,
+    "matches_local_bytes": true,
+    "matches_local_sha256": true,
+    "samples": [
+      [
+        0.45,
+        8388608
+      ],
+      [
+        1.07,
+        75497472
+      ],
+      [
+        1.79,
+        142606336
+      ],
+      [
+        2.41,
+        209715200
+      ],
+      [
+        3.14,
+        276824064
+      ],
+      [
+        3.79,
+        343932928
+      ],
+      [
+        4.46,
+        411041792
+      ],
+      [
+        5.09,
+        478150656
+      ],
+      [
+        5.83,
+        545259520
+      ],
+      [
+        6.44,
+        612368384
+      ],
+      [
+        7.17,
+        679477248
+      ],
+      [
+        7.78,
+        746586112
+      ],
+      [
+        8.45,
+        813694976
+      ],
+      [
+        9.32,
+        880803840
+      ],
+      [
+        9.79,
+        947912704
+      ],
+      [
+        10.54,
+        1015021568
+      ],
+      [
+        11.2,
+        1082130432
+      ],
+      [
+        11.87,
+        1149239296
+      ],
+      [
+        12.58,
+        1216348160
+      ],
+      [
+        13.21,
+        1283457024
+      ],
+      [
+        13.99,
+        1350565888
+      ],
+      [
+        14.53,
+        1417674752
+      ],
+      [
+        15.16,
+        1484783616
+      ],
+      [
+        15.9,
+        1551892480
+      ],
+      [
+        16.5,
+        1619001344
+      ],
+      [
+        17.17,
+        1686110208
+      ],
+      [
+        17.85,
+        1753219072
+      ],
+      [
+        18.52,
+        1820327936
+      ],
+      [
+        19.26,
+        1887436800
+      ],
+      [
+        19.86,
+        1954545664
+      ],
+      [
+        20.85,
+        2021654528
+      ],
+      [
+        21.24,
+        2088763392
+      ],
+      [
+        21.87,
+        2155872256
+      ],
+      [
+        22.59,
+        2222981120
+      ],
+      [
+        23.27,
+        2290089984
+      ],
+      [
+        23.88,
+        2357198848
+      ],
+      [
+        24.65,
+        2424307712
+      ],
+      [
+        25.44,
+        2491416576
+      ],
+      [
+        25.9,
+        2558525440
+      ],
+      [
+        26.61,
+        2625634304
+      ],
+      [
+        27.24,
+        2692743168
+      ],
+      [
+        27.96,
+        2759852032
+      ]
+    ],
+    "sha256": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed",
+    "url": "https://huggingface.co/darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0/resolve/main/qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+    "wall_seconds": 28.299
+  },
+  "flag": {
+    "name": "JW_OAUTH_PUSH",
+    "value": true
+  },
+  "gguf_inspect": {
+    "architecture": "qwen3",
+    "data_bytes": 2792287744,
+    "exit_code": 0,
+    "file": "/home/dario/oauth-runs/oauth-2.8gb-fetched.gguf",
+    "matches_local_sha256": true,
+    "name": "Qwen3-4B-Instruct-2507",
+    "ok": true,
+    "size_bytes": 2798248544,
+    "tensor_count": 398
+  },
+  "is_a_space_run": false,
+  "label": "oauth-2.8gb",
+  "landed_whole": true,
+  "local_artifact": {
+    "bytes": 2798248544,
+    "file": "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+    "path": "/mnt/ssd/models/qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+    "sha256": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed"
+  },
+  "progress_file": "/home/dario/oauth-runs/oauth-2.8gb-progress.jsonl",
+  "progress_samples": 55,
+  "schema": "jdewitt-space-oauth-upload-run-v1",
+  "started_at": "2026-11-24T17:18:54Z",
+  "upload_wall_seconds_including_create_commit": 31.374,
+  "where": "this host; the token is the one the live Space issued through hf_oauth (auth type oauth, write-repos)"
+}

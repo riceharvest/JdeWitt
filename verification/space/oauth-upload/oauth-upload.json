@@ -1,0 +1,218 @@
+{
+  "account": {
+    "auth": "oauth",
+    "expires_at": "2026-12-18T15:51:57.000Z",
+    "name": "darioooooo0o"
+  },
+  "card": "13 (\u00a78, v1.1)",
+  "flag": {
+    "default": "off",
+    "enable_when": "the visitor needs a repo, not a temporary download link",
+    "name": "JW_OAUTH_PUSH",
+    "set_by": "a Space variable; the README only declares the OAuth scope"
+  },
+  "generated_at": "2026-11-24T17:18:54Z",
+  "is_a_space_run": false,
+  "notes": [
+    "The Hub refuses a single basic LFS PUT above 5 GB (HTTP 400: \"configure your repository to enable upload of files > 5GB\"); the first 5.5 GB attempt hit this and deleted its repo. The delivery now advertises basic + multipart and sends 16 MB parts over one keep-alive connection.",
+    "The 5.5 GB payload is a valid GGUF transfer probe, not a 7B model: the bank has one 4B entry, so a 7B artifact is BANK_MISS and the Space cannot produce the 7B q8_0 output the \u00a78 table estimates. The byte class is what transfers."
+  ],
+  "runs": [
+    {
+      "artifact": {
+        "bytes": 2798248544,
+        "file": "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+        "sha256": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed",
+        "transfer": "basic"
+      },
+      "commit_sha": "170c0eed7c20bff443876da48642380f74e4c40f",
+      "commit_wall_seconds": 31.374,
+      "fetch_back": {
+        "bytes": 2798248544,
+        "bytes_per_second": 98880798.1,
+        "matches_local_sha256": true,
+        "megabytes_per_second": 98.88,
+        "sha256": "bdeca8be7fa2f9c28bd952737ed2dfc65190954927543fad9f0165b8b32fc5ed"
+      },
+      "files_uploaded": [
+        {
+          "bytes": 2798248544,
+          "name": "qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+          "seconds": 25.839,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 1527,
+          "name": "card.md",
+          "seconds": 0.298,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 620,
+          "name": "sidecar.json",
+          "seconds": 0.264,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 267,
+          "name": "SHA256SUMS",
+          "seconds": 0.294,
+          "transfer": "basic"
+        }
+      ],
+      "gguf_inspect": {
+        "architecture": "qwen3",
+        "ok": true,
+        "size_bytes": 2798248544,
+        "tensor_count": 398
+      },
+      "label": "oauth-2.8gb",
+      "landed_whole": true,
+      "progress_samples": 55,
+      "repo_id": "darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0",
+      "repo_url": "https://huggingface.co/darioooooo0o/jdewitt-qwen3-4b-instruct-2507-q8_0",
+      "skipped": [],
+      "source": "oauth-2.8gb.json",
+      "started_at": "2026-11-24T17:18:54Z",
+      "upload_bytes_per_second": 108296606.8,
+      "upload_megabytes_per_second": 108.3,
+      "upload_seconds": 25.839,
+      "visibility": "public"
+    },
+    {
+      "artifact": {
+        "bytes": 5500000704,
+        "file": "probe-5.5gb.gguf",
+        "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30",
+        "transfer": "multipart"
+      },
+      "commit_sha": "05ace3a0abd8eb697e243762577d1d528830166f",
+      "commit_wall_seconds": 141.621,
+      "fetch_back": {
+        "bytes": 5500000704,
+        "bytes_per_second": 75009885.3,
+        "matches_local_sha256": true,
+        "megabytes_per_second": 75.01,
+        "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30"
+      },
+      "files_uploaded": [
+        {
+          "bytes": 5500000704,
+          "name": "probe-5.5gb.gguf",
+          "seconds": 116.812,
+          "transfer": "multipart"
+        },
+        {
+          "bytes": 1076,
+          "name": "card.md",
+          "seconds": 0.305,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 592,
+          "name": "sidecar.json",
+          "seconds": 0.285,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 236,
+          "name": "SHA256SUMS",
+          "seconds": 0.343,
+          "transfer": "basic"
+        }
+      ],
+      "gguf_inspect": {
+        "architecture": "jdewittprobe",
+        "ok": true,
+        "size_bytes": 5500000704,
+        "tensor_count": 11
+      },
+      "label": "oauth-5.5gb-keepalive",
+      "landed_whole": true,
+      "progress_samples": 188,
+      "repo_id": "darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive",
+      "repo_url": "https://huggingface.co/darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive",
+      "skipped": [],
+      "source": "oauth-5.5gb-keepalive.json",
+      "started_at": "2026-11-24T17:07:58Z",
+      "upload_bytes_per_second": 47084086.6,
+      "upload_megabytes_per_second": 47.08,
+      "upload_seconds": 116.812,
+      "visibility": "public"
+    },
+    {
+      "artifact": {
+        "bytes": 5500000704,
+        "file": "probe-5.5gb.gguf",
+        "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30",
+        "transfer": "multipart"
+      },
+      "commit_sha": "f0157559058024453c51d69392eded9a71b50438",
+      "commit_wall_seconds": 379.171,
+      "fetch_back": {
+        "bytes": 5500000704,
+        "bytes_per_second": 89740671.5,
+        "matches_local_sha256": true,
+        "megabytes_per_second": 89.74,
+        "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30"
+      },
+      "files_uploaded": [
+        {
+          "bytes": 5500000704,
+          "name": "probe-5.5gb.gguf",
+          "seconds": 370.974,
+          "transfer": "multipart"
+        },
+        {
+          "bytes": 1076,
+          "name": "card.md",
+          "seconds": 0.482,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 582,
+          "name": "sidecar.json",
+          "seconds": 0.503,
+          "transfer": "basic"
+        },
+        {
+          "bytes": 236,
+          "name": "SHA256SUMS",
+          "seconds": 0.489,
+          "transfer": "basic"
+        }
+      ],
+      "gguf_inspect": {
+        "architecture": "jdewittprobe",
+        "ok": true,
+        "size_bytes": 5500000704,
+        "tensor_count": 11
+      },
+      "label": "oauth-5.5gb",
+      "landed_whole": true,
+      "progress_samples": 675,
+      "repo_id": "darioooooo0o/jdewitt-transfer-probe-5.5gb",
+      "repo_url": "https://huggingface.co/darioooooo0o/jdewitt-transfer-probe-5.5gb",
+      "skipped": [],
+      "source": "oauth-5.5gb.json",
+      "started_at": "2026-11-24T17:00:12Z",
+      "upload_bytes_per_second": 14825834.2,
+      "upload_megabytes_per_second": 14.83,
+      "upload_seconds": 370.974,
+      "visibility": "public"
+    }
+  ],
+  "schema": "jdewitt-space-oauth-upload-v1",
+  "where": "this host; the token is the one the live Space issued through hf_oauth (auth type oauth, write-repos)",
+  "window": {
+    "artifact_bytes": 5500000704,
+    "caveat": "measured from this host over its own uplink, not from inside the Space container; the container leg that was measured is the download (437 MB/s in verification/space/live-run.json)",
+    "fits": true,
+    "headroom_seconds": 183.2,
+    "label": "oauth-5.5gb-keepalive",
+    "megabytes_per_second": 47.08,
+    "promise_seconds": 300,
+    "upload_seconds": 116.812,
+    "verdict": "the flag can be on: the 5.5 GB push fits the five-minute window with the headroom above; the window still fails on the edit leg, which is a separate measured row (live-run.json)"
+  }
+}

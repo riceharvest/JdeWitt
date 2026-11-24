@@ -349,8 +349,11 @@ def test_the_app_builds_under_the_pinned_gradio():
     update, verdict, _licence = module.refresh('not a repo')
     assert update['__type__'] == 'update'
     assert verdict.startswith('`INPUT_ERROR`:')
-    assert module.start('owner/name', '') == (
-        'Choose a .gguf file from the list first.', None, None, 'Nothing ran.')
+    first = next(module.start('owner/name', ''))
+    assert first == ('Choose a .gguf file from the list first.', None, None,
+                     'Nothing ran.', '')
+    # The flag is off in the test environment: the v1 page is the page.
+    assert module.PUSH is False
 
 
 def test_the_app_and_the_loop_carry_no_banned_promise():

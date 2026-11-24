@@ -31,12 +31,14 @@ carries the verdict.
 import the tree cannot supply.
 """
 import hashlib
+import http.client
 import json
 import os
 import re
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -53,6 +55,11 @@ EMIT_EVERY_SECONDS = 0.5
 LOCK_STALE_SECONDS = 2 * 60 * 60
 SIDECAR_SUFFIXES = ('.revert.npz',)
 SUMS_NAME = 'SHA256SUMS'
+# The Hub refuses one basic PUT above 5 GB ("configure your repository to enable
+# upload of files > 5GB"). Below it the basic transfer is also the faster one --
+# 110 MB/s against 47 MB/s for 16 MB parts measured on the 4B artifact -- so the
+# batch advertises multipart only where the size demands it.
+BASIC_MAX_BYTES = 5_000_000_000
 
 
 class DeliveryRefused(RuntimeError):
@@ -231,19 +238,39 @@ def cancel_current():
     return repo
 
 
+def _alive(pid):
+    try:
+        os.kill(int(pid), 0)
+    except (OSError, ValueError):
+        return False
+    return True
+
+
 def _acquire_process_slot(root):
-    """Cross-process cap of one upload, with the same stale-lock rule as a job."""
+    """Cross-process cap of one upload; a lock whose owner died is not a lock.
+
+    The pid is written into the file: a Space restart or a hard kill leaves the
+    file behind, and waiting two hours for a dead process would be a worse bug
+    than the one the lock prevents. A live pid inside the age window is a real
+    upload and the caller is refused.
+    """
     path = Path(root) / '.upload.lock'
     path.parent.mkdir(parents=True, exist_ok=True)
-    for _attempt in (0, 1):
+    for _attempt in (0, 3):
         try:
             fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
         except FileExistsError:
             try:
                 age = time.time() - path.stat().st_mtime
+                holder = path.read_text().strip()
             except FileNotFoundError:
                 continue
-            if age <= LOCK_STALE_SECONDS:
+            except OSError:
+                holder, age = '', 0.0
+            if holder and not _alive(holder):
+                path.unlink(missing_ok=True)  # the owner is gone; take it over
+                continue
+            if age <= LOCK_STALE_SECONDS and holder:
                 raise DeliveryRefused(
                     'UPLOAD_BUSY',
                     'another upload is running; this Space serves one upload at a time')
@@ -273,10 +300,12 @@ def _read_body(response, limit=1 << 20):
 def _call(method, url, *, token, body=None, raw=None, headers=None, timeout=120,
           expect=(200,)):
     """One call; a status outside `expect` raises `DeliveryRefused` with the Hub's text."""
+    head = dict(headers or {})
     if body is not None:
         raw = json.dumps(body).encode()
+        head.setdefault('Content-Type', 'application/json')
     request = urllib.request.Request(url, data=raw, method=method,
-                                     headers=_headers(token, headers))
+                                     headers=_headers(token, head))
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             text = _read_body(response)
@@ -333,11 +362,15 @@ class _ChunkedBody:
 
     `http.client` calls `read(n)` until it returns empty, so raising here aborts the
     request before the remaining bytes leave the process — that is the cancel path.
+    `limit` bounds one part of a multipart upload; the handle is shared and the
+    caller seeks it into place first.
     """
 
-    def __init__(self, path, progress, chunk=CHUNK_BYTES, cancel=None, on_emit=None):
-        self._handle = open(path, 'rb')
+    def __init__(self, handle, progress, *, limit=None, chunk=CHUNK_BYTES,
+                 cancel=None, on_emit=None):
+        self._handle = handle
         self._progress = progress
+        self._limit = limit
         self._chunk = chunk
         self._cancel = cancel
         self._emit = on_emit
@@ -347,20 +380,94 @@ class _ChunkedBody:
             raise Cancelled()
         if size is None or size < 0:
             size = self._chunk
+        if self._limit is not None:
+            if self._limit <= 0:
+                return b''
+            size = min(size, self._limit)
         block = self._handle.read(size)
         if block:
+            if self._limit is not None:
+                self._limit -= len(block)
             self._progress.advance(len(block))
             if self._emit is not None and self._progress.due():
                 self._emit(self._progress.snapshot())
         return block
 
     def close(self):
-        self._handle.close()
+        pass  # the caller owns the handle: parts share it
 
 
-def _put_file(url, path, *, headers, size, progress, cancel=None, on_emit=None, timeout=300):
-    """PUT the file to the batch's signed URL, counting what is actually sent."""
-    body = _ChunkedBody(path, progress, cancel=cancel, on_emit=on_emit)
+class _Pool:
+    """Keep-alive connections to the upload hosts, one per host, closed after use.
+
+    A multipart upload is hundreds of PUTs to the same S3 host. Opening a TLS
+    connection per part costs a handshake each time and measured 14.6 MB/s on the
+    5.5 GB class against 110 MB/s for the single-PUT path; reusing the connection
+    closed that gap without touching the progress accounting (the body reader is
+    the same `_ChunkedBody`).
+    """
+
+    def __init__(self, timeout):
+        self._timeout = timeout
+        self._connections = {}
+
+    def _connection(self, scheme, host, port):
+        key = (scheme, host, port)
+        connection = self._connections.get(key)
+        if connection is None:
+            factory = (http.client.HTTPSConnection if scheme == 'https'
+                       else http.client.HTTPConnection)
+            connection = factory(host, port, timeout=self._timeout)
+            self._connections[key] = connection
+        return connection
+
+    def put(self, url, body, *, headers, size):
+        """PUT with Content-Length, streaming `body`; returns (status, etag)."""
+        parsed = urllib.parse.urlsplit(url)
+        connection = self._connection(parsed.scheme, parsed.hostname, parsed.port)
+        target = parsed.path + (('?' + parsed.query) if parsed.query else '')
+        try:
+            connection.putrequest('PUT', target, skip_accept_encoding=True)
+            connection.putheader('Content-Length', str(size))
+            connection.putheader('Content-Type', 'application/octet-stream')
+            for key, value in headers.items():
+                connection.putheader(key, value)
+            connection.endheaders()
+            while True:
+                block = body.read(CHUNK_BYTES)
+                if not block:
+                    break
+                connection.send(block)
+            response = connection.getresponse()
+            etag = response.getheader('etag')
+            response.read()
+            if response.status not in (200, 201, 204):
+                raise DeliveryRefused('UPLOAD_HTTP',
+                                      f'PUT {parsed.path} -> {response.status}')
+            if response.will_close:
+                self.drop(url)
+            return etag
+        except (http.client.HTTPException, OSError) as error:
+            self.drop(url)
+            raise DeliveryRefused('UPLOAD_HTTP',
+                                  f'PUT {parsed.path} failed: {error}') from None
+
+    def drop(self, url):
+        parsed = urllib.parse.urlsplit(url)
+        connection = self._connections.pop((parsed.scheme, parsed.hostname, parsed.port), None)
+        if connection is not None:
+            connection.close()
+
+    def close(self):
+        for connection in self._connections.values():
+            connection.close()
+        self._connections.clear()
+
+
+def _put_stream(url, body, *, headers, size, timeout=300, pool=None):
+    """PUT a body built by `_ChunkedBody`; returns the etag S3 answered with."""
+    if pool is not None:
+        return pool.put(url, body, headers=headers, size=size)
     request = urllib.request.Request(
         url, method='PUT', data=body,
         headers={**headers, 'Content-Length': str(size),
@@ -371,22 +478,71 @@ def _put_file(url, path, *, headers, size, progress, cancel=None, on_emit=None, 
             if response.status not in (200, 201, 204):
                 raise DeliveryRefused('UPLOAD_HTTP',
                                       f'PUT {url.split("?")[0]} -> {response.status}')
+            return response.headers.get('etag')
     except urllib.error.HTTPError as error:
         raise DeliveryRefused(
             'UPLOAD_HTTP', f'PUT -> {error.code}: {_read_body(error)[:300]}') from None
     except (urllib.error.URLError, OSError) as error:
         raise DeliveryRefused('UPLOAD_HTTP',
                               f'PUT {url.split("?")[0]} failed: {error}') from None
-    finally:
-        body.close()
+
+
+def _put_file(url, path, *, headers, size, progress, cancel=None, on_emit=None,
+              timeout=300, pool=None):
+    """PUT the whole file to the batch's signed URL, counting what is actually sent."""
+    with open(path, 'rb') as handle:
+        body = _ChunkedBody(handle, progress, cancel=cancel, on_emit=on_emit)
+        return _put_stream(url, body, headers=headers, size=size, timeout=timeout,
+                           pool=pool)
+
+
+def _put_parts(path, header, progress, *, cancel=None, on_emit=None, timeout=300,
+               pool=None):
+    """The Hub's multipart LFS protocol, for a single object over 5 GB.
+
+    The batch answers `chunk_size` and one signed URL per part; each part is a PUT
+    of that slice and the completion POST carries their etags. Files above 5 GB are
+    refused by the basic transfer, so this is the only path that carries the 5.5 GB
+    class. Bytes, rate, ETA and cancel are the same `Progress` and `_ChunkedBody`
+    the single PUT uses — the page cannot tell which protocol ran.
+    """
+    chunk = int(header['chunk_size'])
+    parts = sorted((int(key, 10), url) for key, url in header.items() if key.isdigit())
+    expected = -(-Path(path).stat().st_size // chunk)
+    if len(parts) != expected:
+        raise DeliveryRefused('UPLOAD_LFS',
+                              f'the batch named {len(parts)} parts for a file that needs '
+                              f'{expected} at {chunk} bytes each')
+    etags = []
+    with open(path, 'rb') as handle:
+        for part_number, url in parts:
+            if cancel is not None and cancel.is_set():
+                raise Cancelled()
+            offset = (part_number - 1) * chunk
+            length = min(chunk, Path(path).stat().st_size - offset)
+            handle.seek(offset)
+            body = _ChunkedBody(handle, progress, limit=length, cancel=cancel,
+                                on_emit=on_emit)
+            etag = _put_stream(url, body, headers={}, size=length, timeout=timeout,
+                               pool=pool)
+            if not etag:
+                raise DeliveryRefused('UPLOAD_LFS',
+                                      f'part {part_number} answered without an etag')
+            etags.append({'partNumber': part_number, 'etag': etag})
+    return etags
 
 
 def _lfs_upload(path, *, repo_id, token, digest, api=API, progress=None, cancel=None,
-                on_emit=None):
-    """git-lfs batch -> signed PUT -> the object's oid. Returns (oid, size)."""
+                on_emit=None, pool=None):
+    """git-lfs batch -> signed PUT(s) -> the object's oid. Returns (oid, size, mode).
+
+    `transfers` names both protocols the Hub speaks: `basic` for one PUT and
+    `multipart` for the objects over 5 GB the Hub refuses to take in one request.
+    """
     size = Path(path).stat().st_size
-    batch = {'operation': 'upload', 'transfers': ['basic'], 'hash_algo': 'sha256',
-             'objects': [{'oid': digest, 'size': size}]}
+    transfers = ['basic'] if size <= BASIC_MAX_BYTES else ['basic', 'multipart']
+    batch = {'operation': 'upload', 'transfers': transfers,
+             'hash_algo': 'sha256', 'objects': [{'oid': digest, 'size': size}]}
     document = _json_call(
         'POST', f'{api}/{repo_id}.git/info/lfs/objects/batch', token=token, body=batch,
         headers={'Accept': 'application/vnd.git-lfs+json',
@@ -397,11 +553,19 @@ def _lfs_upload(path, *, repo_id, token, digest, api=API, progress=None, cancel=
                               f'the batch response for {Path(path).name} named no object')
     actions = objects[0].get('actions') or {}
     if 'upload' not in actions:  # already at the destination: dedup, zero bytes moved
-        return digest, size
+        return digest, size, 'dedup'
     upload = actions['upload']
-    _put_file(upload['href'], path, headers=upload.get('header') or {}, size=size,
-              progress=progress, cancel=cancel, on_emit=on_emit)
-    return digest, size
+    header = upload.get('header') or {}
+    if str(header.get('chunk_size', '')).isdigit() and any(key.isdigit() for key in header):
+        etags = _put_parts(path, header, progress, cancel=cancel, on_emit=on_emit,
+                           pool=pool)
+        _json_call('POST', upload['href'], token=token,
+                   body={'oid': digest, 'parts': etags},
+                   headers={'Accept': 'application/vnd.git-lfs+json'}, expect=(200, 201))
+        return digest, size, 'multipart'
+    _put_file(upload['href'], path, headers=header, size=size,
+              progress=progress, cancel=cancel, on_emit=on_emit, pool=pool)
+    return digest, size, 'basic'
 
 
 # --------------------------------------------------------------- the file set
@@ -498,12 +662,19 @@ def deliver(files, *, token, base_repo, quant=None, cancel=None,
                               'another upload is running; this Space serves one upload at a time')
     lock_path = None
     sums_path = None
+    pool = _Pool(timeout)
     created = False
     committed = False
     progress = None
     try:
         # Hash and build SHA256SUMS before the repo exists, so the repo's lifetime
         # is the upload's lifetime and nothing about digests can fail afterwards.
+        for stale in Path(root).glob('.SHA256SUMS.*.tmp'):
+            try:
+                if time.time() - stale.stat().st_mtime > LOCK_STALE_SECONDS:
+                    stale.unlink(missing_ok=True)
+            except OSError:
+                pass
         digests = {name: _digest(path) for name, path, _size in uploaded}
         sums_text = ''.join(f'{digests[name]}  {name}\n' for name, _path, _size in uploaded)
         sums_bytes = sums_text.encode()
@@ -530,9 +701,12 @@ def deliver(files, *, token, base_repo, quant=None, cancel=None,
             if on_progress is not None:
                 on_progress(progress.snapshot())
             file_started = time.monotonic()
-            _lfs_upload(path, repo_id=repo_id, token=token, digest=digests[file_name],
-                        api=api, progress=progress, cancel=cancel, on_emit=on_progress)
+            _oid, _size, transfer = _lfs_upload(
+                path, repo_id=repo_id, token=token, digest=digests[file_name],
+                api=api, progress=progress, cancel=cancel, on_emit=on_progress,
+                pool=pool)
             progress.finish_file(index, time.monotonic() - file_started)
+            progress.files[index]['transfer'] = transfer
             if on_progress is not None:
                 on_progress(progress.snapshot())
 
@@ -557,6 +731,7 @@ def deliver(files, *, token, base_repo, quant=None, cancel=None,
             Path(lock_path).unlink(missing_ok=True)
         if sums_path is not None:
             Path(sums_path).unlink(missing_ok=True)
+        pool.close()
 
     visibility_error = None
     if public:

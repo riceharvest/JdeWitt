@@ -40,7 +40,11 @@ INTRO = (
     'The label on the result is generated from the bank entry\'s measurement state. '
     '`measured_artifact_class` means your exact repo@revision and quant were measured; '
     '`banked_unmeasured` means the direction was fitted elsewhere and only codec '
-    'fidelity is claimed; `refused` names why nothing was edited.'
+    'fidelity is claimed; `refused` names why nothing was edited.\n\n'
+    'The direct download below is the delivery. When this deployment has the publish '
+    'flag on, an optional sign-in lets the app put the same files in a repository in '
+    'your own Hub account and show you every byte of the upload; the Space keeps only '
+    'a temporary copy either way.'
 )
 
 NO_CAVEAT_YET = (
@@ -154,7 +158,7 @@ def _deliver(files, repo, quant, token, cancel, on_progress):
                                  cancel=cancel, on_progress=on_progress)
 
 
-def start(repo, filename, publish, oauth_token: gr.OAuthToken | None = None):
+def start(repo, filename, publish=False, oauth_token: gr.OAuthToken | None = None):
     """One job: the loop runs, the caveat and the delivered files come back.
 
     A generator, because an upload has to show the bytes it moved: each snapshot

@@ -1,0 +1,18 @@
+{
+  "artifact": {
+    "bytes": 5500000704,
+    "file": "probe-5.5gb.gguf",
+    "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30"
+  },
+  "claims": {
+    "landed": "re-fetched from the public repo and gguf-inspect clean",
+    "upload": "bytes and seconds measured on this host by the delivery module"
+  },
+  "delivery": {
+    "flag": "JW_OAUTH_PUSH",
+    "held": "the Space held a temporary copy; the repo is the delivery",
+    "repo_name": "jdewitt-transfer-probe-5.5gb-keepalive"
+  },
+  "kind": "oauth-upload-verification",
+  "schema": "jdewitt-space-sidecar-v1"
+}

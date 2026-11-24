@@ -1,0 +1,278 @@
+{
+  "account": {
+    "auth": "oauth",
+    "expires_at": "2026-12-18T15:51:57.000Z",
+    "name": "darioooooo0o"
+  },
+  "delivery": {
+    "account": {
+      "auth": "oauth",
+      "expires_at": "2026-12-18T15:51:57.000Z",
+      "name": "darioooooo0o",
+      "type": "user"
+    },
+    "bytes": 5500002608,
+    "bytes_per_second": 38901765.6,
+    "commit_sha": "05ace3a0abd8eb697e243762577d1d528830166f",
+    "commit_url": "https://huggingface.co/darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive/commit/05ace3a0abd8eb697e243762577d1d528830166f",
+    "files": [
+      {
+        "bytes_per_second": 47084086.6,
+        "done": 5500000704,
+        "name": "probe-5.5gb.gguf",
+        "seconds": 116.812,
+        "state": "done",
+        "total": 5500000704,
+        "transfer": "multipart"
+      },
+      {
+        "bytes_per_second": 3532.1,
+        "done": 1076,
+        "name": "card.md",
+        "seconds": 0.305,
+        "state": "done",
+        "total": 1076,
+        "transfer": "basic"
+      },
+      {
+        "bytes_per_second": 2079.7,
+        "done": 592,
+        "name": "sidecar.json",
+        "seconds": 0.285,
+        "state": "done",
+        "total": 592,
+        "transfer": "basic"
+      },
+      {
+        "bytes_per_second": 688.4,
+        "done": 236,
+        "name": "SHA256SUMS",
+        "seconds": 0.343,
+        "state": "done",
+        "total": 236,
+        "transfer": "basic"
+      }
+    ],
+    "flag": "JW_OAUTH_PUSH",
+    "repo_id": "darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive",
+    "repo_url": "https://huggingface.co/darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive",
+    "schema": "jdewitt-space-delivery-v1",
+    "sha256": {
+      "SHA256SUMS": "0ffc7bf118bdd3e8c7035e55cf81fc1b1cd5a0634bd1e28fef532c83321b75c2",
+      "card.md": "c97859cfeea21e16f65e50cc4af5f0abf952c74dc6243b8d977ec9487a3423ea",
+      "probe-5.5gb.gguf": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30",
+      "sidecar.json": "8450d295a363207b41035bf309f0e4a7ea489dc3dddb0159e54ee710f54fec7f"
+    },
+    "skipped": [],
+    "upload_seconds": 117.745,
+    "visibility": "public",
+    "visibility_error": null,
+    "wall_seconds": 141.382
+  },
+  "fetched_back": {
+    "bytes": 5500000704,
+    "bytes_per_second": 75009885.3,
+    "declared_bytes": 5500000704,
+    "matches_local_bytes": true,
+    "matches_local_sha256": true,
+    "samples": [
+      [
+        0.55,
+        8388608
+      ],
+      [
+        2.1,
+        142606336
+      ],
+      [
+        3.75,
+        276824064
+      ],
+      [
+        5.38,
+        411041792
+      ],
+      [
+        7.2,
+        545259520
+      ],
+      [
+        8.88,
+        679477248
+      ],
+      [
+        10.58,
+        813694976
+      ],
+      [
+        12.39,
+        947912704
+      ],
+      [
+        14.09,
+        1082130432
+      ],
+      [
+        15.83,
+        1216348160
+      ],
+      [
+        17.47,
+        1350565888
+      ],
+      [
+        19.14,
+        1484783616
+      ],
+      [
+        21.08,
+        1619001344
+      ],
+      [
+        23.33,
+        1753219072
+      ],
+      [
+        25.14,
+        1887436800
+      ],
+      [
+        26.84,
+        2021654528
+      ],
+      [
+        28.56,
+        2155872256
+      ],
+      [
+        30.28,
+        2290089984
+      ],
+      [
+        31.83,
+        2424307712
+      ],
+      [
+        33.8,
+        2558525440
+      ],
+      [
+        35.52,
+        2692743168
+      ],
+      [
+        37.39,
+        2826960896
+      ],
+      [
+        39.26,
+        2961178624
+      ],
+      [
+        40.96,
+        3095396352
+      ],
+      [
+        42.86,
+        3229614080
+      ],
+      [
+        44.75,
+        3363831808
+      ],
+      [
+        46.78,
+        3498049536
+      ],
+      [
+        48.34,
+        3632267264
+      ],
+      [
+        50.17,
+        3766484992
+      ],
+      [
+        51.88,
+        3900702720
+      ],
+      [
+        53.72,
+        4034920448
+      ],
+      [
+        55.42,
+        4169138176
+      ],
+      [
+        57.15,
+        4303355904
+      ],
+      [
+        59.14,
+        4437573632
+      ],
+      [
+        60.92,
+        4571791360
+      ],
+      [
+        62.8,
+        4706009088
+      ],
+      [
+        64.58,
+        4840226816
+      ],
+      [
+        66.45,
+        4974444544
+      ],
+      [
+        68.21,
+        5108662272
+      ],
+      [
+        69.87,
+        5242880000
+      ],
+      [
+        71.72,
+        5377097728
+      ]
+    ],
+    "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30",
+    "url": "https://huggingface.co/darioooooo0o/jdewitt-transfer-probe-5.5gb-keepalive/resolve/main/probe-5.5gb.gguf",
+    "wall_seconds": 73.324
+  },
+  "flag": {
+    "name": "JW_OAUTH_PUSH",
+    "value": true
+  },
+  "gguf_inspect": {
+    "architecture": "jdewittprobe",
+    "data_bytes": 5500000000,
+    "exit_code": 0,
+    "file": "/home/dario/oauth-runs/oauth-5.5gb-keepalive-fetched.gguf",
+    "matches_local_sha256": true,
+    "name": "jdewitt-transfer-probe-5.5gb",
+    "ok": true,
+    "size_bytes": 5500000704,
+    "tensor_count": 11
+  },
+  "is_a_space_run": false,
+  "label": "oauth-5.5gb-keepalive",
+  "landed_whole": true,
+  "local_artifact": {
+    "bytes": 5500000704,
+    "file": "probe-5.5gb.gguf",
+    "path": "/home/dario/oauth-runs/probe-5.5gb.gguf",
+    "sha256": "ba1e4c2f49d8de0891b2a8ab62b501ca5f08f1a4f8057209cf6de95eb0e8bb30"
+  },
+  "progress_file": "/home/dario/oauth-runs/oauth-5.5gb-keepalive-progress.jsonl",
+  "progress_samples": 188,
+  "schema": "jdewitt-space-oauth-upload-run-v1",
+  "started_at": "2026-11-24T17:07:58Z",
+  "upload_wall_seconds_including_create_commit": 141.621,
+  "where": "this host; the token is the one the live Space issued through hf_oauth (auth type oauth, write-repos)"
+}
