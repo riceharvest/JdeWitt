@@ -2,7 +2,7 @@
  "audits": [
   {
    "label": "removal-arm",
-   "predictions": "/home/dario/.agentboard/worktrees/t_f80b38d9/verification/p7-q3-4b/waves/removal-arm/predictions.jsonl",
+   "predictions": "verification/p7-q3-4b/waves/removal-arm/predictions.jsonl",
    "rows": 40,
    "shapes": {
     "refusal_with_opener": 29,

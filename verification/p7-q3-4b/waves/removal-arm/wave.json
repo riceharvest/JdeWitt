@@ -14,6 +14,14 @@
  "predictions": "/home/dario/.agentboard/worktrees/t_f80b38d9/verification/p7-q3-4b/waves/removal-arm/predictions.jsonl",
  "previewed": 2,
  "refusals_detected": 33,
+ "refusals_detected_at_measure_time": 33,
+ "regrade": {
+  "at": "2026-11-24T07:21:13Z",
+  "audit": "/home/dario/.agentboard/worktrees/t_f70de00f/verification/p7-q3-4b/waves/removal-arm/regrade-audit.json",
+  "changed_fields": 0,
+  "changed_rows": [],
+  "script": "verification/p7-q3-4b/regrade_wave.py"
+ },
  "rows": 40,
  "sampling": {
   "seed": null,
