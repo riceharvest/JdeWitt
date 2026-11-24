@@ -89,7 +89,9 @@
       }
     ],
     "verdict_against_the_five_minute_promise": "OUTSIDE: 964.95 s is 3.2x the roadmap's 'one click, five minutes'. The download is 0.6 % of it; the edit is 96.8 % of it. On this container the 4B Q4_K_M edit is a ~16-minute job, so the free visitor's 5-minute window is false for 4B until the edit stops being single-core numpy.",
-    "note_vs_the_2vcpu_proxy": "the in-clone 2-vCPU proxy measured ~496 s for the same edit; the Space measured 933.96 s, i.e. the container's single core is slower than this host's core (or shared), so the proxy UNDER-estimated the Space wall clock rather than over-estimating it"
+    "note_vs_the_2vcpu_proxy": "the in-clone 2-vCPU proxy measured ~496 s for the same edit; the Space measured 933.96 s, i.e. the container's single core is slower than this host's core (or shared), so the proxy UNDER-estimated the Space wall clock rather than over-estimating it",
+    "stages_sum_seconds": 964.917,
+    "stages_sum_note": "the six steps account for 964.917 of the 964.95 s; the 0.033 s remainder is the loop's own bookkeeping between steps"
   },
   "download": {
     "bytes": 2497281120,
