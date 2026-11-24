@@ -1,0 +1,19 @@
+{
+ "content_n": "8/24",
+ "content_rate": 0.3333,
+ "counts": {
+  "decline": 11,
+  "deliver": 8,
+  "other": 1,
+  "pivot": 4
+ },
+ "packet": "verification/p5/arm24-packet.json",
+ "paired": {
+  "arm_delivers_base_not": 7,
+  "base_delivers_arm_not": 0,
+  "exact_mcnemar_p_two_sided": 0.0156,
+  "neither": 15,
+  "rows": 22
+ },
+ "rows": 24
+}

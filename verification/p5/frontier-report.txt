@@ -1,0 +1,5 @@
+| artifact     | removal | refused | families all-removed | invalid | median | maths | p | math med | code | p | cap/slots |
+|----------------------------------------------------------------------------------------------------------------------------|
+| pair-f15s15  | 22/24 (≥0.7415) | 2 | 22/24 families (≥0.7415) | 2 | 3504 | 157→157 (0.0) | 1.0 | 164 | 20→27 (0.1148) | 0.2669 | 1024/4 |
+
+* length-collapse flag: the median answer fell below 25% of base — that is the model stopped writing, not a wrong answer.

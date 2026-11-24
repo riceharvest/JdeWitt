@@ -1,0 +1,55 @@
+{
+ "schema": "jdewitt.p5-code-leg-investigation/1",
+ "question": "Gate 3 asks the arm's code count to sit within 1 row of f15s15's certified 15. The arm is at 27 - twelve above, not below. Is that a capability move, a format artifact, or a backend effect?",
+ "same_suite": "verification/capability/capability-run-en.jsonl, 61 code rows of the 241",
+ "code_pass": {
+  "base_q3base": 20,
+  "f15s15_certified": 15,
+  "arm_pair_f15s15": 27
+ },
+ "verdict_class_per_artifact": {
+  "base_q3base": {
+   "assert_fail": 36,
+   "pass": 20,
+   "compile_other": 5
+  },
+  "f15s15_certified": {
+   "compile_other": 13,
+   "assert_fail": 33,
+   "pass": 15
+  },
+  "arm_pair_f15s15": {
+   "pass": 27,
+   "assert_fail": 25,
+   "smart_quote_compile": 7,
+   "compile_other": 2
+  }
+ },
+ "typographic_quote_in_code_answers": {
+  "base_q3base": 0,
+  "f15s15_certified": 0,
+  "arm_pair_f15s15": 17
+ },
+ "flips_base_to_arm": {
+  "assert_fail->assert_fail": 16,
+  "assert_fail->compile_other": 1,
+  "assert_fail->pass": 17,
+  "assert_fail->smart_quote_compile": 2,
+  "compile_other->assert_fail": 1,
+  "compile_other->pass": 2,
+  "compile_other->smart_quote_compile": 2,
+  "pass->assert_fail": 8,
+  "pass->compile_other": 1,
+  "pass->pass": 8,
+  "pass->smart_quote_compile": 3
+ },
+ "paired_sign_flip_p_two_sided": 0.2669,
+ "read": [
+  "The net is +7 (20->27) and the churn is large: 19 rows fixed, 12 broke, p=0.2669. That is a reshuffle, not a uniform gain.",
+  "The arm emits typographic quotes (U+201C/U+201D) in 17 of 61 code answers; the base and f15s15 emit none. Seven of those fail to compile and are scored False before any test runs - a FORMAT event with its own label, the Phase 1 rule applied to code, not evidence about the axis.",
+  "Among the 49 rows that compile on both sides the arm passes 25 and the base 16, so the +7 is not simply 'the arm writes more code that compiles'.",
+  "The arm wave ran on the B70 (Vulkan1) while q3base and f15s15 were CUDA waves; at temperature 0 a backend-dependent argmax near-tie can flip a row, which is consistent with churn on both sides at p=0.27."
+ ],
+ "gate_consequence": "the code leg is outside the +/-1 window of 15 as written (27), so gate 3's conjunction is not satisfied. The base itself is at 20 on the same row set, i.e. the window is one the unedited base also misses. Recorded as a tone result, not a capability loss claim.",
+ "not_a_claim": "Nothing here says the merge preserved or damaged code capability. It says the code column moved by much more than one row, in the direction of more passes, with a format regression mixed in."
+}
