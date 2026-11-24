@@ -1,0 +1,91 @@
+{
+ "checked_by": "bash verification/p7-inkling/run_waves.sh --check (sha256 of every required operand)",
+ "lineage": "inkling-2-mini",
+ "note": "Paths are absolute: two operands live outside the clone (the served GGUF and the source checkpoint), and the registered removal suite lives in the host probe cache. A missing required operand is OPERAND_MISMATCH, not a silent zero.",
+ "operands": [
+  {
+   "bytes": 17627940768,
+   "name": "base-gguf",
+   "path": "/mnt/ssd/models/Inkling-2-Mini-GGUF/Inkling-2-Mini-IQ4_NL.gguf",
+   "provenance": "matrix.manifest.json inkling-2-mini.base: same sha256, same bytes; gguf_revision e8a2cecf0e78914f07cc27b9be711a9b2c7561d9",
+   "required": true,
+   "role": "the served IQ4_NL artifact the arm is an edit of",
+   "sha256": "cbdf3fa9dc50a4124977980f37da4f1fa764b0cfe800d275cd43d26ce2a81af4"
+  },
+  {
+   "bytes": 2699,
+   "name": "source-config",
+   "path": "/mnt/ssd/models/Inkling-2-Mini/config.json",
+   "required": true,
+   "role": "source checkpoint config: architectures/model_type/quantization_config (measured, see capture-blocked.json)",
+   "sha256": "8216dd43157f5474cfff88f486a1e433fef703c674f694e485a86a761c412b1e"
+  },
+  {
+   "bytes": 19526019168,
+   "name": "source-safetensors",
+   "path": "/mnt/ssd/models/Inkling-2-Mini/model-00001-of-00001.safetensors",
+   "required": true,
+   "role": "the original weights the capture must run on (refit on this host, no prior axis in-clone)",
+   "sha256": "65e60f51aa1284d4fb022584908c315270334d991828bb774af60584523539d1"
+  },
+  {
+   "bytes": 635801416,
+   "name": "source-mtp-safetensors",
+   "path": "/mnt/ssd/models/Inkling-2-Mini/mtp.safetensors",
+   "required": false,
+   "role": "multi-token-prediction head weights; not on the residual-write path the merge edits",
+   "sha256": "7c3b651317f01f73bcf4e1dceba66ef8b7e1a1eac6bc171e882e690a4b10a1d2"
+  },
+  {
+   "bytes": 7620,
+   "name": "suite-removal",
+   "path": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+   "provenance": "RESTORED on this host from the in-clone twin verification/screens/advbench-40.jsonl: the registered path was gone; 40 ids + prompt text identical to the qwen removal wave's recorded rows (0 mismatches, measured). The twin's sha256 is d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef.",
+   "required": true,
+   "role": "registered harmful-40 removal suite (both wording inventories are graded at certify time)",
+   "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+  },
+  {
+   "bytes": 7620,
+   "name": "suite-removal-twin",
+   "path": "/home/dario/.agentboard/worktrees/t_d73f52a1/verification/screens/advbench-40.jsonl",
+   "required": true,
+   "role": "the in-clone twin the registered removal suite is restored from",
+   "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+  },
+  {
+   "bytes": 22500,
+   "name": "suite-heldout",
+   "path": "/home/dario/.agentboard/worktrees/t_d73f52a1/verification/screens/q3-holdout-wider.jsonl",
+   "required": true,
+   "role": "the registered held-out set: 120 rows, 120 families",
+   "sha256": "34b284f9f7521a3f19d6b9a43c4f496049a5a728f8421122aa8229473f15f182"
+  },
+  {
+   "bytes": 71494,
+   "name": "suite-retention",
+   "path": "/home/dario/.agentboard/worktrees/t_d73f52a1/verification/capability/capability-run-en.jsonl",
+   "required": true,
+   "role": "the registered 241-row retention set (180 maths + 61 code)",
+   "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+  },
+  {
+   "bytes": 18862,
+   "name": "ppl-control-corpus",
+   "path": "/home/dario/.agentboard/worktrees/t_d73f52a1/verification/ppl-probe/control.txt",
+   "required": true,
+   "role": "drift control corpus for base-vs-arm ln-ppl",
+   "sha256": "07adf2f9f3b1d3885886b199255cd786c5c720a5f4baf11e3cdfc617712b01f7"
+  },
+  {
+   "name": "capture-records",
+   "path": "/home/dario/.agentboard/worktrees/t_d73f52a1/verification/p7-inkling/capture-records.pt",
+   "reason": "capture on the source weights cannot run on this stack: transformers refuses model_type inkling2_loop (measured, capture-blocked.json). run_waves.sh step 1 refuses CAPTURE_UNSUPPORTED (exit 77) rather than inventing an axis.",
+   "required": false,
+   "role": "residual records the shared axis is fitted from",
+   "status": "ABSENT"
+  }
+ ],
+ "schema_version": 1,
+ "written_by": "prep card t_d73f52a1"
+}

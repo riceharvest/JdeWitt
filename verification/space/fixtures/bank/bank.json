@@ -1,0 +1,62 @@
+{
+  "schema": "jdewitt-space-bank-v1",
+  "entries": [
+    {
+      "key": "bankfixture/f00l01-fixture",
+      "base": {
+        "repo": "jdewitt/bank-fixture",
+        "revision": "fixture"
+      },
+      "architecture": "bankfixture",
+      "geometry": {
+        "layers": 2,
+        "hidden": 256,
+        "hidden_source": "artifact"
+      },
+      "targets": {
+        "attn": "attn_output",
+        "mlp": "ffn_down"
+      },
+      "footprint": {
+        "first": 0,
+        "last": 1,
+        "fraction": [
+          0.0,
+          0.5
+        ]
+      },
+      "strength": {
+        "attn": 1.5,
+        "mlp": 1.5
+      },
+      "edit": {
+        "method": "directional",
+        "shape": "shared",
+        "space": "output",
+        "row_normalization": "none",
+        "min_cos": 0.95,
+        "types": [
+          "q8_0",
+          "f16"
+        ],
+        "repair": "none"
+      },
+      "sources": {
+        "quant_types": [
+          "f16"
+        ]
+      },
+      "measurement": {
+        "state": "banked_unmeasured",
+        "artifact_class": null,
+        "removal": null,
+        "retention": null,
+        "config": null
+      },
+      "bundle": {
+        "file": "fixture-bank.tar",
+        "sha256": "095074f7740a53967e77a8b26c7c7816be31d2989edc7ad6877e586c9574e3a2"
+      }
+    }
+  ]
+}

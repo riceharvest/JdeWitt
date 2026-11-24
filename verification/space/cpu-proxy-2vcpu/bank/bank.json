@@ -1,0 +1,66 @@
+{
+  "schema": "jdewitt-space-bank-v1",
+  "entries": [
+    {
+      "key": "qwen3-4b-instruct-2507/f15s15-l935-timing-fixture",
+      "base": {
+        "repo": "/mnt/ssd/hermes/profiles/ab-run-2581/cache/scratch/q3-4b/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+        "revision": "local-file"
+      },
+      "architecture": "qwen3",
+      "geometry": {
+        "layers": 36,
+        "hidden": 2560,
+        "hidden_source": "artifact"
+      },
+      "targets": {
+        "attn": "attn_output",
+        "mlp": "ffn_down"
+      },
+      "footprint": {
+        "first": 15,
+        "last": 35,
+        "fraction": [
+          0.4167,
+          0.9722
+        ]
+      },
+      "strength": {
+        "attn": 1.5,
+        "mlp": 1.5
+      },
+      "edit": {
+        "method": "directional",
+        "shape": "shared",
+        "space": "output",
+        "row_normalization": "none",
+        "min_cos": 0.7,
+        "types": [
+          "q6_k",
+          "q8_0",
+          "f16"
+        ],
+        "repair": "none"
+      },
+      "sources": {
+        "quant_types": [
+          "q4_k",
+          "q6_k",
+          "q8_0",
+          "f16"
+        ]
+      },
+      "measurement": {
+        "state": "synthetic_axis",
+        "artifact_class": null,
+        "removal": null,
+        "retention": null,
+        "config": null
+      },
+      "bundle": {
+        "file": "synthetic-plan.tar",
+        "sha256": "262e2508ec9f64745f0db5b21fb01d098c4be16d4d130082a2f222991b37acb8"
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+ "bytes": 230981,
+ "dtype": "float32",
+ "file_sha256_note": "the .pt is gitignored (repo convention); torch.save bytes are not canonical, the tensor_sha256 is the identity and a refit reproduces it bitwise",
+ "fit_command": "python -m jdewitt.spanfit axes --records \"/mnt/ssd/dev workspace/JdeWitt/runs/p4/records.pt\" --out verification/p7-spark/axes-shared.pt --shape shared",
+ "kind": "p7-spark-axes-fit",
+ "label": "refit",
+ "note": "A REFIT in this card: fitted from the p4d records (16-bit HF source of the f16 twin), then re-fitted on 2026-11-24 and found bitwise identical (torch.equal true, max|diff| 0.0). torch.save bytes are not canonical and the .pt is gitignored, so the tensor_sha256 is the identity: run_waves.sh refits the file when it is absent and the tensor sha is what the codec table is bound to.",
+ "path": "verification/p7-spark/axes-shared.pt",
+ "rows": 28,
+ "shape": [
+  28,
+  2048
+ ],
+ "tensor_sha256": "d1cc9af5abe233fbaf1c48c4fd60d62a1513867e0f8e146fca4fa87f07b977e8",
+ "width": 2048
+}

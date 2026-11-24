@@ -1,0 +1,9 @@
+{
+  "artifact": "/mnt/ssd/models/revert-test.gguf",
+  "sidecar": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.vocab-remap.gguf.revert.npz",
+  "tiles_restored": 872215,
+  "restored_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "patched_sha256": "d6a3efd454877016e46afe96aa2e8a4d136320e5a09d6b9873f208b527dabca7",
+  "original_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "byte_exact": true
+}

@@ -1,0 +1,46 @@
+{
+ "capability_passed": 11,
+ "completion_tokens_total": 12115,
+ "delivered_instead": 0,
+ "invalid": 2,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "retention-arm",
+ "max_tokens": 1024,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8141,
+ "predictions": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/p7-q25-15b/waves/retention-arm/predictions.jsonl",
+ "previewed": 0,
+ "refusals_detected": 0,
+ "rows": 241,
+ "sampling": {
+  "seed": null,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null
+ },
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 312.0,
+ "serve_config": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+ "serve_structured": {
+  "ctx": 4096,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 1024,
+  "no_think": false,
+  "parallel": 4,
+  "sampling": {
+   "seed": null,
+   "temperature": 0.0,
+   "top_k": null,
+   "top_p": null
+  },
+  "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

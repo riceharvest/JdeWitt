@@ -1,0 +1,122 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen25-1.5b",
+ "arm": {
+  "label": "refit-sas15",
+  "refit": true,
+  "edited_tensors": 56,
+  "edited_tensor_footprint": "blk.0-27 x {attn_output.weight, ffn_down.weight} (28 layers x 2 writeback projections)",
+  "chosen_type": "Q8_0",
+  "scale": 1.5,
+  "byte_cost": 1646572800,
+  "byte_cost_source": "the shipped arm file itself (operands.json), not a cost model",
+  "note": "REFIT of the shared axis from a CPU capture of the base, merged into the base Q8_0 bytes at scale 1.5. The original q25-v4-dir000.gguf adapter is not on this box; this artifact is not that adapter and must never be labelled SAS@1.5."
+ },
+ "artifact": {
+  "path": "/mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf",
+  "sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+  "sha256_prefix_16": "584ec48f9a05a9f3",
+  "bytes": 1646572800,
+  "recipe": {
+   "command": "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf --out /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf --axes /mnt/ssd/models/p7-q25-15b/records/refit-axes.pt --gguf-targets auto --shape shared --axis-space output --scale 1.5",
+   "base_sha256_prefix_16": "5bfdb201668c8f41",
+   "edit": "shared sign-aligned axis, output space, attn_output + ffn_down, blk.0-27, scale 1.5, merged into the base Q8_0 bytes",
+   "note": "all other bytes verbatim (spanfit edit_tensors); no 16-bit emit and no whole-file requantize"
+  }
+ },
+ "base": {
+  "path": "/mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf",
+  "sha256": "5bfdb201668c8f41e99c2dc20577839c5c3115458986f13ed4cf7e1a8d4c2c5d",
+  "sha256_prefix_16": "5bfdb201668c8f41",
+  "bytes": 1646572800,
+  "quant_type": "Q8_0"
+ },
+ "suites": {
+  "removal": {
+   "path": "verification/p7-q25-15b/suites/harmful-40.jsonl",
+   "in_clone": true
+  },
+  "held_out": {
+   "path": "verification/screens/q3-holdout-wider.jsonl",
+   "in_clone": true
+  },
+  "retention": {
+   "path": "verification/capability/capability-run-en.jsonl",
+   "in_clone": true
+  }
+ },
+ "configs": {
+  "removal": {
+   "argv": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+  },
+  "retention": {
+   "argv": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+  },
+  "held_out": {
+   "argv": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+  }
+ },
+ "pinned_cert_argv": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+ "inputs": {
+  "removal": {
+   "wave": "verification/p7-q25-15b/waves/removal-arm",
+   "suite": "harmful-40.jsonl",
+   "base_wave": "verification/p7-q25-15b/waves/removal-base",
+   "competitor_wave": "verification/p7-q25-15b/waves/removal-published",
+   "competitor_label": "published build (josiefied-q25-v1, Q8_0)",
+   "note": "both wording inventories are graded from this one wave: score_response stores refusal_check and refusal_check_wide at write time"
+  },
+  "held_out": {
+   "wave": "verification/p7-q25-15b/waves/heldout120-arm",
+   "suite": "verification/screens/q3-holdout-wider.jsonl",
+   "competitor_wave": "verification/p7-q25-15b/waves/heldout120-published",
+   "competitor_label": "published build (josiefied-q25-v1, Q8_0)",
+   "base_wave": "verification/p7-q25-15b/waves/heldout120-base"
+  },
+  "retention": {
+   "wave": "verification/p7-q25-15b/waves/retention-arm",
+   "base_wave": "verification/p7-q25-15b/waves/retention-base",
+   "competitor_wave": "verification/p7-q25-15b/waves/retention-published",
+   "suite": "verification/capability/capability-run-en.jsonl"
+  },
+  "shape_audit": [
+   {
+    "path": "verification/p7-q25-15b/shape-audit-removal.json",
+    "axis": "removal",
+    "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a"
+   },
+   {
+    "path": "verification/p7-q25-15b/shape-audit-heldout.json",
+    "axis": "held_out",
+    "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a"
+   }
+  ],
+  "wording_inventory": {
+   "shipped": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472",
+   "wide": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+  },
+  "drift": "verification/p7-q25-15b/drift.json",
+  "fidelity": "verification/p7-q25-15b/fidelity.json"
+ },
+ "side_screens": {
+  "holdout_24_families": {
+   "wave": "verification/p7-q25-15b/waves/holdout24-arm",
+   "base_wave": "verification/p7-q25-15b/waves/holdout24-base",
+   "suite": "verification/p7-q25-15b/suites/holdout-24f.jsonl",
+   "rows": 24,
+   "note": "the 24 held-out families the card calls out; certify floors held_out at 120 rows, so this is reported beside the axis, never as the axis"
+  },
+  "retention_published": {
+   "wave": "verification/p7-q25-15b/waves/retention-published",
+   "note": "the published build at the same 1024-cap retention argv"
+  }
+ },
+ "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a",
+ "published": {
+  "path": "/mnt/ssd/models/p7-q25-15b/artifacts/published-q8.gguf",
+  "sha256": "4067fa4e3534e929b90bb05f5fb52bd7a4f3c32ce3d42f02852c505d0bc24b85",
+  "sha256_prefix_16": "4067fa4e3534e929",
+  "bytes": 1894534048,
+  "quant_type": "Q8_0"
+ }
+}

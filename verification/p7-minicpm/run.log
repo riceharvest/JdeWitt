@@ -1,0 +1,49 @@
+Terminated                 sleep "${LAB_GPU_POLL_S:-5}"
+2026-11-24T05:48:53+01:00 === P7 minicpm cert wave run: base=/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf arm=refit-perlayer-s1.0 scale=1.0 ===
+2026-11-24T05:48:53+01:00 STEP 1 operands: base digest, suites, checkpoint
+2026-11-24T05:48:54+01:00 operand base ok: /mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf sha256 67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be (672004000 bytes)
+Using CPython 3.14.6 interpreter at: /home/linuxbrew/.linuxbrew/opt/python@3.14/bin/python3.14
+Creating virtual environment at: .venv
+   Building jdewitt @ file:///home/dario/.agentboard/worktrees/t_13c5ac6b
+      Built jdewitt @ file:///home/dario/.agentboard/worktrees/t_13c5ac6b
+Installed 74 packages in 1.38s
+PASS fit-suite.jsonl: 60 rows sha256 e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4 (want e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4)
+PASS heldout-24f.jsonl: 120 rows sha256 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a (want 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a)
+held-out families: 24; fit rows: 60
+2026-11-24T05:48:57+01:00 operand checkpoint ok: /mnt/ssd/models/MiniCPM-V-4.7-1B config 20ed1fe71b174719b88ed1ce37c840ec45e3657f1120391d45f33505be7638a4 revision 286817f1132b998913a129a221c89b4402b4ab80
+2026-11-24T05:48:57+01:00 STEP 2 refit: capture (B70) then spanfit axes --shape perlayer  [REFIT]
+2026-11-24T05:48:57+01:00 RUN  uv run python -m jdewitt.cli capture --model /mnt/ssd/models/MiniCPM-V-4.7-1B --revision 286817f1132b998913a129a221c89b4402b4ab80 --suite verification/p7-minicpm/fit-suite.jsonl --gguf /mnt/ssd/p7-minicpm/base.gguf --out /mnt/ssd/p7-minicpm/refit-records.pt --ctx-size 4096 --kinds refusal\,harmless --locus answer
+Loading weights:   0%|          | 0/779 [00:00<?, ?it/s]Loading weights:   0%|          | 1/779 [00:01<16:29,  1.27s/it]Loading weights:   1%|▏         | 10/779 [00:01<01:20,  9.57it/s]Loading weights:   2%|▏         | 19/779 [00:01<00:43, 17.66it/s]Loading weights:   3%|▎         | 24/779 [00:01<00:34, 21.62it/s]Loading weights:   4%|▍         | 30/779 [00:01<00:30, 24.91it/s]Loading weights:   5%|▌         | 39/779 [00:01<00:20, 35.65it/s]Loading weights:   6%|▌         | 45/779 [00:02<00:19, 38.49it/s]Loading weights:   7%|▋         | 52/779 [00:02<00:24, 29.17it/s]Loading weights:   8%|▊         | 61/779 [00:02<00:20, 34.93it/s]Loading weights:   8%|▊         | 66/779 [00:02<00:19, 36.33it/s]Loading weights:  10%|▉         | 76/779 [00:02<00:14, 47.04it/s]Loading weights:  11%|█         | 86/779 [00:02<00:12, 55.61it/s]Loading weights:  12%|█▏        | 93/779 [00:03<00:14, 48.08it/s]Loading weights:  13%|█▎        | 99/779 [00:03<00:15, 43.54it/s]Loading weights:  15%|█▍        | 115/779 [00:03<00:12, 55.21it/s]Loading weights:  17%|█▋        | 130/779 [00:03<00:09, 68.66it/s]Loading weights:  18%|█▊        | 144/779 [00:03<00:08, 77.57it/s]Loading weights:  20%|██        | 157/779 [00:03<00:07, 88.40it/s]Loading weights:  22%|██▏       | 169/779 [00:04<00:06, 93.50it/s]Loading weights:  23%|██▎       | 182/779 [00:04<00:05, 101.18it/s]Loading weights:  25%|██▍       | 193/779 [00:04<00:05, 99.81it/s] Loading weights:  26%|██▌       | 204/779 [00:04<00:06, 95.50it/s]Loading weights:  28%|██▊       | 221/779 [00:04<00:05, 105.34it/s]Loading weights:  30%|███       | 235/779 [00:04<00:04, 111.87it/s]Loading weights:  32%|███▏      | 247/779 [00:04<00:05, 102.45it/s]Loading weights:  34%|███▍      | 268/779 [00:04<00:04, 127.05it/s]Loading weights:  36%|███▌      | 282/779 [00:05<00:03, 126.08it/s]Loading weights:  38%|███▊      | 297/779 [00:05<00:03, 125.36it/s]Loading weights:  40%|███▉      | 310/779 [00:05<00:04, 107.06it/s]Loading weights:  41%|████▏     | 322/779 [00:05<00:06, 70.17it/s] Loading weights:  42%|████▏     | 331/779 [00:05<00:07, 57.95it/s]Loading weights:  44%|████▎     | 339/779 [00:06<00:07, 57.48it/s]Loading weights:  44%|████▍     | 346/779 [00:06<00:08, 50.52it/s]Loading weights:  45%|████▌     | 353/779 [00:06<00:11, 35.71it/s]Loading weights:  46%|████▌     | 358/779 [00:07<00:17, 24.25it/s]Loading weights:  47%|████▋     | 364/779 [00:07<00:15, 26.97it/s]Loading weights:  48%|████▊     | 372/779 [00:07<00:13, 30.05it/s]Loading weights:  49%|████▊     | 378/779 [00:07<00:12, 31.90it/s]Loading weights:  49%|████▉     | 382/779 [00:07<00:12, 30.76it/s]Loading weights:  50%|████▉     | 386/779 [00:07<00:12, 31.72it/s]Loading weights:  51%|█████     | 398/779 [00:08<00:09, 41.16it/s]Loading weights:  52%|█████▏    | 405/779 [00:08<00:09, 38.11it/s]Loading weights:  54%|█████▍    | 419/779 [00:08<00:07, 50.84it/s]Loading weights:  55%|█████▌    | 430/779 [00:08<00:05, 60.59it/s]Loading weights:  56%|█████▌    | 437/779 [00:08<00:06, 53.99it/s]Loading weights:  57%|█████▋    | 446/779 [00:08<00:06, 53.63it/s]Loading weights:  59%|█████▉    | 458/779 [00:09<00:06, 52.10it/s]Loading weights:  60%|█████▉    | 465/779 [00:09<00:05, 54.99it/s]Loading weights:  61%|██████    | 477/779 [00:09<00:05, 60.24it/s]Loading weights:  64%|██████▎   | 496/779 [00:09<00:03, 80.33it/s]Loading weights:  65%|██████▌   | 510/779 [00:09<00:03, 87.35it/s]Loading weights:  68%|██████▊   | 526/779 [00:09<00:02, 93.24it/s]Loading weights:  69%|██████▉   | 536/779 [00:09<00:02, 83.38it/s]Loading weights:  72%|███████▏  | 560/779 [00:10<00:02, 107.45it/s]Loading weights:  74%|███████▍  | 576/779 [00:10<00:01, 118.52it/s]Loading weights:  76%|███████▌  | 589/779 [00:10<00:01, 107.23it/s]Loading weights:  77%|███████▋  | 602/779 [00:10<00:01, 101.22it/s]Loading weights:  79%|███████▊  | 613/779 [00:10<00:01, 93.54it/s] Loading weights:  80%|███████▉  | 623/779 [00:10<00:01, 92.07it/s]Loading weights:  82%|████████▏ | 636/779 [00:10<00:01, 101.02it/s]Loading weights:  84%|████████▍ | 654/779 [00:11<00:01, 111.04it/s]Loading weights:  85%|████████▌ | 666/779 [00:11<00:01, 104.23it/s]Loading weights:  87%|████████▋ | 677/779 [00:11<00:00, 104.33it/s]Loading weights:  88%|████████▊ | 688/779 [00:11<00:00, 100.41it/s]Loading weights:  90%|█████████ | 702/779 [00:11<00:00, 109.78it/s]Loading weights:  92%|█████████▏| 719/779 [00:11<00:00, 125.67it/s]Loading weights:  95%|█████████▍| 738/779 [00:11<00:00, 139.27it/s]Loading weights:  98%|█████████▊| 760/779 [00:11<00:00, 141.94it/s]Loading weights:  99%|█████████▉| 775/779 [00:12<00:00, 59.58it/s] Loading weights: 100%|██████████| 779/779 [00:12<00:00, 62.23it/s]
+[transformers] [1mMiniCPMV4_7Model LOAD REPORT[0m from: /mnt/ssd/models/MiniCPM-V-4.7-1B
+Key            | Status     |  | 
+---------------+------------+--+-
+lm_head.weight | UNEXPECTED |  | 
+
+Notes:
+- UNEXPECTED:	can be ignored when loading from different task/architecture; not ok if you expect identical arch.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/dario/.agentboard/worktrees/t_13c5ac6b/jdewitt/cli.py", line 1132, in <module>
+    main()
+    ~~~~^^
+  File "/home/dario/.agentboard/worktrees/t_13c5ac6b/jdewitt/cli.py", line 977, in main
+    result=capture_command(args)
+  File "/home/dario/.agentboard/worktrees/t_13c5ac6b/jdewitt/capture.py", line 555, in capture_command
+    captured, reason = capture_one(
+                       ~~~~~~~~~~~^
+        model, tokenizer, row, layers, width, locus=args.locus,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        settle=args.settle, settle_min_tokens=args.settle_min_tokens,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        answer_text=banked, margin_pairs=margin_pairs, frame=frame)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/dario/.agentboard/worktrees/t_13c5ac6b/jdewitt/capture.py", line 334, in capture_one
+    sequence = model.generate(
+               ^^^^^^^^^^^^^^
+  File "/home/dario/.agentboard/worktrees/t_13c5ac6b/.venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1972, in __getattr__
+    raise AttributeError(
+        f"'{type(self).__name__}' object has no attribute '{name}'"
+    )
+AttributeError: 'MiniCPMV4_7Model' object has no attribute 'generate'

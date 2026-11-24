@@ -1,0 +1,70 @@
+{
+ "fit": {
+  "harmless_rows": 20,
+  "out": "verification/p7-minicpm/fit-suite.jsonl",
+  "refusal_families": [
+   "hb-ctx-sel-chemical-biological",
+   "hb-ctx-sel-cybercrime-intrusion",
+   "hb-ctx-sel-harassment-bullying",
+   "hb-ctx-sel-illegal",
+   "hb-ctx-sel-misinformation-disinformation",
+   "hb-std-sel-chemical-biological",
+   "hb-std-sel-cybercrime-intrusion",
+   "hb-std-sel-harassment-bullying"
+  ],
+  "refusal_rows": 40,
+  "rows": 60,
+  "rule": "refusal: the first 5 rows of each of the 8 sorted family_ids of kind=refusal in verification/harsh-suites/selection.jsonl (document order); harmless: the first 20 kind=harmless rows of verification/p5/sae/inputs/suite.jsonl in document order; refusal rows first, then harmless. No prompt is in advbench-40 and none is in the held-out suite (checked). The fit label is the answer shape at capture time (a harmful row the model declines is bad, a harmless row it answers is good).",
+  "sha256": "e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4",
+  "sources": [
+   "verification/harsh-suites/selection.jsonl (kind=refusal)",
+   "verification/p5/sae/inputs/suite.jsonl (kind=harmless)"
+  ]
+ },
+ "heldout": {
+  "families": 24,
+  "family_ids": [
+   "jbb-hold-disinformation",
+   "jbb-hold-economic-harm",
+   "jbb-hold-expert-advice",
+   "jbb-hold-fraud-deception",
+   "jbb-hold-government-decision-making",
+   "jbb-hold-harassment-discrimination",
+   "jbb-hold-malware-hacking",
+   "jbb-hold-physical-harm",
+   "jbb-hold-privacy",
+   "jbb-hold-sexual-adult-content",
+   "sb-hold-1",
+   "sb-hold-10",
+   "sb-hold-11",
+   "sb-hold-12",
+   "sb-hold-13",
+   "sb-hold-14",
+   "sb-hold-15",
+   "sb-hold-16",
+   "sb-hold-17",
+   "sb-hold-18",
+   "sb-hold-19",
+   "sb-hold-2",
+   "sb-hold-20",
+   "sb-hold-21"
+  ],
+  "out": "verification/p7-minicpm/heldout-24f.jsonl",
+  "rows": 120,
+  "rule": "kind=refusal; no prompt verbatim in advbench-40; hb-cp-hold-copyright excluded; only families carrying at least 5 eligible rows; the first 24 sorted family_ids, the first 5 rows per family by id.",
+  "sha256": "9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a",
+  "source": "verification/harsh-suites/holdout.jsonl"
+ },
+ "note": "suites cut for the p7 minicpm cert; deterministic selection, recorded so a stranger can recut them. A prompt is never in the fit pool, the removal screen and the held-out suite at once.",
+ "removal_screen": {
+  "path": "verification/screens/advbench-40.jsonl",
+  "rows": 40,
+  "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+ },
+ "retention_suite": {
+  "path": "verification/capability/capability-run-en.jsonl",
+  "rows": 241,
+  "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+ },
+ "rule_note": "Both rules are executable in verification/p7-minicpm/recut_suites.py, which reproduces these two digests byte for byte and checks that no id is in two pools. The literals above were tightened on 2026-11-24 to the clauses the files actually satisfy: the earlier prose did not say 'first 20 harmless' or 'families with at least 5 eligible rows', and the literal reading of it reproduced neither file (plain family order starts with the two-row adv-hold-* families)."
+}

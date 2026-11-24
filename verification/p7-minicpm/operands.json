@@ -1,0 +1,121 @@
+{
+ "schema_version": 1,
+ "kind": "p7-minicpm-operands",
+ "lineage": "minicpm-v47",
+ "note": "Every path the cert loop serves is pinned here with the digest it must have, so run_waves.sh resolves operands at run time instead of trusting a path that happens to exist. .gitignore excludes *.gguf, so the three ggufs below live in the clone's working tree and are not tracked; the JSON pins their bytes and sha256 instead.",
+ "model": {
+  "name": "openbmb/MiniCPM-V-4.7-1B",
+  "revision": "286817f1132b998913a129a221c89b4402b4ab80",
+  "local_path": "/mnt/ssd/models/MiniCPM-V-4.7-1B",
+  "config_sha256": "20ed1fe71b174719b88ed1ce37c840ec45e3657f1120391d45f33505be7638a4",
+  "model_type": "minicpmv4_7",
+  "text_backbone": "qwen3_5_text",
+  "layers": 24,
+  "hidden_size": 1024,
+  "residual_write_projections": "18 linear_attn.out_proj + 6 self_attn.o_proj + 24 mlp.down_proj",
+  "scope": "text backbone only; the vision tower and merger are never captured, edited or served",
+  "provenance": "verification/minicpm-v47/summary.json (model block) + config.json read on this box"
+ },
+ "artifact_under_cert": {
+  "role": "base gguf and merge input (Q4_K_M export of the text backbone)",
+  "quant_type": "Q4_K_M",
+  "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+  "bytes": 672004000,
+  "locations": [
+   "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+   "/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf"
+  ],
+  "verified": "sha256 recomputed on this box on 2026-11-24; matches export_round_trip in verification/minicpm-v47/summary.json",
+  "git": "untracked by design (.gitignore: *.gguf); present in the clone, not a commit object"
+ },
+ "siblings": [
+  {
+   "path": "verification/minicpm-v47/minicpm-v47-Q5_K_M.gguf",
+   "sha256": "e962fe011d4fca8d24ee631f483b8c871ed95a746f4e9d0ac3b0d48553f633af",
+   "bytes": 752461472,
+   "quant_type": "Q5_K_M",
+   "used_by_this_cert": false,
+   "note": "committed alongside the Q4_K_M export; not the cert artifact"
+  },
+  {
+   "path": "verification/minicpm-v47/minicpm-v47-bf16.gguf",
+   "sha256": "38aed86216c7a7adfc735dcfcf0b7f099511a8e1fb551ee879a5ee1df9b0512f",
+   "bytes": 2024372640,
+   "quant_type": "BF16",
+   "used_by_this_cert": false,
+   "note": "committed alongside the Q4_K_M export; not the cert artifact"
+  }
+ ],
+ "axis": {
+  "state": "REFIT",
+  "why": "no capture (records .pt) of this lineage exists on this box: the searched paths hold only a unit-random probe axis from the merge dry-run, and a unit-random axis is a merge-path probe, never a fit",
+  "capture": "uv run jdewitt capture --model <HF_MODEL> --revision <HF_REVISION> --suite verification/p7-minicpm/fit-suite.jsonl --gguf <base> --out <records.pt> --ctx-size 4096 --kinds refusal,harmless --locus answer",
+  "fit": "uv run python -m jdewitt.spanfit axes --records <records.pt> --out <axes.pt> --shape perlayer",
+  "shape": "perlayer",
+  "axis_space": "output",
+  "scale": 1.0,
+  "scale_note": "scale is a search variable; this card ships the pipeline at 1.0 (full axis removal). The wave card may sweep SCALE without changing the script.",
+  "labelled_refit": "the packet's artifact recipe carries edit text naming this a REFIT and the fit suite's sha256, so no reader can mistake it for a rebuild from a saved capture",
+  "capture_device": "B70 XPU (jdewitt.capture refuses CPU by design); this prep card does not run it",
+  "merge_probe": {
+   "what": "the CPU merge path was exercised on this exact gguf with a unit-random probe axis before this card: 672,004,000 bytes merged in 56.6 s, all 48 discovered residual-write tensors visited",
+   "proves": "targets discovery, axis-space output and the writer work on this artifact",
+   "does_not_prove": "any fit; the axis was random and the output was never served"
+  }
+ },
+ "suites": {
+  "fit": {
+   "path": "verification/p7-minicpm/fit-suite.jsonl",
+   "rows": 60,
+   "sha256": "e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4",
+   "rule": "40 refusal rows (8 families x 5) + 20 harmless rows; recut by verification/p7-minicpm/recut_suites.py"
+  },
+  "removal": {
+   "path": "verification/screens/advbench-40.jsonl",
+   "rows": 40,
+   "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+  },
+  "held_out": {
+   "path": "verification/p7-minicpm/heldout-24f.jsonl",
+   "rows": 120,
+   "families": 24,
+   "sha256": "9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a",
+   "rule": "24 families x 5 rows, disjoint from advbench-40; recut by verification/p7-minicpm/recut_suites.py"
+  },
+  "retention": {
+   "path": "verification/capability/capability-run-en.jsonl",
+   "rows": 241,
+   "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d",
+   "kinds": "180 math + 61 code"
+  },
+  "disjointness": "no prompt id and no prompt text appears in two pools: checked by recut_suites.py overlap_checks at every run"
+ },
+ "tools": {
+  "server": "/home/dario/llama.cpp-minicpm47/build-cpu/bin/llama-server",
+  "server_note": "the CPU build this model was served with in verification/minicpm-v47/serving-check.json; DEVICE_ARGS defaults to --device none. A Vulkan server may be substituted by the wave card (SERVER / DEVICE_ARGS) and the argv is recorded in every wave + the packet (R9)",
+  "perplexity": "scripts/refusal_ppl_screen.py default binary (llama-perplexity, -ngl 0)",
+  "capture": "uv run jdewitt capture (B70 XPU)",
+  "merge": "uv run python -m jdewitt.spanfit build --axes ... --gguf-targets auto",
+  "fidelity": "uv run python scripts/p4f_gate.py fidelity (compare_edit, full-tensor decode)",
+  "shape_audit": "uv run python scripts/refusal_shape_audit.py",
+  "config_pair": "uv run python scripts/cert_config_pair.py (R9.4 boundary rows)"
+ },
+ "targets_discovered": {
+  "command": "uv run python -m jdewitt.spanfit targets --gguf-in <base>",
+  "hidden": 1024,
+  "layers": 24,
+  "targets_per_layer": 2,
+  "tensors": 48,
+  "suffixes": ["attn_output.weight", "ffn_down.weight"],
+  "unmapped_width_tensors": [],
+  "note": "read on this box; the merge refuses if the axes width and the artifact disagree, so a stale path cannot silently edit part of the model"
+ },
+ "caps": {
+  "pinned_config": "-c 4096 --parallel 4",
+  "per_slot_tokens": 1024,
+  "removal": 1024,
+  "held_out": 1024,
+  "retention": 1024,
+  "note": "llama.cpp -c is the TOTAL context and --parallel splits it, so a request at 4096/4 can generate at most 1024 tokens. The comparison run is 2048/2 (also 1024 per slot) so the R9 pair differs only in ctx/parallel. The release matrix's registered cap floors for removal/held_out are 4096 (they were graded on a 8192/2 config); at the pinned 4096/4 this lineage cannot reach them and the analysis card must record that as a manifest decision, not paper over it"
+ }
+}

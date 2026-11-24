@@ -209,6 +209,32 @@ Reproduce the dry run against the file, not the directory:
 holds the 24-row multilingual suite that landed later, so `--probes` on the
 directory returns 34 rows.
 
+### The input side: a semantic flip, measured as damage
+
+The third placement rewrites the **prompt ids** so the model reads the affirmative
+where the user wrote the denial: ` cannot` (4157) is sent as ` can` (646), and a
+multi-token denial keeps its modal while the residual negating token is dropped
+(` can not` -> ` can`). `jdewitt vocab-remap --embed on|off` is one code path and
+one flag; `assets/vocab-remap-affirmative.json` names the affirmative sentence for
+13 of the 20 entries and names the 7 it does not map (five apologies have no
+affirmative counterpart; two opener-window entries have no generated step to be
+scoped to, and their denial substring is covered by the any-scope entry).
+
+This is not a removal, and it is measured as the opposite. On 20 authored harmful
+prompts the prompt changed on 20/20 (1,106 -> 1,091 ids), only 5/20 answers changed
+at all, and content delivery did not move: 2/20 in both arms per an agent read of
+the 40 answers, with the base arm's one partial delivery (the visa row) turning
+into a flat refusal after the flip. The control is the part worth keeping: sending
+the prompt as ids equals sending it as text on 20/20 rows, while the client-stepped
+loop equals a single greedy wave on 15/20 at the pinned `4096/4` config — the R9
+config sensitivity, measured rather than assumed. Retention on the 241-row suite is
+95/241 in both arms, 0 discordant, exact McNemar p=1, median answer 3 characters,
+because the suite's prompts carry no denial surface: 0/241 exposure and
+byte-identical answers, which is non-exposure, not a no-cost result. The verdict in
+`verification/vocab-remap/embed-arm/` is **damage**: a semantic flip that delivers
+nothing. The gate's README carries the reproduce lines, the per-row id diffs and the
+agent read.
+
 ## Cross-model evidence, 2026 (the actual "best across models" question)
 
 Two studies by the same single author — useful, but single-operator and

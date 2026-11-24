@@ -1,0 +1,585 @@
+{
+  "schema": "jdewitt-space-cpu-proxy-v1",
+  "command": "bank-apply",
+  "is_a_space_run": false,
+  "proxy_note": "A 2-vCPU CPU proxy in this clone, NOT a Space run: no ZeroGPU, no Spaces proxy, no Hub download or upload. It bounds one thing \u2014 the CPU wall clock of the numpy edit on two cores \u2014 which is the number \u00a74's rule needs, because ZeroGPU adds a GPU and not CPU cores. These seconds must not be quoted as a Space runtime.",
+  "host": {
+    "host_cores": 32,
+    "affinity": [
+      0,
+      1
+    ],
+    "affinity_command": "taskset -c 0,1",
+    "cpu_percent_of_one_core": 98.0,
+    "cpu_percent_note": "the edit path is single-threaded numpy: the second core is idle (\u2248 98-100 % of one core), so the 2-vCPU Space runs the same wall clock as this run, not half of it",
+    "load_average": {
+      "before_run3": "9.14",
+      "after_run3": "4.41",
+      "note": "1-minute load average on the shared 32-core host around the third run; the host is not dedicated, which is why the wall clock has a range"
+    }
+  },
+  "artifact": {
+    "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+    "revision": "a06e946bb6b655725eafa393f4a9745d460374c9",
+    "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+    "bytes": 2497281120,
+    "architecture": "qwen3",
+    "layers": 36,
+    "hidden": 2560,
+    "tensors": 398,
+    "source_types": [
+      "Q4_K",
+      "Q6_K"
+    ],
+    "identity_note": "repo + revision + sha256 pin the file; the sha256 equals the Hub LFS sha256 and was recomputed after the download"
+  },
+  "bank": {
+    "dir": "verification/space/cpu-proxy-2vcpu/bank",
+    "entry": "qwen3-4b-instruct-2507/f15s15-l935-timing-fixture",
+    "shipped_bank": "spaces/bank",
+    "bundle_sha256": "262e2508ec9f64745f0db5b21fb01d098c4be16d4d130082a2f222991b37acb8",
+    "bundle_verified": true,
+    "axis": "synthetic_axis timing fixture (seeded unit direction, not a fitted removal)",
+    "why_not_spaces_bank": "spaces/bank ships empty on purpose: the only measured 4B arm's axis file is not in this clone (docs/SPACE-ROADMAP.md \u00a75.2). This run needed the real work volume (geometry, footprint, strength, source types) and not the direction's content, so it uses verification/space/cpu-proxy-2vcpu/bank, whose entry states measurement.state = synthetic_axis. removal is NOT measured and the report says removal_measured: false.",
+    "fixture_min_cos": 0.7,
+    "fixture_min_cos_note": "the entry floor is 0.7, not the shipped 0.95: a seeded random unit axis produces a much smaller per-element delta than a fitted sign-aligned axis, so F16 measures cos 0.7616 on the worst tensor and would miss 0.95 for a reason that is the fixture and not the codec. The ladder still probed Q6_K -> Q8_0 -> F16 and chose F16, the type the real arm's numbers imply (Q8_0 \u2248 0.73 there). The floor changes which type is written, never the parameters decoded or re-encoded per type.",
+    "ladder_readings": [
+      {
+        "edit_type": "Q6_K",
+        "min_cos": 0.0058,
+        "worst_tensor": "blk.35.ffn_down.weight",
+        "min_snr": 0.465,
+        "mean_cos": 0.4815,
+        "probed": 4
+      },
+      {
+        "edit_type": "Q8_0",
+        "min_cos": 0.0812,
+        "worst_tensor": "blk.35.ffn_down.weight",
+        "min_snr": 0.088,
+        "mean_cos": 0.4688,
+        "probed": 4
+      },
+      {
+        "edit_type": "F16",
+        "min_cos": 0.7616,
+        "worst_tensor": "blk.35.attn_output.weight",
+        "min_snr": 1.494,
+        "mean_cos": 0.8854,
+        "probed": 4
+      }
+    ],
+    "edit_type": "F16"
+  },
+  "edit": {
+    "footprint": {
+      "first": 15,
+      "last": 35,
+      "fraction": [
+        0.4167,
+        0.9722
+      ],
+      "projected": false,
+      "artifact_layers": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "entry_rows": [
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "projection_rule": "a projected footprint spans the entry's own footprint with both endpoints preserved"
+    },
+    "edited_tensors": 42,
+    "edited_layers": 21,
+    "edited_params": 743178240,
+    "strength": {
+      "attn": 1.5,
+      "mlp": 1.5
+    },
+    "kinds": {
+      "attn": "attn_output.weight",
+      "mlp": "ffn_down.weight"
+    },
+    "delivered_cos": {
+      "count": 42,
+      "min_cos": 1.0002,
+      "mean_cos": 1.0005,
+      "min_snr": 139.663,
+      "floor": 0.7,
+      "floor_met": true,
+      "below_floor": []
+    },
+    "delivered_cos_note": "the delivered cos is measured on the written file (compare_edit), i.e. what the bytes hold. Values a few 1e-4 above 1.0000 are float32 accumulation in the dot and the norms over ~10 M elements per tensor, not a stored change larger than the intended one.",
+    "per_tensor": [
+      {
+        "name": "blk.15.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.662
+      },
+      {
+        "name": "blk.16.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 144.374
+      },
+      {
+        "name": "blk.17.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 147.277
+      },
+      {
+        "name": "blk.18.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 146.112
+      },
+      {
+        "name": "blk.19.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 144.068
+      },
+      {
+        "name": "blk.20.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 139.663
+      },
+      {
+        "name": "blk.21.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 145.777
+      },
+      {
+        "name": "blk.22.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 141.327
+      },
+      {
+        "name": "blk.23.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.52
+      },
+      {
+        "name": "blk.24.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 145.124
+      },
+      {
+        "name": "blk.25.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.082
+      },
+      {
+        "name": "blk.26.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 145.164
+      },
+      {
+        "name": "blk.27.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 141.946
+      },
+      {
+        "name": "blk.28.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 141.589
+      },
+      {
+        "name": "blk.29.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.018
+      },
+      {
+        "name": "blk.30.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 144.54
+      },
+      {
+        "name": "blk.31.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 141.487
+      },
+      {
+        "name": "blk.32.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.49
+      },
+      {
+        "name": "blk.33.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.855
+      },
+      {
+        "name": "blk.34.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 143.654
+      },
+      {
+        "name": "blk.35.attn_output.weight",
+        "kind": "attn",
+        "cos": 1.0002,
+        "snr": 144.201
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 144.811
+      },
+      {
+        "name": "blk.16.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 141.122
+      },
+      {
+        "name": "blk.17.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 141.682
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 144.391
+      },
+      {
+        "name": "blk.19.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0008,
+        "snr": 144.408
+      },
+      {
+        "name": "blk.20.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0008,
+        "snr": 142.558
+      },
+      {
+        "name": "blk.21.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 142.08
+      },
+      {
+        "name": "blk.22.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 142.797
+      },
+      {
+        "name": "blk.23.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 143.814
+      },
+      {
+        "name": "blk.24.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 144.299
+      },
+      {
+        "name": "blk.25.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0008,
+        "snr": 141.749
+      },
+      {
+        "name": "blk.26.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 144.678
+      },
+      {
+        "name": "blk.27.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 144.239
+      },
+      {
+        "name": "blk.28.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 143.724
+      },
+      {
+        "name": "blk.29.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 143.987
+      },
+      {
+        "name": "blk.30.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 143.58
+      },
+      {
+        "name": "blk.31.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0006,
+        "snr": 145.571
+      },
+      {
+        "name": "blk.32.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 143.787
+      },
+      {
+        "name": "blk.33.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0006,
+        "snr": 144.448
+      },
+      {
+        "name": "blk.34.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0007,
+        "snr": 142.866
+      },
+      {
+        "name": "blk.35.ffn_down.weight",
+        "kind": "mlp",
+        "cos": 1.0008,
+        "snr": 144.693
+      }
+    ],
+    "untouched": {
+      "count": 356,
+      "verified": true,
+      "mismatched": [],
+      "missing": []
+    }
+  },
+  "runs": [
+    {
+      "label": "run1",
+      "wall_seconds": 476.33,
+      "user_seconds": 437.3,
+      "sys_seconds": 31.15,
+      "cpu_percent": 98.0,
+      "max_rss_kb": 4283136.0,
+      "exit_status": 0,
+      "report_wall_seconds": 475.81,
+      "bytes_out": 3494978080,
+      "output_sha256": "00db734cdbfbacb091cd30111c45cd3be36ca2d81001488cca5eb5afa2ab79b2",
+      "edit_type": "F16",
+      "edited": {
+        "count": 42,
+        "min_cos": 1.0002,
+        "mean_cos": 1.0005,
+        "min_snr": 139.663,
+        "floor": 0.7,
+        "floor_met": true,
+        "below_floor": []
+      },
+      "untouched": {
+        "count": 356,
+        "verified": true,
+        "mismatched": [],
+        "missing": []
+      }
+    },
+    {
+      "label": "run2",
+      "wall_seconds": 606.21,
+      "user_seconds": 546.25,
+      "sys_seconds": 48.12,
+      "cpu_percent": 98.0,
+      "max_rss_kb": 4287904.0,
+      "exit_status": 0,
+      "report_wall_seconds": 604.87,
+      "bytes_out": 3494978080,
+      "output_sha256": "00db734cdbfbacb091cd30111c45cd3be36ca2d81001488cca5eb5afa2ab79b2",
+      "edit_type": "F16",
+      "edited": {
+        "count": 42,
+        "min_cos": 1.0002,
+        "mean_cos": 1.0005,
+        "min_snr": 139.663,
+        "floor": 0.7,
+        "floor_met": true,
+        "below_floor": []
+      },
+      "untouched": {
+        "count": 356,
+        "verified": true,
+        "mismatched": [],
+        "missing": []
+      }
+    },
+    {
+      "label": "run3",
+      "wall_seconds": 496.32,
+      "user_seconds": 450.36,
+      "sys_seconds": 37.16,
+      "cpu_percent": 98.0,
+      "max_rss_kb": 4285292.0,
+      "exit_status": 0,
+      "report_wall_seconds": 495.6,
+      "bytes_out": 3494978080,
+      "output_sha256": "00db734cdbfbacb091cd30111c45cd3be36ca2d81001488cca5eb5afa2ab79b2",
+      "edit_type": "F16",
+      "edited": {
+        "count": 42,
+        "min_cos": 1.0002,
+        "mean_cos": 1.0005,
+        "min_snr": 139.663,
+        "floor": 0.7,
+        "floor_met": true,
+        "below_floor": []
+      },
+      "untouched": {
+        "count": 356,
+        "verified": true,
+        "mismatched": [],
+        "missing": []
+      }
+    }
+  ],
+  "representative_run": "run3",
+  "wall_seconds": 496.32,
+  "user_seconds": 450.36,
+  "sys_seconds": 37.16,
+  "max_rss_kb": 4285292.0,
+  "bytes_out": 3494978080,
+  "repeat": {
+    "runs": [
+      "run1",
+      "run2",
+      "run3"
+    ],
+    "walls_seconds": [
+      476.33,
+      606.21,
+      496.32
+    ],
+    "wall_range_seconds": [
+      476.33,
+      606.21
+    ],
+    "full_spread_percent": 27.27,
+    "pair_spreads": [
+      {
+        "runs": [
+          "run1",
+          "run2"
+        ],
+        "spread_percent": 27.27
+      },
+      {
+        "runs": [
+          "run1",
+          "run3"
+        ],
+        "spread_percent": 4.2
+      },
+      {
+        "runs": [
+          "run2",
+          "run3"
+        ],
+        "spread_percent": 22.14
+      }
+    ],
+    "closest_pair": {
+      "runs": [
+        "run1",
+        "run3"
+      ],
+      "spread_percent": 4.2
+    },
+    "within_20_percent": true,
+    "same_output": true,
+    "output_sha256": "00db734cdbfbacb091cd30111c45cd3be36ca2d81001488cca5eb5afa2ab79b2",
+    "note": "the same command on the same artifact, run back to back on a shared host. The output is byte-identical every time; the wall clock moves with the host's memory pressure (a slower run does more user CPU for the same work, so it is cache/bandwidth contention, not extra I/O). The representative run is the median, not the fastest.",
+    "within_20_percent_note": "at least one repeat pair landed within 20 % of itself; the full range is in wall_range_seconds and does not move the verdict"
+  },
+  "verdict": {
+    "rule": "docs/SPACE-ROADMAP.md \u00a74",
+    "bands": {
+      "single_call_max_seconds": 120.0,
+      "two_calls_max_seconds": 240.0,
+      "cuda_codec_required_above_seconds": 240.0
+    },
+    "measured_wall_seconds": 496.32,
+    "verdict": "cuda_codec_required",
+    "verdict_per_run": {
+      "run1": "cuda_codec_required",
+      "run2": "cuda_codec_required",
+      "run3": "cuda_codec_required"
+    },
+    "all_runs_agree": true,
+    "because": "496.3 s is above 240 s",
+    "consequence": "a CUDA codec port is mandatory before any Space run; if the port cannot beat 240 s either, the free product is 1.7B-and-below and 4B/7B are dropped (docs/SPACE-ROADMAP.md \u00a74, \u00a711)"
+  },
+  "seven_b_extrapolation": {
+    "assumption": "wall clock scales linearly with edited parameters at the same type ladder and the same single-thread numpy path; the untouched-byte copy term grows only ~1.8x (4.5 GB vs 2.5 GB) so the ratio below is the edited-params ratio, not a measured 7B run",
+    "edited_params_measured": 743178240,
+    "edited_params_7b": 2261000000,
+    "ratio": 3.04,
+    "wall_seconds_7b": 1510.0,
+    "source": "docs/SPACE-ROADMAP.md \u00a78: 7B Q4_K_M, 28 layers x 2 tensors = \u22482.26 B edited params"
+  },
+  "doc_note": "the numbers in this file are a CPU proxy measured on 2 affinity-pinned cores of a 32-core host; no document may quote them as a Space runtime"
+}

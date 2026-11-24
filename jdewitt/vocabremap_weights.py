@@ -75,7 +75,13 @@ def discover_vocab_tensors(artifact):
     A vocabulary-wide tensor with no recognised role is reported, never edited.
     """
     from .gguf_adapters import gguf_weight_shapes
-    from .ggufio import header_reader
+    try:  # the header-only reader landed with the parallel-requant work (P2c)
+        from .ggufio import header_reader
+    except ImportError:  # master without P2c: same records, slower walk
+        from gguf import GGUFReader
+
+        def header_reader(path, header=None):
+            return GGUFReader(str(path))
 
     tokenizer = read_tokenizer(artifact)
     n_vocab = len(tokenizer['tokens'])

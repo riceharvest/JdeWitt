@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "lineage": "qwen3-4b-instruct-2507",
+  "label": "f15s15-l935-refit",
+  "measured": true,
+  "arm_refit": true,
+  "instrument": "llama-perplexity, ctx 512, 16 threads; control corpus, prefill only",
+  "control_delta_ln_ppl": 0.0606,
+  "budget": 0.02,
+  "inside_budget": false,
+  "artifacts": {
+    "base": {
+      "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+      "sha256": "67db5ebe21965b6b9612d44a315fe2cda44d893c0163561c0e0c2236d80377a5",
+      "ln_ppl": 0.2355,
+      "ppl": 1.2656,
+      "uncertainty": 0.02535,
+      "seconds": 116.8
+    },
+    "arm": {
+      "path": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf",
+      "sha256": "8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494",
+      "ln_ppl": 0.2961,
+      "ppl": 1.3446,
+      "uncertainty": 0.03709,
+      "seconds": 192.8
+    }
+  },
+  "control_corpus": {
+    "path": "/home/dario/.agentboard/worktrees/t_f80b38d9/verification/ppl-probe/control.txt",
+    "sha256": "07adf2f9f3b1d3885886b199255cd786c5c720a5f4baf11e3cdfc617712b01f7",
+    "bytes": 18862
+  },
+  "runner": {
+    "binary": "/home/dario/llama.cpp-spark/build-cpu/bin/llama-perplexity",
+    "ctx": 512,
+    "threads": 16
+  },
+  "note": "the control-corpus drift is a generic-degeneration reading, not a delivery or removal claim; delta is ln(ppl_arm) - ln(ppl_base)"
+}

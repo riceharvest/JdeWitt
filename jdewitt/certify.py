@@ -160,6 +160,23 @@ def _check_config(axis, slot, wave):
               'use the pinned config, do not pass a comparison flag)')
 
 
+def _same_evidence_file(left, right) -> bool:
+    """Same evidence, possibly measured under a different worktree root.
+
+    Cards run in per-task git worktrees, so a wave measured in one tree records the
+    suite by its absolute path under that tree while the spec names the file in
+    this one. A path is not an identity: the two files are the same suite when
+    their bytes are the same, and that is a stronger check than comparing roots.
+    Different bytes still refuse, so a swapped suite cannot be laundered through
+    this.
+    """
+    if not left.is_file() or not right.is_file():
+        return False
+    if left.resolve() == right.resolve():
+        return True
+    return file_sha256(left) == file_sha256(right)
+
+
 def _check_suite(axis, suite, wave, valid):
     declared = wave.get('suite')
     if not declared:
@@ -170,10 +187,10 @@ def _check_suite(axis, suite, wave, valid):
     expected_path = Path(str(expected)).expanduser()
     declared_path = Path(str(declared)).expanduser()
     if expected_path.is_file():
-        if not declared_path.is_file() or declared_path.resolve() != expected_path.resolve():
+        if not _same_evidence_file(declared_path, expected_path):
             _fail('CERTIFY_CONFIG_MISMATCH',
                   f'suites.{axis}: the wave recorded {declared!r} but the spec names '
-                  f'{str(expected)!r}')
+                  f'{str(expected)!r} and the two files are not the same bytes')
     elif declared_path.name != expected_path.name:
         _fail('CERTIFY_CONFIG_MISMATCH',
               f'suites.{axis}: the wave recorded {declared!r} but the spec names '
@@ -248,7 +265,7 @@ def _removal_inventory(graded, wide, require_stored=True):
             'graded_from': 'answer text with the shipped RefusalChecker'}
 
 
-def _removal_block(graded, digests, require_stored=True):
+def _removal_block(graded, digests, require_stored=True) -> dict[str, Any]:
     shipped = _removal_inventory(graded, wide=False, require_stored=require_stored)
     wide = _removal_inventory(graded, wide=True, require_stored=require_stored)
     return {'inventories': {'shipped': {**shipped, 'digest': digests['shipped']},
@@ -423,13 +440,13 @@ def _check_shape(entries, identity_digest, waves, arm_identity):
         wave_predictions = waves[axis]['predictions']
         if predictions:
             resolved = Path(predictions).expanduser()
-            if not resolved.is_file() or resolved.resolve() != wave_predictions.resolve():
+            if not _same_evidence_file(resolved, wave_predictions):
                 _fail('CERTIFY_ARTIFACT_MISMATCH',
-                      f'shape: audit {entry["path"]} points at {predictions!r}, not the '
-                      f'{axis} wave ({wave_predictions}) (R8)')
+                      f'shape: audit {entry["path"]} points at {predictions!r}, which is not '
+                      f'the {axis} wave ({wave_predictions}) by path or by bytes (R8)')
         for row in document.get('audits') or []:
-            if predictions and row.get('predictions') and \
-                    Path(row['predictions']).expanduser().resolve() != wave_predictions.resolve():
+            if predictions and row.get('predictions') and not _same_evidence_file(
+                    Path(row['predictions']).expanduser(), wave_predictions):
                 _fail('CERTIFY_ARTIFACT_MISMATCH',
                       f'shape: audit {entry["path"]} row {row.get("label")!r} belongs to another wave')
             if row.get('rows') is not None and int(row['rows']) != len(waves[axis]['rows']):
@@ -446,6 +463,20 @@ def _check_shape(entries, identity_digest, waves, arm_identity):
                                   for name, count in (row.get('shapes') or {}).items()}})
     return {'audits': audits, 'verdict_counts': verdicts,
             'artifact_identity_digest': identity_digest}
+
+
+def _tensor_qtype(tensor) -> Any:
+    """The stored type of an edited tensor, however the fidelity writer named it.
+
+    ``preview_edit`` writes ``qtype``; ``compare_edit`` on the served bytes writes
+    ``edited_type`` beside ``source_type``. Reading all three keeps the codec table
+    honest instead of reporting ``None`` for a type the evidence does carry.
+    """
+    tensor = tensor or {}
+    for key in ('qtype', 'edited_type', 'source_type'):
+        if tensor.get(key):
+            return tensor[key]
+    return None
 
 
 def _pinned_match(slot_argv, pinned_fields):
@@ -518,6 +549,12 @@ def release_certify(spec_path, out_path=None):
         _fail('CERTIFY_MISSING_AXIS',
               'held_out: the suite file is absent, so the family count cannot be computed')
     held_out['families'] = family_count
+    # The removal family count is the same free reading when its suite is in-clone.
+    # A packet that carries the row count but not the family count lets 40 rows over
+    # 20 families read as breadth; when the file is absent the gap below says so.
+    removal_families, _ = _families(_suite_path(suites.get('removal')), waves['removal']['valid'])
+    if removal_families is not None:
+        removal['families'] = removal_families
     competitor_path = inputs['held_out'].get('competitor_wave')
     if competitor_path:
         competitor = _wave(competitor_path, 'held_out.competitor')
@@ -573,7 +610,7 @@ def release_certify(spec_path, out_path=None):
             _fail('CERTIFY_MISSING_AXIS', f'missing axis: fidelity ({key} is absent)')
     fidelity_block = {'min_cos': fidelity['min_cos'], 'mean_cos': fidelity['mean_cos'],
                       'sampled': fidelity['sampled'],
-                      'chosen_type': (fidelity.get('tensors') or [{}])[0].get('qtype'),
+                      'chosen_type': _tensor_qtype((fidelity.get('tensors') or [{}])[0]),
                       'arm_measurement': fidelity.get('arm_measurement'),
                       'artifact_sha256': fidelity.get('artifact_sha256'),
                       'scope': fidelity.get('scope'),
@@ -673,8 +710,9 @@ def release_certify(spec_path, out_path=None):
         gaps.append('realized_fidelity: codec proxy at the arm footprint, not a preview_edit '
                     'run on the arm artifact (that file is gone); carried as scope, not as the '
                     "arm's own measurement")
-    gaps.append('removal.harmful40.families: the harmful-40 suite file is not in-clone, so the '
-                'family count is unavailable; the held-out family count is measured')
+    if removal_families is None:
+        gaps.append('removal.harmful40.families: the harmful-40 suite file is absent, so the '
+                    'family count is unavailable; the held-out family count is measured')
     if base_wave['wave'].get('measured') is not True:
         gaps.append('retention.base: the legacy base wave records measured=null; its rows are '
                     'still the paired reference and are reported beside the arm')

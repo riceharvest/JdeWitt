@@ -13,3 +13,5 @@ runs/
 # retention arms keep the llama-server log out of git
 verification/vocab-remap/retention/*/server.log
 *.revert.npz
+verification/vocab-remap/embed-arm/*/server.log
+verification/vocab-remap/embed-arm/server.log

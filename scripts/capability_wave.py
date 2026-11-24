@@ -8,7 +8,7 @@ shape jdewitt's own scoring and comparison commands read, so the numbers come ou
 of the shipped instrument.
 
     python scripts/capability_wave.py SUITE OUT_DIR --label NAME [--port 8134]
-        [--max-tokens 512] [--parallel 2] [--kinds math,code,refusal,harmless]
+        [--max-tokens 512] [--parallel 2] [--kinds math,code,refusal,harmless] [--no-think]
 
 Rows are generated greedy at temperature 0. Answers are graded by the same
 grade_math / grade_python / judge paths the pipeline uses, through
@@ -59,10 +59,12 @@ class WaveJudge:
 
 
 def chat(port: int, prompt: str, max_tokens: int, timeout: int = 240,
-         sampling: dict | None = None) -> dict:
+         sampling: dict | None = None, template_kwargs: dict | None = None) -> dict:
     body = {'messages': [{'role': 'user', 'content': prompt}],
             'temperature': (sampling or {}).get('temperature', 0.0),
             'max_tokens': max_tokens, 'stream': False}
+    if template_kwargs:
+        body['chat_template_kwargs'] = dict(template_kwargs)
     for key in ('top_p', 'top_k', 'seed'):
         if sampling and sampling.get(key) is not None:
             body[key] = sampling[key]
@@ -106,6 +108,12 @@ def main(argv=None):
     parser.add_argument('--top-p', type=float, default=None)
     parser.add_argument('--top-k', type=int, default=None)
     parser.add_argument('--seed', type=int, default=None)
+    parser.add_argument('--no-think', action='store_true',
+                        help='render the chat template with enable_thinking=false. An artifact '
+                             'whose template opens a reasoning block spends the cap inside it: '
+                             'at the pinned cap the content is then empty on every row, and an '
+                             'empty answer trips no refusal wording — recorded as perfect removal. '
+                             'Recorded in wave.json as serve_structured.no_think.')
     parser.add_argument('--preview', type=int, default=0,
                         help='print the first N answers so the shape gets read, not just scored')
     parser.add_argument('--ledger', type=Path, default=None)
@@ -169,16 +177,19 @@ def main(argv=None):
         return None
     sampling = {'temperature': args.temperature, 'top_p': args.top_p,
                 'top_k': args.top_k, 'seed': args.seed}
+    template_kwargs = {'enable_thinking': False} if args.no_think else None
     structured = {'ctx': grab(r'(?:-c|ctx-size)[ =]+(\d+)'),
                   'parallel': grab(r'(?:--?parallel|-n)[ =]+(\d+)', r'\bparallel[ =]+(\d+)'),
                   'max_tokens': args.max_tokens,
                   'temperature': args.temperature, 'sampling': sampling,
                   'jinja': '--jinja' in cfg, 'cuda': 'cuda' in cfg.lower(),
+                  'no_think': bool(args.no_think),
                   'suite': str(args.suite)}
     started = time.monotonic()
     with ThreadPoolExecutor(max_workers=max(1, args.parallel)) as pool:
         answers = list(pool.map(lambda row: chat(args.port, row['prompt'], args.max_tokens,
-                                                 sampling=sampling), rows))
+                                                 sampling=sampling,
+                                                 template_kwargs=template_kwargs), rows))
     elapsed = time.monotonic() - started
     judge = WaveJudge()
     scored = []

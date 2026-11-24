@@ -1,0 +1,55 @@
+{
+  "allow_list": {
+    "digest_file": "spaces/bank/SHA256SUMS",
+    "digest_line": "aa03c2261bb16357d564a7588f607f3f59043be36edabcac7c674b10bf779de2  licences.json",
+    "path": "spaces/bank/licences.json",
+    "sha256": "aa03c2261bb16357d564a7588f607f3f59043be36edabcac7c674b10bf779de2"
+  },
+  "cases": [
+    {
+      "allow_list_sha256": "aa03c2261bb16357d564a7588f607f3f59043be36edabcac7c674b10bf779de2",
+      "case": "allowed_permissive",
+      "decision": "allowed",
+      "detail": "Qwen/Qwen3-4B-Instruct-2507 declares licence 'apache-2.0', which is on the bank's allow-list.",
+      "licence": "apache-2.0",
+      "licence_source": "cardData.license",
+      "reason": "LICENCE_ACCEPTED",
+      "repo": "Qwen/Qwen3-4B-Instruct-2507",
+      "resolved_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554"
+    },
+    {
+      "allow_list_sha256": "aa03c2261bb16357d564a7588f607f3f59043be36edabcac7c674b10bf779de2",
+      "case": "off_list",
+      "decision": "refused",
+      "detail": "bigscience/bloom-560m declares licence 'bigscience-bloom-rail-1.0', which is not on the bank's allow-list (allowed: apache-2.0).",
+      "licence": "bigscience-bloom-rail-1.0",
+      "licence_source": "cardData.license",
+      "reason": "LICENCE_UNKNOWN",
+      "repo": "bigscience/bloom-560m",
+      "resolved_revision": "ac2ae5fab2ce3f9f40dc79b5ca9f637430d24971",
+      "revision": "ac2ae5fab2ce3f9f40dc79b5ca9f637430d24971"
+    },
+    {
+      "case": "gated",
+      "decision": "refused",
+      "detail": "meta-llama/Llama-3.2-1B is gated on the Hub, and an anonymous Space cannot authenticate, so the file is refused before any download.",
+      "licence": "llama3.2",
+      "licence_source": "cardData.license",
+      "reason": "GATED_REPO",
+      "repo": "meta-llama/Llama-3.2-1B",
+      "resolved_revision": "4e20de362430cd3b72f300e6b0f18e50e7166e08",
+      "revision": "4e20de362430cd3b72f300e6b0f18e50e7166e08"
+    }
+  ],
+  "checked_at": "2026-11-23T18:11:28Z",
+  "command": "python -m jdewitt.bank_licence <repo> --revision <sha>",
+  "download_evidence": {
+    "download_calls": "none: the gate imports/calls no download function",
+    "hf_home": "pointed at an empty private directory for all three commands",
+    "hf_home_files_after": 0,
+    "hub_call": "HfApi().model_info(repo, revision=..., files_metadata=False)"
+  },
+  "schema": "jdewitt-space-licence-gate-v1",
+  "scope": "SPACE-ROADMAP §7.2 (card 5): licence and access gate. Hub metadata only; each row is the stdout of one command."
+}
