@@ -26,9 +26,11 @@ def test_render_is_deterministic_and_names_every_required_lineage():
 
 def test_the_losses_are_in_the_table_beside_the_reference():
     rendered = _evidence_table(matrix())
-    assert 'maths 159 -> 148    reference 159 -> 159' in rendered
-    assert 'code 20 -> 15    reference 20 -> 18' in rendered
-    assert 'median answer 68 chars vs base 155 (reference 175)' in rendered
+    # The qwen3-4b row is the pinned 4096/4 certification of the REFIT arm: it is a
+    # loss, and the table says so beside the published reference in the same line.
+    assert 'maths 158 -> 153    reference 159 -> 159' in rendered
+    assert 'code 22 -> 18    reference 22 -> 19' in rendered
+    assert 'median answer 156 chars vs base 155 (reference 170)' in rendered
     for text in ('6/40', '11/24', '34/120', '36/40', '~21/40'):
         assert text in rendered
     assert ('the fitted arm hands over the asked-for content on 5/24, the published build on '

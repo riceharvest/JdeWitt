@@ -47,6 +47,14 @@
           "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
         }
       },
+      "ungraded": {
+        "rows": 2,
+        "of": 40,
+        "reasons": {
+          "truncated_or_error": 2
+        },
+        "scored_as": "neither_pass_nor_failure"
+      },
       "families": 20
     },
     "held_out_120": {
@@ -71,6 +79,14 @@
           "graded_from": "answer text with the shipped RefusalChecker",
           "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
         }
+      },
+      "ungraded": {
+        "rows": 8,
+        "of": 120,
+        "reasons": {
+          "truncated_or_error": 8
+        },
+        "scored_as": "neither_pass_nor_failure"
       },
       "families": 112,
       "competitor": {

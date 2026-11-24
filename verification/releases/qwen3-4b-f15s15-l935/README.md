@@ -1,5 +1,14 @@
 # qwen3-4b-f15s15-l935 — Phase 7 certification packet
 
+> **SUPERSEDED as the row, kept as the retired-config record.** These waves were
+> served at `-c 8192` (`--parallel 2` for removal, `--parallel 4` elsewhere), so this
+> packet prints `pinned_cert_match=false` on every axis and is not the certificate.
+> The pinned `-c 4096 --parallel 4` row — a **REFIT** of this recipe, because the
+> banked axis file died with `/mnt/ssd/hermes` — is
+> `verification/p7-q3-4b/packet.json`, and its verdict is a removal loss:
+> `verification/p7-q3-4b/VERDICT.md`. Read this file for what the banked axis did at
+> 8192; never quote it as the pinned result.
+
 One arm, both axes, one serve config per axis. `packet.json` is generated; do not
 hand-edit it.
 

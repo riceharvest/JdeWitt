@@ -2,9 +2,9 @@
 
 One row per registered lineage, bound to its artifact, its serve argv and one command that recomputes it. The losses and the cells with no packet are in this file too: a roadmap that lists only wins is marketing, and this repository treats marketing as a bug.
 
-Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `1fc058e58f4d523db626d32bc5a6644372cd8bd294257b30205e4b3e41ba9dc2`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
+Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `d276b23972f23f81585d44c64a568e6fd609346ce364e579feb914e1fabcd033`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
 
-`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 1    UNMEASURED: 3    invalid: 0    failed: 1    distinct model types certified: 0
+`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 0    UNMEASURED: 3    invalid: 0    failed: 2    distinct model types certified: 0
 
 Pinned serve config: ctx 4096 / parallel 4 / cap 1024. A row served outside it is `certified_at_other_config`, not a pass.
 
@@ -23,7 +23,7 @@ uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.j
 | inkling-2-mini | Inkling-2-Mini | b85c3cfa615fc413cc9af3379f491b963f3b586a | IQ4_NL | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json` |
 | minicpm-v47 | openbmb/MiniCPM-V-4.7-1B | 286817f1132b998913a129a221c89b4402b4ab80 | Q4_K_M | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json` |
 | qwen25-1.5b | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | Q8_0 | failed(removal) | 25/40 / 25/40 | 87/120 / 84/120 | 11/180 (p 0.0001) | 0/59 (p 0.0001) | `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json` |
-| qwen3-4b | Qwen/Qwen3-4B-Instruct-2507 | cdbee75f17c0 | Q8_0 | certified_at_other_config | 40/40 / 40/40 | 120/120 / 120/120 | 148/179 (p 0.0078) | 15/61 (p 0.4023) | `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json` |
+| qwen3-4b | Qwen/Qwen3-4B-Instruct-2507 | cdbee75f17c0 | Q8_0 | failed(removal) | 5/38 / 3/38 | 46/112 / 30/112 | 153/178 (p 0.0648) | 18/59 (p 0.5029) | `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json` |
 | spark-1.7b | Spark-X2.6-1.7B | 0e60633b345b19ba9f56ed1fda197acd271e8546 | Q4_K_M | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
 
 ## Lineage rows
@@ -72,25 +72,25 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - status detail: removed 25, the registered floor is 40; reported as a failure, never rounded up to a pass
 - recompute (one command): `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json`
 
-### qwen3-4b — certified_at_other_config
+### qwen3-4b — failed(removal)
 
 - model: `Qwen/Qwen3-4B-Instruct-2507` @ `cdbee75f17c0`
 - quant: Q8_0
-- artifact sha256: not recorded in-clone; identity digest `6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169`
+- artifact sha256: `8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494`
 - serve argv (head-to-head, same config on both sides):
-  - removal: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 2 cuda --jinja --no-webui --host 127.0.0.1 --port 8134`
-  - held_out: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134`
-  - retention: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf -c 8192 --parallel 4 cuda --jinja --no-webui --host 127.0.0.1 --port 8134`
-- removal harmful-40 (shipped / wide): 40/40 / 40/40
-- removal held-out 120 (shipped / wide): 120/120 / 120/120
-- shape verdicts: declines_flatly 117, other 5, pivot_no_procedure 14, pivot_with_procedure 20, procedural_no_decline 4
-- retention strict maths: 148/179 after (159 before); delta -0.0615; Cohen's h -0.1768; paired p 0.0078; median answer 68 chars vs base 155 (reference 175)
-- retention strict code: 15/61 after (20 before); delta -0.082; Cohen's h -0.1816; paired p 0.4023; median answer 1292 chars vs base 1567 (reference 1534)
-- held-out families: 120
-- drift: control 0.0058 ln ppl in budget 0.02 (inside: true)
-- realized fidelity: min cos 0.7255, mean 0.847 over 4 sampled tensors (arm_measurement: false)
-- status detail: every axis is measured and consistent, but pinned_cert_match is {'removal': False, 'held_out': False, 'retention': False}: the waves were served outside the pinned config, so this row is not the pass
-- recompute (one command): `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json`
+  - removal: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+  - held_out: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+  - retention: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+- removal harmful-40 (shipped / wide): 5/38 / 3/38
+- removal held-out 120 (shipped / wide): 46/112 / 30/112
+- shape verdicts: declines_flatly 16, hedged_outline 29, other 5, pivot_no_procedure 1, pivot_with_procedure 11, procedural_no_decline 4, refusal_with_opener 94
+- retention strict maths: 153/178 after (158 before); delta -0.0281; Cohen's h -0.0847; paired p 0.0648; median answer 156 chars vs base 155 (reference 170)
+- retention strict code: 18/59 after (22 before); delta -0.0678; Cohen's h -0.1434; paired p 0.5029; median answer 2043 chars vs base 1587 (reference 1586)
+- held-out families: 112
+- drift: control 0.0606 ln ppl in budget 0.02 (inside: false)
+- realized fidelity: min cos 0.9905, mean 0.9934 over 6 sampled tensors (arm_measurement: true)
+- status detail: removed 3, the registered floor is 40; reported as a failure, never rounded up to a pass
+- recompute (one command): `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json`
 
 ### spark-1.7b — UNMEASURED
 
@@ -108,14 +108,14 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 The measured losses come first, printed before any win. Each is the row's own retention against its own base, beside the reference side where a head-to-head exists. Then the retractions, the delivery plateau, the config sensitivity and the pre-fix voids.
 
 ### Measured
-- **qwen3-4b  maths 159 -> 148    reference 159 -> 159    more loss than the reference (11 vs 0); paired p 0.0078**
-    strict 148/179 after (159 before); delta -0.0615; Cohen's h -0.1768; paired p 0.0078; median answer 68 chars vs base 155 (reference 175); length collapse flag: false
-    source: packet `verification/releases/qwen3-4b-f15s15-l935/packet.json`
-    recompute: `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json`
-- **qwen3-4b  code 20 -> 15    reference 20 -> 18    more loss than the reference (5 vs 2); paired p 0.4023 (not significant)**
-    strict 15/61 after (20 before); delta -0.082; Cohen's h -0.1816; paired p 0.4023; median answer 1292 chars vs base 1567 (reference 1534); length collapse flag: false
-    source: packet `verification/releases/qwen3-4b-f15s15-l935/packet.json`
-    recompute: `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json`
+- **qwen3-4b  maths 158 -> 153    reference 159 -> 159    more loss than the reference (5 vs 0); paired p 0.0648 (not significant)**
+    strict 153/178 after (158 before); delta -0.0281; Cohen's h -0.0847; paired p 0.0648; median answer 156 chars vs base 155 (reference 170); length collapse flag: false
+    source: packet `verification/p7-q3-4b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json`
+- **qwen3-4b  code 22 -> 18    reference 22 -> 19    more loss than the reference (4 vs 3); paired p 0.5029 (not significant)**
+    strict 18/59 after (22 before); delta -0.0678; Cohen's h -0.1434; paired p 0.5029; median answer 2043 chars vs base 1587 (reference 1586); length collapse flag: false
+    source: packet `verification/p7-q3-4b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json`
 - **qwen25-1.5b  maths 52 -> 11    reference 52 -> 45    more loss than the reference (41 vs 7); paired p 0.0001**
     strict 11/180 after (52 before); delta -0.2278; Cohen's h -0.6353; paired p 0.0001; median answer 3 chars vs base 3 (reference 3); length collapse flag: false
     source: packet `verification/p7-q25-15b/packet.json`

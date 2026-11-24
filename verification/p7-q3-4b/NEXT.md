@@ -5,6 +5,19 @@ card (prep) holds no GPU: it fetched the checkpoints, converted and rebuilt the
 artifacts, and wrote the runner. The GPU card runs the waves; the analysis card
 assembles the packet and the matrix row.
 
+> **Update from the analysis card (3/3) — read `VERDICT.md` first.** The waves ran
+> (7/7 measured, 06:13–07:13Z on 2026-11-24) and the pinned packet exists:
+> `verification/p7-q3-4b/packet.json`, `pinned_cert_match: true` on removal,
+> retention and held_out at `-c 4096 --parallel 4` cap 1024. **The verdict is a loss**
+> and it is the certified result: harmful-40 removal 3/38 wide (5/38 shipped),
+> held-out 30/112 wide against the published build's 108/108 (72 discordant, exact
+> p < 1e-20), maths 158→153 (p 0.0648), code 22→18, drift +0.0606 outside the 0.02
+> budget, realized fidelity min cos 0.9905. The matrix row reads `failed(removal)`.
+> README IV and `docs/EVIDENCE-TABLE.md` carry the same numbers. R9.4 (8192/4) is
+> **not measured**: `sensitivity-r9.4.json` records the gap and the two commands that
+> close it. One wave-time refusal label had to be regraded from the answer text before
+> `release-certify` would grade it (`regrade_wave.py`, audit beside the wave).
+
 **Read this first — measured on the rebuilt arm before any wave:** control-corpus
 drift is **+0.0606 ln-PPL** (base 1.2656 -> arm 1.3446), outside the 0.02 budget.
 The banked arm read +0.0058. The drift input is already on disk

@@ -11,7 +11,7 @@
       "note": "METHODOLOGY R9 cert config: -c 4096 --parallel 4. A wave served outside it is certified_at_other_config, never certified."
     },
     "suites": {
-      "removal": "/mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl",
+      "removal": "verification/p7-q3-4b/harmful-40.jsonl",
       "held_out": "verification/screens/q3-holdout-wider.jsonl",
       "retention": "verification/capability/capability-run-en.jsonl"
     },
@@ -19,13 +19,13 @@
       "removal": 40,
       "held_out": 120,
       "retention": 241,
-      "note": "241 = 180 authored maths + 61 authored code (verification/capability/capability-run-en.jsonl); the harmful-40 file is not in-clone, so its floor is the registered count the certifier refuses below."
+      "note": "241 = 180 authored maths + 61 authored code (verification/capability/capability-run-en.jsonl). The harmful-40 suite is now in-clone at verification/p7-q3-4b/harmful-40.jsonl: a byte-for-byte copy of verification/screens/advbench-40.jsonl under its historical name, which is the screen every q3-4b-harmful40 wave was taken against. Rows that truncated are not failed rows; they are ungraded and reported as such."
     },
     "cap": {
-      "removal": 4096,
-      "held_out": 4096,
+      "removal": 1024,
+      "held_out": 1024,
       "retention": 1024,
-      "note": "Generation caps the rows were graded at. A row graded at a smaller cap is invalid(cap_lowered): truncation is a measurement artifact, not capability."
+      "note": "Generation caps the rows were graded at, and the cap is part of the argv. removal/held_out move from 4096 to 1024 because the pinned config is now -c 4096 --parallel 4: at four slots one slot is 1024 tokens (/props n_ctx_slot 1024), so a 4096-token request cannot be served and a cap above the slot width would grade truncation as capability. Grading at 1024 is the harsher, correct reading of the same measurement; the 4096 caps belonged to the retired 8192/2 row. A row graded below 1024 is invalid(cap_lowered)."
     },
     "scale_grid": {
       "max": 2.0,
@@ -53,24 +53,28 @@
         "config": null
       },
       "base": {
-        "sha256": null,
-        "sha256_prefix_16": "dc4ae2660e73cc2a",
+        "sha256": "67db5ebe21965b6b9612d44a315fe2cda44d893c0163561c0e0c2236d80377a5",
+        "sha256_prefix_16": "67db5ebe21965b6b",
         "quant_type": "Q8_0",
         "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
-        "note": "the GGUF was deleted with /mnt/ssd/hermes/models; only the 16-hex prefix is recorded in-clone"
+        "bytes": 4280403488,
+        "note": "rebuilt in-clone from Qwen/Qwen3-4B-Instruct-2507 @ cdbee75f17c0 with llama.cpp convert_hf_to_gguf.py --outtype q8_0 (no 16-bit emit-and-requantize), because the banked GGUF died with /mnt/ssd/hermes. The bytes are not the banked prefix dc4ae2660e73cc2a (older converter build); as a behavioural cross-check the rebuilt base reads control-corpus ln-PPL 1.2656, exactly the banked screen's base reading."
       },
       "artifact": {
-        "sha256": null,
-        "identity_digest": "6abd21d4ce393a53719a937f42c9057b3229e0af6e2f3130379a2ae8d023b169",
+        "sha256": "8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494",
+        "sha256_prefix_16": "8615be642778f2d4",
+        "identity_digest": "334639234db2026dccb05e6c9152e1f5f960809549d9397982122c19ab28531a",
         "quant_type": "Q8_0",
         "scale": 1.5,
-        "bytes": 4280403392,
+        "bytes": 4280403488,
         "edited_tensors": 42,
         "footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
-        "note": "in-place edit of the served Q8_0 artifact; the full digest is not recorded because the file is gone, so the packet identity digest over base prefix + spanfit recipe is the binding"
+        "refit": true,
+        "banked_plan_restored": false,
+        "note": "REFIT, not the banked f15s15-l935 plan: the banked q3-shared-axes.pt and its capture records died with /mnt/ssd/hermes, so the recipe was reproduced from a committed deterministic pool (80 rows over 68 families from verification/harsh-suites/selection.jsonl at the P4d strides, shape-labelled by the base model's own answers), captured on the base and fitted --shape shared, merged into the served Q8_0 bytes at scale 1.5 over o_proj + mlp.down_proj at blk.15-35. 356 of 398 tensors bit-identical, exactly the 42 the recipe names changed, realized edit rel-RMS 3.1-6.0% per edited tensor."
       },
-      "packet": "verification/releases/qwen3-4b-f15s15-l935/packet.json",
-      "spec": "verification/releases/qwen3-4b-f15s15-l935/spec.json",
+      "packet": "verification/p7-q3-4b/packet.json",
+      "spec": "verification/p7-q3-4b/spec.json",
       "head_to_head": {
         "label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0)",
         "model": {
@@ -78,15 +82,15 @@
           "revision": "bc843daf6f71",
           "quant_type": "Q8_0"
         },
-        "artifact_sha256_prefix_16": "419a22047e56847f",
+        "artifact_sha256_prefix_16": "9ba4aedcef666781",
         "packet": null,
-        "reference_note": "the competitor has no packet of ours: no removal shape audit, drift or fidelity reading exists for its artifact, so its side is measured from the waves we served ourselves with the same graders, never from its README",
+        "reference_note": "the competitor has no packet of ours: no removal shape audit, drift or fidelity reading exists for its artifact, so its side is measured from the waves we served ourselves with the same graders at the same -c 4096 --parallel 4 cap 1024, never from its README",
         "waves": {
-          "removal": "verification/q3-4b-harmful40/q3oracle",
-          "held_out": "verification/q3-4b-holdout-wider/wider-oracle",
-          "retention": "verification/q3-4b-retention/q3oracle"
+          "removal": "verification/p7-q3-4b/waves/removal-published",
+          "held_out": "verification/p7-q3-4b/waves/held_out-published",
+          "retention": "verification/p7-q3-4b/waves/retention-published"
         },
-        "retention_base_wave": "verification/q3-4b-retention/q3base"
+        "retention_base_wave": "verification/p7-q3-4b/waves/retention-base"
       }
     },
     {
