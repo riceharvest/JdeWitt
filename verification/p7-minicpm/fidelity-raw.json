@@ -1,0 +1,430 @@
+{
+ "arm": "refit-perlayer-s1.0",
+ "axes": {
+  "layers": 24,
+  "path": "/mnt/ssd/p7-minicpm/refit-axes.pt",
+  "sha256": "2caf620221403ffe0ebc77d0d49c168458df8c28ecce33f26d3edc604bbc3646",
+  "width": 1024
+ },
+ "axis_space": "output",
+ "base": {
+  "path": "/mnt/ssd/p7-minicpm/base.gguf",
+  "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be"
+ },
+ "merged": {
+  "path": "/mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf",
+  "sha256": "de4d61b3552a99aecab9f90e8198d2d07f445f872f3f47d1e426761572ae27ef"
+ },
+ "per_tensor": [
+  {
+   "cos": 0.9535,
+   "edited_type": "Q6_K",
+   "name": "blk.0.ffn_down.weight",
+   "norm_ratio": 1.0282,
+   "snr": 3.217,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.7778,
+   "edited_type": "Q4_K",
+   "name": "blk.0.ssm_out.weight",
+   "norm_ratio": 0.9873,
+   "snr": 1.509,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9536,
+   "edited_type": "Q6_K",
+   "name": "blk.1.ffn_down.weight",
+   "norm_ratio": 1.0284,
+   "snr": 3.221,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.796,
+   "edited_type": "Q4_K",
+   "name": "blk.1.ssm_out.weight",
+   "norm_ratio": 1.0075,
+   "snr": 1.559,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9441,
+   "edited_type": "Q6_K",
+   "name": "blk.2.ffn_down.weight",
+   "norm_ratio": 1.0328,
+   "snr": 2.928,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.7685,
+   "edited_type": "Q4_K",
+   "name": "blk.2.ssm_out.weight",
+   "norm_ratio": 1.0043,
+   "snr": 1.466,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7609,
+   "edited_type": "Q4_K",
+   "name": "blk.3.attn_output.weight",
+   "norm_ratio": 0.9945,
+   "snr": 1.45,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7394,
+   "edited_type": "Q4_K",
+   "name": "blk.3.ffn_down.weight",
+   "norm_ratio": 0.9758,
+   "snr": 1.401,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7386,
+   "edited_type": "Q4_K",
+   "name": "blk.4.ffn_down.weight",
+   "norm_ratio": 0.9737,
+   "snr": 1.4,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.784,
+   "edited_type": "Q4_K",
+   "name": "blk.4.ssm_out.weight",
+   "norm_ratio": 1.0076,
+   "snr": 1.515,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9529,
+   "edited_type": "Q6_K",
+   "name": "blk.5.ffn_down.weight",
+   "norm_ratio": 1.03,
+   "snr": 3.192,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.7462,
+   "edited_type": "Q4_K",
+   "name": "blk.5.ssm_out.weight",
+   "norm_ratio": 0.9852,
+   "snr": 1.414,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7295,
+   "edited_type": "Q4_K",
+   "name": "blk.6.ffn_down.weight",
+   "norm_ratio": 0.9734,
+   "snr": 1.377,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7645,
+   "edited_type": "Q4_K",
+   "name": "blk.6.ssm_out.weight",
+   "norm_ratio": 0.9907,
+   "snr": 1.464,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7667,
+   "edited_type": "Q4_K",
+   "name": "blk.7.attn_output.weight",
+   "norm_ratio": 0.9646,
+   "snr": 1.488,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.8004,
+   "edited_type": "Q4_K",
+   "name": "blk.7.ffn_down.weight",
+   "norm_ratio": 0.9957,
+   "snr": 1.585,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9587,
+   "edited_type": "Q6_K",
+   "name": "blk.8.ffn_down.weight",
+   "norm_ratio": 1.0263,
+   "snr": 3.418,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.8013,
+   "edited_type": "Q4_K",
+   "name": "blk.8.ssm_out.weight",
+   "norm_ratio": 0.9914,
+   "snr": 1.593,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7277,
+   "edited_type": "Q4_K",
+   "name": "blk.9.ffn_down.weight",
+   "norm_ratio": 0.9878,
+   "snr": 1.363,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7487,
+   "edited_type": "Q4_K",
+   "name": "blk.9.ssm_out.weight",
+   "norm_ratio": 0.989,
+   "snr": 1.418,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.711,
+   "edited_type": "Q4_K",
+   "name": "blk.10.ffn_down.weight",
+   "norm_ratio": 0.977,
+   "snr": 1.33,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.7343,
+   "edited_type": "Q4_K",
+   "name": "blk.10.ssm_out.weight",
+   "norm_ratio": 0.9775,
+   "snr": 1.387,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.6709,
+   "edited_type": "Q4_K",
+   "name": "blk.11.attn_output.weight",
+   "norm_ratio": 0.9469,
+   "snr": 1.264,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9431,
+   "edited_type": "Q6_K",
+   "name": "blk.11.ffn_down.weight",
+   "norm_ratio": 1.0351,
+   "snr": 2.898,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.6709,
+   "edited_type": "Q4_K",
+   "name": "blk.12.ffn_down.weight",
+   "norm_ratio": 0.9617,
+   "snr": 1.255,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.684,
+   "edited_type": "Q4_K",
+   "name": "blk.12.ssm_out.weight",
+   "norm_ratio": 0.9701,
+   "snr": 1.276,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.642,
+   "edited_type": "Q4_K",
+   "name": "blk.13.ffn_down.weight",
+   "norm_ratio": 0.9487,
+   "snr": 1.211,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.6866,
+   "edited_type": "Q4_K",
+   "name": "blk.13.ssm_out.weight",
+   "norm_ratio": 0.9706,
+   "snr": 1.281,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9223,
+   "edited_type": "Q6_K",
+   "name": "blk.14.ffn_down.weight",
+   "norm_ratio": 1.0409,
+   "snr": 2.472,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.6364,
+   "edited_type": "Q4_K",
+   "name": "blk.14.ssm_out.weight",
+   "norm_ratio": 0.9604,
+   "snr": 1.195,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5821,
+   "edited_type": "Q4_K",
+   "name": "blk.15.attn_output.weight",
+   "norm_ratio": 0.9134,
+   "snr": 1.139,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.6139,
+   "edited_type": "Q4_K",
+   "name": "blk.15.ffn_down.weight",
+   "norm_ratio": 0.9284,
+   "snr": 1.177,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5719,
+   "edited_type": "Q4_K",
+   "name": "blk.16.ffn_down.weight",
+   "norm_ratio": 0.9061,
+   "snr": 1.129,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5856,
+   "edited_type": "Q4_K",
+   "name": "blk.16.ssm_out.weight",
+   "norm_ratio": 0.9325,
+   "snr": 1.134,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9107,
+   "edited_type": "Q6_K",
+   "name": "blk.17.ffn_down.weight",
+   "norm_ratio": 1.0453,
+   "snr": 2.301,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.6259,
+   "edited_type": "Q4_K",
+   "name": "blk.17.ssm_out.weight",
+   "norm_ratio": 0.9638,
+   "snr": 1.176,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5663,
+   "edited_type": "Q4_K",
+   "name": "blk.18.ffn_down.weight",
+   "norm_ratio": 0.9042,
+   "snr": 1.122,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.5812,
+   "edited_type": "Q4_K",
+   "name": "blk.18.ssm_out.weight",
+   "norm_ratio": 0.9341,
+   "snr": 1.127,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.6002,
+   "edited_type": "Q4_K",
+   "name": "blk.19.attn_output.weight",
+   "norm_ratio": 0.9137,
+   "snr": 1.164,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.597,
+   "edited_type": "Q4_K",
+   "name": "blk.19.ffn_down.weight",
+   "norm_ratio": 0.9145,
+   "snr": 1.159,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9149,
+   "edited_type": "Q6_K",
+   "name": "blk.20.ffn_down.weight",
+   "norm_ratio": 1.0444,
+   "snr": 2.358,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.6645,
+   "edited_type": "Q4_K",
+   "name": "blk.20.ssm_out.weight",
+   "norm_ratio": 0.9704,
+   "snr": 1.238,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9087,
+   "edited_type": "Q6_K",
+   "name": "blk.21.ffn_down.weight",
+   "norm_ratio": 1.0471,
+   "snr": 2.273,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.6054,
+   "edited_type": "Q4_K",
+   "name": "blk.21.ssm_out.weight",
+   "norm_ratio": 0.9317,
+   "snr": 1.162,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9068,
+   "edited_type": "Q6_K",
+   "name": "blk.22.ffn_down.weight",
+   "norm_ratio": 1.0505,
+   "snr": 2.245,
+   "source_type": "Q6_K"
+  },
+  {
+   "cos": 0.5578,
+   "edited_type": "Q4_K",
+   "name": "blk.22.ssm_out.weight",
+   "norm_ratio": 0.9115,
+   "snr": 1.108,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.4149,
+   "edited_type": "Q4_K",
+   "name": "blk.23.attn_output.weight",
+   "norm_ratio": 0.8754,
+   "snr": 0.981,
+   "source_type": "Q4_K"
+  },
+  {
+   "cos": 0.9006,
+   "edited_type": "Q6_K",
+   "name": "blk.23.ffn_down.weight",
+   "norm_ratio": 1.0571,
+   "snr": 2.164,
+   "source_type": "Q6_K"
+  }
+ ],
+ "scale": 1.0,
+ "summary": {
+  "codec_event": true,
+  "errors": [],
+  "max_cos": 0.9587,
+  "mean_cos": 0.7421,
+  "min_cos": 0.4149,
+  "min_edit_cos_floor": 0.9,
+  "min_snr": 0.981,
+  "note": "a tensor below the floor cannot hold this edit: that is a CODEC event, labelled as one, not a reason to raise the scale",
+  "per_type": {
+   "Q4_K": {
+    "max_cos": 0.8013,
+    "mean_cos": 0.6793,
+    "min_cos": 0.4149,
+    "tensors": 36
+   },
+   "Q6_K": {
+    "max_cos": 0.9587,
+    "mean_cos": 0.9308,
+    "min_cos": 0.9006,
+    "tensors": 12
+   }
+  },
+  "tensors": 48
+ }
+}
