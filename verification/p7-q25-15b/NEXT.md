@@ -53,6 +53,13 @@ One CPU llama-server at a time, at the pinned argv for every wave:
 
     -m <artifact> -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141
 
+**That string is the wave's recorded `serve_config`, and `release-certify` compares it
+to `spec.configs.<axis>.argv` after whitespace normalisation — any extra token fails
+the packet with `CERTIFY_CONFIG_MISMATCH` (R9).** If the wave card serves with a GPU
+binary instead, regenerate the spec with the exact string it will record (edit
+`PINNED` in `scripts/p7_q25_spec.py` and re-run it; the artifact identity digest does
+not depend on the argv), then wave and spec agree.
+
 Caps are the registered floors (`matrix.manifest.json` -> `registered.cap`:
 removal 4096, held_out 4096, retention 1024). A wave graded below its floor is
 `invalid(cap_lowered)`, not a pass, so do not lower them to make the run shorter.
