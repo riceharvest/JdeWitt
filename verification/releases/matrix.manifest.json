@@ -194,20 +194,43 @@
         "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
         "sha256_prefix_16": "67dd31f57b31184f",
         "quant_type": "Q4_K_M",
-        "path": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
-        "note": "recorded in verification/minicpm-v47/summary.json export_round_trip; text backbone only, the vision tower is never edited"
+        "bytes": 672004000,
+        "path": "/mnt/ssd/p7-minicpm/base.gguf",
+        "note": "hardlink of the pinned operand verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf (sha256 in verification/minicpm-v47/summary.json); text backbone only, the vision tower is never edited"
       },
       "artifact": {
-        "sha256": null,
-        "identity_digest": null,
+        "sha256": "de4d61b3552a99aecab9f90e8198d2d07f445f872f3f47d1e426761572ae27ef",
+        "sha256_prefix_16": "de4d61b3552a99ae",
+        "identity_digest": "77ec253270e67607f6c877a31c9a9b9791302b5e3d458b3abb98edbf9354f2e4",
         "quant_type": "Q4_K_M",
-        "scale": null,
-        "edited_tensors": null,
-        "note": "no edited artifact registered; the model has a baseline screen but no certified arm"
+        "scale": 1.0,
+        "bytes": 672004000,
+        "edited_tensors": 48,
+        "footprint": "blk.0-23 x ffn_down (all 24 layers), ssm_out (18 linear-attention layers: all but 3,7,11,15,19,23), attn_output (6 full-attention layers: 3,7,11,15,19,23) -- 48 residual-write tensors discovered by --gguf-targets auto, measured from merge.json/fidelity-raw.json",
+        "refit": true,
+        "note": "REFIT, not a rebuild from a saved capture: no records.pt of this lineage exists, so the per-layer axes were captured from the pinned HF revision and fitted (spanfit axes --shape perlayer), then merged into the Q4_K_M bytes with --gguf-targets auto. 48 residual-write tensors edited (24 ffn_down, 18 ssm_out, 6 attn_output), every other byte verbatim (merge.json all_other_bytes_verbatim true). The merged file is what every wave served and what the packet binds by identity digest (R8: no adapter curve is ranked anywhere in this row). The intended delta survives the codec only partially: min per-tensor cos 0.4149, 36 of 48 below the 0.9 floor"
       },
       "packet": "verification/releases/minicpm-v47/packet.json",
       "spec": "verification/releases/minicpm-v47/spec.json",
-      "head_to_head": null
+      "head_to_head": null,
+      "cap": {
+        "removal": 1024,
+        "held_out": 1024,
+        "retention": 1024,
+        "note": "per-lineage floor: the pinned config is -c 4096 --parallel 4, so one slot is 1024 tokens; the manifest-wide 4096 cap cannot be served at the pinned config on any lineage, and the global floor already moved to 1024 for q3. This row states it beside its artifact instead of relying on the default"
+      },
+      "suites": {
+        "removal": "verification/screens/advbench-40.jsonl",
+        "held_out": "verification/p7-minicpm/heldout-24f.jsonl",
+        "retention": "verification/capability/capability-run-en.jsonl",
+        "note": "per-lineage floors: this lineage's removal screen is advbench-40 (in-clone, the screen its waves were served against) and its held-out suite is heldout-24f, 120 rows over 24 families disjoint from advbench-40. The q3 files the global block names are q3's operands, not this lineage's; substituting them would certify a different suite"
+      },
+      "suite_rows": {
+        "removal": 40,
+        "held_out": 120,
+        "retention": 241,
+        "note": "per-lineage: 40 removal rows (2 ungraded at the 1024 cap), 120 held-out rows over 24 families, 241 retention"
+      }
     },
     {
       "lineage": "inkling-2-mini",

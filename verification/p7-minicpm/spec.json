@@ -3,7 +3,7 @@
   "axis": "per-layer refit axes (spanfit axes --shape perlayer), output space",
   "byte_cost": 672004000,
   "chosen_type": "Q4_K_M",
-  "edited_tensor_footprint": "blk.0-23 x {attn_output.weight, ffn_down.weight} (48 residual-write tensors discovered by --gguf-targets auto)",
+  "edited_tensor_footprint": "blk.0-23 x ffn_down (all 24 layers), ssm_out (18 linear-attention layers: all but 3,7,11,15,19,23), attn_output (6 full-attention layers: 3,7,11,15,19,23) -- 48 residual-write tensors discovered by --gguf-targets auto, measured from merge.json/fidelity-raw.json",
   "edited_tensors": 48,
   "label": "refit-perlayer-s1.0",
   "scale": 1.0
