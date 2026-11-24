@@ -15,6 +15,8 @@ picked anyway; hiding it would make the picker lie about coverage (§7.1).
 The caveat comes from the measurement state, not from this file, and it is rendered
 above the download control: `PANEL_ORDER` in `space_loop` is the order used below.
 """
+import json
+
 import gradio as gr
 
 from jdewitt import space_loop
@@ -67,12 +69,25 @@ def pick_base(base):
     return (base or ''), quant_update, verdict, licence_line
 
 
+def _record(result):
+    """One JSON line into the Space's own log: the numbers the run card reads.
+
+    The card quotes a Space runtime only from the Space's log, so the loop's own
+    result — per-stage seconds, the download rate, the container's cores and RSS
+    high-water mark, the delivered bytes and sha256 — is printed here, not
+    reconstructed from the page. One line, one prefix, the whole document.
+    """
+    print('jdewitt-live-run ' + json.dumps(result, sort_keys=True, default=str),
+          flush=True)
+
+
 def start(repo, filename):
     """One job: the loop runs, the caveat and the delivered files come back."""
     if not (filename or '').strip():
         return ('Choose a .gguf file from the list first.', None, None, 'Nothing ran.')
     result = space_loop.start_job((repo or '').strip(), None, filename.strip(),
                                   space_loop.quant_tag(filename), bank_dir=BANK)
+    _record(result)
     sections = {section['id']: section for section in space_loop.panel_sections(result)}
     caveat = sections['caveat'].get('body') or ''
     status = (f"Label `{result['label']}` · {result['wall_seconds']} s · "

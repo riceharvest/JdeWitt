@@ -641,6 +641,47 @@ def _mark(steps, name, started, detail=None, state='ok', code=None):
                   'detail': detail, 'code': code})
 
 
+def host_probe():
+    """What the process can see of its own machine, for the run record.
+
+    A Space container is the only place this is honest about the Space: cores and
+    memory here are the container's own `/proc`, and `peak_rss_bytes` is the
+    process high-water mark (`VmHWM`), so it includes the edit's dequant buffers
+    even when read after they are freed. Missing `/proc` entries are omitted
+    rather than guessed.
+    """
+    probe = {'pid': os.getpid(), 'cpu_count': os.cpu_count()}
+    try:
+        probe['affinity'] = len(os.sched_getaffinity(0))
+    except (AttributeError, OSError):
+        pass
+    model = None
+    try:
+        for line in Path('/proc/cpuinfo').read_text().splitlines():
+            if line.startswith('model name') or line.startswith('Model'):
+                model = line.split(':', 1)[-1].strip()
+                if model:
+                    break
+    except OSError:
+        pass
+    if model:
+        probe['cpu_model'] = model
+    try:
+        status = Path('/proc/self/status').read_text()
+        for line in status.splitlines():
+            key = line.split(':', 1)[0]
+            if key in ('VmHWM', 'VmRSS'):
+                probe['peak_rss_bytes' if key == 'VmHWM' else 'rss_bytes'] = (
+                    int(line.split()[1]) * 1024)
+        for line in Path('/proc/meminfo').read_text().splitlines():
+            key = line.split(':', 1)[0]
+            if key in ('MemTotal', 'MemAvailable'):
+                probe[key.lower() + '_bytes'] = int(line.split()[1]) * 1024
+    except OSError:
+        pass
+    return probe
+
+
 def quant_tag(filename):
     """`...-Q4_K_M.gguf` -> `Q4_K_M`: the file's own quant tag, as the card spells it."""
     stem = Path(str(filename)).stem
@@ -748,6 +789,7 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
         'licence': None, 'apply': None, 'readback': None,
         'card': None, 'files': None,
         'workspace_deleted': False, 'wall_seconds': None,
+        'host': {'at_start': host_probe()},
     }
 
     def refuse(code, message):
@@ -756,6 +798,7 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
                              'sentence': refusal_copy(code, message, result['artifact'])}
         result['card'] = card_markdown(result)
         result['wall_seconds'] = round(time.monotonic() - started, 2)
+        result['host']['at_end'] = host_probe()
         return result
 
     if not _REPO.match(repo):
@@ -869,6 +912,10 @@ def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, 
                       f'{stat["size"]}; the file is not the one coverage checked')
     input_sha = file_digest(input_path)
     _mark(steps, 'download', step_at, detail=f'{size} bytes, sha256 {input_sha[:16]}')
+    # The Hub-declared bytes over this step's own wall clock: an end-to-end rate
+    # from the container, not a transfer figure the Hub reports.
+    steps[-1]['bytes'] = size
+    steps[-1]['bytes_per_second'] = round(size / max(steps[-1]['seconds'], 1e-6), 1)
 
     # 4. the banked edit: bank-apply re-resolves the file, so its own typed refusals
     #    are the ones the visitor sees.
@@ -949,6 +996,7 @@ def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, 
     }
     _mark(steps, 'package', step_at,
           detail=f'{len(names)} files, {result["files"]["bytes"]} artifact bytes')
+    result['host']['at_end'] = host_probe()
     return result
 
 

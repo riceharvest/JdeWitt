@@ -82,7 +82,10 @@ def test_readme_frontmatter_names_the_sdk_and_the_app(tmp_path):
     assert re.fullmatch(r'\d+\.\d+\.\d+', front['sdk_version'])
     assert front['app_file'] == 'app.py'
     assert front['short_description'] and len(front['short_description']) <= 60
-    assert front['models'] == []  # the bank ships empty, so no base is claimed
+    # The bank is seeded (Phase 1), so the card claims exactly its bases and no more.
+    document = json.loads((BANK / 'bank.json').read_text())
+    assert front['models'] == sorted({str(entry['base']['repo'])
+                                      for entry in document['entries']})
 
 
 def test_readme_models_lists_only_the_bank_bases(tmp_path, monkeypatch):
@@ -206,11 +209,21 @@ def test_staging_over_an_existing_tree_is_refused(tmp_path):
 # --------------------------------------------------------------------------- inspect
 
 
-def test_inspect_refuses_the_empty_bank_with_bank_miss():
+def test_inspect_covers_the_shipped_bank_base():
+    """The seeded bank covers the base it was fitted on, labelled unmeasured."""
     report = loop.inspect('Qwen/Qwen3-4B-Instruct-2507', None, 'Q4_K_M')
+    assert report['coverage']['state'] == 'covered'
+    assert report['coverage']['entry'] == 'qwen3-4b-instruct-2507/f15s15-l935'
+    assert report['coverage']['label'] == 'banked_unmeasured'
+    assert report['refusal'] is None
+    assert report['licence']['state'] == 'UNVERIFIED'
+
+
+def test_inspect_refuses_an_uncovered_base_with_bank_miss():
+    report = loop.inspect('Qwen/Qwen2.5-1.5B-Instruct', None, 'Q4_K_M')
     assert report['coverage']['state'] == 'uncovered'
     assert report['refusal']['code'] == 'BANK_MISS'
-    assert 'Qwen/Qwen3-4B-Instruct-2507' in report['refusal']['message']
+    assert 'Qwen/Qwen2.5-1.5B-Instruct' in report['refusal']['message']
     assert report['licence']['state'] == 'UNVERIFIED'
     assert report['edit']['state'] == 'none'
     assert 'BANK_MISS' in loop.render(report)
