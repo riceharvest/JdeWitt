@@ -95,6 +95,10 @@ def main(argv=None):
     failures = [row for row in report['tensors'] if 'error' in row]
     if failures:
         raise SystemExit(f'compare_edit failed on {len(failures)} tensor(s): {failures[:2]}')
+    # compare_edit writes edited_type/source_type; the packet's codec table reads
+    # qtype (the name preview_edit uses). Carry it here so both writers are one shape.
+    for row in report['tensors']:
+        row.setdefault('qtype', row.get('edited_type') or row.get('source_type'))
 
     payload = {
         'schema_version': 1,
