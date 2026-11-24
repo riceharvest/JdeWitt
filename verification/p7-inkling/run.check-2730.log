@@ -1,0 +1,36 @@
+# t_5053ccbb attempt 3/3 (hermes#2730) — checks at 2026-11-24T08:16:22+01:00
+## script
+1ea3235e40d65427bc86cf65347ed83941b98b3a918689f21df3624cac1b75f4  verification/p7-inkling/run_waves.sh
+bash -n exit=0
+## launch attempt (card step 2)
+command: lab-gpu b70 --need-gib 8 -- bash verification/p7-inkling/run_waves.sh
+launched 2026-11-24T08:16:22+01:00 in its own setsid; run.log follows:
+lab-gpu: refused: a non-lab vllm/B70 job is running (pid 2723189)
+lab-gpu exit code: 75
+## b70 holder check after refusal
+holder exit=0
+2723189 Tue Nov 24 08:02:57 2026 /bin/bash -c source /home/dario/.claude/shell-snapshots/snapshot-bash-1795496822638-7y63zn.sh 2>/dev/null || true && export VER
+## capture stack (live, repo venv)
+transformers 5.20.0
+inkling keys: ['inkling_audio', 'inkling_mm_model', 'inkling_text', 'inkling_vision']
+REFUSED: ValueError: The checkpoint you are trying to load has model type `inkling2_loop` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, o
+## serve binary
+no llama-server in build-sycl/bin
+no llama-server on PATH
+## wave outputs (spec: 4 waves)
+retention-base: MISSING
+harmful40-arm: MISSING
+holdout-arm: MISSING
+retention-arm: MISSING
+capture-records.pt MISSING
+shared-axes.pt MISSING
+spec.json MISSING
+drift.json MISSING
+comparison.json MISSING
+## progress.txt tail
+2026-11-24T01:28:34+01:00	REFUSED	77: CAPTURE_UNSUPPORTED this stack cannot load Inkling-2-Mini (measured; see capture-blocked.json): no residual records -> no fitted axis -> no arm. Capture is the first axis to fail; the analysis card records failed(capture) with these numbers.
+2026-11-24T05:45:15+01:00	operands	sha256 verified
+2026-11-24T06:27:03+01:00	operands	sha256 verified
+## leftover servers / wave script of this job
+scan of /proc cmdlines for llama-server or argv[1] == verification/p7-inkling/run_waves.sh: none
+verdict: no llama-server and no run_waves.sh process of this job is running (serve stage never reached; the 08:15 launch was refused exit 75 before the script started)
