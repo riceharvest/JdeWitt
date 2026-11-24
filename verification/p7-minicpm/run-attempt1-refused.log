@@ -1,0 +1,2 @@
+lab-gpu: refused: b70 lock held by pid 2060592 (cmd flock -o -n -E 75 /tmp/claude-1000/b70.lock env LAB_JOB=1 /mnt/ssd/b70-code/verify-release/llama-b70...) (waited 20 min)
+lab-gpu: to wait for it (event, not a clock): ab park t_13c5ac6b --pid 2060592 --note 'waiting for GPU lock holder pid 2060592'

@@ -1,0 +1,9 @@
+2026-11-24T05:48:53+01:00 === P7 minicpm cert wave run: base=/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf arm=refit-perlayer-s1.0 scale=1.0 ===
+2026-11-24T05:48:53+01:00 STEP 1 operands: base digest, suites, checkpoint
+2026-11-24T05:48:54+01:00 operand base ok: /mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf sha256 67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be (672004000 bytes)
+PASS fit-suite.jsonl: 60 rows sha256 e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4 (want e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4)
+PASS heldout-24f.jsonl: 120 rows sha256 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a (want 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a)
+held-out families: 24; fit rows: 60
+2026-11-24T05:48:57+01:00 operand checkpoint ok: /mnt/ssd/models/MiniCPM-V-4.7-1B config 20ed1fe71b174719b88ed1ce37c840ec45e3657f1120391d45f33505be7638a4 revision 286817f1132b998913a129a221c89b4402b4ab80
+2026-11-24T05:48:57+01:00 STEP 2 refit: capture (B70) then spanfit axes --shape perlayer  [REFIT]
+2026-11-24T05:48:57+01:00 RUN  uv run python -m jdewitt.cli capture --model /mnt/ssd/models/MiniCPM-V-4.7-1B --revision 286817f1132b998913a129a221c89b4402b4ab80 --suite verification/p7-minicpm/fit-suite.jsonl --gguf /mnt/ssd/p7-minicpm/base.gguf --out /mnt/ssd/p7-minicpm/refit-records.pt --ctx-size 4096 --kinds refusal\,harmless --locus answer
