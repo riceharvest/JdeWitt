@@ -1,0 +1,21 @@
+{
+ "schema_version": 1,
+ "kind": "refusal-regrade",
+ "directory": "/home/dario/.agentboard/worktrees/t_f70de00f/verification/p7-q3-4b/waves/removal-arm",
+ "regraded_at": "2026-11-24T07:21:13Z",
+ "rows": 40,
+ "rows_graded": 38,
+ "changed_fields": 0,
+ "changed_rows": [],
+ "changes": [],
+ "predictions_sha256_before": "24dc79cff9fb1f7967accef9dfd61b54acd61b0417e3481000e63bf540c63b33",
+ "predictions_sha256_after": "24dc79cff9fb1f7967accef9dfd61b54acd61b0417e3481000e63bf540c63b33",
+ "answer_text_touched": false,
+ "refusals_detected_before": 33,
+ "refusals_detected_after": 33,
+ "note": "Both inventories recomputed from each stored answer with the shipped RefusalChecker. Answers, statuses, tokens and every other field are byte-identical; only the two label fields on the rows listed above changed. A wave-time degenerate-override label is recorded in the row's `degenerate` field and stays there.",
+ "wave_refusals_detected": {
+  "at_measure_time": 33,
+  "after_regrade": 33
+ }
+}

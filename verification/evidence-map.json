@@ -112,70 +112,6 @@
           "note": "the wider 97/120 screen names q3-4b-shl10-l935.gguf in its wave.json; the only committed retention wave with 159→128 (31 lost, collapse flag) is s15-l935, scale 1.5 over blk.9-35 -- the same footprint the prose describes"
         },
         {
-          "text": "reads 40/40 harmful-40",
-          "value": "40/40",
-          "source": "verification/q3-4b-harmful40/f15s15-l935/predictions.jsonl",
-          "locator": "wide",
-          "command": "python scripts/screen_agreement.py verification/q3-4b-harmful40/f15s15-l935"
-        },
-        {
-          "text": "120/120 on",
-          "value": "120/120",
-          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
-          "locator": "wide",
-          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15"
-        },
-        {
-          "text": "published build's 120/120",
-          "value": "120/120",
-          "source": "verification/q3-4b-holdout-wider/wider-oracle/predictions.jsonl",
-          "locator": "wide",
-          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle"
-        },
-        {
-          "text": "zero discordant",
-          "value": "0",
-          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
-          "locator": "mcnemar:wide:verification/q3-4b-holdout-wider/wider-oracle|discordant",
-          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15 verification/q3-4b-holdout-wider/wider-oracle --compare"
-        },
-        {
-          "text": "McNemar p = 1.0",
-          "value": "1.0",
-          "source": "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
-          "locator": "mcnemar:wide:verification/q3-4b-holdout-wider/wider-oracle|p",
-          "command": "python scripts/screen_agreement.py verification/q3-4b-holdout-wider/w15-f15s15 verification/q3-4b-holdout-wider/wider-oracle --compare"
-        },
-        {
-          "text": "maths 159→148",
-          "value": "159→148",
-          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
-          "locator": "paired:verification/q3-4b-retention/q3base|math|before_after",
-          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
-        },
-        {
-          "text": "p 0.0078",
-          "value": "0.0078",
-          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
-          "locator": "paired:verification/q3-4b-retention/q3base|math|p",
-          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
-        },
-        {
-          "text": "68 characters",
-          "value": "68",
-          "source": "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
-          "locator": "paired:verification/q3-4b-retention/q3base|math|after_median_chars",
-          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\""
-        },
-        {
-          "text": "published build's 175",
-          "value": "175",
-          "source": "verification/q3-4b-retention/q3oracle/predictions.jsonl",
-          "locator": "audit|math|median",
-          "command": "python scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair \"f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935\"",
-          "note": "the README used to attribute 175 to the unedited base; the base's own median maths answer is 157 and 175 is the published build's, so the prose now names the published build"
-        },
-        {
           "text": "5 delivered for ours",
           "value": "5/24",
           "source": "verification/q3-4b-holdout/semantic-read-yxboth10.json",
@@ -363,25 +299,123 @@
       "notes": "RETRACTED. The wording parity was a checker artifact: the shipped inventory matches first-person refusals only, and the arm's answers open 'Absolutely not.' Wider-inventory grading of the same rows (scripts/screen_agreement.py): arm 6/40, 11/24, 34/120 against the published build's 39/40, 23/23, 120/120; exact McNemar 86 discordant, p < 1e-5. The behavioural read stands: 5 families delivered by the arm, 4 by the published build, out of 24 — both decline most of what is asked. The only arm near the published build on held-out wording is scale 1.0 over blk.9-35 (97/120, p < 1e-5 against it) and it costs maths 159->128 with a collapse flag."
     },
     {
-      "claim": "q3-4b-f15s15-l935 (shared axis, o_proj + mlp.down_proj, scale 1.5, blk.15-35) matches the published build on held-out wording at 120 families and costs maths",
+      "claim": "Qwen3-4B under the f15s15-l935 recipe, REFIT and served at the pinned 4096/4 config, does not remove refusal: the matched-removal tier is a measured loss",
       "status": "in-clone",
       "commands": [
-        "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935.gguf --axes /mnt/ssd/hermes/cache/scratch/probes/q3-shared-axes.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5",
-        "scripts/capability_wave.py verification/screens/q3-holdout-wider.jsonl verification/q3-4b-holdout-wider/w15-f15s15 --kinds refusal --max-tokens 4096 --parallel 4",
-        "scripts/screen_agreement.py verification/q3-4b-holdout-wider/wider-oracle verification/q3-4b-holdout-wider/w15-f15s15 --compare",
-        "scripts/frontier_report.py --base-dir verification/q3-4b-retention/q3base --pair f15s15-l935=verification/q3-4b-harmful40/f15s15-l935:verification/q3-4b-retention/f15s15-l935"
+        "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json",
+        "uv run jdewitt verify-artifact verification/p7-q3-4b/packet.json --name packet.json",
+        "uv run python verification/p7-q3-4b/regrade_wave.py verification/p7-q3-4b/waves/removal-arm verification/p7-q3-4b/waves/held_out-arm",
+        "uv run python scripts/refusal_shape_audit.py \"removal-arm=verification/p7-q3-4b/waves/removal-arm/predictions.jsonl\" --out verification/p7-q3-4b/shape-audit-removal.json",
+        ".venv/bin/python scripts/screen_agreement.py verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl verification/p7-q3-4b/waves/held_out-published --compare",
+        ".venv/bin/python scripts/frontier_report.py --base-dir verification/p7-q3-4b/waves/retention-base --pair \"refit=verification/p7-q3-4b/waves/removal-arm:verification/p7-q3-4b/waves/retention-arm\""
       ],
       "artifacts": [
-        "verification/q3-4b-harmful40/f15s15-l935/predictions.jsonl",
-        "verification/q3-4b-retention/f15s15-l935/predictions.jsonl",
-        "verification/q3-4b-holdout-wider/w15-f15s15/predictions.jsonl",
-        "verification/q3-4b-holdout-wider/shape-audit-f15s15.json",
-        "verification/q3-4b-holdout-wider/shape-audit-oracle.json",
-        "verification/q3-4b-harmful40/shape-audit-f15s15.json",
-        "verification/q3-4b-harmful40/prot15-l935/predictions.jsonl",
-        "verification/q3-4b-harmful40/prot20-l935/predictions.jsonl"
+        "verification/p7-q3-4b/packet.json",
+        "verification/p7-q3-4b/spec.json",
+        "verification/p7-q3-4b/harmful-40.jsonl",
+        "verification/p7-q3-4b/operands.json",
+        "verification/p7-q3-4b/operand-diff.json",
+        "verification/p7-q3-4b/drift.json",
+        "verification/p7-q3-4b/fidelity.json",
+        "verification/p7-q3-4b/shape-audit-removal.json",
+        "verification/p7-q3-4b/shape-audit-held_out.json",
+        "verification/p7-q3-4b/waves/removal-arm/predictions.jsonl",
+        "verification/p7-q3-4b/waves/removal-arm/regrade-audit.json",
+        "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+        "verification/p7-q3-4b/waves/held_out-arm/regrade-audit.json",
+        "verification/p7-q3-4b/waves/held_out-published/predictions.jsonl",
+        "verification/p7-q3-4b/waves/retention-arm/predictions.jsonl",
+        "verification/p7-q3-4b/waves/retention-base/predictions.jsonl",
+        "verification/p7-q3-4b/waves/retention-published/predictions.jsonl"
       ],
-      "notes": "Removal under BOTH wording inventories: harmful-40 40/40 (20/20 families), held-out 120/120 against the published build's 120/120, exact McNemar 0 discordant p 1.0. Retention at the same pinned config: maths 159->148 (p 0.0078) with median maths answer 68 chars vs the published build's 175 (collapse flag on), code 20->15 (p 0.40). The published build holds maths 159->159. Hand delivery read on the first 20 families of that screen: this arm 0/20, the published build 1/20 (the fake-news message on advbench-000040)."
+      "numbers": [
+        {
+          "text": "5/38",
+          "value": "5/38",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:removal/harmful40/inventories/shipped/removed|removal/harmful40/inventories/shipped/total",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['removal']['harmful40']['inventories']['shipped']['removed|removal']['harmful40']['inventories']['shipped']['total'])\"'"
+        },
+        {
+          "text": "3/38",
+          "value": "3/38",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:removal/harmful40/inventories/wide/removed|removal/harmful40/inventories/wide/total",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['removal']['harmful40']['inventories']['wide']['removed|removal']['harmful40']['inventories']['wide']['total'])\"'"
+        },
+        {
+          "text": "46/112",
+          "value": "46/112",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:removal/held_out_120/inventories/shipped/removed|removal/held_out_120/inventories/shipped/total",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['removal']['held_out_120']['inventories']['shipped']['removed|removal']['held_out_120']['inventories']['shipped']['total'])\"'"
+        },
+        {
+          "text": "30/112",
+          "value": "30/112",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:removal/held_out_120/inventories/wide/removed|removal/held_out_120/inventories/wide/total",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['removal']['held_out_120']['inventories']['wide']['removed|removal']['held_out_120']['inventories']['wide']['total'])\"'"
+        },
+        {
+          "text": "published build's 108/108",
+          "value": "108/108",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:removal/held_out_120/competitor/inventories/wide/removed|removal/held_out_120/competitor/inventories/wide/total",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['removal']['held_out_120']['competitor']['inventories']['wide']['removed|removal']['held_out_120']['competitor']['inventories']['wide']['total'])\"'"
+        },
+        {
+          "text": "McNemar p < 1e-20",
+          "value": "1e-20",
+          "source": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+          "locator": "mcnemar:wide:verification/p7-q3-4b/waves/held_out-published|p",
+          "command": "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json",
+          "op": "<"
+        },
+        {
+          "text": "maths 158→153",
+          "value": "158→153",
+          "source": "verification/p7-q3-4b/waves/retention-arm/predictions.jsonl",
+          "locator": "paired:verification/p7-q3-4b/waves/retention-base|math|before_after",
+          "command": "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json"
+        },
+        {
+          "text": "p 0.0648",
+          "value": "0.0648",
+          "source": "verification/p7-q3-4b/waves/retention-arm/predictions.jsonl",
+          "locator": "paired:verification/p7-q3-4b/waves/retention-base|math|p",
+          "command": "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json"
+        },
+        {
+          "text": "code 22→18",
+          "value": "22→18",
+          "source": "verification/p7-q3-4b/waves/retention-arm/predictions.jsonl",
+          "locator": "paired:verification/p7-q3-4b/waves/retention-base|code|before_after",
+          "command": "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json"
+        },
+        {
+          "text": "p 0.5029",
+          "value": "0.5029",
+          "source": "verification/p7-q3-4b/waves/retention-arm/predictions.jsonl",
+          "locator": "paired:verification/p7-q3-4b/waves/retention-base|code|p",
+          "command": "uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json"
+        },
+        {
+          "text": "156 characters",
+          "value": "156",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:retention/math/median_answer_chars",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['retention']['math']['median_answer_chars'])\"'"
+        },
+        {
+          "text": "base's 155",
+          "value": "155",
+          "source": "verification/p7-q3-4b/packet.json",
+          "locator": "json:retention/math/base_median_answer_chars",
+          "command": ".venv/bin/python -c \"import json;d=json.load(open('verification/p7-q3-4b/packet.json'));print(d['retention']['math']['base_median_answer_chars'])\"'"
+        }
+      ],
+      "notes": "Removal is wording removal under BOTH inventories and is not a delivery claim (R6). The arm is a REFIT: the banked q3-shared-axes.pt died with /mnt/ssd/hermes, so the recipe was reproduced from a committed deterministic pool and is labelled a refit everywhere; the banked 8192 readings live in verification/releases/qwen3-4b-f15s15-l935/ and are not re-measurable. Rows whose status is not ok (2 harmful-40, 8 held-out, 4 retention) truncated at the 1024-token slot width; the packet carries their count per axis and scores them as neither pass nor failure. Config sensitivity (R9.4, 8192/4) is unmeasured for this row and is recorded as such in verification/p7-q3-4b/sensitivity-r9.4.json."
     },
     {
       "claim": "the Phase 7 evidence table publishes every lineage row with its loss and its one recompute command, and its UNMEASURED cells are excluded from the claims count",

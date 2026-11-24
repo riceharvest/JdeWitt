@@ -180,12 +180,29 @@ def _packet_counts(packet: dict) -> dict:
     if kind_total:
         counts['retention'].append(kind_total)
     measured = packet.get('measured_axes') or {}
+    ungraded = {}
+    for axis, block in (('removal', harmful), ('held_out', held), ('retention', retention)):
+        count = (block.get('ungraded') or {}).get('rows')
+        if count is not None:
+            ungraded[axis] = int(count)
     for axis in AXES:
-        if (measured.get(axis) or {}).get('rows') is not None:
-            counts[axis].append(int(measured[axis]['rows']))
+        asked = (measured.get(axis) or {}).get('rows')
+        if asked is None:
+            continue
+        asked = int(asked)
+        # A wave asks N rows and grades the ones that produced an answer. When the
+        # packet says how many rows the cap cost, asked = graded + ungraded is one
+        # deck read twice, not an ambiguity; when it does not, the numbers must be
+        # equal or the count is ambiguous.
+        graded = max(counts[axis]) if counts[axis] else None
+        if axis in ungraded and graded is not None and asked == graded + ungraded[axis]:
+            continue
+        counts[axis].append(asked)
     result = {}
     for axis, values in counts.items():
         result[axis] = {'rows': max(values) if values else None,
+                        'asked': (measured.get(axis) or {}).get('rows'),
+                        'ungraded': ungraded.get(axis),
                         'disagree': len(set(values)) > 1, 'observed': values}
     return result
 
@@ -388,9 +405,16 @@ def _count_problems(entry, packet, registered) -> list[dict]:
                              'message': (f'{axis}: the packet records {observed["observed"]} rows '
                                          'on different inventories/axes; the count is ambiguous')})
         floor = floors.get(axis)
-        if floor is not None and observed['rows'] is not None and observed['rows'] < int(floor):
+        # What the deck covered is the graded rows plus the rows the cap left
+        # ungradeable, when the packet names the latter. A packet that trimmed an
+        # inventory instead still falls under the floor, because nothing is named
+        # as ungraded and the graded count is all there is.
+        covered = observed['rows']
+        if covered is not None and observed.get('ungraded') is not None:
+            covered = covered + observed['ungraded']
+        if floor is not None and covered is not None and covered < int(floor):
             problems.append({'code': 'suite_narrowed',
-                             'message': (f'{axis}: the packet covers {observed["rows"]} rows, the '
+                             'message': (f'{axis}: the packet covers {covered} rows, the '
                                          f'registered suite has {floor}; a pass at a smaller suite '
                                          'is not a pass')})
     caps = registered.get('cap') or {}

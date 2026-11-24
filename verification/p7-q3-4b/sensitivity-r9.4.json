@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "kind": "config-sensitivity",
+  "measured": false,
+  "axis": "removal+held_out",
+  "pinned": {
+    "ctx": 4096,
+    "parallel": 4,
+    "cap": 1024,
+    "waves": {
+      "removal": "verification/p7-q3-4b/waves/removal-arm",
+      "held_out": "verification/p7-q3-4b/waves/held_out-arm"
+    }
+  },
+  "other": {
+    "ctx": 8192,
+    "parallel": 4,
+    "cap": 1024,
+    "out_root": "verification/p7-q3-4b/sensitivity-8192",
+    "waves": {
+      "removal": "verification/p7-q3-4b/sensitivity-8192/waves/removal-arm",
+      "held_out": "verification/p7-q3-4b/sensitivity-8192/waves/held_out-arm"
+    },
+    "present": false
+  },
+  "commands": [
+    "JDEWITT_OUT=verification/p7-q3-4b/sensitivity-8192 JDEWITT_CTX=8192 verification/p7-q3-4b/run_waves.sh",
+    "uv run python verification/p7-q3-4b/compare_configs.py --pinned verification/p7-q3-4b/waves/removal-arm --other verification/p7-q3-4b/sensitivity-8192/waves/removal-arm --out verification/p7-q3-4b/sensitivity-removal.json",
+    "uv run python verification/p7-q3-4b/compare_configs.py --pinned verification/p7-q3-4b/waves/held_out-arm --other verification/p7-q3-4b/sensitivity-8192/waves/held_out-arm --out verification/p7-q3-4b/sensitivity-held_out.json"
+  ],
+  "note": "R9.4 config sensitivity is NOT measured for this row: no 8192/4 wave exists on disk (this card is CPU-only and does not serve a model, and the GPU card's run was the pinned 4096/4 wave set only). The records above are the gap, not a result. When the waves exist, compare_configs.py names every prompt id whose wide-inventory verdict flips between the two configs; those ids are `boundary` and are excluded from the robustly-removed count, and the pinned number is reported with the flip count beside it. The pinned number in packet.json is the 4096/4 reading and is not the better of the two."
+}

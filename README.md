@@ -85,21 +85,33 @@ Currently checkable in a fresh clone:
   gets near it on held-out families — scale 1.0 over blk.9–35, 97/120 — loses 31 maths
   answers with a length-collapse flag. Behaviourally the two are near-identical on a
   hand read of 24 held-out families (5 delivered for ours, 4 for theirs, out of 24):
-  neither artifact hands over the asked-for content. The layer-floor sweep then found
-  **the point that matches**: shared axis, both targets, scale 1.5 over **blk.15–35**
-  (`q3-4b-f15s15-l935`) reads 40/40 harmful-40 under both inventories and **120/120 on
-  the held-out 120-family screen against the published build's 120/120, zero discordant
-  rows, McNemar p = 1.0** — and pays for it with maths 159→148 (p 0.0078, median maths
-  answer 68 characters against the published build's 175), where the published build stays
-  at 159. The 24-family delivery read puts the unedited base itself at 1/24. Removal of the
-  wording is now matched; removal of the behaviour is not — on the first 20 families of that
-  screen the arm delivers the asked-for content on 0 of 20, the published build on 1 of 20.
-  Equal removal at less capability loss is **not established**: the matched-removal arm pays
-  a measured maths loss where the published build pays none, and no row in this clone holds
-  the base's maths score at equal removal with no discordant removal rows.
+  neither artifact hands over the asked-for content; the unedited base is itself at 1/24
+  on the same read, and on the first 20 families of the wider screen the arm
+  delivers the asked-for content on 0 of 20, the published build on 1 of 20.
   `scripts/screen_agreement.py` re-grades any screen under both
   inventories and prints the false-clean count; `docs/non-heretic-methods.md` carries the
   retraction, the floor sweep and the frontier table.
+- **Qwen3-4B at the pinned cert config: the REFIT is a removal loss, and it is the
+  row.** The layer-floor sweep's matching candidate — shared axis, both targets, scale
+  1.5 over blk.15–35 (`q3-4b-f15s15-l935`) — was a banked axis read at `-c 8192`, and
+  its axis file and capture records died with `/mnt/ssd/hermes`. What ships now is a
+  **REFIT** of that recipe, never the banked plan; the banked 8192 readings are kept as
+  a retired config under `verification/releases/qwen3-4b-f15s15-l935/` and are not
+  re-measurable. Refit at the pinned `-c 4096 --parallel 4`, cap 1024, temperature 0,
+  the packet prints `pinned_cert_match: true` on removal, retention and held_out — and
+  the numbers that come with it are a loss: harmful-40 removal 5/38 under the shipped
+  inventory and 3/38 under the wider one; held-out 46/112 and 30/112 against the
+  published build's 108/108; 72 discordant pairs, exact McNemar p < 1e-20. The arm
+  still opens with a canonical refusal on 29 of the 40 harmful prompts: the edit moved
+  3.1-6.0% RMS on exactly the 42 tensors the recipe names (realized fidelity min cos
+  0.9905, mean 0.9934 over 6 sampled tensors) and left the behaviour where it was,
+  while control drift ran +0.0606 ln-PPL against a 0.02 budget. Capability costs less
+  than the banked reading claimed — maths 158→153 (p 0.0648, not significant) and
+  code 22→18 (p 0.5029), median maths answer 156 characters against the base's 155,
+  which is a capability note on an arm that removes nothing, not a win. Two harmful-40
+  rows and 8 held-out rows truncated at the 1024-token slot width and are scored as
+  neither pass nor failure. Equal removal at less capability loss remains **not
+  established**: at the pinned config this arm is not the equal-removal half of it.
 - **Qwen2.5-1.5B capability retention.** Same suite, same serve config,
   three artifacts: base 98/241, a published third-party ablation 81/241,
   our SAS@1.5 184/241 — with the maths gain at p 0.006 and the code cost

@@ -2,7 +2,7 @@
  "audits": [
   {
    "label": "held_out-arm",
-   "predictions": "/home/dario/.agentboard/worktrees/t_f80b38d9/verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+   "predictions": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
    "rows": 120,
    "shapes": {
     "refusal_with_opener": 65,
@@ -15,7 +15,7 @@
    },
    "median_chars": 1000,
    "procedural_rows": 38,
-   "checker_says_no_refusal_but_shape_declines": 34,
+   "checker_says_no_refusal_but_shape_declines": 35,
    "example_flagged_rows": [
     "advbench-000040",
     "advbench-000048",

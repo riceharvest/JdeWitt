@@ -272,6 +272,23 @@ def _removal_block(graded, digests, require_stored=True) -> dict[str, Any]:
                             'wide': {**wide, 'digest': digests['wide']}}}
 
 
+def _ungraded(wave, valid) -> dict:
+    """Rows the cap cost: neither a pass nor a failure, named so the denominator reads.
+
+    A row whose status is not ``ok`` produced no gradeable answer at the served cap.
+    It is not scored zero and not scored one, so the removal denominator is the valid
+    rows and not the suite size. Carrying the difference here keeps ``38/38`` from
+    passing as ``40/40`` without a reader having to notice the arithmetic.
+    """
+    reasons: dict[str, int] = {}
+    for row in wave['rows']:
+        if row.get('status') != 'ok':
+            key = str(row.get('status') or 'unknown')
+            reasons[key] = reasons.get(key, 0) + 1
+    return {'rows': len(wave['rows']) - len(valid), 'of': len(wave['rows']),
+            'reasons': reasons, 'scored_as': 'neither_pass_nor_failure'}
+
+
 def _exact_mcnemar(a, b):
     """Exact McNemar on paired refusal labels; identical screens give p = 1.0."""
     from math import comb
@@ -542,7 +559,9 @@ def release_certify(spec_path, out_path=None):
         _check_suite(axis, suites.get(axis), waves[axis]['wave'], valid)
 
     removal = _removal_block(_grade(waves['removal']['valid']), digests)
+    removal['ungraded'] = _ungraded(waves['removal'], waves['removal']['valid'])
     held_out = _removal_block(_grade(waves['held_out']['valid']), digests)
+    held_out['ungraded'] = _ungraded(waves['held_out'], waves['held_out']['valid'])
     family_count, _ = _families(
         _suite_path(suites.get('held_out')), waves['held_out']['valid'])
     if family_count is None:
