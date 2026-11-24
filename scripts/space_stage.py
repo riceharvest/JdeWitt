@@ -199,9 +199,41 @@ def _bank_document():
     return document
 
 
-def _readme(document):
+OAUTH_FRONTMATTER = """hf_oauth: true
+hf_oauth_scopes: [write-repos]
+"""
+
+OAUTH_BODY = """
+## Publishing to your own account (v1.1, behind a flag)
+
+The direct download is the delivery by default. With `JW_OAUTH_PUSH=1` set in the
+Space's variables, the page also offers a **Publish** checkbox: sign in with the
+Hub account that should own the file, and the app creates
+`jdewitt-<base>-<quant>` under that account and uploads the edited GGUF, the
+generated card, the sidecar and `SHA256SUMS` (plus a `.revert.npz` sidecar only
+when one exists and is under a 1 GiB cap). The result line carries the repo URL
+and the commit sha.
+
+What is promised while it uploads: the bytes shown are the bytes this process
+moved (read from disk and written to the Hub's signed upload URL), a rate over
+the last 15 seconds, and a remaining time computed as `remaining / rate`. One
+upload runs at a time, across worker processes. The repo is created **private**,
+made public only when the upload and the commit both succeed, and deleted —
+then re-read from the API to prove it is gone — if the upload fails or the
+visitor presses **Cancel upload**. The Space only ever held a temporary copy;
+the copy that survives is the visitor's.
+
+The flag is off on any deployment whose request window cannot carry the largest
+file, and the card in `verification/space/oauth-upload.json` carries the measured
+verdict rather than a promise.
+"""
+
+
+def _readme(document, oauth_push=False):
     bases = sorted({str(entry['base']['repo']) for entry in document['entries']})
     models = 'models: []' if not bases else 'models:\n' + ''.join(f'  - {base}\n' for base in bases).rstrip('\n')
+    oauth = OAUTH_FRONTMATTER if oauth_push else ''
+    body = OAUTH_BODY if oauth_push else ''
     return f"""---
 title: Banked GGUF edit
 sdk: gradio
@@ -209,7 +241,7 @@ sdk_version: "{SDK_VERSION}"
 app_file: app.py
 short_description: {SHORT_DESCRIPTION}
 {models}
----
+{oauth}---
 
 # Banked GGUF edit
 
@@ -233,7 +265,7 @@ the response, and a gated repository is refused before any download.
 
 `jdewitt/` is a vendored copy of this repository's package, limited to the modules
 `app.py` imports; `spaces/bank/` is the bank directory verbatim.
-"""
+""" + body
 
 
 def _app_source():
@@ -248,6 +280,11 @@ gguf>=0.19
 huggingface_hub>=0.34
 gradio>=5,<6
 """
+OAUTH_REQUIREMENTS = """numpy>=2
+gguf>=0.19
+huggingface_hub>=0.34
+gradio[oauth]>=5,<6
+"""
 
 GITIGNORE = """__pycache__/
 *.py[cod]
@@ -255,14 +292,14 @@ GITIGNORE = """__pycache__/
 """
 
 
-def _tree_files():
+def _tree_files(oauth_push=False):
     """{relative path: bytes} for everything the Space tree carries."""
     document = _bank_document()
     app = _app_source().encode()
     files = {
-        'README.md': _readme(document).encode(),
+        'README.md': _readme(document, oauth_push).encode(),
         'app.py': app,
-        'requirements.txt': REQUIREMENTS.encode(),
+        'requirements.txt': (OAUTH_REQUIREMENTS if oauth_push else REQUIREMENTS).encode(),
         '.gitignore': GITIGNORE.encode(),
     }
     app_source = app.decode()
@@ -320,9 +357,9 @@ def _outside_bank(files):
     return sum(len(data) for name, data in files.items() if not name.startswith('spaces/bank/'))
 
 
-def build():
+def build(oauth_push=False):
     """Assemble, check and return (files, checks) without touching the filesystem."""
-    files = _tree_files()
+    files = _tree_files(oauth_push)
     outside = _outside_bank(files)
     if outside > MAX_OUTSIDE_BANK:
         raise StageRefused(
@@ -333,11 +370,12 @@ def build():
         'app_parses': bool(ast.parse(files['app.py'].decode())),
         'imports_resolved': True,  # `_closure` refused above if any local import was missing
         'size_outside_bank_bytes': outside,
+        'oauth_push': bool(oauth_push),
     }
     return files, checks
 
 
-def stage(out):
+def stage(out, oauth_push=False):
     """Write the tree under `out` (which must be absent or empty) and report it."""
     out = Path(out)
     if out.exists():
@@ -345,7 +383,7 @@ def stage(out):
             raise StageRefused('OUT_NOT_DIR', f'{out} exists and is not a directory')
         if any(out.iterdir()):
             raise StageRefused('OUT_NOT_EMPTY', f'{out} is not empty; stage into a fresh directory')
-    files, checks = build()
+    files, checks = build(oauth_push)
     for name in sorted(files):
         target = out / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -364,9 +402,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description='Stage the Gradio Space tree (README, app, requirements, vendored jdewitt, bank).')
     parser.add_argument('--out', type=Path, required=True, help='directory to write the Space tree into')
+    parser.add_argument('--oauth-push', action='store_true',
+                        help='add hf_oauth: true / hf_oauth_scopes: [write-repos] and gradio[oauth] '
+                             '(v1.1 delivery; off unless the measured 5.5 GB window fits)')
     args = parser.parse_args(argv)
     try:
-        report = stage(args.out)
+        report = stage(args.out, oauth_push=args.oauth_push)
     except StageRefused as refusal:
         print(json.dumps({'schema': 'jdewitt-space-stage-v1', 'error': {
             'code': refusal.code, 'message': refusal.message}}, indent=2, sort_keys=True))

@@ -101,6 +101,24 @@ def test_the_app_declares_one_gpu_function_and_no_job_calls_it():
     assert others == ['gpu_declaration = None']
 
 
+def test_oauth_push_is_a_flag_on_the_readme_and_the_requirements(tmp_path):
+    """v1.1 is opt-in: the default tree asks for no scope and ships no OAuth extra."""
+    _stage(tmp_path / 'out')
+    assert 'hf_oauth' not in (tmp_path / 'out' / 'README.md').read_text()
+    assert 'gradio[oauth]' not in (tmp_path / 'out' / 'requirements.txt').read_text()
+    report = stage_mod.stage(tmp_path / 'oauth', oauth_push=True)
+    front = _frontmatter((tmp_path / 'oauth' / 'README.md').read_text())
+    assert front['hf_oauth'] == 'true'
+    assert front['hf_oauth_scopes'] == '[write-repos]'
+    assert 'gradio[oauth]>=5,<6' in (tmp_path / 'oauth' / 'requirements.txt').read_text()
+    assert report['checks']['oauth_push'] is True
+    tree = _tree(tmp_path / 'oauth')
+    assert 'jdewitt/space_deliver.py' in tree
+    body = (tmp_path / 'oauth' / 'README.md').read_text()
+    assert 'Publish' in body and 'temporary copy' in body
+    assert 'uncensored' not in body.casefold()
+
+
 def test_readme_models_lists_only_the_bank_bases(tmp_path, monkeypatch):
     bank = tmp_path / 'bank'
     bank.mkdir()
