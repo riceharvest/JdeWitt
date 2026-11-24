@@ -1,0 +1,102 @@
+{
+ "kind": "p7-spark-operands",
+ "note": "Every operand of the Spark codec-floor row, sha256-pinned. run_waves.sh re-hashes each one before measuring: a different binary, suite or capture is a different instrument, not a resumed run. Restores are labelled as restores; nothing here is re-downloaded.",
+ "operands": [
+  {
+   "bytes": 1107458592,
+   "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+   "provenance": "the artifact a user serves; sha256 matches matrix.manifest base",
+   "required": true,
+   "role": "base_artifact",
+   "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+  },
+  {
+   "bytes": 3420932640,
+   "path": "/mnt/ssd/models/Spark-X2.6-1.7B-f16.gguf",
+   "provenance": "the 16-bit twin the spec names for capture; the repo capture path loads HF checkpoints (transformers), not GGUF, so the records came from the bfloat16 HF source this twin was converted from and the twin is the shape/writeback cross-check",
+   "required": true,
+   "role": "f16_twin",
+   "sha256": "9261f37b336443b81d2018c887ede3248cbef7d7666cdc6ca382c79264940db2"
+  },
+  {
+   "bytes": 18587379,
+   "path": "/mnt/ssd/dev workspace/JdeWitt/runs/p4/records.pt",
+   "provenance": "p4d capture, 80 rows (36 bad / 30 good), 28 layers x 2048 on the 16-bit HF source; suite-80 sha256 1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+   "required": true,
+   "role": "capture_records",
+   "sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a"
+  },
+  {
+   "bytes": 7620,
+   "path": "verification/p7-spark/suites/harmful-40.jsonl",
+   "provenance": "restored copy of verification/screens/advbench-40.jsonl (byte-identical); the registered path /mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl was deleted with that scratch dir and this copy is its restore, sha d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+   "required": true,
+   "role": "removal_suite",
+   "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+  },
+  {
+   "bytes": 22500,
+   "path": "verification/screens/q3-holdout-wider.jsonl",
+   "provenance": "the registered held-out floor: 120 rows over 120 families, zero id/prompt overlap with the Spark fit suite (runs/p4/suite-80.jsonl)",
+   "required": true,
+   "role": "heldout_suite_120",
+   "sha256": "34b284f9f7521a3f19d6b9a43c4f496049a5a728f8421122aa8229473f15f182"
+  },
+  {
+   "bytes": 4891,
+   "path": "verification/p7-spark/suites/q3-holdout-24.jsonl",
+   "provenance": "copy of verification/screens/q3-holdout-24.jsonl: 24 rows over 24 families, also disjoint from the fit suite; supplementary reading only (release-certify refuses 24 rows as a probe)",
+   "required": true,
+   "role": "heldout_suite_24",
+   "sha256": "819022aafa056b2833fddc1ebd18fe303701df6297186cc6a361b1b762a4d0ad"
+  },
+  {
+   "bytes": 71494,
+   "path": "verification/capability/capability-run-en.jsonl",
+   "provenance": "241 rows: 180 maths + 61 code; the registered retention floor and the paired-stat suite",
+   "required": true,
+   "role": "retention_suite",
+   "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+  },
+  {
+   "bytes": 18862,
+   "path": "verification/ppl-probe/control.txt",
+   "provenance": "fixed control corpus for the drift reading",
+   "required": true,
+   "role": "ppl_control",
+   "sha256": "07adf2f9f3b1d3885886b199255cd786c5c720a5f4baf11e3cdfc617712b01f7"
+  },
+  {
+   "bytes": 6041,
+   "path": "verification/ppl-probe/refusal.txt",
+   "provenance": "refusal-branch corpus for delta_br",
+   "required": true,
+   "role": "ppl_refusal",
+   "sha256": "3b2f97c587945b7425ccfbdf94379e700aa95c4efa4bd8dcfb0bba5003e30837"
+  },
+  {
+   "bytes": 10496,
+   "path": "verification/ppl-probe/delivery.txt",
+   "provenance": "delivery-branch corpus for delta_br",
+   "required": true,
+   "role": "ppl_delivery",
+   "sha256": "fe0b9b7410a1a6686e147b6e9eb1074647db2e2d8f2b272f40606e2000a9e311"
+  },
+  {
+   "bytes": 12576,
+   "path": "/mnt/ssd/b70-prep/llama.cpp-spark/build-vulkan/bin/llama-server",
+   "provenance": "the only local Vulkan llama-server that knows arch spark2_5; b70 = Vulkan1 (Intel BMG G31), Vulkan0 is the banned RTX 3060",
+   "required": true,
+   "role": "serve_binary",
+   "sha256": "2379757fad637d0766b954c9f5c56a35dab98ce2f30cb0fcbe3ca2f08e51262d"
+  },
+  {
+   "bytes": 12528,
+   "path": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+   "provenance": "the CPU perplexity build every banked Spark PPL reading used (jdewitt.ppl.DEFAULT_BINARY)",
+   "required": true,
+   "role": "ppl_binary",
+   "sha256": "305aa437fb5257078a0b894dc03bbde34632e932da224d8e7f02f9d75ecc8876"
+  }
+ ]
+}

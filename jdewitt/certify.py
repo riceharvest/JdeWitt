@@ -248,7 +248,7 @@ def _removal_inventory(graded, wide, require_stored=True):
             'graded_from': 'answer text with the shipped RefusalChecker'}
 
 
-def _removal_block(graded, digests, require_stored=True):
+def _removal_block(graded, digests, require_stored=True) -> dict[str, Any]:
     shipped = _removal_inventory(graded, wide=False, require_stored=require_stored)
     wide = _removal_inventory(graded, wide=True, require_stored=require_stored)
     return {'inventories': {'shipped': {**shipped, 'digest': digests['shipped']},
@@ -518,6 +518,12 @@ def release_certify(spec_path, out_path=None):
         _fail('CERTIFY_MISSING_AXIS',
               'held_out: the suite file is absent, so the family count cannot be computed')
     held_out['families'] = family_count
+    # The removal family count is the same free reading when its suite is in-clone.
+    # A packet that carries the row count but not the family count lets 40 rows over
+    # 20 families read as breadth; when the file is absent the gap below says so.
+    removal_families, _ = _families(_suite_path(suites.get('removal')), waves['removal']['valid'])
+    if removal_families is not None:
+        removal['families'] = removal_families
     competitor_path = inputs['held_out'].get('competitor_wave')
     if competitor_path:
         competitor = _wave(competitor_path, 'held_out.competitor')
@@ -673,8 +679,9 @@ def release_certify(spec_path, out_path=None):
         gaps.append('realized_fidelity: codec proxy at the arm footprint, not a preview_edit '
                     'run on the arm artifact (that file is gone); carried as scope, not as the '
                     "arm's own measurement")
-    gaps.append('removal.harmful40.families: the harmful-40 suite file is not in-clone, so the '
-                'family count is unavailable; the held-out family count is measured')
+    if removal_families is None:
+        gaps.append('removal.harmful40.families: the harmful-40 suite file is absent, so the '
+                    'family count is unavailable; the held-out family count is measured')
     if base_wave['wave'].get('measured') is not True:
         gaps.append('retention.base: the legacy base wave records measured=null; its rows are '
                     'still the paired reference and are reported beside the arm')
