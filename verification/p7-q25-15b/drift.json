@@ -1,0 +1,27 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen25-1.5b",
+ "label": "refit-sas15",
+ "measured": true,
+ "instrument": "llama-perplexity, ctx 512, 16 threads, ngl 0",
+ "control_delta_ln_ppl": 0.44553,
+ "budget": 0.02,
+ "inside_budget": false,
+ "corpus": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/ppl-probe/control.txt",
+ "readings": {
+  "base": {
+   "ppl": 1.2321,
+   "uncertainty": 0.01621,
+   "seconds": 31.7,
+   "ln_ppl": 0.20872003064848552
+  },
+  "arm": {
+   "ppl": 1.9237,
+   "uncertainty": 0.06024,
+   "seconds": 30.6,
+   "ln_ppl": 0.6542504149299987
+  }
+ },
+ "source": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/p7-q25-15b/drift.json",
+ "note": "the control corpus drift; a branch (BR) move is not generic drift, and a drift outside the budget is not attributable to the edit"
+}
