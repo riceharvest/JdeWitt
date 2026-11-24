@@ -22,6 +22,15 @@
 #                       ignores it; the recorded serve_config carries the token)
 #   JDEWITT_ARM_AXES    refit axes .pt              default $JDEWITT_MODELS/_fit/
 #                                                   q3-shared-axes-refit.pt
+#   JDEWITT_OUT         output root                 default this directory
+#   JDEWITT_CTX         context                     default 4096
+#   JDEWITT_PARALLEL    slots                       default 4
+#   JDEWITT_CAP         per-request tokens          default 1024 (== ctx/parallel)
+#
+# The R9.4 config-sensitivity re-run uses the same script with a different output
+# root and a different ctx, which is the ONLY knob that differs from the pinned run:
+#   JDEWITT_OUT=verification/p7-q3-4b/sensitivity-8192 JDEWITT_CTX=8192 \
+#       verification/p7-q3-4b/run_waves.sh
 #
 # The recorded serve_config IS the launch argv plus the per-request `--max-tokens`
 # token: llama-server takes the cap per request, so the token is stripped before the
@@ -31,7 +40,7 @@ set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/../.." && pwd)"
-OUT="$HERE"
+OUT="${JDEWITT_OUT:-$HERE}"
 MODELS="${JDEWITT_MODELS:-/mnt/ssd/hermes/models}"
 SERVER="${JDEWITT_SERVER:-/home/dario/llama.cpp-spark/build-cpu/bin/llama-server}"
 PERPLEXITY="${JDEWITT_PERPLEXITY:-/home/dario/llama.cpp-spark/build-cpu/bin/llama-perplexity}"
@@ -39,9 +48,9 @@ PORT="${JDEWITT_PORT:-8134}"
 NGL="${JDEWITT_NGL:-99}"
 AXES="${JDEWITT_ARM_AXES:-$MODELS/_fit/q3-shared-axes-refit.pt}"
 
-CTX=4096
-PARALLEL=4
-CAP=1024
+CTX="${JDEWITT_CTX:-4096}"
+PARALLEL="${JDEWITT_PARALLEL:-4}"
+CAP="${JDEWITT_CAP:-1024}"
 TEMPERATURE=0
 
 ARM="$MODELS/q3-4b-f15s15-l935-refit.gguf"
@@ -56,7 +65,7 @@ DRY=0
 for arg in "$@"; do
     case "$arg" in
         --dry) DRY=1 ;;
-        -h|--help) sed -n '4,32p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '4,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "unknown argument: $arg (only --dry is accepted)" >&2; exit 2 ;;
     esac
 done
@@ -83,8 +92,8 @@ launch_argv() {  # serve_config minus the per-request cap token
 }
 
 wave_argv() {  # $1 = wave name, $2 = artifact, $3 = suite, $4 = kinds (for --dry only)
-    printf -- 'uv run python scripts/capability_wave.py %s verification/p7-q3-4b/waves/%s --label %s --port %s --max-tokens %s --parallel %s --kinds %s --serve-config "%s" --temperature %s --preview 2' \
-        "$3" "$1" "$1" "$PORT" "$CAP" "$PARALLEL" "$4" "$(serve_config "$2")" "$TEMPERATURE"
+    printf -- 'uv run python scripts/capability_wave.py %s %s/waves/%s --label %s --port %s --max-tokens %s --parallel %s --kinds %s --serve-config "%s" --temperature %s --preview 2' \
+        "$3" "$OUT" "$1" "$1" "$PORT" "$CAP" "$PARALLEL" "$4" "$(serve_config "$2")" "$TEMPERATURE"
 }
 
 wave_done() {  # $1 = wave name; true iff this wave is finished and measured

@@ -1,0 +1,111 @@
+{
+  "schema": "jdewitt.p7-operands/1",
+  "lineage": "qwen3-4b-instruct-2507",
+  "refit": true,
+  "artifact_identity_digest": "334639234db2026dccb05e6c9152e1f5f960809549d9397982122c19ab28531a",
+  "sources": {
+    "base": {
+      "repo": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+      "revision_pin": "cdbee75f17c0",
+      "local": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+      "quant_type": "Q8_0",
+      "sha256": "67db5ebe21965b6b9612d44a315fe2cda44d893c0163561c0e0c2236d80377a5",
+      "bytes": 4280403488,
+      "converter": "llama.cpp convert_hf_to_gguf.py --outtype q8_0"
+    },
+    "published": {
+      "repo": "p-e-w/Qwen3-4B-Instruct-2507-heretic",
+      "revision": "bc843daf6f71759bfb52ad69841f7a84aed6dd64",
+      "revision_pin": "bc843daf6f71",
+      "local": "/mnt/ssd/hermes/models/q3-4b-heretic-q8.gguf",
+      "quant_type": "Q8_0",
+      "sha256": "9ba4aedcef666781e1ad86b04f668c8be689981fa8b9f1d6e626692c6b1f344b",
+      "bytes": 4280403552,
+      "converter": "llama.cpp convert_hf_to_gguf.py --outtype q8_0"
+    },
+    "arm": {
+      "local": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf",
+      "quant_type": "Q8_0",
+      "sha256": "8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494",
+      "bytes": 4280403488,
+      "recipe": {
+        "command": "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf --axes /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5",
+        "base_sha256_prefix_16": "67db5ebe21965b6b",
+        "edit": "REFIT shared sign-aligned axis, output space, o_proj + mlp.down_proj, blk.15-35, scale 1.5 (fit on pool.jsonl: 80 rows over 68 families, shape-labelled by the base model's own answers)",
+        "refit": true,
+        "banked_plan_restored": false,
+        "banked_plan_note": "the banked q3-shared-axes.pt and its capture records were deleted with /mnt/ssd/hermes; this is a reproducible REFIT of the same recipe, never the banked plan",
+        "fit_inputs": {
+          "pool": "/mnt/ssd/hermes/models/_fit/pool.jsonl",
+          "pool_sha256": "e3012f56d38953fdd3e2968299316cd5676e77d3130e4861bbd0cf677ec207df",
+          "records": "/mnt/ssd/hermes/models/_fit/records-refit.pt",
+          "records_sha256": "a7b61603ef841e84e13338c4a4b7c7c4e6cb00fff309da2beb245d6e1e9c7514",
+          "axes": "/mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
+          "axes_sha256": "173135aa8a4da97122b2f7248a0a04f404242c9452d573cdd0a3700200b51691",
+          "capture": {
+            "available": true,
+            "sidecar": "/mnt/ssd/hermes/models/_fit/records-refit.pt.capture.json",
+            "sidecar_sha256": "0c945e7c13012e2affc02934f40bd7c22fd4f544d0bafe8c7d2056488a90f0d0",
+            "labels": {
+              "bad": 36,
+              "ambiguous": 4,
+              "overdecline": 4,
+              "good": 36
+            },
+            "tokens": {
+              "prompt": 12120,
+              "answer": 15281
+            },
+            "settings": {
+              "locus": "answer",
+              "dtype": "bfloat16",
+              "max_tokens": 384,
+              "ctx_size": 4096,
+              "kinds": [
+                "refusal",
+                "harmless"
+              ],
+              "architecture": "qwen3",
+              "hidden": 2560,
+              "layers": 36
+            },
+            "compute_backend": {
+              "type": "xpu",
+              "rank": "primary",
+              "name": "Intel(R) Arc(TM) Pro B70 Graphics"
+            }
+          }
+        },
+        "refit_steps": [
+          "uv run python verification/p7-q3-4b/refit_pool.py --out /mnt/ssd/hermes/models/_fit/pool.jsonl",
+          "OMP_NUM_THREADS=16 uv run jdewitt capture --model <base HF checkpoint @ cdbee75f17c0> --suite /mnt/ssd/hermes/models/_fit/pool.jsonl --out /mnt/ssd/hermes/models/_fit/records-refit.pt --ctx-size 4096 --kinds refusal,harmless --max-tokens 384",
+          "OMP_NUM_THREADS=16 uv run python -m jdewitt.spanfit axes --records /mnt/ssd/hermes/models/_fit/records-refit.pt --shape shared --out /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
+          "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf --axes /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5"
+        ]
+      }
+    }
+  },
+  "refit_inputs": {
+    "pool": "/mnt/ssd/hermes/models/_fit/pool.jsonl",
+    "pool_sha256": "e3012f56d38953fdd3e2968299316cd5676e77d3130e4861bbd0cf677ec207df",
+    "records": "/mnt/ssd/hermes/models/_fit/records-refit.pt",
+    "records_sha256": "a7b61603ef841e84e13338c4a4b7c7c4e6cb00fff309da2beb245d6e1e9c7514",
+    "axes": "/mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
+    "axes_sha256": "173135aa8a4da97122b2f7248a0a04f404242c9452d573cdd0a3700200b51691"
+  },
+  "suites": {
+    "removal": {
+      "path": "verification/p7-q3-4b/harmful-40.jsonl",
+      "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef"
+    },
+    "held_out": {
+      "path": "verification/screens/q3-holdout-wider.jsonl",
+      "sha256": "34b284f9f7521a3f19d6b9a43c4f496049a5a728f8421122aa8229473f15f182"
+    },
+    "retention": {
+      "path": "verification/capability/capability-run-en.jsonl",
+      "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d"
+    }
+  }
+}

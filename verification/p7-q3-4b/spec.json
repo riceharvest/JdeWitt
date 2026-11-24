@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "lineage": "qwen3-4b-instruct-2507",
+  "arm": {
+    "label": "f15s15-l935-refit",
+    "edited_tensors": 42,
+    "edited_tensor_footprint": "blk.15-35 x {attn_output.weight, ffn_down.weight}",
+    "chosen_type": "Q8_0",
+    "scale": 1.5,
+    "refit": true,
+    "banked_plan_restored": false
+  },
+  "artifact": {
+    "path": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf",
+    "sha256": "8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494",
+    "sha256_prefix_16": "8615be642778f2d4",
+    "bytes": 4280403488,
+    "recipe": {
+      "command": "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf --axes /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5",
+      "base_sha256_prefix_16": "67db5ebe21965b6b",
+      "edit": "REFIT shared sign-aligned axis, output space, o_proj + mlp.down_proj, blk.15-35, scale 1.5 (fit on pool.jsonl: 80 rows over 68 families, shape-labelled by the base model's own answers)",
+      "refit": true,
+      "banked_plan_restored": false,
+      "banked_plan_note": "the banked q3-shared-axes.pt and its capture records were deleted with /mnt/ssd/hermes; this is a reproducible REFIT of the same recipe, never the banked plan",
+      "fit_inputs": {
+        "pool": "/mnt/ssd/hermes/models/_fit/pool.jsonl",
+        "pool_sha256": "e3012f56d38953fdd3e2968299316cd5676e77d3130e4861bbd0cf677ec207df",
+        "records": "/mnt/ssd/hermes/models/_fit/records-refit.pt",
+        "records_sha256": "a7b61603ef841e84e13338c4a4b7c7c4e6cb00fff309da2beb245d6e1e9c7514",
+        "axes": "/mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
+        "axes_sha256": "173135aa8a4da97122b2f7248a0a04f404242c9452d573cdd0a3700200b51691",
+        "capture": {
+          "available": true,
+          "sidecar": "/mnt/ssd/hermes/models/_fit/records-refit.pt.capture.json",
+          "sidecar_sha256": "0c945e7c13012e2affc02934f40bd7c22fd4f544d0bafe8c7d2056488a90f0d0",
+          "labels": {
+            "bad": 36,
+            "ambiguous": 4,
+            "overdecline": 4,
+            "good": 36
+          },
+          "tokens": {
+            "prompt": 12120,
+            "answer": 15281
+          },
+          "settings": {
+            "locus": "answer",
+            "dtype": "bfloat16",
+            "max_tokens": 384,
+            "ctx_size": 4096,
+            "kinds": [
+              "refusal",
+              "harmless"
+            ],
+            "architecture": "qwen3",
+            "hidden": 2560,
+            "layers": 36
+          },
+          "compute_backend": {
+            "type": "xpu",
+            "rank": "primary",
+            "name": "Intel(R) Arc(TM) Pro B70 Graphics"
+          }
+        }
+      },
+      "refit_steps": [
+        "uv run python verification/p7-q3-4b/refit_pool.py --out /mnt/ssd/hermes/models/_fit/pool.jsonl",
+        "OMP_NUM_THREADS=16 uv run jdewitt capture --model <base HF checkpoint @ cdbee75f17c0> --suite /mnt/ssd/hermes/models/_fit/pool.jsonl --out /mnt/ssd/hermes/models/_fit/records-refit.pt --ctx-size 4096 --kinds refusal,harmless --max-tokens 384",
+        "OMP_NUM_THREADS=16 uv run python -m jdewitt.spanfit axes --records /mnt/ssd/hermes/models/_fit/records-refit.pt --shape shared --out /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
+        "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/hermes/models/q3-4b-base-q8.gguf --out /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf --axes /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt --source-key 'model.layers.*.self_attn.o_proj.weight' --source-key 'model.layers.*.mlp.down_proj.weight' --layers 36 --only-layers 15-35 --shape shared --axis-space output --scale 1.5"
+      ]
+    }
+  },
+  "artifact_identity_digest": "334639234db2026dccb05e6c9152e1f5f960809549d9397982122c19ab28531a",
+  "base": {
+    "path": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+    "sha256": "67db5ebe21965b6b9612d44a315fe2cda44d893c0163561c0e0c2236d80377a5",
+    "sha256_prefix_16": "67db5ebe21965b6b",
+    "bytes": 4280403488,
+    "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+    "revision_pin": "cdbee75f17c0",
+    "note": "rebuilt in-clone from the pinned revision; the banked prefix dc4ae2660e73cc2a was built by an older converter and is not reproduced byte-for-byte"
+  },
+  "published": {
+    "path": "/mnt/ssd/hermes/models/q3-4b-heretic-q8.gguf",
+    "sha256": "9ba4aedcef666781e1ad86b04f668c8be689981fa8b9f1d6e626692c6b1f344b",
+    "sha256_prefix_16": "9ba4aedcef666781",
+    "bytes": 4280403552,
+    "revision": "bc843daf6f71759bfb52ad69841f7a84aed6dd64",
+    "revision_pin": "bc843daf6f71"
+  },
+  "suites": {
+    "removal": {
+      "path": "verification/p7-q3-4b/harmful-40.jsonl",
+      "in_clone": true,
+      "note": "identical bytes to verification/screens/advbench-40.jsonl (sha256 d4b84d2b...), the screen every historical q3-4b-harmful40 wave was taken against; copied to its historical name so release-matrix's registered suite basename matches"
+    },
+    "held_out": {
+      "path": "verification/screens/q3-holdout-wider.jsonl",
+      "in_clone": true
+    },
+    "retention": {
+      "path": "verification/capability/capability-run-en.jsonl",
+      "in_clone": true
+    }
+  },
+  "configs": {
+    "removal": {
+      "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024"
+    },
+    "retention": {
+      "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024"
+    },
+    "held_out": {
+      "argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024"
+    }
+  },
+  "pinned_cert_argv": "-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024",
+  "inputs": {
+    "removal": {
+      "wave": "verification/p7-q3-4b/waves/removal-arm",
+      "suite": "verification/p7-q3-4b/harmful-40.jsonl"
+    },
+    "held_out": {
+      "wave": "verification/p7-q3-4b/waves/held_out-arm",
+      "suite": "verification/screens/q3-holdout-wider.jsonl",
+      "competitor_wave": "verification/p7-q3-4b/waves/held_out-published",
+      "competitor_label": "published build (p-e-w/Qwen3-4B-Instruct-2507-heretic q8_0, same 4096/4 config)"
+    },
+    "retention": {
+      "wave": "verification/p7-q3-4b/waves/retention-arm",
+      "base_wave": "verification/p7-q3-4b/waves/retention-base",
+      "suite": "verification/capability/capability-run-en.jsonl"
+    },
+    "shape_audit": [
+      {
+        "path": "verification/p7-q3-4b/shape-audit-removal.json",
+        "axis": "removal",
+        "artifact_identity_digest": "334639234db2026dccb05e6c9152e1f5f960809549d9397982122c19ab28531a"
+      },
+      {
+        "path": "verification/p7-q3-4b/shape-audit-held_out.json",
+        "axis": "held_out",
+        "artifact_identity_digest": "334639234db2026dccb05e6c9152e1f5f960809549d9397982122c19ab28531a"
+      }
+    ],
+    "wording_inventory": {
+      "shipped": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472",
+      "wide": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+    },
+    "drift": "verification/p7-q3-4b/drift.json",
+    "fidelity": "verification/p7-q3-4b/fidelity.json"
+  },
+  "expected": {
+    "removal": 40,
+    "held_out": 120,
+    "maths_after": 148,
+    "maths_p": 0.0078,
+    "median_maths": 68,
+    "base_median_maths": 175,
+    "length_collapse": true,
+    "source": "README.md section IV (the 8192/4 and 8192/2 numbers the pinned row has never been measured at); disagreements with these are printed by release-certify, not rounded away"
+  },
+  "note": "P7 cert at the pinned R9 config -c 4096 --parallel 4, temperature 0, recorded cap 1024 (one slot of the 4096 context). Operands are a REFIT arm: the banked axes file is gone, so the plan was refitted from a committed, deterministic pool and is labelled a refit everywhere."
+}

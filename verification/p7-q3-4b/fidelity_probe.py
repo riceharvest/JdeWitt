@@ -4,18 +4,21 @@
 
 The banked packet carried a codec proxy (`arm_measurement: false`) because the arm
 file had been deleted. This run rebuilds the arm, so the reading can be the arm's
-own: each edited tensor is re-encoded through the shipped Q8_0 codec at the arm's
-real fitted direction, and the realized change is compared with the change asked
-for. cos == 1.0 would mean the codec stored the edit exactly.
+own. Two readings, both per edited tensor:
+
+* `preview_edit` re-encodes the edited tile through the shipped Q8_0 codec and asks
+  whether the codec would store the projection (`--min-edit-cos` is this reading);
+* `compare_edit` dequantizes the base and the shipped file and compares the stored
+  change with the intended one, so it binds the bytes that are actually served.
+
+`min_cos`/`mean_cos` in the document are the DELIVERED (compare_edit) numbers: the
+stricter, file-level reading. The codec simulation is kept beside them.
 
     uv run python verification/p7-q3-4b/fidelity_probe.py \
         --gguf /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf \
+        --base /mnt/ssd/hermes/models/q3-4b-base-q8.gguf \
         --axes /mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt \
         --scale 1.5 --out verification/p7-q3-4b/fidelity.json
-
-`min_cos` here is the release matrix's `fidelity_min_cos` reading (tune's
---min-edit-cos default is 0.9): it says whether the codec can store this edit, not
-whether the direction removes refusal. The shape audit and the waves answer that.
 """
 from __future__ import annotations
 
@@ -29,7 +32,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 
 from jdewitt.answers import atomic_json  # noqa: E402
-from jdewitt.ggufio import preview_edit  # noqa: E402
+from jdewitt.ggufio import compare_edit, preview_edit  # noqa: E402
 
 ATTN = "blk.{layer}.attn_output.weight"
 FFN = "blk.{layer}.ffn_down.weight"
@@ -46,6 +49,8 @@ def sha256(path: Path) -> str:
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--gguf", type=Path, required=True)
+    parser.add_argument("--base", type=Path, required=True,
+                        help="pristine artifact the arm was built from (compare_edit source)")
     parser.add_argument("--axes", type=Path, required=True,
                         help="spanfit axes file (torch.save {'axes': [L, W]})")
     parser.add_argument("--axes-key", default="axes")
@@ -77,11 +82,14 @@ def main(argv=None) -> int:
         axis = axes[layer].float().numpy()
         edits[ATTN.format(layer=layer)] = (axis, "output")
         edits[FFN.format(layer=layer)] = (axis, "output")
-    report = preview_edit(str(args.gguf), edits, scale=args.scale,
-                          windows=args.windows, blocks=args.blocks)
-    if not report:
+
+    simulated = preview_edit(str(args.gguf), edits, scale=args.scale,
+                             windows=args.windows, blocks=args.blocks)
+    if not simulated.get("tensors"):
         raise SystemExit("preview_edit measured no tensor; the names or the artifact are wrong")
-    cosmos = [float(row["cos"]) for row in report]
+    delivered = compare_edit(str(args.base), str(args.gguf), edits, scale=args.scale)
+    if delivered.get("min_cos") is None:
+        raise SystemExit("compare_edit measured no tensor with a cos; base and arm disagree")
     document = {
         "schema_version": 1,
         "lineage": args.lineage,
@@ -89,29 +97,37 @@ def main(argv=None) -> int:
         "measured": True,
         "arm_measurement": True,
         "arm_refit": True,
-        "method": (f"ggufio.preview_edit on the served Q8_0 codec at the FITTED refit "
-                   f"direction, scale {args.scale}, {args.windows} windows x {args.blocks} "
-                   "blocks per tensor"),
+        "method": (f"ggufio.compare_edit (delivered bytes) + ggufio.preview_edit (codec "
+                   f"simulation) at the FITTED refit direction, scale {args.scale}, "
+                   f"{args.windows} windows x {args.blocks} blocks per tensor"),
         "artifact_sha256": sha256(args.gguf),
         "artifact_bytes": args.gguf.stat().st_size,
+        "base_sha256": sha256(args.base),
         "axes_sha256": sha256(args.axes),
         "scale": args.scale,
-        "tensors": report,
-        "sampled": len(report),
-        "min_cos": round(min(cosmos), 4),
-        "mean_cos": round(sum(cosmos) / len(cosmos), 4),
-        "min_snr": min(float(row["snr"]) for row in report),
-        "note": ("a low cos here means the codec, not the axis, decides what ships; this is "
-                 "the arm's own fitted direction, unlike a codec proxy"),
-        "scope": ("realized codec fidelity of the refit arm artifact: each sampled edited "
-                  "tensor is re-encoded through Q8_0 with the fitted axis applied at the "
-                  "certified scale. It measures what the codec stores, not the behavioural "
-                  "effect of the edit"),
+        "tensors": simulated["tensors"],
+        "codec_simulation": {key: simulated[key] for key in
+                             ("sampled", "min_cos", "mean_cos", "min_snr")},
+        "delivered": {key: delivered[key] for key in ("sampled", "min_cos", "mean_cos")},
+        "delivered_tensors": delivered["tensors"],
+        "sampled": delivered["sampled"],
+        "min_cos": delivered["min_cos"],
+        "mean_cos": delivered["mean_cos"],
+        "min_snr": simulated.get("min_snr"),
+        "note": ("min_cos/mean_cos are the DELIVERED reading (stored change vs intended "
+                 "projection on the served bytes); codec_simulation is the same question "
+                 "asked of the Q8_0 codec alone. A low cos means the codec, not the axis, "
+                 "decides what ships"),
+        "scope": ("realized codec fidelity of the refit arm artifact: every sampled edited "
+                  "tensor is compared between the pristine base and the shipped Q8_0 arm at "
+                  "the certified scale. It measures what the file stores, not the "
+                  "behavioural effect of the edit"),
     }
     atomic_json(args.out, document)
     print(json.dumps({key: document[key] for key in
-                      ("sampled", "min_cos", "mean_cos", "min_snr", "artifact_sha256")},
-                     indent=1))
+                      ("sampled", "min_cos", "mean_cos", "artifact_sha256")}, indent=1))
+    print(json.dumps({"codec_simulation": document["codec_simulation"],
+                      "delivered": document["delivered"]}, indent=1))
     return 0
 
 

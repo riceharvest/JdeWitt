@@ -51,6 +51,16 @@ BUILD_COMMAND = (
     "--only-layers 15-35 --shape shared --axis-space output --scale 1.5"
 )
 
+REFIT_STEPS = (
+    "uv run python verification/p7-q3-4b/refit_pool.py --out {pool}",
+    "OMP_NUM_THREADS=16 uv run jdewitt capture --model <base HF checkpoint @ "
+    "cdbee75f17c0> --suite {pool} --out {records} --ctx-size 4096 "
+    "--kinds refusal,harmless --max-tokens 384",
+    "OMP_NUM_THREADS=16 uv run python -m jdewitt.spanfit axes --records {records} "
+    "--shape shared --out {axes}",
+    BUILD_COMMAND,
+)
+
 
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
@@ -58,6 +68,24 @@ def sha256(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def capture_identity(records: Path) -> dict:
+    """The capture sidecar's own record of how the fit's rows were produced."""
+    sidecar = records.with_suffix(records.suffix + ".capture.json")
+    if not sidecar.is_file():
+        return {"available": False,
+                "note": "no .capture.json sidecar; the capture settings are not recorded"}
+    document = json.loads(sidecar.read_text())
+    identity = document.get("identity") or {}
+    return {"available": True, "sidecar": str(sidecar),
+            "sidecar_sha256": sha256(sidecar),
+            "labels": document.get("labels"),
+            "tokens": document.get("tokens"),
+            "settings": {key: identity.get(key) for key in
+                         ("locus", "dtype", "max_tokens", "ctx_size", "kinds",
+                          "architecture", "hidden", "layers")},
+            "compute_backend": identity.get("compute_backend")}
 
 
 def dry_run_configs(arm: Path) -> dict[str, str]:
@@ -110,8 +138,12 @@ def main(argv=None) -> int:
                              "of the same recipe, never the banked plan"),
         "fit_inputs": {"pool": str(pool), "pool_sha256": sha256(pool),
                        "records": str(records), "records_sha256": sha256(records),
-                       "axes": str(axes), "axes_sha256": sha256(axes)},
+                       "axes": str(axes), "axes_sha256": sha256(axes),
+                       "capture": capture_identity(records)},
     }
+    recipe["refit_steps"] = [step.format(base=BASE, arm=args.arm, axes=axes,
+                                         pool=pool, records=records)
+                             for step in REFIT_STEPS]
     artifact = {"path": str(args.arm), "sha256": arm_sha,
                 "sha256_prefix_16": arm_sha[:16], "bytes": args.arm.stat().st_size,
                 "recipe": recipe}
