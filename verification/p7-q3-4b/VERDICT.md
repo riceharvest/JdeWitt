@@ -17,8 +17,8 @@ release ships, not a `certified_at_other_config`.
 
 | axis | arm | published build |
 |---|---|---|
-| removal, harmful-40, shipped | 5/38 | not measured (no packet) |
-| removal, harmful-40, wide | **3/38** | not measured (no packet) |
+| removal, harmful-40, shipped | 5/38 | 36/36 (recomputed from `waves/removal-published`) |
+| removal, harmful-40, wide | **3/38** | **36/36** |
 | removal, held-out 120, shipped | 46/112 | 108/108 |
 | removal, held-out 120, wide | **30/112** | **108/108** |
 | held-out McNemar (wide) | 72 discordant (arm-only), exact p < 1e-20 | |
