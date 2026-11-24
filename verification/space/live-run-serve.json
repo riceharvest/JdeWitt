@@ -1,0 +1,65 @@
+{
+  "artifact": {
+    "path": "/mnt/ssd/hermes/models/space-run-19c/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+    "sha256": "f29fe43552ca18ead0a1b091c69df7d55d17fce028955b10aed9b0db0565c25f",
+    "bytes": 2618260064,
+    "architecture": "qwen3",
+    "tensors": 398,
+    "dtypes": {
+      "F32": {
+        "tensors": 145,
+        "bytes": 784384
+      },
+      "Q4_K": {
+        "tensors": 185,
+        "bytes": 1501102080
+      },
+      "Q6_K": {
+        "tensors": 68,
+        "bytes": 1110412800
+      }
+    },
+    "name": "Qwen3-4B-Instruct-2507",
+    "file_type": 15,
+    "quantization_version": 2,
+    "metadata_entries": 43
+  },
+  "argv": [
+    "/home/dario/llama.cpp/build-space/bin/llama-server",
+    "--model",
+    "/mnt/ssd/hermes/models/space-run-19c/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+    "-ngl",
+    "0",
+    "--ctx-size",
+    "4096",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "34149"
+  ],
+  "props_identity": {
+    "server_log": "verification/space/live-run-serve.server.log",
+    "model_path": "/mnt/ssd/hermes/models/space-run-19c/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+    "model_path_resolves_to_artifact": true,
+    "model_alias": "/mnt/ssd/hermes/models/space-run-19c/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+    "model_ftype": "Q4_K - Medium",
+    "build_info": "b20-35999d101",
+    "n_ctx": 4096,
+    "total_slots": 4
+  },
+  "completion": {
+    "prompt": "Reply with the single word: OK",
+    "max_tokens": 16,
+    "temperature": 0,
+    "seed": 0,
+    "reply": "OK",
+    "finish_reason": "stop",
+    "completion_tokens": 2,
+    "prompt_tokens": 15
+  },
+  "verdict": {
+    "servable": true,
+    "reason": "llama.cpp loaded the artifact, /props echoed its path and one chat completion answered (finish_reason='stop')"
+  },
+  "cost_seconds": 7.327
+}

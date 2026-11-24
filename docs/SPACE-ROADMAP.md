@@ -196,8 +196,11 @@ which is why the evidence table marks it `certified_at_other_config` and not a p
 Two facts follow, and both are uncomfortable:
 
 1. The axis file that produced it is **not in this clone**; the path the spec names no longer
-   exists. The bank cannot be seeded from a surviving artifact — the entry must be refitted, and
-   that is a GPU card, not a copy job.
+   exists. The entry was therefore **refitted** from a fresh B70 capture at the recorded recipe
+   (ctx 2048, answer locus, 512 tokens, 80 rows; fit 1.21 s; axes 36×2560, fit cos mean 0.736),
+   and the refit reproduces the plan key `1d29cd9feda0cf41` — so the committed bundle is provably
+   that fit (`verification/space/qwen3-4b-refit/`, `spaces/bank/qwen3-4b-instruct-2507/`). A refit
+   carries the *recipe*, not the certificate, which is why the entry ships `banked_unmeasured`.
 2. There is **no certified-at-pinned-config removal row for any lineage** (0 of 5 in
    `docs/EVIDENCE-TABLE.md`), and the Qwen2.5-1.5B removal numbers are **retracted** (6/40, 11/24,
    34/120 under the wide inventory). So the Space's first covered model does not inherit a
@@ -321,19 +324,34 @@ browser pulls the file from the Space (no upload from a 2-vCPU container); no re
 the visitor's account for a one-shot edit; and an anonymous visitor (2 min of quota) is a valid
 user for a job that may not need the GPU at all.
 
-Sizes (ARITHMETIC from GGML block sizes; the 4B row was then verified on the real file — see
-`verification/space/cpu-proxy-2vcpu.json`):
+Sizes (MEASURED on the real file — `verification/space/selfapply-qwen3-4b.json`; the type the
+shipped bytes use decides which row the Space pays):
 
-| case | input | edited params | out at q8_0 | out at f16 |
-|---|---:|---:|---:|---:|
-| 4B Q4_K_M, 21 of 36 layers, 2 tensors/layer | 2.50 GB (measured) | 743.2 M (measured) | ≈ 2.8 GB (+0.30) | 3.49 GB (+0.99, measured) |
-| 7B Q4_K_M, 28 layers, 2 tensors/layer | ≈ 4.5 GB | ≈ 2.26 B | ≈ 5.5 GB (+1.03) | ≈ 7.6 GB (+3.15) |
+| case | input | edited params | out at q6_k | out at q8_0 | out at f16 |
+|---|---:|---:|---:|---:|---:|
+| 4B Q4_K_M, 21 of 36 layers, 2 tensors/layer | 2.50 GB (2,497,281,120 B, measured) | 743.2 M (measured) | 2.62 GB (+0.12; delivered min cos 0.8815 — below the floor) | 2.80 GB (+0.30; delivered min cos 0.9873) | 3.49 GB (+0.99; delivered min cos 1.0006) |
+| 7B Q4_K_M, 28 layers, 2 tensors/layer | ≈ 4.5 GB | ≈ 2.26 B | — | ≈ 5.5 GB (+1.03, arithmetic) | ≈ 7.6 GB (+3.15, arithmetic) |
+
+The 4B row is measured, not estimated: `bank-apply` with the shipped entry
+(`qwen3-4b-instruct-2507/f15s15-l935`, strength 1.5) on the `unsloth/Qwen3-4B-Instruct-2507-GGUF`
+Q4_K_M a visitor would bring. Two facts from it decide this section:
+
+- the type that clears the entry's 0.95 floor is **Q8_0**, not F16: delivered min cos 0.9873
+  (mean 0.9915) over the 42 edited tensors for **+0.30 GB**. F16 buys the last 0.013 of cos for a
+  further +0.70 GB. The output the Space downloads is **2.80 GB**.
+- the ladder's own `auto` choice is **Q6_K** and it must not ship: its pre-write probe reads
+  0.9961, but the written file delivers min cos 0.8815, below the floor on 37 of 42 tensors. The
+  probe re-encodes 2×32 blocks (8,192 elements) of each tensor; on the whole tensor the same edit
+  reads 0.8812. Until the probe covers the tensor, the floor is taken from the delivered file, not
+  from the probe. The type changes the output size, not §4's verdict: every type is far above
+  240 s on the proxy.
 
 Transfer, with the assumption named: a 2.8 GB download at 30-100 MB/s is 28-95 s inside the Space;
 the visitor's browser pulling 2.8 GB at 10-50 MB/s is 1-5 min and is outside our control. A 5.5 GB
 push to the Hub at 10 MB/s is ≈ 9 min — longer than the whole GPU budget, and it must happen in
-the same request window. That is why (b) is not v1. (The measured F16 output is 3.49 GB, not
-2.8 GB; the download estimate moves to 35-116 s at the same rates, still inside the window.)
+the same request window. That is why (b) is not v1. (A ladder that lands on F16 instead ships the
+measured 3.49 GB, and the download estimate moves to 35-116 s at the same rates, still inside the
+window.)
 
 **v1.1: OAuth push**, adopted only if the 4.5 GB direct-download case fails in a live run. It is
 supported: `hf_oauth: true`, `hf_oauth_scopes: [write-repos]`. The app would create
@@ -395,8 +413,11 @@ Refit Qwen3-4B-Instruct-2507 at the `f15s15-l935` recipe on the B70 (capture →
 bundle → `direction-export`), write `spaces/bank/qwen3-4b-instruct-2507/entry.json`, and apply the
 bundle back onto the base's own Q4_K_M to measure the codec cos and the untouched-identity check on
 the artifact class the Space will actually serve. Done gate: `plan-load --expect` passes, the
-bundle digest matches the entry, and `bank-apply` on the base's Q4_K_M reports every edited tensor
-above `min_cos` with untouched tensors byte-identical.
+bundle digest matches the entry, and `bank-apply` on the base's Q4_K_M
+(`verification/space/selfapply-qwen3-4b.json`) reports every edited tensor above `min_cos` at Q8_0
+— min 0.9873 over 42 tensors, +0.30 GB — with 356 untouched tensors byte-identical. The ladder's
+`auto` probe stops at Q6_K, which misses the floor (min 0.8815), so the delivered file and not the
+probe decides the shipped type (§8).
 
 ### Phase 2 — GPU: the transfer kill gate
 
@@ -407,7 +428,20 @@ Done gate: a measured row on a fine-tune's Q4_K_M at one pinned config, or `verd
 
 Deploy the staged tree to a free personal account, run one full loop on the covered base, log GPU
 seconds per call and wall clock per stage, download the output and **serve it** (`export-smoke`)
-to prove it loads, and write the numbers into `verification/space/live-run.json`. If the edit
+to prove it loads, and write the numbers into `verification/space/live-run.json`.
+
+**Done (2026-11-24), and the answer is not the one the phase assumed.**
+`verification/space/live-run.json` is one real run in `darioooooo0o/banked-gguf-edit`
+(gradio 5.50.0, hardware `zero-a10g`) on the covered base's Q4_K_M: wall clock **964.95 s**
+(coverage 7.284 / licence 0.058 / download 5.711 / edit **933.96** / read-back 15.346 /
+package 2.558), container 192 cores, peak RSS 3.66 GB, download 437 MB/s, output
+2,618,260,064 B sha256 `f29fe435…`, and the file **serves** (`llama-server`, `-ngl 0`,
+`--ctx-size 4096`, first answer `OK`). Three measured facts follow: (1) **0 `@spaces.GPU`
+calls, 0 s of the 300 s/day quota** — the edit is CPU numpy, so the quota is not the binding
+constraint; the 16-minute wall clock is. (2) A CPU-only edit **must not** be routed through the
+GPU queue: the first attempt wrapped it in `@spaces.GPU(duration=120)` and the job sat queued
+after its 3 s download for over ten minutes. (3) The type ladder still stops at `Q6_K` and
+lands at cos 0.8808, below the entry's 0.95 floor, while `Q8_0` clears. If the edit
 exceeds 120 s, shard it by layer block across calls (≤ 240 s total) and prove the sharded output
 is byte-identical to the single-call output. If the proxy verdict was `cuda_codec_required`, the
 CUDA codec card runs first and must prove block-for-block identity against the numpy codec before
@@ -432,6 +466,10 @@ transfer gate passes on the first one; every new entry carries its own measured 
   (§6, measured block).
 - **The edit cannot fit 240 s on 2 vCPU and the CUDA port cannot either.** Then the free Space is a
   1.7B-and-below product, and 4B/7B — the models people actually download — are out of scope.
+  **Measured against this on 2026-11-24:** the live ZeroGPU run's edit is 933.96 s (single-core
+  numpy, 192 cores available and unused), 3.2x the five-minute promise, with 0 s of GPU quota
+  spent. The free Space is not blocked by the 300 s/day budget; it is blocked by CPU wall clock,
+  so the sharded/CUDA edit is the only thing that can rescue 4B.
 - **The Spaces proxy cannot stream 3-5 GB, and a Hub push from the container is slower than the
   request window.** Then "one click, five minutes" is false for every model above ~1.5 GB, and the
   honest product is a button that produces a *reproducible command* the visitor runs themselves,

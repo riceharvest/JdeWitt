@@ -361,6 +361,17 @@ def build_parser():
         help='auto probes the entry\'s types smallest-first (q6_k -> q8_0 -> f16) and picks the first that clears the entry\'s edit.min_cos, refusing with CODEC_FLOOR when none does; or name a type the entry measured')
     bapply.add_argument('--strength-scale',type=float,default=1.0,
         help='multiplies the entry\'s per-kind strength (1.0 = the banked edit; never raised to hide a codec floor)')
+    sdry=sub.add_parser('space-dry-run',help='Run the Space loop on a fixture hub (header-only coverage -> licence -> download -> bank-apply -> read-back -> card, sidecar, SHA256SUMS) and print the three honesty labels plus one refusal; no GPU, no network, no Hub download')
+    sdry.add_argument('--bank',type=Path,default=Path('spaces/bank'),
+        help='the bank the Space ships; its licences.json is the allow-list, and it is the entries bank when the fixture carries none')
+    sdry.add_argument('--model',required=True,
+        help='the covered base repo to run as the measured case (owner/name)')
+    sdry.add_argument('--quant',default='Q4_K_M',
+        help='the quant tag to pick from each fixture repo\'s *.gguf list')
+    sdry.add_argument('--fixture',type=Path,required=True,
+        help='fixture directory holding hub.json, repos/ and (usually) bank/')
+    sdry.add_argument('--json',action='store_true',
+        help='print the whole dry-run report as JSON instead of the rendered text')
     compare=sub.add_parser('score-compare',help='Paired offline comparison of two saved scoring dirs over one suite; no models')
     compare.add_argument('--allow-config-mismatch',action='store_true',
         help='compare waves whose recorded serve_config differs (R9 says they are not comparable)')
@@ -841,6 +852,15 @@ def main():
             from .bank_apply import bank_apply
             result=bank_apply(args.bank,args.entry,args.gguf,args.out,
                               args.edit_type,args.strength_scale)
+        elif args.command=='space-dry-run':
+            from .space_loop import dry_run,render_dry_run
+            report=dry_run(args.bank,args.model,args.quant,args.fixture)
+            if args.json:
+                result=report
+            else:
+                print(render_dry_run(report))
+                result=None
+                exit_code=0 if report['ok'] else 1
         elif args.command=='studies-compare':
             from .agent import studies_compare
             result=studies_compare(args.paths)
@@ -1109,7 +1129,8 @@ def main():
         from .schemas import EMIT_SCHEMAS, enforce
         if args.command in EMIT_SCHEMAS:
             enforce(args.command,result)
-        print(json.dumps(result,indent=2,allow_nan=False))
+        if result is not None:
+            print(json.dumps(result,indent=2,allow_nan=False))
         if exit_code is not None:
             raise SystemExit(exit_code)
         # verify-artifact is a check, so an invalid artifact is a failing check, not

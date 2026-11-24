@@ -66,7 +66,7 @@ AUTO_LADDER = ('q6_k', 'q8_0', 'f16')
 def _canonical(edit_type):
     """Name the requested type, or refuse with the encodable list this build has."""
     from .ggufio import encodable_types
-    from .quantize import canonical_type
+    from .gguf_types import canonical_type
 
     encodable = encodable_types()
     try:
@@ -92,7 +92,7 @@ def _ladder(edit, key):
     from .ggufio import encodable_types
 
     encodable = set(encodable_types())
-    from .quantize import canonical_type
+    from .gguf_types import canonical_type
 
     allowed, skipped = [], []
     for name in edit['types']:

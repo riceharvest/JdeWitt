@@ -6,11 +6,19 @@ geometry it was fitted on, plus a digest-pinned `plan-bundle` beside the file.
 Nothing here is model weights; an entry's `footprint.fraction` is how it survives
 an artifact with a different layer count.
 
-The bank ships **empty** on purpose. The only removal arm on the board
-(Qwen3-4B-Instruct-2507 `f15s15-l935`) no longer has its axis file in this clone,
-so the first entry has to be refitted on a GPU card; copying an entry without the
-bytes it pins would be a claim this repo cannot verify. An empty `entries` list is
-valid and `bank-check` reports `BANK_MISS` for every artifact until it is seeded.
+The first entry is the only removal arm on the board, Qwen3-4B-Instruct-2507
+`f15s15-l935`. Its original axis file is not in this clone and the path the release
+spec names no longer exists, so the entry was **refitted** from a fresh B70 capture
+at the recorded recipe (answer locus, ctx 2048, 512 max tokens) rather than copied:
+the fit, the capture identity and its tokens/seconds, the four gates and the
+resolved artifact are in `verification/space/qwen3-4b-refit/refit.json`. The entry is
+`qwen3-4b-instruct-2507/entry.json` (identical to its `entries[]` row in
+`bank.json`), and its bundle `qwen3-4b-instruct-2507-f15s15-l935.tar` sits beside
+the document at the sha256 the entry pins. It is born `banked_unmeasured`: nothing
+here measures removal or retention.
+
+An empty `entries` list is still valid, and `bank-check` reports `BANK_MISS` for any
+artifact the bank does not cover.
 
 Resolve an artifact against the bank (header + tensor table only, no tensor
 data, no torch):
@@ -67,3 +75,26 @@ hold — not a claim that anything was removed.
 
 Evidence: `verification/space/bank-apply-*.json`; the fixtures and their
 generators live in `verification/space/fixtures/`.
+
+## The measurement block
+
+`measurement.state` carries one of §9's labels. When it is
+`measured_artifact_class`, `artifact_class` names the exact class and the row the
+card prints; `config` repeats the serve config:
+
+```json
+"measurement": {
+  "state": "measured_artifact_class",
+  "artifact_class": {"repo": "…", "revision": "…", "quant": "Q4_K_M",
+                     "argv": "-c 4096 --parallel 4",
+                     "harmful": [40, 40], "held_out": [120, 120],
+                     "retention": [241, 241], "drift": 0.0058},
+  "config": "-c 4096 --parallel 4"
+}
+```
+
+The Space prints `measured_artifact_class` only for that exact repo, revision and
+quant; any other artifact the same entry covers resolves to `banked_unmeasured`,
+because an entry never lends a measured row to a file it did not run.
+`space_loop.artifact_label` is the one place that narrows the state, and
+`jdewitt space-dry-run` renders both outcomes beside a refusal.

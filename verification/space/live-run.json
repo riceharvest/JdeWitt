@@ -1,0 +1,213 @@
+{
+  "schema": "jdewitt-space-live-run-v1",
+  "is_a_space_run": true,
+  "proxy_note": "This IS a Space run: the numbers below were produced inside a public ZeroGPU Space container and read from that container's own log lines, not from a clone, a proxy or a local Gradio process. Nothing here may be replaced by a CPU proxy figure.",
+  "space": {
+    "repo_id": "darioooooo0o/banked-gguf-edit",
+    "url": "https://darioooooo0o-banked-gguf-edit.hf.space",
+    "private": false,
+    "sdk": "gradio",
+    "sdk_version": "5.50.0",
+    "hardware_requested": "zero-a10g",
+    "hardware_reported": "zero-a10g",
+    "tree_built_by": "scripts/space_stage.py from branch ab/t_19c8667d (ab/t_62f8c285 app + ab/t_6fa0c776 seeded bank); uploaded with HfApi.upload_folder",
+    "account_plan": "free personal account (no PRO); Gradio Spaces cannot be created on free cpu-basic (HTTP 402), so the Space was created through the API with space_hardware='zero-a10g', which is accepted",
+    "tree_commit_at_run": "72afd4a2aa1bff8745364787aab1a4b1d6d7ea93",
+    "tree_commit_now": "f5b444c9dcd3db323328f8e2d086462d0c693b66",
+    "branch": "ab/t_19c8667d",
+    "tree_commit_note": "the run used the tree committed as 72afd4a2 (app.py sha256 33af0718fe3ed264...); the only later change to the Space tree is the removal of an unused `import time` (app.py sha256 e58d7a49f627113d...), so the deployed tree now equals branch ab/t_19c8667d while behaviour is unchanged"
+  },
+  "how_it_was_driven": {
+    "path": "public URL only: POST https://<space>/gradio_api/call/start {\"data\": [repo, file]}, then the event's SSE stream",
+    "job_id": "job-20261124T155857-1-74725a",
+    "client_wall_clock_seconds": 971.0,
+    "client_wall_clock_note": "15:58:57Z queued -> 16:15:08Z complete, measured by the client; the loop's own number is 964.95 s, the difference is the queue round trip",
+    "stream_log": "verification/space/live-run-stream.log",
+    "record_line": "the Space's stdout line prefixed 'jdewitt-live-run' (one JSON document, printed by spaces/app.py from the loop's own result)",
+    "record_log": "verification/space/live-run-space.log",
+    "record_lines": "verification/space/live-run-record.jsonl (the two jdewitt- lines verbatim: the job start with the host probe, and the finished record)"
+  },
+  "container": {
+    "source": "space_loop.host_probe(), read inside the container: /proc/cpuinfo, /proc/meminfo, /proc/self/status",
+    "cores_cpu_count": 192,
+    "cores_affinity": 192,
+    "cpu_model": "Intel(R) Xeon(R) Platinum 8559C",
+    "memtotal_bytes": 2147447902208,
+    "memavailable_bytes_at_start": 687939215360,
+    "peak_rss_bytes": 3658063872,
+    "rss_bytes_at_end": 2033876992,
+    "peak_rss_note": "VmHWM of the app process (pid 1) at the end of the job, so it includes the edit's dequant buffers: 3.66 GB peak for a 2.50 GB source and a 2.62 GB output",
+    "cores_note": "192 cores are reported and affine; the edit path is single-threaded numpy, so 191 of them idle while it runs — more cores do not shorten the wall clock"
+  },
+  "run": {
+    "repo": "unsloth/Qwen3-4B-Instruct-2507-GGUF",
+    "revision_on_request": null,
+    "file": "Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "quant": "Q4_K_M",
+    "quant_type": "q4_k",
+    "artifact_class": "the covered base Qwen3-4B-Instruct-2507 at Q4_K_M (the base repo Qwen/Qwen3-4B-Instruct-2507 ships no GGUF; this is the quant repo of that base, geometry-resolved from the header)",
+    "base_repo": "Qwen/Qwen3-4B-Instruct-2507",
+    "base_revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+    "bank_entry": "qwen3-4b-instruct-2507/f15s15-l935",
+    "bank_bundle_sha256": "5df68bc77469c3c722d73ff2871a1de98266f2053c7040ee87c2932432066f5c",
+    "bank_measurement_state": "banked_unmeasured",
+    "label": "banked_unmeasured",
+    "licence": "apache-2.0 (LICENCE_ACCEPTED)"
+  },
+  "wall_clock": {
+    "total_seconds": 964.95,
+    "stages": [
+      {
+        "step": "coverage",
+        "seconds": 7.284,
+        "detail": "read 16777216 of 2497281120 bytes (header and tensor table only)"
+      },
+      {
+        "step": "licence",
+        "seconds": 0.058,
+        "detail": "LICENCE_ACCEPTED: apache-2.0 on the bank's allow-list"
+      },
+      {
+        "step": "download",
+        "seconds": 5.711,
+        "detail": "2497281120 bytes, sha256 3605803b982cb64a"
+      },
+      {
+        "step": "edit",
+        "seconds": 933.96,
+        "detail": "qwen3-4b-instruct-2507/f15s15-l935 at attn 1.5, mlp 1.5 -> Q6_K: 42 tensors, min cos 0.8808"
+      },
+      {
+        "step": "readback",
+        "seconds": 15.346,
+        "detail": "42 edited, min cos 0.8808, untouched 356 verified"
+      },
+      {
+        "step": "package",
+        "seconds": 2.558,
+        "detail": "3 files, 2618260064 artifact bytes"
+      }
+    ],
+    "verdict_against_the_five_minute_promise": "OUTSIDE: 964.95 s is 3.2x the roadmap's 'one click, five minutes'. The download is 0.6 % of it; the edit is 96.8 % of it. On this container the 4B Q4_K_M edit is a ~16-minute job, so the free visitor's 5-minute window is false for 4B until the edit stops being single-core numpy.",
+    "note_vs_the_2vcpu_proxy": "the in-clone 2-vCPU proxy measured ~496 s for the same edit; the Space measured 933.96 s, i.e. the container's single core is slower than this host's core (or shared), so the proxy UNDER-estimated the Space wall clock rather than over-estimating it",
+    "stages_sum_seconds": 964.917,
+    "stages_sum_note": "the six steps account for 964.917 of the 964.95 s; the 0.033 s remainder is the loop's own bookkeeping between steps"
+  },
+  "download": {
+    "bytes": 2497281120,
+    "seconds": 5.711,
+    "bytes_per_second": 437275629.5,
+    "megabytes_per_second": 417.0,
+    "rate_note": "end-to-end from the container: 2497281120 bytes over the download step's own wall clock, which includes the streaming write; the Hub's own tqdm line inside the same log shows 687 MB/s for the transfer alone"
+  },
+  "gpu": {
+    "calls": [],
+    "call_count": 0,
+    "gpu_seconds_total": 0,
+    "daily_quota_seconds": 300,
+    "quota_used_fraction": 0.0,
+    "why_zero": "the declared function is only a startup requirement; a job does not call it",
+    "declared_function": {
+      "count_in_tree": 1,
+      "name": "gpu_declaration",
+      "requested_seconds": 120,
+      "called_by_a_job": false,
+      "evidence": "spaces/app.py declares one @spaces.GPU(duration=120) function; the job's record line names hosting='ZeroGPU hardware; one @spaces.GPU function is declared for the startup check and no job calls it, so a job spends 0 GPU seconds'; tests/test_space_stage.py::test_the_app_declares_one_gpu_function_and_no_job_calls_it pins both facts"
+    },
+    "platform_constraint": "ZeroGPU refuses to start a Space with no @spaces.GPU function at all: the first boot of this tree died RUNTIME_ERROR with 'No @spaces.GPU function detected during startup'",
+    "measured_dead_end": {
+      "design": "the CPU edit wrapped in @spaces.GPU(duration=120), the shape §4's decision rule prescribes for an edit that fits one call",
+      "result": "the job finished its download in 3 s and then never started the edit: it sat queued for a GPU card the edit cannot use, with no output for >10 minutes, and the 120 s cap never fired because the call had not been admitted. Recorded as a dead end, not as a runtime.",
+      "conclusion": "on the free tier a CPU-only edit must not be routed through the GPU queue: it converts a 16-minute CPU job into a 16-minute CPU job behind an unbounded GPU wait"
+    }
+  },
+  "output": {
+    "delivered_file": "Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+    "bytes": 2618260064,
+    "sha256": "f29fe43552ca18ead0a1b091c69df7d55d17fce028955b10aed9b0db0565c25f",
+    "source_bytes": 2497281120,
+    "source_sha256": "3605803b982cb64aead44f6c1b2ae36e3acdb41d8e46c8a94c6533bc4c67e597",
+    "growth_bytes": 120978944,
+    "edit_type_written": "Q6_K",
+    "edited_tensors": 42,
+    "untouched_tensors": 356,
+    "untouched_verified_byte_identical": true,
+    "delivered_cos": {
+      "min": 0.8808,
+      "mean": 0.9204,
+      "attn": {
+        "min": 0.8882,
+        "mean": 0.9151
+      },
+      "mlp": {
+        "min": 0.8808,
+        "mean": 0.9257
+      }
+    },
+    "entry_floor": 0.95,
+    "floor_met": false,
+    "floor_note": "the type ladder admitted Q6_K from its sampled preview and the whole-tensor read-back came in at 0.8808, below the entry's 0.95 floor; the delivered card states 0.8808 and claims codec fidelity only. This is the same sample-vs-whole-tensor gap the self-apply card recorded on the base's Q8_0 (sample 0.9974, whole tensor 0.8812). The file was still delivered because the loop's contract is to hand over the artifact it measured with its number on the card, under the banked_unmeasured label — but a Q8_0 edit clears where Q6_K does not, so the ladder's preview threshold is the defect to fix",
+    "card": "This file was **not** measured. The direction was fitted on `Qwen/Qwen3-4B-Instruct-2507@cdbee75f...` and applied as-is at strength `attn 1.5, mlp 1.5`. Codec fidelity only: delivered cos `0.8808` on `42` tensors. No claim is made about this model's answers.",
+    "deliverables_downloaded_and_verified": {
+      "dir": "/mnt/ssd/hermes/models/space-run-19c",
+      "files": [
+        "Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+        "card.md",
+        "sidecar.json",
+        "SHA256SUMS"
+      ],
+      "sha256sums_check": "all three OK against the Space's own SHA256SUMS",
+      "artifact_sha256_matches_the_space_readback": true
+    },
+    "growth_fraction": 0.04844
+  },
+  "served": {
+    "proof": "the downloaded artifact was served by a real llama.cpp server and answered",
+    "report": "verification/space/live-run-serve.json",
+    "server_log": "verification/space/live-run-serve.server.log",
+    "argv": [
+      "/home/dario/llama.cpp/build-space/bin/llama-server",
+      "--model",
+      "/mnt/ssd/hermes/models/space-run-19c/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf",
+      "-ngl",
+      "0",
+      "--ctx-size",
+      "4096",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "34149"
+    ],
+    "build_info": "b20-35999d101 (llama.cpp CPU build, -ngl 0)",
+    "props": {
+      "model_path_resolves_to_artifact": true,
+      "model_ftype": "Q4_K - Medium",
+      "n_ctx": 4096,
+      "total_slots": 4
+    },
+    "first_answer": {
+      "prompt": "Reply with the single word: OK",
+      "reply": "OK",
+      "finish_reason": "stop",
+      "completion_tokens": 2,
+      "prompt_tokens": 15,
+      "temperature": 0,
+      "max_tokens": 16
+    },
+    "verdict": {
+      "servable": true,
+      "reason": "llama.cpp loaded the artifact, /props echoed its path and one chat completion answered (finish_reason='stop')"
+    },
+    "cost_seconds": 7.327
+  },
+  "defects_found_by_this_run": [
+    "the card and sidecar say `unsloth/Qwen3-4B-Instruct-2507-GGUF@None`: the loop does not resolve the branch to a sha when the caller passes no revision, although the Hub's sha is available from the same metadata call the licence gate already makes",
+    "a cold session cannot submit a file name until `refresh` has filled the quant dropdown; the dropdown now accepts a typed name (allow_custom_value) so a headless or paste-driven visitor is not blocked by an empty list",
+    "the Q6_K ladder step is admitted by a sampled preview and lands at 0.8808 on the whole tensor, below the 0.95 floor; Q8_0 clears at the same strength, so the preview sample is the wrong gate"
+  ],
+  "not_claimed": [
+    "removal on any model: the bank entry is banked_unmeasured and nothing in this run measured answers — no inference happened in the Space at all, and none was run on this artifact",
+    "a repeatable runtime: this is one run on one container; the 933.96 s edit has no variance estimate",
+    "that 300 s of GPU quota buys anything here: the run spent 0 s of it, and the 16-minute wall clock is CPU time the GPU cannot shorten"
+  ]
+}

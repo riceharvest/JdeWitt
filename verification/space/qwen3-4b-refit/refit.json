@@ -1,0 +1,162 @@
+{
+ "bundle": {
+  "bytes": 378880,
+  "file": "qwen3-4b-instruct-2507-f15s15-l935.tar",
+  "format": "b70ablator-plan-bundle-v1",
+  "payload_sha256": "1e7a041cce7ade49294295ccb9de0a5c3f7d3c96fe242d2080b25414af5ba90e",
+  "sha256": "5df68bc77469c3c722d73ff2871a1de98266f2053c7040ee87c2932432066f5c"
+ },
+ "capture": {
+  "architecture": "qwen3",
+  "command": "python -m jdewitt capture --model Qwen/Qwen3-4B-Instruct-2507 --revision cdbee75f17c01a7cc42f958dc650907174af0554 --suite verification/p4d/suite-80.jsonl --kinds refusal,harmless --out verification/space/qwen3-4b-refit/records.pt --locus answer --ctx-size 2048 --max-tokens 512 --settle-min-tokens 24",
+  "compute_backend": {
+   "name": "Intel(R) Arc(TM) Pro B70 Graphics",
+   "rank": "primary",
+   "type": "xpu"
+  },
+  "ctx_size": 2048,
+  "elapsed_s": 1410.1,
+  "frames": [
+   "none"
+  ],
+  "hidden": 2560,
+  "kinds": [
+   "refusal",
+   "harmless"
+  ],
+  "labels": {
+   "ambiguous": 3,
+   "bad": 36,
+   "deliver": 1,
+   "good": 36,
+   "overdecline": 4
+  },
+  "layers": 36,
+  "locus": "answer",
+  "margin_summary": {
+   "bad": {
+    "mean": 0.225227,
+    "median": -1.407471,
+    "n": 36
+   },
+   "delta_bad_minus_good": -14.313914,
+   "good": {
+    "mean": 14.539141,
+    "median": 13.601562,
+    "n": 36
+   },
+   "note": "delta_bad_minus_good is the prefill margin (Sure minus cannot) on harmful rows minus the same on harmless rows; it ranks candidate axes and never certifies (METHODOLOGY R2/R6).",
+   "rows_with_margin": 80,
+   "rows_without_margin": 0
+  },
+  "max_tokens": 512,
+  "model": "Qwen/Qwen3-4B-Instruct-2507",
+  "record_file": "verification/space/qwen3-4b-refit/records.pt.capture.json",
+  "records": "verification/space/qwen3-4b-refit/records.pt",
+  "records_bytes": 29740147,
+  "records_committed": false,
+  "records_note": "29.7 MB, not committed: *.pt is ignored and the repo's largest tracked file is 7.4 MB. records_sha256 above is the digest the plan identity and the run provenance carry; regenerate with the command field.",
+  "records_sha256": "83734fe85d92bf1af32da3981e7b3a71a6ba1a9b167f558596bd206ed285239a",
+  "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "rows": 80,
+  "settling": {
+   "enabled": true,
+   "min_tokens": 24,
+   "note": "a settled row stops at the first explicit self-declination (cert-mode settle), so its answer span IS the refusal span; rows that do not settle decode to the full budget, so a procedure is never cut short",
+   "rows_settled": 27
+  },
+  "suite": "verification/p4d/suite-80.jsonl",
+  "suite_sha256": "1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+  "tokens": {
+   "answer": 19813,
+   "prompt": 12120
+  }
+ },
+ "direction": {
+  "bytes": 185152,
+  "export_dtype": "bf16",
+  "file": "verification/space/qwen3-4b-refit/direction-f15s15-l935.gguf",
+  "format": "direction-gguf-v1",
+  "geometry": {
+   "hidden": 2560,
+   "layers": 36,
+   "rank": 1
+  },
+  "sha256": "53e49df95ef0b49480d7fb129a3ed58a33a79f68da427f5a7d52ce9e9348d642",
+  "tensors": 1
+ },
+ "entry": "spaces/bank/qwen3-4b-instruct-2507/entry.json",
+ "fit": {
+  "axes": [
+   36,
+   2560
+  ],
+  "axes_sha256": "3da7f8baf84b3d02f6cd17bad6939fee24af6a81c6645058dd8fc7446d86770c",
+  "axis_agreement": {
+   "layers_15_35_mean": 0.794,
+   "max": 0.8608,
+   "mean": 0.7363,
+   "min": 0.3943
+  },
+  "command": "python scripts/bank_seed.py --records verification/space/qwen3-4b-refit/records.pt --run-dir <scratch>/run --bank spaces/bank --bundle-name qwen3-4b-instruct-2507-f15s15-l935.tar --direction-out verification/space/qwen3-4b-refit/direction-f15s15-l935.gguf --gguf <base-Q4_K_M.gguf>",
+  "estimator": "sign_aligned_shared",
+  "fit_seconds": 2.77,
+  "measured_arm_note": "the recorded arm quoted realized_cos 0.7255 on 4 sampled tensors after the Q8_0 codec; this refit reports axis agreement over all 36 layers, so the two are the same ballpark, not the same statistic",
+  "measured_arm_realized_cos": 0.7255,
+  "shape": "shared"
+ },
+ "gate_command": {
+  "bank_check": "python -m jdewitt bank-check --bank spaces/bank --gguf <base Q4_K_M>",
+  "bundle_digest": "sha256sum qwen3-4b-instruct-2507-f15s15-l935.tar",
+  "direction_export": "python -m jdewitt direction-export <registry> 1d29cd9feda0cf41 verification/space/qwen3-4b-refit/direction-f15s15-l935.gguf --dtype bf16",
+  "plan_load": "python -m jdewitt plan-unbundle <bundle> --into <run> && python -m jdewitt plan-load <run> 1d29cd9feda0cf41 --expect 36 1 2560",
+  "requant_base": "python -m jdewitt requant --gguf q3-4b-base-q8.gguf --out q3-4b-base-q4_k_m.gguf --type q4_k_m --threads 16"
+ },
+ "gates": {
+  "bank_check": {
+   "artifact": {
+    "architecture": "qwen3",
+    "hidden": 2560,
+    "layers": 36,
+    "quantized_from": "the recorded base q8 (sha256 dc4ae2660e73cc2a...) re-quantized to Q4_K_M",
+    "sha256": "a8b02c91a77727a903dd9196842f9ff191269de24b6ac1f95e9c185bb1b85c17",
+    "source_types": [
+     "Q4_K",
+     "Q6_K"
+    ],
+    "tensor_layers": 36
+   },
+   "artifact_class": "base Q4_K_M of Qwen/Qwen3-4B-Instruct-2507, requantized from the recorded Q8_0",
+   "bundle_verified": true,
+   "first_layer": 15,
+   "last_layer": 35,
+   "passed": true,
+   "targets": 42
+  },
+  "bundle_digest": {
+   "entry_sha256": "5df68bc77469c3c722d73ff2871a1de98266f2053c7040ee87c2932432066f5c",
+   "file_sha256": "5df68bc77469c3c722d73ff2871a1de98266f2053c7040ee87c2932432066f5c",
+   "passed": true
+  },
+  "direction_export": {
+   "format": "direction-gguf-v1",
+   "passed": true
+  },
+  "entry_drift": "tests/test_bank_entry_drift.py: the per-model entry.json is the bank.json entry, and the bundle sits beside bank.json at its pinned digest",
+  "plan_load": {
+   "expect": [
+    36,
+    1,
+    2560
+   ],
+   "passed": true
+  }
+ },
+ "key": "qwen3-4b-instruct-2507/f15s15-l935",
+ "measurement": {
+  "note": "nothing here measures removal or retention",
+  "state": "banked_unmeasured"
+ },
+ "plan_key": "1d29cd9feda0cf41",
+ "schema": "jdewitt-space-refit-v1"
+}

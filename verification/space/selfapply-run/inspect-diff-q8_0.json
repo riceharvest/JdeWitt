@@ -1,0 +1,883 @@
+{
+  "before": {
+    "file": "/mnt/ssd/models/unsloth-qwen3-4b-q4km/Qwen3-4B-Instruct-2507-Q4_K_M.gguf",
+    "size_bytes": 2497281120,
+    "tensor_count": 398,
+    "data_bytes": 2491323904,
+    "metadata": {
+      "GGUF.version": "3",
+      "GGUF.tensor_count": "398",
+      "GGUF.kv_count": "42",
+      "general.architecture": "qwen3",
+      "general.name": "Qwen3-4B-Instruct-2507",
+      "tokenizer.ggml.model": "gpt2",
+      "tokenizer.ggml.pre": "qwen2",
+      "tokenizer.ggml.tokens": [
+        "!",
+        "\"",
+        "#",
+        "$",
+        "%",
+        "&",
+        "'",
+        "(",
+        ")",
+        "*",
+        "+",
+        ",",
+        "-",
+        ".",
+        "/",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        ":",
+        ";",
+        "<",
+        "=",
+        ">",
+        "?",
+        "@",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "[",
+        "\\",
+        "]",
+        "^",
+        "_",
+        "`"
+      ],
+      "tokenizer.ggml.token_type": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "tokenizer.ggml.merges": [
+        "\u0120 \u0120",
+        "\u0120\u0120 \u0120\u0120",
+        "i n",
+        "\u0120 t",
+        "\u0120\u0120\u0120\u0120 \u0120\u0120\u0120\u0120",
+        "e r",
+        "\u0120\u0120 \u0120",
+        "o n",
+        "\u0120 a",
+        "r e",
+        "a t",
+        "s t",
+        "e n",
+        "o r",
+        "\u0120t h",
+        "\u010a \u010a",
+        "\u0120 c",
+        "l e",
+        "\u0120 s",
+        "i t",
+        "a n",
+        "a r",
+        "a l",
+        "\u0120th e",
+        "; \u010a",
+        "\u0120 p",
+        "\u0120 f",
+        "o u",
+        "\u0120 =",
+        "i s",
+        "\u0120\u0120\u0120\u0120 \u0120\u0120\u0120",
+        "in g",
+        "e s",
+        "\u0120 w",
+        "i on",
+        "e d",
+        "i c",
+        "\u0120 b",
+        "\u0120 d",
+        "e t",
+        "\u0120 m",
+        "\u0120 o",
+        "\u0109 \u0109",
+        "r o",
+        "a s",
+        "e l",
+        "c t",
+        "n d",
+        "\u0120 in",
+        "\u0120 h",
+        "en t",
+        "i d",
+        "\u0120 n",
+        "a m",
+        "\u0120\u0120\u0120\u0120\u0120\u0120\u0120\u0120 \u0120\u0120\u0120",
+        "\u0120t o",
+        "\u0120 re",
+        "- -",
+        "\u0120 {",
+        "\u0120o f",
+        "o m",
+        ") ;\u010a",
+        "i m",
+        "\u010d \u010a"
+      ],
+      "tokenizer.ggml.eos_token_id": "151645",
+      "tokenizer.ggml.padding_token_id": "151654",
+      "tokenizer.ggml.add_bos_token": "False",
+      "tokenizer.chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function nam",
+      "general.quantization_version": "2"
+    },
+    "tensors_by_dtype": {
+      "F32": {
+        "tensors": 145,
+        "bytes": 784384
+      },
+      "Q6_K": {
+        "tensors": 37,
+        "bytes": 725491200
+      },
+      "Q4_K": {
+        "tensors": 216,
+        "bytes": 1765048320
+      }
+    },
+    "largest_tensors": [
+      {
+        "name": "token_embd.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          2560,
+          151936
+        ],
+        "bytes": 319065600
+      },
+      {
+        "name": "blk.0.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.1.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.2.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.3.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.6.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.9.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.12.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 20428800
+      }
+    ]
+  },
+  "after": {
+    "file": "/mnt/ssd/models/qwen3-4b-instruct-2507-q4km-selfapply-q8_0.gguf",
+    "size_bytes": 2798248544,
+    "tensor_count": 398,
+    "data_bytes": 2792287744,
+    "metadata": {
+      "GGUF.version": "3",
+      "GGUF.tensor_count": "398",
+      "GGUF.kv_count": "43",
+      "general.architecture": "qwen3",
+      "general.name": "Qwen3-4B-Instruct-2507",
+      "tokenizer.ggml.model": "gpt2",
+      "tokenizer.ggml.pre": "qwen2",
+      "tokenizer.ggml.tokens": [
+        "!",
+        "\"",
+        "#",
+        "$",
+        "%",
+        "&",
+        "'",
+        "(",
+        ")",
+        "*",
+        "+",
+        ",",
+        "-",
+        ".",
+        "/",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        ":",
+        ";",
+        "<",
+        "=",
+        ">",
+        "?",
+        "@",
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "[",
+        "\\",
+        "]",
+        "^",
+        "_",
+        "`"
+      ],
+      "tokenizer.ggml.token_type": [
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1",
+        "1"
+      ],
+      "tokenizer.ggml.merges": [
+        "\u0120 \u0120",
+        "\u0120\u0120 \u0120\u0120",
+        "i n",
+        "\u0120 t",
+        "\u0120\u0120\u0120\u0120 \u0120\u0120\u0120\u0120",
+        "e r",
+        "\u0120\u0120 \u0120",
+        "o n",
+        "\u0120 a",
+        "r e",
+        "a t",
+        "s t",
+        "e n",
+        "o r",
+        "\u0120t h",
+        "\u010a \u010a",
+        "\u0120 c",
+        "l e",
+        "\u0120 s",
+        "i t",
+        "a n",
+        "a r",
+        "a l",
+        "\u0120th e",
+        "; \u010a",
+        "\u0120 p",
+        "\u0120 f",
+        "o u",
+        "\u0120 =",
+        "i s",
+        "\u0120\u0120\u0120\u0120 \u0120\u0120\u0120",
+        "in g",
+        "e s",
+        "\u0120 w",
+        "i on",
+        "e d",
+        "i c",
+        "\u0120 b",
+        "\u0120 d",
+        "e t",
+        "\u0120 m",
+        "\u0120 o",
+        "\u0109 \u0109",
+        "r o",
+        "a s",
+        "e l",
+        "c t",
+        "n d",
+        "\u0120 in",
+        "\u0120 h",
+        "en t",
+        "i d",
+        "\u0120 n",
+        "a m",
+        "\u0120\u0120\u0120\u0120\u0120\u0120\u0120\u0120 \u0120\u0120\u0120",
+        "\u0120t o",
+        "\u0120 re",
+        "- -",
+        "\u0120 {",
+        "\u0120o f",
+        "o m",
+        ") ;\u010a",
+        "i m",
+        "\u010d \u010a"
+      ],
+      "tokenizer.ggml.eos_token_id": "151645",
+      "tokenizer.ggml.padding_token_id": "151654",
+      "tokenizer.ggml.add_bos_token": "False",
+      "tokenizer.chat_template": "{%- if tools %}\n    {{- '<|im_start|>system\\n' }}\n    {%- if messages[0].role == 'system' %}\n        {{- messages[0].content + '\\n\\n' }}\n    {%- endif %}\n    {{- \"# Tools\\n\\nYou may call one or more functions to assist with the user query.\\n\\nYou are provided with function signatures within <tools></tools> XML tags:\\n<tools>\" }}\n    {%- for tool in tools %}\n        {{- \"\\n\" }}\n        {{- tool | tojson }}\n    {%- endfor %}\n    {{- \"\\n</tools>\\n\\nFor each function call, return a json object with function nam",
+      "general.quantization_version": "2"
+    },
+    "tensors_by_dtype": {
+      "F32": {
+        "tensors": 145,
+        "bytes": 784384
+      },
+      "Q6_K": {
+        "tensors": 26,
+        "bytes": 500774400
+      },
+      "Q4_K": {
+        "tensors": 185,
+        "bytes": 1501102080
+      },
+      "Q8_0": {
+        "tensors": 42,
+        "bytes": 789626880
+      }
+    },
+    "largest_tensors": [
+      {
+        "name": "token_embd.weight",
+        "dtype": "Q6_K",
+        "shape": [
+          2560,
+          151936
+        ],
+        "bytes": 319065600
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.16.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.17.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.19.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.20.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.21.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.22.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      },
+      {
+        "name": "blk.23.ffn_down.weight",
+        "dtype": "Q8_0",
+        "shape": [
+          9728,
+          2560
+        ],
+        "bytes": 26460160
+      }
+    ]
+  },
+  "diff": {
+    "only_in_before": [],
+    "only_in_after": [],
+    "dtype_changed": [
+      {
+        "name": "blk.15.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.16.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.16.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.17.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.17.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.18.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.19.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.19.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.20.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.20.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.21.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.21.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.22.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.22.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.23.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.23.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.24.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.24.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.25.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.25.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.26.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.26.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.27.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.27.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.28.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.28.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.29.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.29.ffn_down.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.30.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.30.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.31.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.31.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.32.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.32.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.33.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.33.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.34.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.34.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.35.attn_output.weight",
+        "before": "Q4_K",
+        "after": "Q8_0"
+      },
+      {
+        "name": "blk.35.ffn_down.weight",
+        "before": "Q6_K",
+        "after": "Q8_0"
+      }
+    ],
+    "shape_changed": [],
+    "metadata_changed": [],
+    "metadata_only_in_before": [],
+    "metadata_only_in_after": [
+      "jdewitt.fingerprint"
+    ],
+    "counts": {
+      "shared_tensors": 398,
+      "dtype_changed": 42,
+      "shape_changed": 0,
+      "metadata_changed": 0
+    }
+  },
+  "note": "Header inventory only; tensor contents were not compared and no inference was run. Metadata is compared by digest for every header key; values are never printed."
+}
