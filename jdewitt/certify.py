@@ -289,6 +289,38 @@ def _ungraded(wave, valid) -> dict:
             'reasons': reasons, 'scored_as': 'neither_pass_nor_failure'}
 
 
+def _retention_ungraded(base_wave, base_valid, wave, valid) -> dict:
+    """Rows the cap cost on each side of the retention deck.
+
+    ``all_rows`` denominators are per-side status-ok counts, so a deck whose base
+    side left 19 of 241 rows ungraded reads as 222 rows against a 241-row suite.
+    Naming the base-side loss here keeps the deck reading 241 without scoring a
+    truncated row as a pass. Both sides are named because they lose different
+    rows: the paired stat is over ids that answered on both sides, so the arm's
+    own loss is in ``sides.arm`` and is never folded into the base denominator.
+    """
+    base_missing = len(base_wave['rows']) - len(base_valid)
+    arm_missing = len(wave['rows']) - len(valid)
+    base_reasons: dict[str, int] = {}
+    for row in base_wave['rows']:
+        if row.get('status') != 'ok':
+            key = str(row.get('status') or 'unknown')
+            base_reasons[key] = base_reasons.get(key, 0) + 1
+    arm_reasons: dict[str, int] = {}
+    for row in wave['rows']:
+        if row.get('status') != 'ok':
+            key = str(row.get('status') or 'unknown')
+            arm_reasons[key] = arm_reasons.get(key, 0) + 1
+    return {'rows': base_missing, 'of': len(base_wave['rows']),
+            'reasons': base_reasons,
+            'sides': {'base': {'rows': base_missing, 'reasons': base_reasons},
+                      'arm': {'rows': arm_missing, 'reasons': arm_reasons}},
+            'scored_as': 'neither_pass_nor_failure',
+            'note': ('rows and reasons are the base-side loss, the side all_rows.before '
+                     'counts; sides.arm is the arm-side loss; the paired stat is over ids '
+                     'that answered on both sides')}
+
+
 def _exact_mcnemar(a, b):
     """Exact McNemar on paired refusal labels; identical screens give p = 1.0."""
     from math import comb
@@ -605,6 +637,9 @@ def release_certify(spec_path, out_path=None):
         _fail('CERTIFY_UNMEASURED', 'retention.base: 0 valid rows')
     paired = {kind: _retention_kind(base_valid, waves['retention']['valid'], kind)
               for kind in ('math', 'code')}
+    paired['ungraded'] = _retention_ungraded(base_wave, base_valid,
+                                             waves['retention'],
+                                             waves['retention']['valid'])
 
     shape = _check_shape(inputs['shape_audit'], identity_digest, {
         axis: waves[axis] for axis in ('removal', 'held_out')}, arm_identity)

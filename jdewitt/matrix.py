@@ -394,6 +394,33 @@ def _binding_problems(entry, packet) -> list[dict]:
     return problems
 
 
+FLOOR_KEYS = ('suite_rows', 'cap', 'suites')
+
+
+def _floors(entry, registered) -> dict:
+    """The manifest's default floors, with this lineage's own on top.
+
+    ``registered`` is the default every row is checked against. A lineage that
+    serves its own removal screen, or whose pinned config makes a bigger cap
+    unservable (at ``-c 4096 --parallel 4`` one slot is 1024 tokens), registers
+    the real floor beside its artifact instead of editing the global block and
+    moving every other row's floor with it. An override replaces only the axes it
+    names; the default note survives so a reader sees what the default was.
+    """
+    if not isinstance(entry, dict):
+        return registered
+    merged = dict(registered)
+    for key in FLOOR_KEYS:
+        override = entry.get(key)
+        if not isinstance(override, dict):
+            continue
+        replacement = {axis: value for axis, value in override.items() if axis in AXES}
+        if not replacement:
+            continue
+        merged[key] = dict(registered.get(key) or {}) | replacement
+    return merged
+
+
 def _count_problems(entry, packet, registered) -> list[dict]:
     problems = []
     counts = _packet_counts(packet)
@@ -522,7 +549,7 @@ def _band_failures(packet: dict, registered) -> list[dict]:
     held_removed = _inventory(held, 'wide').get('removed')
     if held_floor is not None and held_removed is not None and int(held_removed) < int(held_floor):
         failures.append({'axis': 'held_out',
-                         'message': f'removed {held_removed} of {held_floor} held-out families'})
+                         'message': f'removed {held_removed} of {held_floor} held-out rows'})
     drift = packet.get('drift') or {}
     budget = gates.get('drift_budget', drift.get('budget'))
     delta = drift.get('control_delta_ln_ppl')
@@ -597,7 +624,8 @@ def _row(entry, registered, expected_type=None) -> dict:
         problems.append({'code': 'scale_past_grid',
                          'message': (f'arm scale {scale} is past the registered grid {grid}; a '
                                      'clearance bought by raising the scale is not a pass')})
-    problems.extend(_count_problems(entry, packet, registered))
+    problems.extend(_count_problems(entry, packet, _floors(entry, registered)))
+    row['serve_argv'] = packet.get('configs') or {}
     head, head_problems, side = _head_to_head(entry, packet)
     problems.extend(head_problems)
     if head:
@@ -606,7 +634,7 @@ def _row(entry, registered, expected_type=None) -> dict:
 
     match = packet.get('pinned_cert_match') or {}
     at_pinned = all(match.get(axis) is True for axis in AXES)
-    failures = _band_failures(packet, registered) if at_pinned else []
+    failures = _band_failures(packet, _floors(entry, registered)) if at_pinned else []
     if problems:
         row['status'] = f'invalid({problems[0]["code"]})'
         row['status_detail'] = problems[0]['message']
@@ -1023,7 +1051,15 @@ def _evidence_table(matrix) -> str:
                 if facts.get('ours_argv'):
                     lines.append(f"  - {axis}: `{facts['ours_argv']}`")
         else:
-            lines.append('- serve argv: not recorded (no measured packet)')
+            argv_by_axis = row.get('serve_argv') or {}
+            if argv_by_axis:
+                lines.append('- serve argv (pinned cert config):')
+                for axis in ('removal', 'held_out', 'retention'):
+                    argv = argv_by_axis.get(axis)
+                    if argv:
+                        lines.append(f"  - {axis}: `{argv}`")
+            else:
+                lines.append('- serve argv: not recorded (no measured packet)')
         if numbers:
             removal = (numbers.get('removal') or {}).get('harmful40') or {}
             held = (numbers.get('removal') or {}).get('held_out_120') or {}
@@ -1070,6 +1106,8 @@ def _evidence_table(matrix) -> str:
             details.append(problem.get('message'))
         if details:
             lines.append('- status detail: ' + '; '.join(str(item) for item in details))
+        for failure in row.get('failures') or []:
+            lines.append(f"- fails {failure.get('axis')}: {failure.get('message')}")
         command = row.get('recompute_command') or row.get('next_command')
         lines.append(f"- recompute (one command): `{command}`")
         lines.append('')
