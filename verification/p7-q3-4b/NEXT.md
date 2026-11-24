@@ -5,6 +5,15 @@ card (prep) holds no GPU: it fetched the checkpoints, converted and rebuilt the
 artifacts, and wrote the runner. The GPU card runs the waves; the analysis card
 assembles the packet and the matrix row.
 
+**Read this first — measured on the rebuilt arm before any wave:** control-corpus
+drift is **+0.0606 ln-PPL** (base 1.2656 -> arm 1.3446), outside the 0.02 budget.
+The banked arm read +0.0058. The drift input is already on disk
+(`drift.json`, `run_waves.sh` re-measures it), so `release-matrix` will report a
+drift failure for this REFIT arm unless the waves show the number is wrong. That is
+the honest state of a refit: the recipe is the same, the axis is not. Do not retune
+the pool or the scale after seeing this — report it. If the arm also loses removal,
+held-out or retention at 4096/4, that is the certified result (see the last section).
+
 Pinned config: `-c 4096 --parallel 4 --jinja --no-webui`, temperature 0, recorded
 cap 1024. 1024 is the slot width at 4096/4 (`/props` reports `n_ctx_slot: 1024`), so
 nothing truncates at the cap; a 4096-token request cannot fit in a 1024-token slot,
@@ -45,6 +54,14 @@ The base artifact's sha does **not** reproduce the old prefix `dc4ae2660e73cc2a`
 (older converter build), which is expected: the spec binds the new full sha256. As a
 behavioural cross-check, control-corpus PPL on the rebuilt base is **1.2656**, exactly
 the banked screen's base reading.
+
+The arm/base tensor diff (`operand-diff.json`, `jdewitt gguf-tensor-diff`, CPU):
+398 tensors, **356 bit-identical**, exactly the **42** the recipe names changed, same
+Q8_0 dtype, none added or dropped, realized edit rel-RMS 3.1-6.0% per edited tensor.
+Realized fidelity on the served bytes (`fidelity.json`, `compare_edit`, arm's own
+fitted direction at scale 1.5): min cos **0.9905**, mean **0.9934** over 6 sampled
+tensors (codec simulation 0.9976). The old packet's 0.7255 was a codec proxy on a
+seeded axis, not this reading.
 
 `harmful-40.jsonl` was missing from the clone. It is committed here as a byte-for-byte
 copy of `verification/screens/advbench-40.jsonl` under its historical name (ids and

@@ -262,12 +262,14 @@ if [ "$DRY" -eq 1 ]; then
         held_out-published "$HELD_OUT_SUITE" refusal \
         retention-published "$RETENTION_SUITE" math,code
     echo "== post-wave steps (CPU, no server)"
-    printf '  uv run python scripts/refusal_shape_audit.py removal-arm=verification/p7-q3-4b/waves/removal-arm/predictions.jsonl --out verification/p7-q3-4b/shape-audit-removal.json\n'
-    printf '  uv run python scripts/refusal_shape_audit.py held_out-arm=verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl --out verification/p7-q3-4b/shape-audit-held_out.json\n'
-    printf '  uv run python verification/p7-q3-4b/drift_probe.py --base %s --arm %s --binary %s --out verification/p7-q3-4b/drift.json\n' \
-        "$BASE" "$ARM" "$PERPLEXITY"
-    printf '  uv run python verification/p7-q3-4b/fidelity_probe.py --gguf %s --axes %s --scale 1.5 --out verification/p7-q3-4b/fidelity.json\n' \
-        "$ARM" "$AXES"
+    printf '  uv run python scripts/refusal_shape_audit.py removal-arm=%s/waves/removal-arm/predictions.jsonl --out %s/shape-audit-removal.json\n' \
+        "$OUT" "$OUT"
+    printf '  uv run python scripts/refusal_shape_audit.py held_out-arm=%s/waves/held_out-arm/predictions.jsonl --out %s/shape-audit-held_out.json\n' \
+        "$OUT" "$OUT"
+    printf '  uv run python %s/drift_probe.py --base %s --arm %s --binary %s --out %s/drift.json\n' \
+        "$HERE" "$BASE" "$ARM" "$PERPLEXITY" "$OUT"
+    printf '  uv run python %s/fidelity_probe.py --gguf %s --base %s --axes %s --scale 1.5 --out %s/fidelity.json\n' \
+        "$HERE" "$ARM" "$BASE" "$AXES" "$OUT"
     exit 0
 fi
 
@@ -286,23 +288,28 @@ run_group "$PUBLISHED" removal-published "$REMOVAL_SUITE" refusal \
 if [ -f "$OUT/waves/removal-arm/predictions.jsonl" ]; then
     log "SHAPE removal-arm -> shape-audit-removal.json"
     uv run python scripts/refusal_shape_audit.py \
-        "removal-arm=verification/p7-q3-4b/waves/removal-arm/predictions.jsonl" \
+        "removal-arm=$OUT/waves/removal-arm/predictions.jsonl" \
         --out "$OUT/shape-audit-removal.json"
 fi
 if [ -f "$OUT/waves/held_out-arm/predictions.jsonl" ]; then
     log "SHAPE held_out-arm -> shape-audit-held_out.json"
     uv run python scripts/refusal_shape_audit.py \
-        "held_out-arm=verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl" \
+        "held_out-arm=$OUT/waves/held_out-arm/predictions.jsonl" \
         --out "$OUT/shape-audit-held_out.json"
 fi
 
 # ---- drift and realized fidelity (CPU) ------------------------------------
+# A drift outside the budget is a RESULT, not a crash: drift_probe exits 1 to say so,
+# the document is still written, and the run continues so fidelity and the rest of
+# the packet's inputs exist. `release-matrix` reports the failure.
 log "DRIFT control ln-PPL base vs arm -> drift.json"
-uv run python "$OUT/drift_probe.py" --base "$BASE" --arm "$ARM" \
-    --binary "$PERPLEXITY" --out "$OUT/drift.json"
+if ! uv run python "$HERE/drift_probe.py" --base "$BASE" --arm "$ARM" \
+        --binary "$PERPLEXITY" --out "$OUT/drift.json"; then
+    log "DRIFT outside the budget (see drift.json inside_budget=false); recorded, run continues"
+fi
 
 log "FIDELITY realized cos per edited tensor -> fidelity.json"
-uv run python "$OUT/fidelity_probe.py" --gguf "$ARM" --axes "$AXES" \
+uv run python "$HERE/fidelity_probe.py" --gguf "$ARM" --base "$BASE" --axes "$AXES" \
     --scale 1.5 --out "$OUT/fidelity.json"
 
 log "P7 wave run complete; every server this script started is stopped"

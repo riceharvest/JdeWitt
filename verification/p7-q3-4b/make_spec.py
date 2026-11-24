@@ -88,6 +88,15 @@ def capture_identity(records: Path) -> dict:
             "compute_backend": identity.get("compute_backend")}
 
 
+def operand_diff(path: Path) -> dict:
+    """The committed base/arm tensor diff, bound by digest when it exists."""
+    if not path.is_file():
+        return {"available": False, "note": f"{path.name} not written"}
+    document = json.loads(path.read_text())
+    return {"available": True, "path": str(path), "sha256": sha256(path),
+            "summary": document.get("summary"), "rel_rms": document.get("rel_rms")}
+
+
 def dry_run_configs(arm: Path) -> dict[str, str]:
     """The serve_config strings run_waves.sh will record, read from its own --dry."""
     script = HERE / "run_waves.sh"
@@ -258,6 +267,7 @@ def main(argv=None) -> int:
         "refit_inputs": {"pool": str(pool), "pool_sha256": sha256(pool),
                          "records": str(records), "records_sha256": sha256(records),
                          "axes": str(axes), "axes_sha256": sha256(axes)},
+        "operand_diff": operand_diff(HERE / "operand-diff.json"),
         "suites": {name: {"path": path, "sha256": sha256(REPO / path)}
                    for name, path in (("removal", REMOVAL_SUITE),
                                       ("held_out", HELD_OUT_SUITE),

@@ -94,6 +94,26 @@
     "axes": "/mnt/ssd/hermes/models/_fit/q3-shared-axes-refit.pt",
     "axes_sha256": "173135aa8a4da97122b2f7248a0a04f404242c9452d573cdd0a3700200b51691"
   },
+  "operand_diff": {
+    "available": true,
+    "path": "/home/dario/.agentboard/worktrees/t_662a4d28/verification/p7-q3-4b/operand-diff.json",
+    "sha256": "8b38e96f33711021c6af07433754fa27581ffee4c22dec06faddf074ffc91f87",
+    "summary": {
+      "bit_identical": 356,
+      "codec_unsupported": 0,
+      "packed_size_changed": 0,
+      "port_decoded": 0,
+      "shape_changed": 0,
+      "shared": 398,
+      "value_differs": 42
+    },
+    "rel_rms": {
+      "max": 0.060415,
+      "median": 0.038453,
+      "min": 0.03095,
+      "n": 42
+    }
+  },
   "suites": {
     "removal": {
       "path": "verification/p7-q3-4b/harmful-40.jsonl",
