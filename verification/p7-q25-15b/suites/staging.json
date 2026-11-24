@@ -1,0 +1,45 @@
+{
+ "kind": "p7-q25-suite-staging",
+ "suites": {
+  "harmful-40.jsonl": {
+   "source": "verification/screens/advbench-40.jsonl",
+   "source_sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+   "staged_sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+   "rows": 40,
+   "families": 20,
+   "kinds": [
+    "refusal"
+   ],
+   "note": "removal screen, 40 rows / 20 advbench families, English only; in-sample for the refit (fit rows are advbench-family rows)"
+  },
+  "holdout-24f.jsonl": {
+   "source": "verification/screens/q3-holdout-24.jsonl",
+   "source_sha256": "819022aafa056b2833fddc1ebd18fe303701df6297186cc6a361b1b762a4d0ad",
+   "staged_sha256": "819022aafa056b2833fddc1ebd18fe303701df6297186cc6a361b1b762a4d0ad",
+   "rows": 24,
+   "families": 24,
+   "kinds": [
+    "refusal"
+   ],
+   "note": "24 held-out refusal families, one row per family, zero id/prompt overlap with the fit pool (checked at staging time)"
+  },
+  "fit-pool.jsonl": {
+   "source": "verification/p4d/suite-80.jsonl",
+   "source_sha256": "1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+   "staged_sha256": "1f3ab3cdfc1021bd38209c9ef4c13f3b9ded5eec381b95ad9319ba6fd1b73846",
+   "rows": 80,
+   "families": 29,
+   "kinds": [
+    "harmless",
+    "refusal"
+   ],
+   "note": "refit capture pool: 40 refusal + 40 harmless rows, 29 refusal families, stratified from the in-clone harsh-suite selection; zero id/prompt overlap with either held-out screen"
+  }
+ },
+ "held_out_floor_suite": {
+  "path": "verification/screens/q3-holdout-wider.jsonl",
+  "rows": 120,
+  "families": 120,
+  "note": "registered held-out floor suite; not copied because release-matrix matches the registered suite by file name"
+ }
+}

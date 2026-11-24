@@ -1,0 +1,132 @@
+{
+ "schema_version": 1,
+ "kind": "p7-q25-operands",
+ "lineage": "qwen25-1.5b",
+ "note": "GGUF artifacts are gitignored; this manifest is the in-repo binding between the spec digests and the bytes on disk. release-certify re-hashes a present artifact.",
+ "refit": true,
+ "models_dir": "/mnt/ssd/models/p7-q25-15b",
+ "capture": "/mnt/ssd/models/p7-q25-15b/records/refit-capture.json",
+ "axes": "/mnt/ssd/models/p7-q25-15b/records/refit-axes.pt",
+ "records": "/mnt/ssd/models/p7-q25-15b/records/refit-records.pt",
+ "artifacts": [
+  {
+   "role": "base",
+   "path": "/mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf",
+   "bytes": 1646572800,
+   "sha256": "5bfdb201668c8f41e99c2dc20577839c5c3115458986f13ed4cf7e1a8d4c2c5d",
+   "sha256_prefix_16": "5bfdb201668c8f41",
+   "quant": {
+    "dominant": "Q8_0",
+    "types": {
+     "F32": 141,
+     "Q8_0": 197
+    },
+    "tensors": 338
+   },
+   "source": {
+    "path": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct",
+    "files": {
+     "model.safetensors": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+    },
+    "config": {
+     "architectures": [
+      "Qwen2ForCausalLM"
+     ],
+     "attention_dropout": 0.0,
+     "bos_token_id": 151643,
+     "eos_token_id": 151645,
+     "hidden_act": "silu",
+     "hidden_size": 1536,
+     "initializer_range": 0.02,
+     "intermediate_size": 8960,
+     "max_position_embeddings": 32768,
+     "max_window_layers": 21,
+     "model_type": "qwen2",
+     "num_attention_heads": 12,
+     "num_hidden_layers": 28,
+     "num_key_value_heads": 2,
+     "rms_norm_eps": 1e-06,
+     "rope_theta": 1000000.0,
+     "sliding_window": 32768,
+     "tie_word_embeddings": true,
+     "torch_dtype": "bfloat16",
+     "transformers_version": "4.43.1",
+     "use_cache": true,
+     "use_sliding_window": false,
+     "vocab_size": 151936
+    }
+   },
+   "recipe": "python /mnt/ssd/dev workspace/llama.cpp-dspark/convert_hf_to_gguf.py /mnt/ssd/models/Qwen2.5-1.5B-Instruct --outfile /mnt/ssd/models/p7-q25-15b/artifacts/base-f16.gguf --outtype f16 && /mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-quantize /mnt/ssd/models/p7-q25-15b/artifacts/base-f16.gguf /mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf Q8_0 16",
+   "note": "the served parent: the arm is this file plus the refit axis merge"
+  },
+  {
+   "role": "published",
+   "path": "/mnt/ssd/models/p7-q25-15b/artifacts/published-q8.gguf",
+   "bytes": 1894534048,
+   "sha256": "4067fa4e3534e929b90bb05f5fb52bd7a4f3c32ce3d42f02852c505d0bc24b85",
+   "sha256_prefix_16": "4067fa4e3534e929",
+   "quant": {
+    "dominant": "Q8_0",
+    "types": {
+     "F32": 141,
+     "Q8_0": 198
+    },
+    "tensors": 339
+   },
+   "source": {
+    "path": "/mnt/ssd/models/josiefied-q25-v1",
+    "files": {
+     "model.safetensors": "a3599f1517a42cd11f6f6f6a6e90911ae81efed283bb9ea4dd64b01999e77ff5"
+    },
+    "config": {
+     "_name_or_path": "Isaak-Carter/Josiefied-Qwen2.5-1.5B-Instruct-abliterated-v1",
+     "architectures": [
+      "Qwen2ForCausalLM"
+     ],
+     "attention_dropout": 0.0,
+     "bos_token_id": 151643,
+     "eos_token_id": 151645,
+     "hidden_act": "silu",
+     "hidden_size": 1536,
+     "initializer_range": 0.02,
+     "intermediate_size": 8960,
+     "max_position_embeddings": 32768,
+     "max_window_layers": 21,
+     "model_type": "qwen2",
+     "num_attention_heads": 12,
+     "num_hidden_layers": 28,
+     "num_key_value_heads": 2,
+     "rms_norm_eps": 1e-06,
+     "rope_theta": 1000000.0,
+     "sliding_window": null,
+     "tie_word_embeddings": true,
+     "torch_dtype": "bfloat16",
+     "transformers_version": "4.44.2",
+     "use_cache": true,
+     "use_sliding_window": false,
+     "vocab_size": 151936
+    }
+   },
+   "recipe": "python /mnt/ssd/dev workspace/llama.cpp-dspark/convert_hf_to_gguf.py /mnt/ssd/models/josiefied-q25-v1 --outfile /mnt/ssd/models/p7-q25-15b/artifacts/published-f16.gguf --outtype f16 && /mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-quantize /mnt/ssd/models/p7-q25-15b/artifacts/published-f16.gguf /mnt/ssd/models/p7-q25-15b/artifacts/published-q8.gguf Q8_0 16",
+   "note": "the head-to-head side: measured by us at the same argv, never read from its README"
+  },
+  {
+   "role": "arm-refit",
+   "path": "/mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf",
+   "bytes": 1646572800,
+   "sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+   "sha256_prefix_16": "584ec48f9a05a9f3",
+   "quant": {
+    "dominant": "Q8_0",
+    "types": {
+     "F32": 141,
+     "Q8_0": 197
+    },
+    "tensors": 338
+   },
+   "source": null,
+   "recipe": "python -m jdewitt.spanfit build --gguf-in /mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf --out /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf --axes /mnt/ssd/models/p7-q25-15b/records/refit-axes.pt --gguf-targets auto --shape shared --axis-space output --scale 1.5",
+   "note": "REFIT, not SAS@1.5: the original q25-v4-dir000.gguf adapter is not on this box, so the shared axis was refit from a CPU capture of the base (records/refit-records.pt). Merge into the base Q8_0 bytes: 56 tensors, every other byte verbatim"
+  }
+ ]
+}
