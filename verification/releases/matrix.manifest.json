@@ -102,23 +102,45 @@
         "config": "/mnt/ssd/models/Qwen2.5-1.5B-Instruct/config.json"
       },
       "base": {
-        "sha256": null,
-        "sha256_prefix_16": "b86f6dcf79a159bf",
-        "quant_type": "BF16",
-        "path": "q25-1.5b-bf16.gguf",
-        "note": "recorded prefix from verification/retention-q25/provenance.json; the file is no longer on this box"
+        "sha256": "5bfdb201668c8f41e99c2dc20577839c5c3115458986f13edcf7e1a8d4c2c5d",
+        "sha256_prefix_16": "5bfdb201668c8f41",
+        "quant_type": "Q8_0",
+        "path": "/mnt/ssd/models/p7-q25-15b/artifacts/base-q8.gguf",
+        "bytes": 1646572800,
+        "note": "the served parent, converted from the registered BF16 checkpoint (Qwen2.5-1.5B-Instruct @989aa798) to f16 and quantized to Q8_0 with the repo CPU llama-quantize; recipe and HF weight digests in verification/p7-q25-15b/operands.json. The old q25-1.5b-bf16.gguf (prefix b86f6dcf79a159bf) was the adapter-time base and is no longer on the box; the arm is an edit of THIS file so the row's base and artifact share one quant step."
       },
       "artifact": {
-        "sha256": null,
-        "identity_digest": null,
-        "quant_type": null,
+        "sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+        "sha256_prefix_16": "584ec48f9a05a9f3",
+        "identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a",
+        "quant_type": "Q8_0",
         "scale": 1.5,
-        "edited_tensors": null,
-        "note": "no merged quant artifact exists: the q25 evidence (q25-v4-dir000.gguf) is a llama.cpp adapter served at scale 1.5 on the unmodified BF16 base, and an adapter curve is not the merged bytes (R8). A row needs the merged artifact before it can be certified."
+        "bytes": 1646572800,
+        "edited_tensors": 56,
+        "footprint": "blk.0-27 x {attn_output.weight, ffn_down.weight}",
+        "refit": true,
+        "note": "REFIT, not SAS@1.5: the q25 adapter q25-v4-dir000.gguf is not on this box, so the shared axis was refit from a CPU capture of the base (records/refit-records.pt, 16 bad / 38 good / 24 ambiguous of 80 fit rows) and merged into the base Q8_0 bytes at scale 1.5 by spanfit build --gguf-targets auto (56 tensors edited, every other byte verbatim). An adapter curve is not the merged bytes (R8); these are the merged bytes."
       },
-      "packet": "verification/releases/qwen25-1.5b/packet.json",
-      "spec": "verification/releases/qwen25-1.5b/spec.json",
-      "head_to_head": null
+      "packet": "verification/p7-q25-15b/packet.json",
+      "spec": "verification/p7-q25-15b/spec.json",
+      "head_to_head": {
+        "label": "published build (Isaak-Carter/Josiefied-Qwen2.5-1.5B-Instruct-abliterated-v1, Q8_0)",
+        "model": {
+          "name": "Isaak-Carter/Josiefied-Qwen2.5-1.5B-Instruct-abliterated-v1",
+          "revision": "c116e736b78dd85e0951650ab475e32ba41c31bd",
+          "quant_type": "Q8_0",
+          "local_path": "/mnt/ssd/models/josiefied-q25-v1"
+        },
+        "artifact_sha256_prefix_16": "4067fa4e3534e929",
+        "packet": null,
+        "reference_note": "the published build has no packet of ours: no removal shape audit, drift or fidelity reading exists for its artifact, so its side is measured from the waves we served ourselves at the same argv, never from its README",
+        "waves": {
+          "removal": "verification/p7-q25-15b/waves/removal-published",
+          "held_out": "verification/p7-q25-15b/waves/heldout120-published",
+          "retention": "verification/p7-q25-15b/waves/retention-published"
+        },
+        "retention_base_wave": "verification/p7-q25-15b/waves/retention-base"
+      }
     },
     {
       "lineage": "spark-1.7b",
