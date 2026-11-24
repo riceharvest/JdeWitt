@@ -10,18 +10,22 @@
     "sdk_version": "5.50.0",
     "hardware_requested": "zero-a10g",
     "hardware_reported": "zero-a10g",
-    "tree_commit": "72afd4a2aa1bff8745364787aab1a4b1d6d7ea93",
     "tree_built_by": "scripts/space_stage.py from branch ab/t_19c8667d (ab/t_62f8c285 app + ab/t_6fa0c776 seeded bank); uploaded with HfApi.upload_folder",
-    "account_plan": "free personal account (no PRO); Gradio Spaces cannot be created on free cpu-basic (HTTP 402), so the Space was created through the API with space_hardware='zero-a10g', which is accepted"
+    "account_plan": "free personal account (no PRO); Gradio Spaces cannot be created on free cpu-basic (HTTP 402), so the Space was created through the API with space_hardware='zero-a10g', which is accepted",
+    "tree_commit_at_run": "72afd4a2aa1bff8745364787aab1a4b1d6d7ea93",
+    "tree_commit_now": "f5b444c9dcd3db323328f8e2d086462d0c693b66",
+    "branch": "ab/t_19c8667d",
+    "tree_commit_note": "the run used the tree committed as 72afd4a2 (app.py sha256 33af0718fe3ed264...); the only later change to the Space tree is the removal of an unused `import time` (app.py sha256 e58d7a49f627113d...), so the deployed tree now equals branch ab/t_19c8667d while behaviour is unchanged"
   },
   "how_it_was_driven": {
     "path": "public URL only: POST https://<space>/gradio_api/call/start {\"data\": [repo, file]}, then the event's SSE stream",
     "job_id": "job-20261124T155857-1-74725a",
     "client_wall_clock_seconds": 971.0,
     "client_wall_clock_note": "15:58:57Z queued -> 16:15:08Z complete, measured by the client; the loop's own number is 964.95 s, the difference is the queue round trip",
-    "stream_log": "/home/dario/.agentboard/live-run-stream.log",
+    "stream_log": "verification/space/live-run-stream.log",
     "record_line": "the Space's stdout line prefixed 'jdewitt-live-run' (one JSON document, printed by spaces/app.py from the loop's own result)",
-    "record_log": "/home/dario/.agentboard/space-run-3.log"
+    "record_log": "verification/space/live-run-space.log",
+    "record_lines": "verification/space/live-run-record.jsonl (the two jdewitt- lines verbatim: the job start with the host probe, and the finished record)"
   },
   "container": {
     "source": "space_loop.host_probe(), read inside the container: /proc/cpuinfo, /proc/meminfo, /proc/self/status",

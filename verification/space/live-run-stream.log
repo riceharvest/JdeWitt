@@ -1,0 +1,198 @@
+client_start 2026-11-24T15:58:57Z repo=unsloth/Qwen3-4B-Instruct-2507-GGUF file=Qwen3-4B-Instruct-2507-Q4_K_M.gguf
+queued 2026-11-24T15:58:57Z event_id=9f08a972351a4bc897407a5c46324783
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: heartbeat
+data: null
+
+event: complete
+data: ["This file was **not** measured. The direction was fitted on `Qwen/Qwen3-4B-Instruct-2507@cdbee75f17c01a7cc42f958dc650907174af0554` and applied as-is at strength `attn 1.5, mlp 1.5`. Codec fidelity only: delivered cos `0.8808` on `42` tensors. No claim is made about this model's answers.", {"path": "/tmp/gradio/141fa503c5ffbf795fb4d71f9232b5d00870c813efa89e034a0c064a414fde65/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf", "url": "https://darioooooo0o-banked-gguf-edit.hf.space/gradio_api/file=/tmp/gradio/141fa503c5ffbf795fb4d71f9232b5d00870c813efa89e034a0c064a414fde65/Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf", "size": 2618260064, "orig_name": "Qwen3-4B-Instruct-2507-Q4_K_M-banked.gguf", "mime_type": null, "is_stream": false, "meta": {"_type": "gradio.FileData"}}, [{"path": "/tmp/gradio/600ed8b46b1cac8f198537df90c5480dae7341bf75b01ef08a7214a38d801fdf/card.md", "url": "https://darioooooo0o-banked-gguf-edit.hf.space/gradio_api/file=/tmp/gradio/600ed8b46b1cac8f198537df90c5480dae7341bf75b01ef08a7214a38d801fdf/card.md", "size": 1281, "orig_name": "card.md", "mime_type": null, "is_stream": false, "meta": {"_type": "gradio.FileData"}}, {"path": "/tmp/gradio/5aa1ff76440cb569fd70bfe2561c6df79d10dccc8a598f8c781748f3389b5463/sidecar.json", "url": "https://darioooooo0o-banked-gguf-edit.hf.space/gradio_api/file=/tmp/gradio/5aa1ff76440cb569fd70bfe2561c6df79d10dccc8a598f8c781748f3389b5463/sidecar.json", "size": 16743, "orig_name": "sidecar.json", "mime_type": null, "is_stream": false, "meta": {"_type": "gradio.FileData"}}, {"path": "/tmp/gradio/5547166012ca76d1553efec79f32e6e491df35529f410db20d94fe606f500462/SHA256SUMS", "url": "https://darioooooo0o-banked-gguf-edit.hf.space/gradio_api/file=/tmp/gradio/5547166012ca76d1553efec79f32e6e491df35529f410db20d94fe606f500462/SHA256SUMS", "size": 261, "orig_name": "SHA256SUMS", "mime_type": null, "is_stream": false, "meta": {"_type": "gradio.FileData"}}], "Label `banked_unmeasured` \u00b7 964.95 s \u00b7 ZeroGPU hardware; one @spaces.GPU function is declared for the startup check and no job calls it, so a job spends 0 GPU seconds \u00b7 workspace deleted: True"]
+
+client_done 2026-11-24T16:15:08Z
