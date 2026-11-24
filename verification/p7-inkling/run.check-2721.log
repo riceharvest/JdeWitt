@@ -1,0 +1,87 @@
+=== p7-inkling gpu card check at 2026-11-24T06:27:25+01:00 (hermes#2721, attempt 2/3) ===
+
+--- script ---
+-rwxr-xr-x. 1 dario dario 45013 Nov 24 04:17 verification/p7-inkling/run_waves.sh
+1ea3235e40d65427bc86cf65347ed83941b98b3a918689f21df3624cac1b75f4  verification/p7-inkling/run_waves.sh
+bash -n exit=0
+
+--- run_waves.sh --check (live, 2026-11-24T06:27:25+01:00) ---
+operands ok: 10 checked
+P7 inkling-2-mini preflight (/home/dario/.agentboard/worktrees/t_5053ccbb)
+  present  base-gguf              /mnt/ssd/models/Inkling-2-Mini-GGUF/Inkling-2-Mini-IQ4_NL.gguf
+  present  source-checkpoint      /mnt/ssd/models/Inkling-2-Mini
+  present  operands-pins          /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/operands.json
+  present  suite-removal          /mnt/ssd/hermes/cache/scratch/probes/harmful-40.jsonl
+  present  suite-heldout          /home/dario/.agentboard/worktrees/t_5053ccbb/verification/screens/q3-holdout-wider.jsonl
+  present  suite-retention        /home/dario/.agentboard/worktrees/t_5053ccbb/verification/capability/capability-run-en.jsonl
+  present  wave-script            /home/dario/.agentboard/worktrees/t_5053ccbb/scripts/capability_wave.py
+  present  shape-audit-script     /home/dario/.agentboard/worktrees/t_5053ccbb/scripts/refusal_shape_audit.py
+  present  ppl-screen-script      /home/dario/.agentboard/worktrees/t_5053ccbb/scripts/refusal_ppl_screen.py
+  present  ppl-control-corpus     /home/dario/.agentboard/worktrees/t_5053ccbb/verification/ppl-probe/control.txt
+  MISSING  capture-records        /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/capture-records.pt
+  MISSING  shared-axis            /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/shared-axes.pt
+  MISSING  arm                    /mnt/ssd/models/Inkling-2-Mini-GGUF/Inkling-2-Mini-IQ4_NL-edited.gguf
+  serve binary: NOT FOUND
+  output   retention-base         /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/retention-base/{predictions.jsonl,wave.json}
+  output   harmful40-arm          /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/harmful40-arm/{predictions.jsonl,wave.json}
+  output   holdout-arm            /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/holdout-arm/{predictions.jsonl,wave.json}
+  output   retention-arm          /home/dario/.agentboard/worktrees/t_5053ccbb/verification/p7-inkling/retention-arm/{predictions.jsonl,wave.json}
+
+--- blocker 1 reproduced live: transformers refuse the source checkpoint ---
+transformers 5.20.0
+REFUSED ValueError : The checkpoint you are trying to load has model type `inkling2_loop` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
+inkling CONFIG_MAPPING keys: ['inkling_audio', 'inkling_mm_model', 'inkling_text', 'inkling_vision']
+
+--- blocker 2 reproduced live: no llama-server executable in the Inkling fork ---
+total 187888
+-rwxr-xr-x. 1 dario dario    682168 Nov 23 20:28 b70tune-bench
+lrwxrwxrwx. 1 dario dario        17 Nov 22 17:20 libggml-base.so -> libggml-base.so.1
+lrwxrwxrwx. 1 dario dario        21 Nov 22 17:20 libggml-base.so.1 -> libggml-base.so.1.0.0
+-rwxr-xr-x. 1 dario dario   1292088 Nov 22 17:20 libggml-base.so.1.0.0
+lrwxrwxrwx. 1 dario dario        16 Nov 22 17:20 libggml-cpu.so -> libggml-cpu.so.1
+lrwxrwxrwx. 1 dario dario        20 Nov 22 17:20 libggml-cpu.so.1 -> libggml-cpu.so.1.0.0
+-rwxr-xr-x. 1 dario dario   2534856 Nov 22 17:20 libggml-cpu.so.1.0.0
+lrwxrwxrwx. 1 dario dario        12 Nov 23 20:28 libggml.so -> libggml.so.1
+lrwxrwxrwx. 1 dario dario        16 Nov 23 20:28 libggml.so.1 -> libggml.so.1.0.0
+-rwxr-xr-x. 1 dario dario     47528 Nov 23 20:28 libggml.so.1.0.0
+lrwxrwxrwx. 1 dario dario        17 Nov 23 20:28 libggml-sycl.so -> libggml-sycl.so.1
+lrwxrwxrwx. 1 dario dario        21 Nov 23 20:28 libggml-sycl.so.1 -> libggml-sycl.so.1.0.0
+-rwxr-xr-x. 1 dario dario 161019848 Nov 23 20:28 libggml-sycl.so.1.0.0
+-rwxr-xr-x. 1 dario dario    441536 Nov 23 20:28 libllama-bench-impl.so
+-rwxr-xr-x. 1 dario dario    256064 Nov 23 20:28 libllama-cli-impl.so
+lrwxrwxrwx. 1 dario dario        20 Nov 23 20:28 libllama-common.so -> libllama-common.so.1
+lrwxrwxrwx. 1 dario dario        24 Nov 23 20:28 libllama-common.so.1 -> libllama-common.so.1.0.0
+-rwxr-xr-x. 1 dario dario   6383632 Nov 23 20:28 libllama-common.so.1.0.0
+-rwxr-xr-x. 1 dario dario    163808 Nov 23 20:28 libllama-perplexity-impl.so
+llama-server: none on PATH
+
+--- output wave dirs (the four the spec lists) ---
+retention-base   ABSENT (no predictions.jsonl, no wave.json)
+harmful40-arm    ABSENT (no predictions.jsonl, no wave.json)
+holdout-arm      ABSENT (no predictions.jsonl, no wave.json)
+retention-arm    ABSENT (no predictions.jsonl, no wave.json)
+ABSENT spec.json
+ABSENT drift.json
+ABSENT comparison.json
+ABSENT shape-audit-*.json
+ABSENT capture-records.pt
+ABSENT shared-axes.pt
+ABSENT arm gguf (IQ4_NL-edited)
+
+--- progress.txt tail (job's own terminal state) ---
+2026-11-24T05:45:15+01:00	operands	sha256 verified
+2026-11-24T06:27:03+01:00	operands	sha256 verified
+
+--- b70 at this check ---
+b70 lock held by pid 2529432 (cmd flock -o -n -E 75 /tmp/claude-1000/b70.lock env LAB_JOB=1 env CTX=32768 NP=1 bash /home/dario/.agent...), started Tue Nov 24 06:22:08 2026
+
+--- this job's servers ---
+none launched by this card; no llama-server for p7-inkling on any port (serve stage never reached)
+
+--- decision ---
+Not launched: run_waves.sh exits 77 CAPTURE_UNSUPPORTED before any serve (its own progress.txt
+recorded that at 2026-11-24T01:28:34), so a launch cannot create a wave. Blockers re-measured
+live above at 2026-11-24T06:27:30+01:00. 0 rows, 0 tokens. Failing the card: CAPTURE_UNSUPPORTED.
+
+--- progress.txt, the REFUSED line it recorded at capture time ---
+2026-11-24T01:28:34+01:00	REFUSED	77: CAPTURE_UNSUPPORTED this stack cannot load Inkling-2-Mini (measured; see capture-blocked.json): no residual records -> no fitted axis -> no arm. Capture is the first axis to fail; the analysis card records failed(capture) with these numbers.
