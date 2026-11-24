@@ -1,0 +1,46 @@
+{
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "label": "retention-published",
+ "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/capability/capability-run-en.jsonl",
+ "rows": 241,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "capability_passed": 84,
+ "refusals_detected": 0,
+ "delivered_instead": 0,
+ "invalid": 0,
+ "measured": true,
+ "completion_tokens_total": 25395,
+ "serve_config": "-m /mnt/ssd/models/p7-q25-15b/artifacts/published-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+ "serve_structured": {
+  "ctx": 4096,
+  "parallel": 4,
+  "max_tokens": 1024,
+  "temperature": 0.0,
+  "sampling": {
+   "temperature": 0.0,
+   "top_p": null,
+   "top_k": null,
+   "seed": null
+  },
+  "jinja": true,
+  "cuda": false,
+  "no_think": false,
+  "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/capability/capability-run-en.jsonl"
+ },
+ "port": 8141,
+ "max_tokens": 1024,
+ "temperature": 0.0,
+ "sampling": {
+  "temperature": 0.0,
+  "top_p": null,
+  "top_k": null,
+  "seed": null
+ },
+ "previewed": 0,
+ "seconds": 570.6,
+ "predictions": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/p7-q25-15b/waves/retention-published/predictions.jsonl",
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape)."
+}

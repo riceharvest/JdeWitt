@@ -1,0 +1,470 @@
+{
+ "schema_version": 1,
+ "lineage": "qwen25-1.5b",
+ "label": "refit-sas15",
+ "measured": true,
+ "arm_measurement": true,
+ "method": "ggufio.compare_edit: dequant(arm) - dequant(base) against the projection spanfit build applied at the recorded scale, on the shipped Q8_0 bytes",
+ "artifact_sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+ "artifact_bytes": 1646572800,
+ "base_sha256": "5bfdb201668c8f41e99c2dc20577839c5c3115458986f13ed4cf7e1a8d4c2c5d",
+ "axes": "/mnt/ssd/models/p7-q25-15b/records/refit-axes.pt",
+ "scale": 1.5,
+ "axis_space": "output",
+ "tensors": [
+  {
+   "name": "blk.0.attn_output.weight",
+   "cos": 0.9963,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0034,
+   "snr": 11.483
+  },
+  {
+   "name": "blk.0.ffn_down.weight",
+   "cos": 0.9946,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0049,
+   "snr": 9.289
+  },
+  {
+   "name": "blk.1.attn_output.weight",
+   "cos": 0.9963,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0033,
+   "snr": 11.571
+  },
+  {
+   "name": "blk.1.ffn_down.weight",
+   "cos": 0.9949,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0047,
+   "snr": 9.549
+  },
+  {
+   "name": "blk.2.attn_output.weight",
+   "cos": 0.9965,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0032,
+   "snr": 11.792
+  },
+  {
+   "name": "blk.2.ffn_down.weight",
+   "cos": 0.9947,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0049,
+   "snr": 9.362
+  },
+  {
+   "name": "blk.3.attn_output.weight",
+   "cos": 0.9963,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0033,
+   "snr": 11.578
+  },
+  {
+   "name": "blk.3.ffn_down.weight",
+   "cos": 0.9951,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0046,
+   "snr": 9.658
+  },
+  {
+   "name": "blk.4.attn_output.weight",
+   "cos": 0.9961,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0035,
+   "snr": 11.29
+  },
+  {
+   "name": "blk.4.ffn_down.weight",
+   "cos": 0.9953,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0044,
+   "snr": 9.876
+  },
+  {
+   "name": "blk.5.attn_output.weight",
+   "cos": 0.997,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.729
+  },
+  {
+   "name": "blk.5.ffn_down.weight",
+   "cos": 0.9946,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0049,
+   "snr": 9.259
+  },
+  {
+   "name": "blk.6.attn_output.weight",
+   "cos": 0.997,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.747
+  },
+  {
+   "name": "blk.6.ffn_down.weight",
+   "cos": 0.9947,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0049,
+   "snr": 9.355
+  },
+  {
+   "name": "blk.7.attn_output.weight",
+   "cos": 0.9963,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0033,
+   "snr": 11.484
+  },
+  {
+   "name": "blk.7.ffn_down.weight",
+   "cos": 0.9949,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0048,
+   "snr": 9.489
+  },
+  {
+   "name": "blk.8.attn_output.weight",
+   "cos": 0.9949,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0044,
+   "snr": 9.854
+  },
+  {
+   "name": "blk.8.ffn_down.weight",
+   "cos": 0.9962,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0037,
+   "snr": 10.898
+  },
+  {
+   "name": "blk.9.attn_output.weight",
+   "cos": 0.9961,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0034,
+   "snr": 11.231
+  },
+  {
+   "name": "blk.9.ffn_down.weight",
+   "cos": 0.9971,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.003,
+   "snr": 12.264
+  },
+  {
+   "name": "blk.10.attn_output.weight",
+   "cos": 0.9967,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.264
+  },
+  {
+   "name": "blk.10.ffn_down.weight",
+   "cos": 0.9974,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0028,
+   "snr": 12.909
+  },
+  {
+   "name": "blk.11.attn_output.weight",
+   "cos": 0.9973,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0022,
+   "snr": 13.432
+  },
+  {
+   "name": "blk.11.ffn_down.weight",
+   "cos": 0.9973,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.77
+  },
+  {
+   "name": "blk.12.attn_output.weight",
+   "cos": 0.9967,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.003,
+   "snr": 12.15
+  },
+  {
+   "name": "blk.12.ffn_down.weight",
+   "cos": 0.9969,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0032,
+   "snr": 11.959
+  },
+  {
+   "name": "blk.13.attn_output.weight",
+   "cos": 0.9966,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0029,
+   "snr": 11.982
+  },
+  {
+   "name": "blk.13.ffn_down.weight",
+   "cos": 0.9968,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0032,
+   "snr": 11.872
+  },
+  {
+   "name": "blk.14.attn_output.weight",
+   "cos": 0.9963,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0031,
+   "snr": 11.537
+  },
+  {
+   "name": "blk.14.ffn_down.weight",
+   "cos": 0.9968,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0031,
+   "snr": 11.848
+  },
+  {
+   "name": "blk.15.attn_output.weight",
+   "cos": 0.9968,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.303
+  },
+  {
+   "name": "blk.15.ffn_down.weight",
+   "cos": 0.9974,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0028,
+   "snr": 12.922
+  },
+  {
+   "name": "blk.16.attn_output.weight",
+   "cos": 0.9975,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0023,
+   "snr": 13.961
+  },
+  {
+   "name": "blk.16.ffn_down.weight",
+   "cos": 0.9969,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0031,
+   "snr": 11.913
+  },
+  {
+   "name": "blk.17.attn_output.weight",
+   "cos": 0.9967,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0028,
+   "snr": 12.216
+  },
+  {
+   "name": "blk.17.ffn_down.weight",
+   "cos": 0.9956,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0042,
+   "snr": 10.217
+  },
+  {
+   "name": "blk.18.attn_output.weight",
+   "cos": 0.9962,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0031,
+   "snr": 11.328
+  },
+  {
+   "name": "blk.18.ffn_down.weight",
+   "cos": 0.9947,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0049,
+   "snr": 9.365
+  },
+  {
+   "name": "blk.19.attn_output.weight",
+   "cos": 0.9967,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0027,
+   "snr": 12.122
+  },
+  {
+   "name": "blk.19.ffn_down.weight",
+   "cos": 0.9948,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0048,
+   "snr": 9.476
+  },
+  {
+   "name": "blk.20.attn_output.weight",
+   "cos": 0.9974,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0022,
+   "snr": 13.641
+  },
+  {
+   "name": "blk.20.ffn_down.weight",
+   "cos": 0.9939,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0053,
+   "snr": 8.746
+  },
+  {
+   "name": "blk.21.attn_output.weight",
+   "cos": 0.9957,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0038,
+   "snr": 10.657
+  },
+  {
+   "name": "blk.21.ffn_down.weight",
+   "cos": 0.9935,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0057,
+   "snr": 8.491
+  },
+  {
+   "name": "blk.22.attn_output.weight",
+   "cos": 0.9956,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0039,
+   "snr": 10.552
+  },
+  {
+   "name": "blk.22.ffn_down.weight",
+   "cos": 0.9934,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0058,
+   "snr": 8.422
+  },
+  {
+   "name": "blk.23.attn_output.weight",
+   "cos": 0.9968,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.003,
+   "snr": 12.327
+  },
+  {
+   "name": "blk.23.ffn_down.weight",
+   "cos": 0.993,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.006,
+   "snr": 8.184
+  },
+  {
+   "name": "blk.24.attn_output.weight",
+   "cos": 0.9957,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0037,
+   "snr": 10.649
+  },
+  {
+   "name": "blk.24.ffn_down.weight",
+   "cos": 0.9921,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0065,
+   "snr": 7.732
+  },
+  {
+   "name": "blk.25.attn_output.weight",
+   "cos": 0.9974,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0024,
+   "snr": 13.804
+  },
+  {
+   "name": "blk.25.ffn_down.weight",
+   "cos": 0.9909,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0072,
+   "snr": 7.227
+  },
+  {
+   "name": "blk.26.attn_output.weight",
+   "cos": 0.9977,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.002,
+   "snr": 14.674
+  },
+  {
+   "name": "blk.26.ffn_down.weight",
+   "cos": 0.9913,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.007,
+   "snr": 7.359
+  },
+  {
+   "name": "blk.27.attn_output.weight",
+   "cos": 0.9978,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0021,
+   "snr": 14.837
+  },
+  {
+   "name": "blk.27.ffn_down.weight",
+   "cos": 0.9954,
+   "source_type": "Q8_0",
+   "edited_type": "Q8_0",
+   "norm_ratio": 1.0045,
+   "snr": 9.99
+  }
+ ],
+ "sampled": 56,
+ "min_cos": 0.9909,
+ "mean_cos": 0.9958,
+ "min_snr": 7.227,
+ "note": "a low cos here means the codec, not the axis, decides what ships",
+ "scope": "the served artifact itself: the refit axis merged into base-q8.gguf at scale 1.5, 56 edited tensors (o_proj + down_proj), every layer that carries a residual-write projection"
+}
