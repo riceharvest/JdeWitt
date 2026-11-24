@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "lineage": "qwen3-4b-instruct-2507",
+  "label": "f15s15-l935-refit",
+  "measured": true,
+  "arm_measurement": true,
+  "arm_refit": true,
+  "method": "ggufio.compare_edit (delivered bytes) + ggufio.preview_edit (codec simulation) at the FITTED refit direction, scale 1.5, 2 windows x 32 blocks per tensor",
+  "artifact_sha256": "8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494",
+  "artifact_bytes": 4280403488,
+  "base_sha256": "67db5ebe21965b6b9612d44a315fe2cda44d893c0163561c0e0c2236d80377a5",
+  "axes_sha256": "173135aa8a4da97122b2f7248a0a04f404242c9452d573cdd0a3700200b51691",
+  "scale": 1.5,
+  "tensors": [
+    {
+      "name": "blk.15.attn_output.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        4096
+      ],
+      "cos": 0.9987,
+      "norm_ratio": 1.0002,
+      "snr": 19.555,
+      "delta_norm": 0.1691,
+      "noise_norm": 0.0086,
+      "windows": 2,
+      "blocks_per_window": 32
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        9728
+      ],
+      "cos": 0.9976,
+      "norm_ratio": 1.0058,
+      "snr": 14.451,
+      "delta_norm": 0.3526,
+      "noise_norm": 0.0244,
+      "windows": 2,
+      "blocks_per_window": 32
+    },
+    {
+      "name": "blk.25.attn_output.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        4096
+      ],
+      "cos": 0.9992,
+      "norm_ratio": 1.0002,
+      "snr": 24.498,
+      "delta_norm": 0.1774,
+      "noise_norm": 0.0072,
+      "windows": 2,
+      "blocks_per_window": 32
+    },
+    {
+      "name": "blk.25.ffn_down.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        9728
+      ],
+      "cos": 0.9986,
+      "norm_ratio": 1.0025,
+      "snr": 18.552,
+      "delta_norm": 0.242,
+      "noise_norm": 0.013,
+      "windows": 2,
+      "blocks_per_window": 32
+    },
+    {
+      "name": "blk.35.attn_output.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        4096
+      ],
+      "cos": 0.9993,
+      "norm_ratio": 1.0022,
+      "snr": 27.523,
+      "delta_norm": 0.3535,
+      "noise_norm": 0.0128,
+      "windows": 2,
+      "blocks_per_window": 32
+    },
+    {
+      "name": "blk.35.ffn_down.weight",
+      "qtype": "Q8_0",
+      "shape": [
+        2560,
+        9728
+      ],
+      "cos": 0.998,
+      "norm_ratio": 1.0054,
+      "snr": 15.661,
+      "delta_norm": 0.3346,
+      "noise_norm": 0.0214,
+      "windows": 2,
+      "blocks_per_window": 32
+    }
+  ],
+  "codec_simulation": {
+    "sampled": 6,
+    "min_cos": 0.9976,
+    "mean_cos": 0.9986,
+    "min_snr": 14.451
+  },
+  "delivered": {
+    "sampled": 6,
+    "min_cos": 0.9905,
+    "mean_cos": 0.9934
+  },
+  "delivered_tensors": [
+    {
+      "name": "blk.15.attn_output.weight",
+      "cos": 0.9926,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0065,
+      "snr": 7.891
+    },
+    {
+      "name": "blk.15.ffn_down.weight",
+      "cos": 0.9945,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0064,
+      "snr": 8.338
+    },
+    {
+      "name": "blk.25.attn_output.weight",
+      "cos": 0.9905,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0083,
+      "snr": 7.013
+    },
+    {
+      "name": "blk.25.ffn_down.weight",
+      "cos": 0.9911,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0085,
+      "snr": 6.938
+    },
+    {
+      "name": "blk.35.attn_output.weight",
+      "cos": 0.9971,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0032,
+      "snr": 12.045
+    },
+    {
+      "name": "blk.35.ffn_down.weight",
+      "cos": 0.9945,
+      "source_type": "Q8_0",
+      "edited_type": "Q8_0",
+      "norm_ratio": 1.0064,
+      "snr": 8.356
+    }
+  ],
+  "sampled": 6,
+  "min_cos": 0.9905,
+  "mean_cos": 0.9934,
+  "min_snr": 14.451,
+  "note": "min_cos/mean_cos are the DELIVERED reading (stored change vs intended projection on the served bytes); codec_simulation is the same question asked of the Q8_0 codec alone. A low cos means the codec, not the axis, decides what ships",
+  "scope": "realized codec fidelity of the refit arm artifact: every sampled edited tensor is compared between the pristine base and the shipped Q8_0 arm at the certified scale. It measures what the file stores, not the behavioural effect of the edit"
+}

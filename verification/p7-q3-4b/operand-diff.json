@@ -1,0 +1,321 @@
+{
+ "after": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf",
+ "before": "/mnt/ssd/hermes/models/q3-4b-base-q8.gguf",
+ "command": "uv run jdewitt gguf-tensor-diff <base> <arm> (CPU, no model)",
+ "differing_tensors": [
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.35.attn_output.weight",
+   "rel_rms": 0.060415,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.16.ffn_down.weight",
+   "rel_rms": 0.048615,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.17.attn_output.weight",
+   "rel_rms": 0.047127,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.16.attn_output.weight",
+   "rel_rms": 0.044809,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.17.ffn_down.weight",
+   "rel_rms": 0.044722,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.18.attn_output.weight",
+   "rel_rms": 0.04376,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.18.ffn_down.weight",
+   "rel_rms": 0.043686,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.19.ffn_down.weight",
+   "rel_rms": 0.043237,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.35.ffn_down.weight",
+   "rel_rms": 0.043098,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.15.ffn_down.weight",
+   "rel_rms": 0.042912,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.22.attn_output.weight",
+   "rel_rms": 0.042839,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.20.attn_output.weight",
+   "rel_rms": 0.042798,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.24.attn_output.weight",
+   "rel_rms": 0.042342,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.19.attn_output.weight",
+   "rel_rms": 0.042307,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.34.ffn_down.weight",
+   "rel_rms": 0.042119,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.34.attn_output.weight",
+   "rel_rms": 0.041048,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.22.ffn_down.weight",
+   "rel_rms": 0.039549,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.30.attn_output.weight",
+   "rel_rms": 0.038984,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.32.attn_output.weight",
+   "rel_rms": 0.038971,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.20.ffn_down.weight",
+   "rel_rms": 0.038682,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.15.attn_output.weight",
+   "rel_rms": 0.038453,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.23.attn_output.weight",
+   "rel_rms": 0.03792,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.21.ffn_down.weight",
+   "rel_rms": 0.037698,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.21.attn_output.weight",
+   "rel_rms": 0.037138,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.23.ffn_down.weight",
+   "rel_rms": 0.036861,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.33.attn_output.weight",
+   "rel_rms": 0.036682,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.24.ffn_down.weight",
+   "rel_rms": 0.035806,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.28.attn_output.weight",
+   "rel_rms": 0.035712,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.31.attn_output.weight",
+   "rel_rms": 0.035487,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.26.attn_output.weight",
+   "rel_rms": 0.035469,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.27.attn_output.weight",
+   "rel_rms": 0.035004,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.25.ffn_down.weight",
+   "rel_rms": 0.034434,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.25.attn_output.weight",
+   "rel_rms": 0.034303,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.29.attn_output.weight",
+   "rel_rms": 0.033606,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.30.ffn_down.weight",
+   "rel_rms": 0.032953,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.26.ffn_down.weight",
+   "rel_rms": 0.032728,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.28.ffn_down.weight",
+   "rel_rms": 0.032726,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.33.ffn_down.weight",
+   "rel_rms": 0.032593,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.31.ffn_down.weight",
+   "rel_rms": 0.032308,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.29.ffn_down.weight",
+   "rel_rms": 0.032162,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.27.ffn_down.weight",
+   "rel_rms": 0.031837,
+   "same_dtype": true
+  },
+  {
+   "dtype_after": "Q8_0",
+   "dtype_before": "Q8_0",
+   "name": "blk.32.ffn_down.weight",
+   "rel_rms": 0.03095,
+   "same_dtype": true
+  }
+ ],
+ "note": "the arm differs from the base in exactly the 42 tensors the refit recipe names (blk.15-35 x attn_output + ffn_down), same Q8_0 dtype, no tensor added or dropped, 356 of 398 tensors bit-identical. rel_rms 3.1-6.0% per edited tensor is the realized edit magnitude; it is a property of the REFIT axis, not of the banked plan.",
+ "only_in_after": [],
+ "only_in_before": [],
+ "rel_rms": {
+  "max": 0.060415,
+  "median": 0.038453,
+  "min": 0.03095,
+  "n": 42
+ },
+ "schema": "jdewitt.p7-operand-diff/1",
+ "summary": {
+  "bit_identical": 356,
+  "codec_unsupported": 0,
+  "packed_size_changed": 0,
+  "port_decoded": 0,
+  "shape_changed": 0,
+  "shared": 398,
+  "value_differs": 42
+ },
+ "tensor_count": 398
+}
