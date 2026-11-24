@@ -2,9 +2,9 @@
 
 One row per registered lineage, bound to its artifact, its serve argv and one command that recomputes it. The losses and the cells with no packet are in this file too: a roadmap that lists only wins is marketing, and this repository treats marketing as a bug.
 
-Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `f679e5508fdba2bd076661a4e96f682d1e836cb8c8f0f5acb07495c37679384c`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
+Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `1fc058e58f4d523db626d32bc5a6644372cd8bd294257b30205e4b3e41ba9dc2`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
 
-`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 1    UNMEASURED: 4    invalid: 0    failed: 0    distinct model types certified: 0
+`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 1    UNMEASURED: 3    invalid: 0    failed: 1    distinct model types certified: 0
 
 Pinned serve config: ctx 4096 / parallel 4 / cap 1024. A row served outside it is `certified_at_other_config`, not a pass.
 
@@ -22,7 +22,7 @@ uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.j
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | inkling-2-mini | Inkling-2-Mini | b85c3cfa615fc413cc9af3379f491b963f3b586a | IQ4_NL | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json` |
 | minicpm-v47 | openbmb/MiniCPM-V-4.7-1B | 286817f1132b998913a129a221c89b4402b4ab80 | Q4_K_M | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json` |
-| qwen25-1.5b | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | BF16 | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/qwen25-1.5b/spec.json --out verification/releases/qwen25-1.5b/packet.json` |
+| qwen25-1.5b | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | Q8_0 | failed(removal) | 25/40 / 25/40 | 87/120 / 84/120 | 11/180 (p 0.0001) | 0/59 (p 0.0001) | `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json` |
 | qwen3-4b | Qwen/Qwen3-4B-Instruct-2507 | cdbee75f17c0 | Q8_0 | certified_at_other_config | 40/40 / 40/40 | 120/120 / 120/120 | 148/179 (p 0.0078) | 15/61 (p 0.4023) | `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json` |
 | spark-1.7b | Spark-X2.6-1.7B | 0e60633b345b19ba9f56ed1fda197acd271e8546 | Q4_K_M | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
 
@@ -52,16 +52,25 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - status detail: no packet at verification/releases/minicpm-v47/packet.json
 - recompute (one command): `uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json`
 
-### qwen25-1.5b — UNMEASURED
+### qwen25-1.5b — failed(removal)
 
 - model: `Qwen/Qwen2.5-1.5B-Instruct` @ `989aa7980e4cf806f80c7fef2b1adb7bc71aa306`
-- quant: BF16
-- artifact sha256: not recorded in-clone (no merged artifact registered)
-- serve argv: not recorded (no measured packet)
-- gap: no merged quant artifact registered: the base bytes are not an edit
-- gap: verification/releases/qwen25-1.5b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row
-- status detail: no packet at verification/releases/qwen25-1.5b/packet.json
-- recompute (one command): `uv run jdewitt release-certify --spec verification/releases/qwen25-1.5b/spec.json --out verification/releases/qwen25-1.5b/packet.json`
+- quant: Q8_0
+- artifact sha256: `584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b`
+- serve argv (head-to-head, same config on both sides):
+  - removal: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+  - held_out: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+  - retention: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+- removal harmful-40 (shipped / wide): 25/40 / 25/40
+- removal held-out 120 (shipped / wide): 87/120 / 84/120
+- shape verdicts: declines_flatly 29, hedged_outline 7, other 101, pivot_no_procedure 2, procedural_no_decline 5, refusal_with_opener 16
+- retention strict maths: 11/180 after (52 before); delta -0.2278; Cohen's h -0.6353; paired p 0.0001; median answer 3 chars vs base 3 (reference 3)
+- retention strict code: 0/59 after (43 before); delta -0.7288; Cohen's h -2.0461; paired p 0.0001; median answer 450 chars vs base 1385 (reference 1253)
+- held-out families: 120
+- drift: control 0.44553 ln ppl in budget 0.02 (inside: false)
+- realized fidelity: min cos 0.9909, mean 0.9958 over 56 sampled tensors (arm_measurement: true)
+- status detail: removed 25, the registered floor is 40; reported as a failure, never rounded up to a pass
+- recompute (one command): `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json`
 
 ### qwen3-4b — certified_at_other_config
 
@@ -107,6 +116,14 @@ The measured losses come first, printed before any win. Each is the row's own re
     strict 15/61 after (20 before); delta -0.082; Cohen's h -0.1816; paired p 0.4023; median answer 1292 chars vs base 1567 (reference 1534); length collapse flag: false
     source: packet `verification/releases/qwen3-4b-f15s15-l935/packet.json`
     recompute: `uv run jdewitt release-certify --spec verification/releases/qwen3-4b-f15s15-l935/spec.json --out verification/releases/qwen3-4b-f15s15-l935/packet.json`
+- **qwen25-1.5b  maths 52 -> 11    reference 52 -> 45    more loss than the reference (41 vs 7); paired p 0.0001**
+    strict 11/180 after (52 before); delta -0.2278; Cohen's h -0.6353; paired p 0.0001; median answer 3 chars vs base 3 (reference 3); length collapse flag: false
+    source: packet `verification/p7-q25-15b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json`
+- **qwen25-1.5b  code 43 -> 0    reference 43 -> 39    more loss than the reference (43 vs 4); paired p 0.0001**
+    strict 0/59 after (43 before); delta -0.7288; Cohen's h -2.0461; paired p 0.0001; median answer 450 chars vs base 1385 (reference 1253); length collapse flag: false
+    source: packet `verification/p7-q25-15b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json`
 
 ### Retracted
 
@@ -155,7 +172,6 @@ Every lineage cell with no packet is listed here and excluded from the claims co
 | --- | --- | --- | --- |
 | inkling-2-mini | yes | no packet at verification/releases/inkling-2-mini/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/inkling-2-mini/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json` |
 | minicpm-v47 | yes | no packet at verification/releases/minicpm-v47/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/minicpm-v47/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json` |
-| qwen25-1.5b | yes | no packet at verification/releases/qwen25-1.5b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/qwen25-1.5b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/qwen25-1.5b/spec.json --out verification/releases/qwen25-1.5b/packet.json` |
 | spark-1.7b | yes | no packet at verification/releases/spark-1.7b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/spark-1.7b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
 | gemma4-31b | no (spare) | no packet at verification/releases/gemma4-31b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/gemma4-31b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/gemma4-31b/spec.json --out verification/releases/gemma4-31b/packet.json` |
 | qwen38-27b | no (spare) | no packet at verification/releases/qwen38-27b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/qwen38-27b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/qwen38-27b/spec.json --out verification/releases/qwen38-27b/packet.json` |

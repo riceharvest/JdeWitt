@@ -1,0 +1,726 @@
+{
+  "schema_version": 1,
+  "kind": "release-packet",
+  "lineage": "qwen25-1.5b",
+  "arm": {
+    "label": "refit-sas15",
+    "refit": true,
+    "edited_tensors": 56,
+    "edited_tensor_footprint": "blk.0-27 x {attn_output.weight, ffn_down.weight} (28 layers x 2 writeback projections)",
+    "chosen_type": "Q8_0",
+    "scale": 1.5,
+    "byte_cost": 1646572800,
+    "byte_cost_source": "the shipped arm file itself (operands.json), not a cost model",
+    "note": "REFIT of the shared axis from a CPU capture of the base, merged into the base Q8_0 bytes at scale 1.5. The original q25-v4-dir000.gguf adapter is not on this box; this artifact is not that adapter and must never be labelled SAS@1.5.",
+    "realized_cos": 0.9909,
+    "realized_cos_kind": "arm-preview",
+    "realized_cos_source_artifact_sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b"
+  },
+  "artifact_sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+  "artifact_sha256_prefix_16": "584ec48f9a05a9f3",
+  "artifact_sha256_complete": true,
+  "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a",
+  "artifact_bytes": 1646572800,
+  "base_sha256": "5bfdb201668c8f41e99c2dc20577839c5c3115458986f13ed4cf7e1a8d4c2c5d",
+  "base_sha256_prefix_16": "5bfdb201668c8f41",
+  "base_sha256_complete": true,
+  "removal": {
+    "harmful40": {
+      "inventories": {
+        "shipped": {
+          "removed": 25,
+          "total": 40,
+          "n_m": "25/40",
+          "rate": 0.625,
+          "wilson_lower": 0.4703,
+          "inventory": "shipped",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 25,
+          "total": 40,
+          "n_m": "25/40",
+          "rate": 0.625,
+          "wilson_lower": 0.4703,
+          "inventory": "wide",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      },
+      "families": 20
+    },
+    "held_out_120": {
+      "inventories": {
+        "shipped": {
+          "removed": 87,
+          "total": 120,
+          "n_m": "87/120",
+          "rate": 0.725,
+          "wilson_lower": 0.6391,
+          "inventory": "shipped",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 84,
+          "total": 120,
+          "n_m": "84/120",
+          "rate": 0.7,
+          "wilson_lower": 0.6128,
+          "inventory": "wide",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      },
+      "families": 120,
+      "competitor": {
+        "label": "published build (josiefied-q25-v1, Q8_0)",
+        "wave": "verification/p7-q25-15b/waves/heldout120-published",
+        "inventories": {
+          "shipped": {
+            "removed": 105,
+            "total": 105,
+            "n_m": "105/105",
+            "rate": 1.0,
+            "wilson_lower": 0.9647,
+            "inventory": "shipped",
+            "graded_from": "answer text with the shipped RefusalChecker",
+            "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+          },
+          "wide": {
+            "removed": 104,
+            "total": 105,
+            "n_m": "104/105",
+            "rate": 0.9905,
+            "wilson_lower": 0.948,
+            "inventory": "wide",
+            "graded_from": "answer text with the shipped RefusalChecker",
+            "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+          }
+        },
+        "mcnemar_wide": {
+          "paired": 105,
+          "a_refused": 32,
+          "b_refused": 1,
+          "refused_by_a_only": 32,
+          "refused_by_b_only": 1,
+          "discordant": 33,
+          "exact_mcnemar_p_two_sided": 0.0,
+          "method": "exact McNemar, two-sided, on the wide inventory"
+        }
+      }
+    }
+  },
+  "shape": {
+    "audits": [
+      {
+        "path": "verification/p7-q25-15b/shape-audit-removal.json",
+        "axis": "removal",
+        "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a",
+        "rows": 40,
+        "shapes": {
+          "declines_flatly": 7,
+          "other": 24,
+          "refusal_with_opener": 5,
+          "hedged_outline": 2,
+          "procedural_no_decline": 1,
+          "pivot_no_procedure": 1
+        }
+      },
+      {
+        "path": "verification/p7-q25-15b/shape-audit-heldout.json",
+        "axis": "held_out",
+        "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a",
+        "rows": 120,
+        "shapes": {
+          "declines_flatly": 22,
+          "refusal_with_opener": 11,
+          "other": 77,
+          "pivot_no_procedure": 1,
+          "hedged_outline": 5,
+          "procedural_no_decline": 4
+        }
+      }
+    ],
+    "verdict_counts": {
+      "declines_flatly": 29,
+      "other": 101,
+      "refusal_with_opener": 16,
+      "hedged_outline": 7,
+      "procedural_no_decline": 5,
+      "pivot_no_procedure": 2
+    },
+    "artifact_identity_digest": "ce518e20517885fcbfa97e539cfc6c2e4b1d957ce08dd04dcd1615ef4f40a16a"
+  },
+  "retention": {
+    "math": {
+      "strict": {
+        "before": 52,
+        "after": 11,
+        "paired_rows": 180,
+        "before_rate": 0.2889,
+        "after_rate": 0.0611,
+        "delta": -0.2278,
+        "all_rows": {
+          "before": "52/180",
+          "after": "11/180"
+        }
+      },
+      "cohens_h": -0.6353,
+      "paired_sign_flip_p_two_sided": 0.0001,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 2,
+      "broke": 43,
+      "median_answer_chars": 3,
+      "base_median_answer_chars": 3,
+      "length_ratio": 1.0,
+      "length_collapse_flag": false
+    },
+    "code": {
+      "strict": {
+        "before": 43,
+        "after": 0,
+        "paired_rows": 59,
+        "before_rate": 0.7288,
+        "after_rate": 0.0,
+        "delta": -0.7288,
+        "all_rows": {
+          "before": "43/61",
+          "after": "0/59"
+        }
+      },
+      "cohens_h": -2.0461,
+      "paired_sign_flip_p_two_sided": 0.0001,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 0,
+      "broke": 43,
+      "median_answer_chars": 450,
+      "base_median_answer_chars": 1385,
+      "length_ratio": 0.3249,
+      "length_collapse_flag": false
+    }
+  },
+  "held_out_families": 120,
+  "drift": {
+    "control_delta_ln_ppl": 0.44553,
+    "budget": 0.02,
+    "inside_budget": false,
+    "instrument": "llama-perplexity, ctx 512, 16 threads, ngl 0",
+    "source": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/p7-q25-15b/drift.json"
+  },
+  "realized_fidelity": {
+    "min_cos": 0.9909,
+    "mean_cos": 0.9958,
+    "sampled": 56,
+    "chosen_type": "Q8_0",
+    "arm_measurement": true,
+    "artifact_sha256": "584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b",
+    "scope": "the served artifact itself: the refit axis merged into base-q8.gguf at scale 1.5, 56 edited tensors (o_proj + down_proj), every layer that carries a residual-write projection",
+    "tensors": [
+      {
+        "name": "blk.0.attn_output.weight",
+        "cos": 0.9963,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0034,
+        "snr": 11.483
+      },
+      {
+        "name": "blk.0.ffn_down.weight",
+        "cos": 0.9946,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0049,
+        "snr": 9.289
+      },
+      {
+        "name": "blk.1.attn_output.weight",
+        "cos": 0.9963,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0033,
+        "snr": 11.571
+      },
+      {
+        "name": "blk.1.ffn_down.weight",
+        "cos": 0.9949,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0047,
+        "snr": 9.549
+      },
+      {
+        "name": "blk.2.attn_output.weight",
+        "cos": 0.9965,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0032,
+        "snr": 11.792
+      },
+      {
+        "name": "blk.2.ffn_down.weight",
+        "cos": 0.9947,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0049,
+        "snr": 9.362
+      },
+      {
+        "name": "blk.3.attn_output.weight",
+        "cos": 0.9963,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0033,
+        "snr": 11.578
+      },
+      {
+        "name": "blk.3.ffn_down.weight",
+        "cos": 0.9951,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0046,
+        "snr": 9.658
+      },
+      {
+        "name": "blk.4.attn_output.weight",
+        "cos": 0.9961,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0035,
+        "snr": 11.29
+      },
+      {
+        "name": "blk.4.ffn_down.weight",
+        "cos": 0.9953,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0044,
+        "snr": 9.876
+      },
+      {
+        "name": "blk.5.attn_output.weight",
+        "cos": 0.997,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.729
+      },
+      {
+        "name": "blk.5.ffn_down.weight",
+        "cos": 0.9946,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0049,
+        "snr": 9.259
+      },
+      {
+        "name": "blk.6.attn_output.weight",
+        "cos": 0.997,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.747
+      },
+      {
+        "name": "blk.6.ffn_down.weight",
+        "cos": 0.9947,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0049,
+        "snr": 9.355
+      },
+      {
+        "name": "blk.7.attn_output.weight",
+        "cos": 0.9963,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0033,
+        "snr": 11.484
+      },
+      {
+        "name": "blk.7.ffn_down.weight",
+        "cos": 0.9949,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0048,
+        "snr": 9.489
+      },
+      {
+        "name": "blk.8.attn_output.weight",
+        "cos": 0.9949,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0044,
+        "snr": 9.854
+      },
+      {
+        "name": "blk.8.ffn_down.weight",
+        "cos": 0.9962,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0037,
+        "snr": 10.898
+      },
+      {
+        "name": "blk.9.attn_output.weight",
+        "cos": 0.9961,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0034,
+        "snr": 11.231
+      },
+      {
+        "name": "blk.9.ffn_down.weight",
+        "cos": 0.9971,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.003,
+        "snr": 12.264
+      },
+      {
+        "name": "blk.10.attn_output.weight",
+        "cos": 0.9967,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.264
+      },
+      {
+        "name": "blk.10.ffn_down.weight",
+        "cos": 0.9974,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0028,
+        "snr": 12.909
+      },
+      {
+        "name": "blk.11.attn_output.weight",
+        "cos": 0.9973,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0022,
+        "snr": 13.432
+      },
+      {
+        "name": "blk.11.ffn_down.weight",
+        "cos": 0.9973,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.77
+      },
+      {
+        "name": "blk.12.attn_output.weight",
+        "cos": 0.9967,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.003,
+        "snr": 12.15
+      },
+      {
+        "name": "blk.12.ffn_down.weight",
+        "cos": 0.9969,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0032,
+        "snr": 11.959
+      },
+      {
+        "name": "blk.13.attn_output.weight",
+        "cos": 0.9966,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0029,
+        "snr": 11.982
+      },
+      {
+        "name": "blk.13.ffn_down.weight",
+        "cos": 0.9968,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0032,
+        "snr": 11.872
+      },
+      {
+        "name": "blk.14.attn_output.weight",
+        "cos": 0.9963,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0031,
+        "snr": 11.537
+      },
+      {
+        "name": "blk.14.ffn_down.weight",
+        "cos": 0.9968,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0031,
+        "snr": 11.848
+      },
+      {
+        "name": "blk.15.attn_output.weight",
+        "cos": 0.9968,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.303
+      },
+      {
+        "name": "blk.15.ffn_down.weight",
+        "cos": 0.9974,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0028,
+        "snr": 12.922
+      },
+      {
+        "name": "blk.16.attn_output.weight",
+        "cos": 0.9975,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0023,
+        "snr": 13.961
+      },
+      {
+        "name": "blk.16.ffn_down.weight",
+        "cos": 0.9969,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0031,
+        "snr": 11.913
+      },
+      {
+        "name": "blk.17.attn_output.weight",
+        "cos": 0.9967,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0028,
+        "snr": 12.216
+      },
+      {
+        "name": "blk.17.ffn_down.weight",
+        "cos": 0.9956,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0042,
+        "snr": 10.217
+      },
+      {
+        "name": "blk.18.attn_output.weight",
+        "cos": 0.9962,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0031,
+        "snr": 11.328
+      },
+      {
+        "name": "blk.18.ffn_down.weight",
+        "cos": 0.9947,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0049,
+        "snr": 9.365
+      },
+      {
+        "name": "blk.19.attn_output.weight",
+        "cos": 0.9967,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0027,
+        "snr": 12.122
+      },
+      {
+        "name": "blk.19.ffn_down.weight",
+        "cos": 0.9948,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0048,
+        "snr": 9.476
+      },
+      {
+        "name": "blk.20.attn_output.weight",
+        "cos": 0.9974,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0022,
+        "snr": 13.641
+      },
+      {
+        "name": "blk.20.ffn_down.weight",
+        "cos": 0.9939,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0053,
+        "snr": 8.746
+      },
+      {
+        "name": "blk.21.attn_output.weight",
+        "cos": 0.9957,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0038,
+        "snr": 10.657
+      },
+      {
+        "name": "blk.21.ffn_down.weight",
+        "cos": 0.9935,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0057,
+        "snr": 8.491
+      },
+      {
+        "name": "blk.22.attn_output.weight",
+        "cos": 0.9956,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0039,
+        "snr": 10.552
+      },
+      {
+        "name": "blk.22.ffn_down.weight",
+        "cos": 0.9934,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0058,
+        "snr": 8.422
+      },
+      {
+        "name": "blk.23.attn_output.weight",
+        "cos": 0.9968,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.003,
+        "snr": 12.327
+      },
+      {
+        "name": "blk.23.ffn_down.weight",
+        "cos": 0.993,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.006,
+        "snr": 8.184
+      },
+      {
+        "name": "blk.24.attn_output.weight",
+        "cos": 0.9957,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0037,
+        "snr": 10.649
+      },
+      {
+        "name": "blk.24.ffn_down.weight",
+        "cos": 0.9921,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0065,
+        "snr": 7.732
+      },
+      {
+        "name": "blk.25.attn_output.weight",
+        "cos": 0.9974,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0024,
+        "snr": 13.804
+      },
+      {
+        "name": "blk.25.ffn_down.weight",
+        "cos": 0.9909,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0072,
+        "snr": 7.227
+      },
+      {
+        "name": "blk.26.attn_output.weight",
+        "cos": 0.9977,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.002,
+        "snr": 14.674
+      },
+      {
+        "name": "blk.26.ffn_down.weight",
+        "cos": 0.9913,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.007,
+        "snr": 7.359
+      },
+      {
+        "name": "blk.27.attn_output.weight",
+        "cos": 0.9978,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0021,
+        "snr": 14.837
+      },
+      {
+        "name": "blk.27.ffn_down.weight",
+        "cos": 0.9954,
+        "source_type": "Q8_0",
+        "edited_type": "Q8_0",
+        "norm_ratio": 1.0045,
+        "snr": 9.99
+      }
+    ]
+  },
+  "configs": {
+    "removal": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+    "retention": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+    "held_out": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+  },
+  "measured_axes": {
+    "removal": {
+      "rows": 40,
+      "cap": 4096,
+      "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/p7-q25-15b/suites/harmful-40.jsonl",
+      "serve_config": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+    },
+    "retention": {
+      "rows": 241,
+      "cap": 1024,
+      "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/capability/capability-run-en.jsonl",
+      "serve_config": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+    },
+    "held_out": {
+      "rows": 120,
+      "cap": 4096,
+      "suite": "/home/dario/.agentboard/worktrees/t_04cc2981/verification/screens/q3-holdout-wider.jsonl",
+      "serve_config": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141"
+    }
+  },
+  "suites": {
+    "removal": {
+      "path": "verification/p7-q25-15b/suites/harmful-40.jsonl",
+      "in_clone": true
+    },
+    "held_out": {
+      "path": "verification/screens/q3-holdout-wider.jsonl",
+      "in_clone": true
+    },
+    "retention": {
+      "path": "verification/capability/capability-run-en.jsonl",
+      "in_clone": true
+    }
+  },
+  "pinned_cert_argv": "-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141",
+  "pinned_cert": {
+    "ctx": 4096,
+    "parallel": 4,
+    "artifact": "/mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf"
+  },
+  "pinned_cert_match": {
+    "removal": true,
+    "retention": true,
+    "held_out": true
+  },
+  "measured": true,
+  "disagreements": [],
+  "evidence_gaps": [],
+  "next_command": "uv run jdewitt verify-artifact verification/p7-q25-15b/packet.json --name packet.json",
+  "note": "One arm, both axes, one serve config per axis, read from saved waves only. Removal is wording removal under BOTH inventories and is not a delivery claim (R6): the shape verdicts sit beside it. A false pinned_cert_match is the honest state of a wave taken outside the pinned cert config (R9), not a bug."
+}
