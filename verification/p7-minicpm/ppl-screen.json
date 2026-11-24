@@ -1,0 +1,55 @@
+{
+ "artifacts": {
+  "base": {
+   "control": {
+    "ln_ppl": 0.2513,
+    "ppl": 1.2857,
+    "seconds": 12.2,
+    "uncertainty": 0.0221
+   },
+   "delivery": {
+    "ln_ppl": 2.1083,
+    "ppl": 8.234,
+    "seconds": 4.1,
+    "uncertainty": 0.66989
+   },
+   "refusal": {
+    "ln_ppl": 1.8002,
+    "ppl": 6.0508,
+    "seconds": 2.4,
+    "uncertainty": 0.6977
+   }
+  },
+  "refit-perlayer-s1.0": {
+   "BR": -0.0575,
+   "control": {
+    "ln_ppl": 0.2607,
+    "ppl": 1.2979,
+    "seconds": 12.1,
+    "uncertainty": 0.02393
+   },
+   "delivery": {
+    "ln_ppl": 2.1807,
+    "ppl": 8.8526,
+    "seconds": 4.1,
+    "uncertainty": 0.73353
+   },
+   "delta_BR": 0.2506,
+   "delta_R": 0.323,
+   "delta_control": 0.0094,
+   "refusal": {
+    "ln_ppl": 2.1232,
+    "ppl": 8.3576,
+    "seconds": 2.8,
+    "uncertainty": 1.01442
+   }
+  }
+ },
+ "reference": "base",
+ "runner": {
+  "binary": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+  "ctx": 512,
+  "threads": 16
+ },
+ "scope": "branch-prediction screen from prefill only; NO tokens generated; a BR shift is a preference shift, not a delivery claim \u2014 the R2 agent read still certifies removal. Corpora built by build_ppl_probe.py (D side hand-read only)."
+}

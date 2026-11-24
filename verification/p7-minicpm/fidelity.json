@@ -1,0 +1,503 @@
+{
+ "arm_measurement": true,
+ "artifact_bytes": 672004000,
+ "artifact_sha256": "de4d61b3552a99aecab9f90e8198d2d07f445f872f3f47d1e426761572ae27ef",
+ "codec_event": true,
+ "label": "refit-perlayer-s1.0",
+ "lineage": "minicpm-v47",
+ "max_cos": 0.9587,
+ "mean_cos": 0.7421,
+ "measured": true,
+ "method": "ggufio.compare_edit over the residual-write tensors the merge discovered: full-tensor decode of base and merged bytes, cosine between the intended and the stored delta",
+ "min_cos": 0.4149,
+ "min_edit_cos_floor": 0.9,
+ "min_snr": 0.981,
+ "note": "a tensor below the floor cannot hold this edit; that is a codec event, labelled as one, not a reason to raise the scale",
+ "sampled": 48,
+ "scale": 1.0,
+ "schema_version": 1,
+ "scope": "the merged artifact measured against its own base bytes (the file the waves served), not a codec proxy and not an adapter",
+ "source": "verification/p7-minicpm/fidelity-raw.json",
+ "tensors": [
+  {
+   "cos": 0.9535,
+   "delta_norm": null,
+   "name": "blk.0.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0282,
+   "qtype": null,
+   "shape": null,
+   "snr": 3.217
+  },
+  {
+   "cos": 0.7778,
+   "delta_norm": null,
+   "name": "blk.0.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9873,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.509
+  },
+  {
+   "cos": 0.9536,
+   "delta_norm": null,
+   "name": "blk.1.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0284,
+   "qtype": null,
+   "shape": null,
+   "snr": 3.221
+  },
+  {
+   "cos": 0.796,
+   "delta_norm": null,
+   "name": "blk.1.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0075,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.559
+  },
+  {
+   "cos": 0.9441,
+   "delta_norm": null,
+   "name": "blk.2.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0328,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.928
+  },
+  {
+   "cos": 0.7685,
+   "delta_norm": null,
+   "name": "blk.2.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0043,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.466
+  },
+  {
+   "cos": 0.7609,
+   "delta_norm": null,
+   "name": "blk.3.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9945,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.45
+  },
+  {
+   "cos": 0.7394,
+   "delta_norm": null,
+   "name": "blk.3.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9758,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.401
+  },
+  {
+   "cos": 0.7386,
+   "delta_norm": null,
+   "name": "blk.4.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9737,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.4
+  },
+  {
+   "cos": 0.784,
+   "delta_norm": null,
+   "name": "blk.4.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0076,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.515
+  },
+  {
+   "cos": 0.9529,
+   "delta_norm": null,
+   "name": "blk.5.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.03,
+   "qtype": null,
+   "shape": null,
+   "snr": 3.192
+  },
+  {
+   "cos": 0.7462,
+   "delta_norm": null,
+   "name": "blk.5.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9852,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.414
+  },
+  {
+   "cos": 0.7295,
+   "delta_norm": null,
+   "name": "blk.6.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9734,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.377
+  },
+  {
+   "cos": 0.7645,
+   "delta_norm": null,
+   "name": "blk.6.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9907,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.464
+  },
+  {
+   "cos": 0.7667,
+   "delta_norm": null,
+   "name": "blk.7.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9646,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.488
+  },
+  {
+   "cos": 0.8004,
+   "delta_norm": null,
+   "name": "blk.7.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9957,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.585
+  },
+  {
+   "cos": 0.9587,
+   "delta_norm": null,
+   "name": "blk.8.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0263,
+   "qtype": null,
+   "shape": null,
+   "snr": 3.418
+  },
+  {
+   "cos": 0.8013,
+   "delta_norm": null,
+   "name": "blk.8.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9914,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.593
+  },
+  {
+   "cos": 0.7277,
+   "delta_norm": null,
+   "name": "blk.9.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9878,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.363
+  },
+  {
+   "cos": 0.7487,
+   "delta_norm": null,
+   "name": "blk.9.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.989,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.418
+  },
+  {
+   "cos": 0.711,
+   "delta_norm": null,
+   "name": "blk.10.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.977,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.33
+  },
+  {
+   "cos": 0.7343,
+   "delta_norm": null,
+   "name": "blk.10.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9775,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.387
+  },
+  {
+   "cos": 0.6709,
+   "delta_norm": null,
+   "name": "blk.11.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9469,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.264
+  },
+  {
+   "cos": 0.9431,
+   "delta_norm": null,
+   "name": "blk.11.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0351,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.898
+  },
+  {
+   "cos": 0.6709,
+   "delta_norm": null,
+   "name": "blk.12.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9617,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.255
+  },
+  {
+   "cos": 0.684,
+   "delta_norm": null,
+   "name": "blk.12.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9701,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.276
+  },
+  {
+   "cos": 0.642,
+   "delta_norm": null,
+   "name": "blk.13.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9487,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.211
+  },
+  {
+   "cos": 0.6866,
+   "delta_norm": null,
+   "name": "blk.13.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9706,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.281
+  },
+  {
+   "cos": 0.9223,
+   "delta_norm": null,
+   "name": "blk.14.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0409,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.472
+  },
+  {
+   "cos": 0.6364,
+   "delta_norm": null,
+   "name": "blk.14.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9604,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.195
+  },
+  {
+   "cos": 0.5821,
+   "delta_norm": null,
+   "name": "blk.15.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9134,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.139
+  },
+  {
+   "cos": 0.6139,
+   "delta_norm": null,
+   "name": "blk.15.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9284,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.177
+  },
+  {
+   "cos": 0.5719,
+   "delta_norm": null,
+   "name": "blk.16.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9061,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.129
+  },
+  {
+   "cos": 0.5856,
+   "delta_norm": null,
+   "name": "blk.16.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9325,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.134
+  },
+  {
+   "cos": 0.9107,
+   "delta_norm": null,
+   "name": "blk.17.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0453,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.301
+  },
+  {
+   "cos": 0.6259,
+   "delta_norm": null,
+   "name": "blk.17.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9638,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.176
+  },
+  {
+   "cos": 0.5663,
+   "delta_norm": null,
+   "name": "blk.18.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9042,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.122
+  },
+  {
+   "cos": 0.5812,
+   "delta_norm": null,
+   "name": "blk.18.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9341,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.127
+  },
+  {
+   "cos": 0.6002,
+   "delta_norm": null,
+   "name": "blk.19.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9137,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.164
+  },
+  {
+   "cos": 0.597,
+   "delta_norm": null,
+   "name": "blk.19.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9145,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.159
+  },
+  {
+   "cos": 0.9149,
+   "delta_norm": null,
+   "name": "blk.20.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0444,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.358
+  },
+  {
+   "cos": 0.6645,
+   "delta_norm": null,
+   "name": "blk.20.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9704,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.238
+  },
+  {
+   "cos": 0.9087,
+   "delta_norm": null,
+   "name": "blk.21.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0471,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.273
+  },
+  {
+   "cos": 0.6054,
+   "delta_norm": null,
+   "name": "blk.21.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9317,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.162
+  },
+  {
+   "cos": 0.9068,
+   "delta_norm": null,
+   "name": "blk.22.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0505,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.245
+  },
+  {
+   "cos": 0.5578,
+   "delta_norm": null,
+   "name": "blk.22.ssm_out.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.9115,
+   "qtype": null,
+   "shape": null,
+   "snr": 1.108
+  },
+  {
+   "cos": 0.4149,
+   "delta_norm": null,
+   "name": "blk.23.attn_output.weight",
+   "noise_norm": null,
+   "norm_ratio": 0.8754,
+   "qtype": null,
+   "shape": null,
+   "snr": 0.981
+  },
+  {
+   "cos": 0.9006,
+   "delta_norm": null,
+   "name": "blk.23.ffn_down.weight",
+   "noise_norm": null,
+   "norm_ratio": 1.0571,
+   "qtype": null,
+   "shape": null,
+   "snr": 2.164
+  }
+ ]
+}

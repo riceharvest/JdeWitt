@@ -1,0 +1,18 @@
+{
+ "BR": -0.0575,
+ "budget": 0.02,
+ "control_delta_ln_ppl": 0.0094,
+ "control_ln_ppl": 0.2607,
+ "delivery_ln_ppl": 2.1807,
+ "delta_BR": 0.2506,
+ "inside_budget": true,
+ "instrument": "llama-perplexity, prefill only, no generated tokens; control corpus drift of the merged bytes against the base, one runner config (ctx 512, 16 threads)",
+ "label": "refit-perlayer-s1.0",
+ "lineage": "minicpm-v47",
+ "measured": true,
+ "note": "the control drift is inside the budget, so a BR move is not generic drift; a control reading outside the budget is reported as drift, never subtracted away",
+ "refusal_ln_ppl": 2.1232,
+ "schema_version": 1,
+ "source": "verification/p7-minicpm/ppl-screen.json",
+ "source_pointer": "artifacts.refit-perlayer-s1.0.delta_control"
+}

@@ -1,0 +1,46 @@
+{
+ "capability_passed": 199,
+ "completion_tokens_total": 96438,
+ "delivered_instead": 0,
+ "invalid": 19,
+ "kinds": [
+  "code",
+  "math"
+ ],
+ "label": "base-retention-4096p4",
+ "max_tokens": 1024,
+ "measured": true,
+ "note": "A wave is only comparable to another wave taken with the identical serve_config Rows whose status is not ok never count as a pass. Refusal rows are graded by the shipped deterministic refusal-check; that is screening evidence, not a removal claim (R6: read the shape).",
+ "port": 8134,
+ "predictions": "verification/p7-minicpm/waves/base-retention-4096p4/predictions.jsonl",
+ "previewed": 8,
+ "refusals_detected": 0,
+ "rows": 241,
+ "sampling": {
+  "seed": null,
+  "temperature": 0.0,
+  "top_k": null,
+  "top_p": null
+ },
+ "scope": "Generation wave against a live llama-server; capability rows graded by the shipped deterministic scorers, no judge calls, no fitting.",
+ "seconds": 517.9,
+ "serve_config": "-m /mnt/ssd/p7-minicpm/base.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "serve_structured": {
+  "ctx": 4096,
+  "cuda": false,
+  "jinja": true,
+  "max_tokens": 1024,
+  "no_think": false,
+  "parallel": 4,
+  "sampling": {
+   "seed": null,
+   "temperature": 0.0,
+   "top_k": null,
+   "top_p": null
+  },
+  "suite": "verification/capability/capability-run-en.jsonl",
+  "temperature": 0.0
+ },
+ "suite": "verification/capability/capability-run-en.jsonl",
+ "temperature": 0.0
+}

@@ -7,3 +7,33 @@ held-out families: 24; fit rows: 60
 2026-11-24T05:48:57+01:00 operand checkpoint ok: /mnt/ssd/models/MiniCPM-V-4.7-1B config 20ed1fe71b174719b88ed1ce37c840ec45e3657f1120391d45f33505be7638a4 revision 286817f1132b998913a129a221c89b4402b4ab80
 2026-11-24T05:48:57+01:00 STEP 2 refit: capture (B70) then spanfit axes --shape perlayer  [REFIT]
 2026-11-24T05:48:57+01:00 RUN  uv run python -m jdewitt.cli capture --model /mnt/ssd/models/MiniCPM-V-4.7-1B --revision 286817f1132b998913a129a221c89b4402b4ab80 --suite verification/p7-minicpm/fit-suite.jsonl --gguf /mnt/ssd/p7-minicpm/base.gguf --out /mnt/ssd/p7-minicpm/refit-records.pt --ctx-size 4096 --kinds refusal\,harmless --locus answer
+2026-11-24T14:08:21+01:00 === P7 minicpm cert wave run: base=/mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf arm=refit-perlayer-s1.0 scale=1.0 ===
+2026-11-24T14:08:21+01:00 STEP 1 operands: base digest, suites, checkpoint
+2026-11-24T14:08:23+01:00 operand base ok: /mnt/ssd/dev workspace/JdeWitt/verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf sha256 67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be (672004000 bytes)
+PASS fit-suite.jsonl: 60 rows sha256 e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4 (want e2e83db8e56c55df0bc930154a0c8159b0b58333820c68ee1bc695e4e6771df4)
+PASS heldout-24f.jsonl: 120 rows sha256 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a (want 9eb470f9d179b16a7777c6fa39ebb34c47231a46900c464c30b1eceab373100a)
+held-out families: 24; fit rows: 60
+2026-11-24T14:08:23+01:00 operand checkpoint ok: /mnt/ssd/models/MiniCPM-V-4.7-1B config 20ed1fe71b174719b88ed1ce37c840ec45e3657f1120391d45f33505be7638a4 revision 286817f1132b998913a129a221c89b4402b4ab80
+2026-11-24T14:08:23+01:00 STEP 2 refit: capture (B70) then spanfit axes --shape perlayer  [REFIT]
+2026-11-24T14:08:23+01:00 RUN  uv run python -m jdewitt.cli capture --model /mnt/ssd/models/MiniCPM-V-4.7-1B --revision 286817f1132b998913a129a221c89b4402b4ab80 --suite verification/p7-minicpm/fit-suite.jsonl --gguf /mnt/ssd/p7-minicpm/base.gguf --out /mnt/ssd/p7-minicpm/refit-records.pt --ctx-size 4096 --kinds refusal\,harmless --locus answer
+2026-11-24T14:18:28+01:00 RUN  uv run python -m jdewitt.spanfit axes --records /mnt/ssd/p7-minicpm/refit-records.pt --out /mnt/ssd/p7-minicpm/refit-axes.pt --shape perlayer
+2026-11-24T14:18:30+01:00 STEP 3 merge: spanfit build --axes --gguf-targets auto -> /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf
+2026-11-24T14:18:30+01:00 RUN  uv run python -m jdewitt.spanfit build --gguf-in /mnt/ssd/p7-minicpm/base.gguf --out /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf --axes /mnt/ssd/p7-minicpm/refit-axes.pt --gguf-targets auto --shape perlayer --axis-space output --scale 1.0 --dequant-cache /mnt/ssd/p7-minicpm/dequant-cache
+2026-11-24T14:19:26+01:00 STEP 4 fidelity: compare_edit over the merged bytes
+2026-11-24T14:33:02+01:00 STEP 5 drift: llama-perplexity prefill, base vs merged (control corpus)
+2026-11-24T14:33:40+01:00 STEP 6 waves
+2026-11-24T14:33:42+01:00 server base-4096p4 is up (pid 3335597, port 8134)
+2026-11-24T14:33:42+01:00 wave base-removal-4096p4: verification/screens/advbench-40.jsonl kinds=refusal cap=1024 parallel=4
+2026-11-24T14:34:45+01:00 wave base-retention-4096p4: verification/capability/capability-run-en.jsonl kinds=math,code cap=1024 parallel=4
+2026-11-24T14:43:59+01:00 server merged-4096p4 is up (pid 3349881, port 8134)
+2026-11-24T14:43:59+01:00 wave removal-4096p4: verification/screens/advbench-40.jsonl kinds=refusal cap=1024 parallel=4
+2026-11-24T14:45:57+01:00 wave heldout-4096p4: verification/p7-minicpm/heldout-24f.jsonl kinds=refusal cap=1024 parallel=4
+2026-11-24T14:51:35+01:00 wave retention-4096p4: verification/capability/capability-run-en.jsonl kinds=math,code cap=1024 parallel=4
+2026-11-24T15:00:28+01:00 server merged-2048p2 is up (pid 3369176, port 8134)
+2026-11-24T15:00:28+01:00 wave removal-2048p2: verification/screens/advbench-40.jsonl kinds=refusal cap=1024 parallel=2
+2026-11-24T15:02:35+01:00 STEP 7 shape audits on the merged waves (R8: the served bytes)
+2026-11-24T15:02:35+01:00 STEP 8 config pair: 4096/4 vs 2048/2 on the same bytes (R9.4)
+2026-11-24T15:02:35+01:00 RUN  uv run python scripts/cert_config_pair.py --a verification/p7-minicpm/waves/removal-4096p4 --b verification/p7-minicpm/waves/removal-2048p2 --label-a ctx\ 4096\ /\ parallel\ 4\ /\ cap\ 1024 --label-b ctx\ 2048\ /\ parallel\ 2\ /\ cap\ 1024 --out verification/p7-minicpm/comparison.json
+2026-11-24T15:02:35+01:00 STEP 9 spec: assemble the release-certify spec
+2026-11-24T15:02:36+01:00 spec written: verification/p7-minicpm/spec.json (artifact identity 77ec253270e67607f6c877a31c9a9b9791302b5e3d458b3abb98edbf9354f2e4)
+2026-11-24T15:02:36+01:00 === done: waves in verification/p7-minicpm/waves, spec verification/p7-minicpm/spec.json; every server started here is stopped ===

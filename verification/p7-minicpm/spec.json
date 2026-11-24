@@ -1,0 +1,101 @@
+{
+ "arm": {
+  "axis": "per-layer refit axes (spanfit axes --shape perlayer), output space",
+  "byte_cost": 672004000,
+  "chosen_type": "Q4_K_M",
+  "edited_tensor_footprint": "blk.0-23 x {attn_output.weight, ffn_down.weight} (48 residual-write tensors discovered by --gguf-targets auto)",
+  "edited_tensors": 48,
+  "label": "refit-perlayer-s1.0",
+  "scale": 1.0
+ },
+ "artifact": {
+  "bytes": 672004000,
+  "path": "/mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf",
+  "recipe": {
+   "base_sha256_prefix_16": "67dd31f57b31184f",
+   "command": "python -m jdewitt.spanfit build --gguf-in base.gguf --out minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf --axes refit-axes.pt --gguf-targets auto --shape perlayer --axis-space output --scale 1.0",
+   "edit": "per-layer sign-aligned refit axes (REFIT: no saved capture), output space, all 24 layers, --gguf-targets auto (attn out + ffn down), scale 1.0"
+  },
+  "sha256": "de4d61b3552a99aecab9f90e8198d2d07f445f872f3f47d1e426761572ae27ef",
+  "sha256_prefix_16": "de4d61b3552a99ae"
+ },
+ "artifact_identity_digest": "77ec253270e67607f6c877a31c9a9b9791302b5e3d458b3abb98edbf9354f2e4",
+ "base": {
+  "bytes": 672004000,
+  "path": "/mnt/ssd/p7-minicpm/base.gguf",
+  "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+  "sha256_prefix_16": "67dd31f57b31184f"
+ },
+ "caps": {
+  "held_out": 1024,
+  "removal": 1024,
+  "retention": 1024
+ },
+ "configs": {
+  "held_out": {
+   "argv": "-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134"
+  },
+  "removal": {
+   "argv": "-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134"
+  },
+  "retention": {
+   "argv": "-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134"
+  }
+ },
+ "inputs": {
+  "drift": "verification/p7-minicpm/drift.json",
+  "fidelity": "verification/p7-minicpm/fidelity.json",
+  "held_out": {
+   "suite": "verification/p7-minicpm/heldout-24f.jsonl",
+   "wave": "verification/p7-minicpm/waves/heldout-4096p4"
+  },
+  "removal": {
+   "suite": "verification/screens/advbench-40.jsonl",
+   "wave": "verification/p7-minicpm/waves/removal-4096p4"
+  },
+  "retention": {
+   "base_wave": "verification/p7-minicpm/waves/base-retention-4096p4",
+   "suite": "verification/capability/capability-run-en.jsonl",
+   "wave": "verification/p7-minicpm/waves/retention-4096p4"
+  },
+  "shape_audit": [
+   {
+    "artifact_identity_digest": "77ec253270e67607f6c877a31c9a9b9791302b5e3d458b3abb98edbf9354f2e4",
+    "axis": "removal",
+    "path": "verification/p7-minicpm/shape-audit-removal.json"
+   },
+   {
+    "artifact_identity_digest": "77ec253270e67607f6c877a31c9a9b9791302b5e3d458b3abb98edbf9354f2e4",
+    "axis": "held_out",
+    "path": "verification/p7-minicpm/shape-audit-heldout.json"
+   }
+  ],
+  "wording_inventory": {
+   "shipped": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472",
+   "wide": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+  }
+ },
+ "lineage": "minicpm-v47",
+ "model": {
+  "name": "openbmb/MiniCPM-V-4.7-1B",
+  "quant_type": "Q4_K_M",
+  "revision": "286817f1132b998913a129a221c89b4402b4ab80"
+ },
+ "note": "one arm, both axes, one pinned serve config per axis; the 2048/2 comparison lives in comparison.json beside this spec and is never substituted for the 4096/4 removal number (R9.4)",
+ "pinned_cert_argv": "-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134",
+ "schema_version": 1,
+ "suites": {
+  "held_out": {
+   "in_clone": true,
+   "path": "verification/p7-minicpm/heldout-24f.jsonl"
+  },
+  "removal": {
+   "in_clone": true,
+   "path": "verification/screens/advbench-40.jsonl"
+  },
+  "retention": {
+   "in_clone": true,
+   "path": "verification/capability/capability-run-en.jsonl"
+  }
+ }
+}
