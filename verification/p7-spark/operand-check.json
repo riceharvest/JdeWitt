@@ -1,0 +1,103 @@
+{
+ "checked_at": "2026-11-24T01:30:01+0100",
+ "kind": "p7-spark-operand-check",
+ "ok": true,
+ "rows": [
+  {
+   "bytes": 1107458592,
+   "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+   "required": true,
+   "role": "base_artifact",
+   "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+   "state": "ok"
+  },
+  {
+   "bytes": 3420932640,
+   "path": "/mnt/ssd/models/Spark-X2.6-1.7B-f16.gguf",
+   "required": true,
+   "role": "f16_twin",
+   "sha256": "9261f37b336443b81d2018c887ede3248cbef7d7666cdc6ca382c79264940db2",
+   "state": "ok"
+  },
+  {
+   "bytes": 18587379,
+   "path": "/mnt/ssd/dev workspace/JdeWitt/runs/p4/records.pt",
+   "required": true,
+   "role": "capture_records",
+   "sha256": "9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a",
+   "state": "ok"
+  },
+  {
+   "bytes": 7620,
+   "path": "verification/p7-spark/suites/harmful-40.jsonl",
+   "required": true,
+   "role": "removal_suite",
+   "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+   "state": "ok"
+  },
+  {
+   "bytes": 22500,
+   "path": "verification/screens/q3-holdout-wider.jsonl",
+   "required": true,
+   "role": "heldout_suite_120",
+   "sha256": "34b284f9f7521a3f19d6b9a43c4f496049a5a728f8421122aa8229473f15f182",
+   "state": "ok"
+  },
+  {
+   "bytes": 4891,
+   "path": "verification/p7-spark/suites/q3-holdout-24.jsonl",
+   "required": true,
+   "role": "heldout_suite_24",
+   "sha256": "819022aafa056b2833fddc1ebd18fe303701df6297186cc6a361b1b762a4d0ad",
+   "state": "ok"
+  },
+  {
+   "bytes": 71494,
+   "path": "verification/capability/capability-run-en.jsonl",
+   "required": true,
+   "role": "retention_suite",
+   "sha256": "b017eae019643a93fffafc9a4af8e7f631b0fe408afc855f0b69b90af028164d",
+   "state": "ok"
+  },
+  {
+   "bytes": 18862,
+   "path": "verification/ppl-probe/control.txt",
+   "required": true,
+   "role": "ppl_control",
+   "sha256": "07adf2f9f3b1d3885886b199255cd786c5c720a5f4baf11e3cdfc617712b01f7",
+   "state": "ok"
+  },
+  {
+   "bytes": 6041,
+   "path": "verification/ppl-probe/refusal.txt",
+   "required": true,
+   "role": "ppl_refusal",
+   "sha256": "3b2f97c587945b7425ccfbdf94379e700aa95c4efa4bd8dcfb0bba5003e30837",
+   "state": "ok"
+  },
+  {
+   "bytes": 10496,
+   "path": "verification/ppl-probe/delivery.txt",
+   "required": true,
+   "role": "ppl_delivery",
+   "sha256": "fe0b9b7410a1a6686e147b6e9eb1074647db2e2d8f2b272f40606e2000a9e311",
+   "state": "ok"
+  },
+  {
+   "bytes": 12576,
+   "path": "/mnt/ssd/b70-prep/llama.cpp-spark/build-vulkan/bin/llama-server",
+   "required": true,
+   "role": "serve_binary",
+   "sha256": "2379757fad637d0766b954c9f5c56a35dab98ce2f30cb0fcbe3ca2f08e51262d",
+   "state": "ok"
+  },
+  {
+   "bytes": 12528,
+   "path": "/mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity",
+   "required": true,
+   "role": "ppl_binary",
+   "sha256": "305aa437fb5257078a0b894dc03bbde34632e932da224d8e7f02f9d75ecc8876",
+   "state": "ok"
+  }
+ ]
+}

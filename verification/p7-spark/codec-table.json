@@ -1,0 +1,124 @@
+{
+ "axes": {
+  "path": "verification/p7-spark/axes-shared.pt",
+  "shape": [
+   28,
+   2048
+  ],
+  "tensor_sha256": "d1cc9af5abe233fbaf1c48c4fd60d62a1513867e0f8e146fca4fa87f07b977e8"
+ },
+ "axis_space": "output",
+ "base": {
+  "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+ },
+ "best_available_type": "F16",
+ "candidates": {
+  "f16": {
+   "clears_floor": true,
+   "mean_cos": 1.0,
+   "min_cos": 1.0,
+   "tensors": 56,
+   "worst": [
+    {
+     "cos": 1.0,
+     "name": "blk.0.attn_output.weight",
+     "snr": 147.113
+    },
+    {
+     "cos": 1.0,
+     "name": "blk.0.ffn_down.weight",
+     "snr": 174.497
+    },
+    {
+     "cos": 1.0,
+     "name": "blk.1.attn_output.weight",
+     "snr": 166.256
+    },
+    {
+     "cos": 1.0,
+     "name": "blk.1.ffn_down.weight",
+     "snr": 188.342
+    },
+    {
+     "cos": 1.0,
+     "name": "blk.2.attn_output.weight",
+     "snr": 213.394
+    }
+   ]
+  },
+  "q6_k": {
+   "clears_floor": false,
+   "mean_cos": 0.8731,
+   "min_cos": 0.8004,
+   "tensors": 56,
+   "worst": [
+    {
+     "cos": 0.8004,
+     "name": "blk.9.attn_output.weight",
+     "snr": 1.335
+    },
+    {
+     "cos": 0.8014,
+     "name": "blk.1.attn_output.weight",
+     "snr": 1.343
+    },
+    {
+     "cos": 0.8064,
+     "name": "blk.2.attn_output.weight",
+     "snr": 1.373
+    },
+    {
+     "cos": 0.8101,
+     "name": "blk.0.attn_output.weight",
+     "snr": 1.388
+    },
+    {
+     "cos": 0.8116,
+     "name": "blk.4.attn_output.weight",
+     "snr": 1.388
+    }
+   ]
+  },
+  "q8_0": {
+   "clears_floor": true,
+   "mean_cos": 0.9899,
+   "min_cos": 0.9861,
+   "tensors": 56,
+   "worst": [
+    {
+     "cos": 0.9861,
+     "name": "blk.26.ffn_down.weight",
+     "snr": 5.899
+    },
+    {
+     "cos": 0.9867,
+     "name": "blk.23.ffn_down.weight",
+     "snr": 6.043
+    },
+    {
+     "cos": 0.9868,
+     "name": "blk.24.ffn_down.weight",
+     "snr": 6.087
+    },
+    {
+     "cos": 0.9871,
+     "name": "blk.5.attn_output.weight",
+     "snr": 6.166
+    },
+    {
+     "cos": 0.9874,
+     "name": "blk.1.attn_output.weight",
+     "snr": 6.219
+    }
+   ]
+  }
+ },
+ "chosen_type": "Q8_0",
+ "floor": 0.9,
+ "kind": "p7-spark-codec-table",
+ "note": "preview_edit on the PRISTINE artifact at the chosen type: every edited tensor re-encoded through the same codec the writer uses, on two whole block windows each. Scale stays 1.0; the type is the codec-aware lever.",
+ "rule": "smallest candidate type whose worst edited tensor clears the floor; if none does, the row is failed(codec) at the measured cos values - never accepted at a raised scale",
+ "scale": 1.0,
+ "verdict": "cleared"
+}
