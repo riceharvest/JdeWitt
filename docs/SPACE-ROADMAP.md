@@ -245,6 +245,18 @@ bank's default to make it move.
 the measured class, the output card says `banked_unmeasured` and the file is still delivered — as
 an edit, not as a removal.
 
+**Measured (this board), and it is a kill.** On
+`mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF@c9e90669eeb2` `Q4_K_M` at
+`-c 4096 --parallel 4` / cap 1024 / `Vulkan0`, with the unedited fine-tune served at the same
+config in the same wave: **1/40 harmful and 20/120 held-out** deliver, against **19/40 and 63/120**
+for the unedited file (paired exact McNemar p 7.6e-06 and 2.3e-13, and every discordant pair
+favours the unedited side). Retention **157/241 vs 155/241** (p 0.89), control drift **+0.0709**
+ln ppl, delivered cos min **0.9877** over 42 tensors. The merged artifact did not refuse more by
+wording — the word screen reads 11 vs 16 refusal-shaped answers — it pivoted (19/40) and collapsed
+into repetition (13/40). Fewer refusal words, less content. Full row, per-row verdicts and the
+tokenizer gate: `verification/space/transfer-qwen3-4b.json`. `verdict: kill`; the product line
+stops here.
+
 ## 7. The loop, step by step
 
 Each step is one command or one pure function, and each emits one JSON. No step needs a model
@@ -412,6 +424,12 @@ transfer gate passes on the first one; every new entry carries its own measured 
 - **Transfer does not move refusals.** A base-fitted axis on a fine-tune's own artifact leaves the
   refusal rate where the unedited file was. Then the bank is a codec demo, not a product; say so
   and stop before widening coverage.
+  **Measured, and this one happened:** on the top-downloaded Q4_K_M fine-tune of the first base the
+  transfer gate did worse than leave the rate where it was — delivery fell from 19/40 to 1/40
+  (held-out 63/120 to 20/120) at the pinned config, with retention intact and the word screen
+  moving the other way. `verdict: kill` in `verification/space/transfer-qwen3-4b.json`. The bank's
+  premise is dead on the class it ships to; the codec/fidelity path survives, the product does not
+  (§6, measured block).
 - **The edit cannot fit 240 s on 2 vCPU and the CUDA port cannot either.** Then the free Space is a
   1.7B-and-below product, and 4B/7B — the models people actually download — are out of scope.
 - **The Spaces proxy cannot stream 3-5 GB, and a Hub push from the container is slower than the
