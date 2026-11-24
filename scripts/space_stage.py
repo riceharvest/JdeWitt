@@ -53,9 +53,11 @@ SHORT_DESCRIPTION = 'Covered GGUF edit, labelled from measurement'
 # Gradio/ZeroGPU image; the other three are the Space's own requirements. Torch is
 # not pinned in requirements.txt (the XPU pin in pyproject.toml must never reach a
 # CUDA image) but the image does carry it, and the bank-apply path needs it to load
-# the pinned plan tensor; nothing here needs transformers, llama-server or a tokenizer.
+# the pinned plan tensor; `spaces` is the ZeroGPU image's own package (it declares
+# the one @spaces.GPU function the hardware requires); nothing here needs
+# transformers, llama-server or a tokenizer.
 SPACE_REQUIREMENTS = ('gradio', 'numpy', 'gguf', 'huggingface_hub')
-IMAGE_PROVIDED = ('torch',)
+IMAGE_PROVIDED = ('torch', 'spaces')
 BANNED = (
     ('absolute path', re.compile(r'/mnt/|/home/')),
     ('board card id', re.compile(r't_[0-9a-f]{8}')),

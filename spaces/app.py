@@ -16,6 +16,7 @@ The caveat comes from the measurement state, not from this file, and it is rende
 above the download control: `PANEL_ORDER` in `space_loop` is the order used below.
 """
 import json
+import time
 
 import gradio as gr
 
@@ -69,6 +70,30 @@ def pick_base(base):
     return (base or ''), quant_update, verdict, licence_line
 
 
+# ZeroGPU boots a Space only when one `@spaces.GPU` function is declared, and the
+# free tier's cap is 120 s per call. The loop is CPU numpy end to end: it decodes,
+# projects and re-encodes 42 tensors in `bank_apply` and never touches the GPU, so a
+# job does not call the decorated function at all. That is the honest shape — the
+# alternative, wrapping the CPU edit in a GPU call because the edit "needs" a GPU,
+# queues the visitor behind a card the edit cannot use and charges the quota for
+# waiting (§4). The run record states how many GPU calls there were: none.
+GPU_CALL_SECONDS = 120
+
+try:  # the ZeroGPU image carries `spaces`; a CPU run does not
+    import spaces
+
+    @spaces.GPU(duration=GPU_CALL_SECONDS)
+    def gpu_declaration():
+        """Satisfies ZeroGPU's startup check; no job calls this function."""
+        return {'declared': True, 'requested_seconds': GPU_CALL_SECONDS}
+
+    HOSTING = ('ZeroGPU hardware; one @spaces.GPU function is declared for the '
+               'startup check and no job calls it, so a job spends 0 GPU seconds')
+except ImportError:  # local or CPU run
+    gpu_declaration = None
+    HOSTING = 'no `spaces` package: CPU-only process, a job spends 0 GPU seconds'
+
+
 def _record(result):
     """One JSON line into the Space's own log: the numbers the run card reads.
 
@@ -85,13 +110,16 @@ def start(repo, filename):
     """One job: the loop runs, the caveat and the delivered files come back."""
     if not (filename or '').strip():
         return ('Choose a .gguf file from the list first.', None, None, 'Nothing ran.')
+    print('jdewitt-live-run-start ' + json.dumps(
+        {'repo': (repo or '').strip(), 'file': filename.strip(), 'hosting': HOSTING,
+         'host': space_loop.host_probe()}, sort_keys=True, default=str), flush=True)
     result = space_loop.start_job((repo or '').strip(), None, filename.strip(),
                                   space_loop.quant_tag(filename), bank_dir=BANK)
     _record(result)
     sections = {section['id']: section for section in space_loop.panel_sections(result)}
     caveat = sections['caveat'].get('body') or ''
     status = (f"Label `{result['label']}` · {result['wall_seconds']} s · "
-              f"workspace deleted: {result['workspace_deleted']}")
+              f"{HOSTING} · workspace deleted: {result['workspace_deleted']}")
     if result['label'] == 'refused':
         return caveat, None, None, status
     return (caveat, result['files']['artifact'],
@@ -107,7 +135,10 @@ with gr.Blocks(title=TITLE) as demo:
         bases = gr.Dropdown(label='or pick a covered base',
                             choices=[(base['repo'], base['repo']) for base in BASES],
                             value=(BASES[0]['repo'] if BASES else None))
-    quant = gr.Dropdown(label='Quant file', choices=[], value=None)
+    # A visitor who pastes a file name is allowed to: the loop validates the name and
+    # the header, and a cold session has no list until `refresh` fills one.
+    quant = gr.Dropdown(label='Quant file', choices=[], value=None,
+                        allow_custom_value=True)
     licence = gr.Markdown('Licence: not read yet.')
     coverage = gr.Markdown('Coverage: not checked yet.')
     caveat = gr.Markdown(NO_CAVEAT_YET)

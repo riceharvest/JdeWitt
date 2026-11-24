@@ -762,7 +762,7 @@ def _entry_view(resolved):
 
 
 def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
-              hub=None, root=None):
+              hub=None, root=None, apply=None):
     """Run one visitor request end to end, or refuse it with one typed code.
 
     The order is the roadmap's: coverage from the header only, then the licence
@@ -770,6 +770,11 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
     package. A refusal before the download leaves the Hub with no tensor bytes
     moved. The job workspace is deleted when the deliverable exists; the four
     delivered files stay until the next job sweeps them.
+
+    `apply` is the edit itself, defaulting to the CPU `bank_apply`. The ZeroGPU
+    hosting requires one `@spaces.GPU`-decorated function, and the app passes the
+    wrapped call here so the edit — which is CPU numpy today, so the GPU waits —
+    is the call whose seconds the quota is charged for (§4).
     """
     started = time.monotonic()
     repo = str(repo or '').strip()
@@ -818,7 +823,7 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
             workspace = Path(tempfile.mkdtemp(prefix=job_id + '-', dir=workspace_root))
             try:
                 return _run_job(result, refuse, bank_path, hub, workspace,
-                                workspace_root, job_id, started)
+                                workspace_root, job_id, started, apply)
             finally:
                 shutil.rmtree(workspace, ignore_errors=True)
                 result['workspace_deleted'] = not workspace.exists()
@@ -827,7 +832,8 @@ def start_job(repo, revision=None, filename=None, quant=None, *, bank_dir=None,
         return refuse(refusal.code, refusal.message)
 
 
-def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, started):
+def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, started,
+             apply=None):
     from . import bank as bank_module
     from .bank import BankRefused
     from .errors import BankApplyRefused
@@ -922,8 +928,9 @@ def _run_job(result, refuse, bank_path, hub, workspace, workspace_root, job_id, 
     step_at = time.monotonic()
     edited = workspace / 'edited.gguf'
     from .bank_apply import bank_apply
+    runner = apply or bank_apply
     try:
-        report = bank_apply(bank_path, resolved['entry']['key'], input_path, edited)
+        report = runner(bank_path, resolved['entry']['key'], input_path, edited)
     except (BankRefused, BankApplyRefused) as error:
         _mark(steps, 'edit', step_at, detail=_error_message(error), state='refused',
               code=error.code)

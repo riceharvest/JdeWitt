@@ -88,6 +88,19 @@ def test_readme_frontmatter_names_the_sdk_and_the_app(tmp_path):
                                       for entry in document['entries']})
 
 
+def test_the_app_declares_one_gpu_function_and_no_job_calls_it():
+    """ZeroGPU needs one @spaces.GPU function; the loop is CPU and must not call it."""
+    text = (REPO / 'spaces' / 'app.py').read_text()
+    decorators = [line for line in text.splitlines()
+                  if line.strip().startswith('@spaces.GPU(')]
+    assert len(decorators) == 1
+    assert 'apply=EDIT' not in text          # no job path is routed through the GPU
+    # the declared function is never invoked: it appears only as its def and a fallback
+    others = [line.strip() for line in text.splitlines()
+              if 'gpu_declaration' in line and not line.strip().startswith('def ')]
+    assert others == ['gpu_declaration = None']
+
+
 def test_readme_models_lists_only_the_bank_bases(tmp_path, monkeypatch):
     bank = tmp_path / 'bank'
     bank.mkdir()
