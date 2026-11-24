@@ -99,6 +99,11 @@ what R9.4 wants.
    `n_m_b` beside it, never in place of it, with the boundary ids and
    `robustly_removed_a`. A row whose wide-inventory verdict flips between the two
    configs is `boundary` and is excluded from robustly-removed (R9.4).
+   Both sides are counted over shared **status-ok** rows — the same population
+   `release-certify` grades — so `n_m_a` has the packet's denominator; any row
+   dropped for status or for being on one side only is named in `excluded_rows`
+   (a truncated answer is never a removal). `scripts/cert_config_pair.py
+   --self-check` proves that with a truncated row in its fixture.
 
 ## Read this before running `release-matrix`: the registered floors are q3's, not this lineage's
 
