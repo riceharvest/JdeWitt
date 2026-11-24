@@ -579,6 +579,66 @@
       ],
       "notes": "48 table ids resolve to 48 rows of token_embd.weight (Q8_0, tied head): 1,344 of 4,254,208 blocks, 45,696 of 144,643,072 tensor bytes (0.03%), realized cos 1.0 on the edited rows, unchanged at strength 0.9 and 0.5. diff.json reports 289 of 290 tensors bit-identical (only token_embd.weight differs); revert.json reports restored_sha256 equal to original_sha256 with byte_exact true. The artifact is identified by sha256 and is not committed, so a re-run needs the file; the committed JSONs hold the measured numbers. No model, no logits, no generation: the weight side is GATED for behavioural claims, and a row edit is broader than the sequence-aware decode rule.",
       "numbers": []
+    },
+    {
+      "claim": "the fitted pair-diff delivery axis is orthogonal to the published same-base oracle axis, so a Phase 5 merge is a new axis and not the oracle edit",
+      "status": "in-clone",
+      "commands": [
+        "PYTHONPATH=. .venv/bin/python scripts/pair_axis_check.py --records verification/q3-4b-pair-mirror/records-all.pt --verdicts verification/q3-4b-pair-mirror/pairs.jsonl --oracle verification/q3-4b-oracle-control/q3oaxes135/axes.pt --out verification/p5/pair-axis-check.json"
+      ],
+      "artifacts": [
+        "verification/p5/pair-axis-check.json",
+        "verification/p5/pair-axis-check-fit-only.json",
+        "verification/p5/pair-inputs.json",
+        "verification/q3-4b-pair-mirror/pairs.jsonl",
+        "verification/q3-4b-pair-mirror/records-all.pt",
+        "verification/q3-4b-pair-mirror/records-fit.pt",
+        "verification/q3-4b-oracle-control/q3oaxes135/axes.pt",
+        "verification/q3-4b-oracle-control/q3oaxes135/wave.json"
+      ],
+      "notes": "Ten vetted pairs (5 fit-split, 5 eval-split) from 20 capture rows; mean absolute cos 0.241422 over the 27 oracle-edited layers, min absolute cos 0.109014, mean signed cos -0.079790, decision orthogonal (thresholds: >= 0.9 dead, <= 0.3 orthogonal). Fit-only n=5: mean absolute cos 0.186189, decision orthogonal. The recompute is zero-token and takes about one second. Caveat carried from the card: the corpus is 5 fit-split and 5 eval-split, not 10 fit-split, so a content claim certified on the eval rows would be partly circular; this claim is about axis geometry only. The pinned-frame capture produced no vetted delivery pair. Decimals are named here and in the command's printed output rather than in `numbers`, because the README extractor binds fractions, arrows, p-values, delivery and character counts, not bare decimals.",
+      "numbers": [
+        {
+          "text": "are 10/10 agent-read deliveries",
+          "value": "10/10",
+          "source": "verification/q3-4b-pair-mirror/pairs.jsonl",
+          "locator": "jsonl:verdict=deliver|",
+          "command": "PYTHONPATH=. .venv/bin/python scripts/pair_axis_check.py --records verification/q3-4b-pair-mirror/records-all.pt --verdicts verification/q3-4b-pair-mirror/pairs.jsonl --oracle verification/q3-4b-oracle-control/q3oaxes135/axes.pt --out verification/p5/pair-axis-check.json"
+        }
+      ]
+    },
+    {
+      "claim": "one fitted plan built as a rank-1 adapter and as a merged twin on Spark-X2.6-1.7B Q4_K_M diverges on probe rows, and the adapter is screening-only",
+      "status": "in-clone",
+      "commands": [
+        ".venv/bin/python -c \"import json; a=json.load(open('verification/p6-runtime-equivalence/spark-1.7b-q4km.json'))['agreement']; print(f\\\"{a['rows_agreeing']}/{a['rows']} agree, {a['rows_disagreeing']}/{a['rows']} disagree, merged refusals {a['verdict_counts']['merged']['refusal']}/{a['rows']}\\\")\""
+      ],
+      "artifacts": [
+        "verification/p6-runtime-equivalence/spark-1.7b-q4km.json",
+        "verification/p6-runtime-equivalence/agent-read.json",
+        "verification/p6-runtime-equivalence/README.md",
+        "verification/p6-release/README.md",
+        "verification/p6-release/adapter.json",
+        "verification/p6-release/twin-record.json",
+        "verification/p6-release/evaluation.json"
+      ],
+      "notes": "Probe-level: 4 harmful rows (one per family), 200 greedy tokens, one pinned llama-server config per arm (-c 4096 -ngl 999 --parallel 1 --device Vulkan1 --split-mode none --jinja, build 11690). Agent reads: base 4 refusals; adapter 3 hedged outlines + 1 delivery (0 refusals); merged twin 3 refusals + 1 hedged outline. adapter_delta_br 0.2523 against merged_delta_br 0.1525, ratio 0.6044 under the 0.7 floor, ranking_valid_on_this_artifact false, curve_is_not_merged_bytes true, release label screening-only adapter. The adapter curve is never quoted as the merged effect (R8). Codec-realized on the merged twin: Q4_K 27 tensors cos 0.2152/0.3689/0.4717 (min/median/max), Q6_K 9 tensors cos 0.8118/0.8487/0.8858. The four rows, the per-row agent reads and the delta_br numbers are committed in the JSON; the raw generations, server logs, the 466144-byte adapter and the 1.1 GB merged twin live outside the clone under /mnt/ssd/models/spark/p6/ named by sha256, so a fresh clone recomputes the counts and ratios from the committed record but cannot re-run the serve without those files. No removal, retention or capability claim is made.",
+      "numbers": [
+        {
+          "text": "agree on 1 of 4",
+          "value": "1/4",
+          "source": "verification/p6-runtime-equivalence/spark-1.7b-q4km.json",
+          "locator": "json:/agreement/rows_agreeing|/agreement/rows",
+          "command": ".venv/bin/python -c \"import json; a=json.load(open('verification/p6-runtime-equivalence/spark-1.7b-q4km.json'))['agreement']; print(f\\\"{a['rows_agreeing']}/{a['rows']} agree, {a['rows_disagreeing']}/{a['rows']} disagree, merged refusals {a['verdict_counts']['merged']['refusal']}/{a['rows']}\\\")\""
+        },
+        {
+          "text": "keeps 3 of 4 refusals",
+          "value": "3/4",
+          "source": "verification/p6-runtime-equivalence/spark-1.7b-q4km.json",
+          "locator": "json:/agreement/verdict_counts/merged/refusal|/agreement/rows",
+          "command": ".venv/bin/python -c \"import json; a=json.load(open('verification/p6-runtime-equivalence/spark-1.7b-q4km.json'))['agreement']; print(f\\\"{a['rows_agreeing']}/{a['rows']} agree, {a['rows_disagreeing']}/{a['rows']} disagree, merged refusals {a['verdict_counts']['merged']['refusal']}/{a['rows']}\\\")\""
+        }
+      ]
     }
   ]
 }

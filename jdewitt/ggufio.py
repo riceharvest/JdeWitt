@@ -256,7 +256,7 @@ def preview_edit(path, edits, names=None, limit=None, scale=1.0, windows=2, bloc
         flat_base = base.reshape(-1)
         flat_delta = delta.reshape(-1)
         if target_type:
-            from .quantize import canonical_type
+            from .gguf_types import canonical_type
             from .quants import CODECS as QUANT_CODECS
 
             _tb, window_els, encode, decode = QUANT_CODECS[canonical_type(target_type)]

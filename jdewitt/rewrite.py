@@ -113,7 +113,7 @@ def axis_fingerprint(edits, names=None):
             'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms}
 
 
-def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
+def rewrite_with_edits(src, out, edits, *, scale=1.0, scales=None, axis_space='output',
                        edit_type='q6_k', renormalize=False, verify_untouched=True,
                        repair='none', norm_clamp=(0.9, 1.1), claims=None):
     """Write `out`: the user's artifact, with the edited tensors re-encoded.
@@ -121,6 +121,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
     ``edits`` maps a tensor name to ``(axis, space)`` (a fitted direction) or to an
     explicit float32 delta. Tensors in that map are re-encoded at ``edit_type``;
     everything else is copied byte for byte, metadata included.
+
+    ``scales`` overrides ``scale`` per tensor name. A bank entry (§5.1) carries a
+    strength per projection kind — attention output and FFN down are not the same
+    edit — and flattening those to one number would silently over-apply one kind
+    and weaken the other, so the per-tensor values are applied where they belong
+    and recorded in the fingerprint.
 
     ``repair`` runs after the edit and before encoding: 'none' (default) changes
     nothing, 'renorm' rescales every edited row back to its pre-edit L2 norm, 'norms'
@@ -130,11 +136,12 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
 
 
     from .ggufwrite import parse_container, tensor_nbytes, write_container
-    from .quantize import canonical_type
+    from .gguf_types import canonical_type
     from .ggufio import axis_delta, decode_values
     from .quants import CODECS as QUANT_CODECS
 
     src, out = Path(src), Path(out)
+    per_tensor_scale = {} if scales is None else {str(k): float(v) for k, v in scales.items()}
     if not src.is_file():
         raise ValueError(f'{src} does not exist')
     if src.resolve() == out.resolve():
@@ -179,7 +186,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
             edit = edits[name]
             if isinstance(edit, tuple):
                 axis, space = edit
-                delta = axis_delta(axis, matrix, scale, space)
+                delta = axis_delta(axis, matrix, per_tensor_scale.get(name, scale), space)
             else:
                 delta = np.asarray(edit, dtype=np.float32).reshape(logical)
             edited = matrix + delta
@@ -246,6 +253,9 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, axis_space='output',
                    'edit_type': 'preserve' if preserve else target_name,
                    'edit_type_per_tensor': {row['name']: row['to_dtype'] for row in edited_rows},
                    'repair': repair_block}
+    if per_tensor_scale:
+        fingerprint['scale_per_tensor'] = {name: per_tensor_scale.get(name, scale)
+                                           for name in sorted(matrices)}
     # The fingerprint travels WITH the artifact: a claim nobody can check is marketing,
     # and `verify --claim` can only compare fields it can find in the file.
     import json as _json
