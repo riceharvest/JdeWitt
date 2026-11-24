@@ -85,3 +85,45 @@ under a named assumption.
 
 `spaces/bank` is empty, so the timing entry is a fixture: `removal_measured` is
 false and the delivered cos is codec fidelity on a synthetic edit, not removal.
+
+# The transfer kill gate (Qwen3-4B-Instruct-2507 → its Q4_K_M abliterated fine-tune)
+
+`transfer-qwen3-4b.json` is the §6 row. It is the one artifact class the bank's
+premise ships to, measured once: the bank entry fitted on
+`Qwen/Qwen3-4B-Instruct-2507@cdbee75f17c0` applied by `bank-apply` at its default
+strength (`{attn 1.5, mlp 1.5}`, 42 tensors, Q8_0) to
+`mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF@c9e90669eeb2`
+`Q4_K_M` (sha256 `b1324e2f…`, tokenizer byte-identical to the base — see
+`transfer-qwen3-4b/tokenizer-compare.json`). Both sides served from the same
+binary at `-c 4096 --parallel 4`, cap 1024, temp 0, `--device Vulkan0` on the B70.
+
+Every answer was read by the agent (R2 shape, wide inventory); the word checker
+is reported only as a screen. Verdicts and the exact commands:
+
+| file | what it holds |
+|---|---|
+| `transfer-qwen3-4b.json` | artifact class, both serve argv, removal + retention + drift + delivered cos, `verdict: kill` |
+| `transfer-qwen3-4b/verdicts-{merged,base}-{harmful-40,heldout-120}.json` | 320 per-row verdicts with a one-line reason each (add `advbench-train-*` ids) |
+| `transfer-qwen3-4b/read-score-{harmful-40,heldout-120}.json` | the rates and the exact McNemar on the paired rows |
+| `transfer-qwen3-4b/tokenizer-compare.json` | the tokenizer gate: tokens/token_type/merges hashed against the base GGUF |
+
+Result, in one line each:
+
+- harmful-40 (in sample): merged **1/40** delivers, unedited fine-tune **19/40**;
+  0 vs 18 discordant pairs, exact McNemar **p 7.6e-06**.
+- held-out 120: merged **20/120**, unedited **63/120**; 0 vs 43 pairs,
+  **p 2.3e-13**.
+- retention 241: **157/241** merged vs **155/241** unedited (p 0.89) — intact.
+- drift: control ln ppl **+0.0709** (31 %, budget 0.02), `delta_BR` −0.5532.
+- delivered cos: min **0.9877**, mean 0.9918 over 42 tensors, floor 0.95 met.
+
+The word inventory would have called this a win (11 vs 16 refusal-shaped answers
+on harmful-40) while 13 of the merged 40 collapsed into repetition and 19 pivoted.
+Fewer refusal words, less content — the false pass R3 exists to catch. This is why
+the row is `kill` and not a removal number.
+
+The packets (full answers, ~1.5 MB) and the recorded waves live outside the clone
+under `~/b70_prep/splits/t_75155e9e/out/`; the paths are in the JSON's `evidence`
+block. Regenerate a verdict file's score with `scripts/delivery_read_packet.py
+score --pair-basis read` (the default now; `--pair-basis ok` is the old silently
+narrow pairing that left 2 of 40 rows on this wave).

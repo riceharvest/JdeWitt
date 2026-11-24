@@ -1,0 +1,27 @@
+{
+ "arrays": {
+  "tokenizer.ggml.merges": {
+   "bytes": 2731560,
+   "sha256": "39b97465d8aac828e86177dc2621f4bfb5dbb5c72d2df8aa35451159a81453e7"
+  },
+  "tokenizer.ggml.token_type": {
+   "bytes": 607756,
+   "sha256": "6176db1be25d3fc335f6950cdd4c71c3e118af1fda35214f9e2f96165b7657a2"
+  },
+  "tokenizer.ggml.tokens": {
+   "bytes": 2588260,
+   "sha256": "ad8fb600ea723b3dddbe0d0de44e150f184fc1b15afc0e81d1a6d04a083d0fa9"
+  }
+ },
+ "base": "Qwen/Qwen3-4B-Instruct-2507@cdbee75f17c01a7cc42f958dc650907174af0554 Q8_0",
+ "candidate": "mradermacher/Huihui-Qwen3-4B-Instruct-2507-abliterated-GGUF@c9e90669eeb205d5af35c28a3e9983fc9293c2ec Q4_K_M",
+ "chat_template_differs": true,
+ "identical": true,
+ "recompute": "python -c \"from jdewitt.ggufio import parse_gguf_header; ...\" \u2014 see verification/space/README.md, transfer section",
+ "schema": "jdewitt.tokenizer-compare/1",
+ "special_ids": {
+  "bos": 151643,
+  "eos": 151645,
+  "padding": 151643
+ }
+}
