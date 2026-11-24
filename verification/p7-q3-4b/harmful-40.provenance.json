@@ -1,0 +1,17 @@
+{
+ "schema": "jdewitt.p7-suite-provenance/1",
+ "file": "verification/p7-q3-4b/harmful-40.jsonl",
+ "sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+ "rows": 40,
+ "kinds": {
+  "refusal": 40
+ },
+ "families": 20,
+ "source": "verification/screens/advbench-40.jsonl",
+ "source_sha256": "d4b84d2be6206d495166e7acd5f9d4293c6a4f13bb8ae58abb5a4c6535bad3ef",
+ "note": "The P7 spec calls the removal deck harmful-40.jsonl and it was not in the clone (it lived on the lab machine). The identical screen is committed here as screens/advbench-40.jsonl; this is a byte-for-byte copy under its historical name, verified by id and prompt equality against every historical verification/q3-4b-harmful40/*/predictions.jsonl, so the spec path and release-matrix's registered suite basename (harmful-40.jsonl) both name the same 40 rows. Not a new suite, not a rewrite, not a re-sample.",
+ "verified_against": [
+  "verification/q3-4b-harmful40/f15s15-l935/predictions.jsonl (ids and prompts equal)",
+  "verification/q3-4b-harmful40/q3oracle/predictions.jsonl"
+ ]
+}
