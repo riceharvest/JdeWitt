@@ -104,3 +104,79 @@ def test_capture_forces_the_mirror_answer_without_generating():
     assert meta["answer_source"] == "banked"
     assert model.generate_calls == 0
     assert tuple(residual.shape) == (2, 4)
+
+
+# --- model factory selection -------------------------------------------------
+
+def _factory(name, model_class):
+    class _F:
+        calls = 0
+
+        @classmethod
+        def from_pretrained(cls, source, **kwargs):
+            cls.calls += 1
+            return model_class()
+    _F.__name__ = name
+    return _F
+
+
+class _Headless(torch.nn.Module):
+    pass
+
+
+class _Generating(torch.nn.Module):
+    def generate(self):
+        return None
+
+
+def test_unmapped_vision_config_selects_image_text_factory_first():
+    import transformers
+    from jdewitt.capture import capture_factories
+    # SimpleNamespace is not a mapped config class, like minicpmv4_7 for the causal-LM factory.
+    vision = SimpleNamespace(vision_config=object(), architectures=["NoSuchClassForCapture"])
+    order = capture_factories(vision)
+    assert order[0] is transformers.AutoModelForImageTextToText
+    assert order[-1] is transformers.AutoModel
+    text = capture_factories(SimpleNamespace(architectures=[]))
+    assert text[0] is transformers.AutoModelForCausalLM
+    assert transformers.AutoModelForImageTextToText not in text
+
+
+def test_real_minicpm_and_qwen35_configs_pick_their_factories():
+    import transformers
+    from transformers import CONFIG_MAPPING
+    from jdewitt.capture import capture_factories
+    mini = CONFIG_MAPPING["minicpmv4_7"]()
+    assert capture_factories(mini)[0] is transformers.AutoModelForImageTextToText
+    qwen = CONFIG_MAPPING["qwen3_5"]()
+    assert capture_factories(qwen)[0] is transformers.AutoModelForCausalLM
+
+
+def test_architecture_class_is_a_named_attempt():
+    import transformers
+    from jdewitt.capture import capture_factories
+    cfg = SimpleNamespace(architectures=["Qwen3ForCausalLM"])
+    assert transformers.Qwen3ForCausalLM in capture_factories(cfg)
+
+
+def test_headless_class_is_never_chosen():
+    from jdewitt.capture import load_generating_model
+    headless, good = _factory("Headless", _Headless), _factory("Good", _Generating)
+    model = load_generating_model([headless, good], "src", revision=None, dtype=None,
+                                  device="cpu", trust_remote_code=False)
+    assert isinstance(model, _Generating) and headless.calls == 1
+    with pytest.raises(ValueError, match="has no generate"):
+        load_generating_model([headless], "src", revision=None, dtype=None,
+                              device="cpu", trust_remote_code=False)
+
+
+def test_load_failure_falls_through_to_next_factory():
+    from jdewitt.capture import load_generating_model
+
+    class _Broken:
+        @classmethod
+        def from_pretrained(cls, *a, **k):
+            raise KeyError("no mapping")
+    model = load_generating_model([_Broken, _factory("Good", _Generating)], "src", revision=None,
+                                  dtype=None, device="cpu", trust_remote_code=False)
+    assert isinstance(model, _Generating)

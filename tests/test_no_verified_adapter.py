@@ -139,6 +139,9 @@ def test_capture_refuses_blocks_without_writeback_names(tmp_path, monkeypatch):
         def eval(self):
             return self
 
+        def generate(self, *args, **kwargs):
+            raise AssertionError('the adapter check runs before any decoding')
+
     class Factory:
         @staticmethod
         def from_pretrained(*args, **kwargs):
