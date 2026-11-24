@@ -1,0 +1,251 @@
+{
+ "schema": "jdewitt.pair-axis-check/1",
+ "scope": "Zero-token decision: cos(pair-diff delivery axis, banked oracle axis). No model loaded, no merge spent, no completion generated.",
+ "date_utc": "2026-11-23T15:47:58Z",
+ "records": {
+  "rows": 16,
+  "labels": {
+   "bad": 9,
+   "ambiguous": 5,
+   "deliver": 2
+  },
+  "layers": 36,
+  "width": 2560,
+  "path": "verification/q3-4b-pair-mirror/records.pt",
+  "sha256": "dcc66c8193f2e47347bd8ed0ed8c884be05e30b71f1cf652c56f704a3feb531d"
+ },
+ "verdicts": {
+  "pairs": 8,
+  "by_verdict": {
+   "deliver": 8,
+   "pivot": 0,
+   "declined": 0,
+   "other": 0
+  },
+  "unread": 0,
+  "vetted": 8,
+  "n_vetted_pairs": 8,
+  "path": "verification/q3-4b-pair-mirror/pairs.jsonl",
+  "sha256": "0e37114a362f76d6703361b20aa3f11b3d592f57c756a69b47ccb62c1d7f3475"
+ },
+ "thresholds": {
+  "dead_mean_abs_cos": 0.9,
+  "orthogonal_mean_abs_cos": 0.3,
+  "min_vetted_pairs": 8
+ },
+ "oracle_arg": "verification/q3-4b-oracle-control/q3oaxes135",
+ "oracle_key_arg": null,
+ "oracle": {
+  "path": "verification/q3-4b-oracle-control/q3oaxes135/axes.pt",
+  "arg": "verification/q3-4b-oracle-control/q3oaxes135",
+  "key": "axes_attn",
+  "sha256": "0a11f457234edddceebeab99f0c94dad92f8d8166e930d3aef9a1212f5ce863d",
+  "footprint_layers": [
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35
+  ]
+ },
+ "fit": {
+  "method": "spanfit.per_layer_axes(..., pairs=True)",
+  "pairs_used": 8,
+  "rows_used": 16,
+  "layers": 36,
+  "width": 2560
+ },
+ "cos": [
+  {
+   "layer": 9,
+   "cos": 0.11155,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 10,
+   "cos": 0.117492,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 11,
+   "cos": -0.141149,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 12,
+   "cos": 0.156108,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 13,
+   "cos": -0.178021,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 14,
+   "cos": -0.206639,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 15,
+   "cos": 0.216369,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 16,
+   "cos": 0.240047,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 17,
+   "cos": 0.243071,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 18,
+   "cos": -0.250355,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 19,
+   "cos": -0.264126,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 20,
+   "cos": -0.255504,
+   "oracle_norm": 1.000001,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 21,
+   "cos": 0.241501,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 22,
+   "cos": -0.243482,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 23,
+   "cos": -0.275735,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 24,
+   "cos": 0.275297,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 25,
+   "cos": 0.29714,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 26,
+   "cos": -0.297085,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 27,
+   "cos": -0.301359,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 28,
+   "cos": -0.311936,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 29,
+   "cos": -0.322512,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 30,
+   "cos": -0.313807,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 31,
+   "cos": -0.315795,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 32,
+   "cos": 0.295864,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 33,
+   "cos": -0.282313,
+   "oracle_norm": 1.0,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 34,
+   "cos": -0.234686,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  },
+  {
+   "layer": 35,
+   "cos": -0.181848,
+   "oracle_norm": 0.999999,
+   "pair_norm": 1.0
+  }
+ ],
+ "decision": "orthogonal",
+ "decision_line": "decision: ORTHOGONAL - mean |cos| 0.2434 <= 0.3: orthogonal, one merge test justified",
+ "mean_cos": -0.080812,
+ "mean_abs_cos": 0.243363,
+ "min_cos": -0.322512,
+ "min_abs_cos": 0.11155,
+ "elapsed_s": 1.425
+}

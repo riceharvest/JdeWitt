@@ -58,9 +58,18 @@ WRITEBACK_MODULE = re.compile(
     r"^(o_proj|out_proj|ssm_out|down_proj|w2|attn_output|attn_out)$")
 
 
-def read_rows(path, kinds=None, limit=None):
-    """Suite rows to capture, plus a tally of the kinds filtered out."""
-    rows, skipped = [], {}
+def read_rows(path, kinds=None, limit=None, exclude_families=(), exclude_categories=()):
+    """Suite rows to capture, plus tallies of the kinds and families filtered out.
+
+    ``--exclude-families``/``--exclude-categories`` are exact-value lists: a
+    family is excluded by id, never by a prompt keyword, so the report can name
+    every row that was dropped and why. The framed-capture guard for self-harm
+    and CSAM-adjacent families lives in ``frames.protected_reason`` and is
+    applied separately, so it cannot be switched off by an empty list here.
+    """
+    exclude_families = set(exclude_families or ())
+    exclude_categories = set(exclude_categories or ())
+    rows, skipped, excluded = [], {}, {}
     for number, line in enumerate(Path(path).read_text().splitlines(), 1):
         line = line.strip()
         if not line:
@@ -75,8 +84,14 @@ def read_rows(path, kinds=None, limit=None):
         if kinds and row["kind"] not in kinds:
             skipped[row["kind"]] = skipped.get(row["kind"], 0) + 1
             continue
+        if row.get("family_id") in exclude_families:
+            excluded[f"family:{row['family_id']}"] = excluded.get(f"family:{row['family_id']}", 0) + 1
+            continue
+        if row.get("category") is not None and str(row["category"]) in exclude_categories:
+            excluded[f"category:{row['category']}"] = excluded.get(f"category:{row['category']}", 0) + 1
+            continue
         rows.append(row)
-    return (rows[:limit] if limit else rows), skipped
+    return (rows[:limit] if limit else rows), skipped, excluded
 
 
 def hidden_width(config, override=None):
@@ -225,14 +240,65 @@ def read_answers(path):
     return answers
 
 
+def read_mirror_answers(path):
+    """[(row id, frame name, answer)] from a delivery-mirror JSONL.
+
+    A mirror entry is a real delivery of that request, produced elsewhere (the
+    published oracle, a jailbreak capture) and carried here as TEXT. The capture
+    teacher-forces it under the PLAIN prompt with a distinct frame label, so the
+    pair contrast is answer content only -- the label is provenance, not a
+    wrapper. ``none`` is refused: it is the refusal side's label.
+    """
+    entries = []
+    for number, line in enumerate(Path(path).read_text().splitlines(), 1):
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"{path}:{number} is not JSON: {error}") from error
+        row_id, frame, answer = row.get("id"), row.get("frame"), row.get("answer")
+        if not isinstance(row_id, str) or not row_id:
+            raise ValueError(f"{path}:{number}: id must be a nonempty string")
+        if not isinstance(frame, str) or not frame or frame == "none":
+            raise ValueError(f"{path}:{number}: frame must be a nonempty name other than 'none'")
+        if not isinstance(answer, str) or not answer.strip():
+            raise ValueError(f"{path}:{number}: answer must be nonempty text")
+        entries.append((row_id, frame, answer))
+    if not entries:
+        raise ValueError(f"{path} carries no id+frame+answer rows")
+    return entries
+
+
+def mirror_frame(name):
+    """A provenance-only frame: the plain prompt, a borrowed answer.
+
+    ``render_frame`` renders this exactly like the plain prompt (seed None, one
+    ``{prompt}`` slot), so a mirror record's residual is read on the same text a
+    plain record would use. The name only keys the pair.
+    """
+    from .frames import Frame
+
+    return Frame(name=name, template="{prompt}", seed=None,
+                 provenance=("answer-mirror: the delivery answer was produced elsewhere "
+                             "and is teacher-forced here under the plain prompt"),
+                 measured="not a jailbreak frame; a pair-side provenance label")
+
+
 def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
                 ctx_size, system, raw, device, settle=True, settle_min_tokens=24,
-                answer_text=None, margin_pairs=None):
+                answer_text=None, margin_pairs=None, frame=None):
     """Generate one row (or reuse a banked answer) and return (meta, [L, W]).
 
     ``answer_text`` is the zero-output-token path: when a wave has already
     generated this row against this same model, the answer is scored by
     re-tokenizing the prompt plus that text, so the only cost is one prefill.
+
+    ``frame`` is a pinned ``frames.Frame`` (None = today's plain prompt). The
+    record carries ``frame`` and ``prompt_id`` (the suite id) because that pair
+    of fields is the key a spanfit pair fit reads: one record per (suite id,
+    frame), and the plain record is frame 'none'.
 
     ``margin_pairs`` are the resolved (sure_id, cannot_id) pairs. The margin is
     read from the SAME forward pass that already captures the residual stream, at
@@ -241,7 +307,11 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
     token. A model that returns no logits records ``margin=None`` and
     ``margin_available=False`` instead of failing the capture.
     """
-    text, rendered = render_prompt(tokenizer, row["prompt"], system, raw)
+    if frame is None:
+        text, rendered = render_prompt(tokenizer, row["prompt"], system, raw)
+    else:
+        from .frames import render_frame
+        text, rendered = render_frame(tokenizer, frame, row["prompt"], system, raw)
     ids = tokenizer(text, return_tensors="pt", add_special_tokens=False)["input_ids"]
     prompt_tokens = int(ids.shape[1])
     if prompt_tokens + max_tokens + 1 > ctx_size:
@@ -314,8 +384,12 @@ def capture_one(model, tokenizer, row, layers, width, *, locus, max_tokens,
     if any(hook.captured is None for hook, _ in hooks):
         return None, {"reason": "residual_hooks_did_not_fire"}
     residual = torch.stack([hook.captured for hook, _ in hooks])
-    meta = {"id": row.get("id"), "label": label, "kind": row["kind"],
+    meta = {"id": row.get("id"), "prompt_id": row.get("id"), "label": label, "kind": row["kind"],
             "shape": shape["shape"], "declining": bool(shape["declining"]),
+            "embedded_decline": bool(shape["embedded_decline"]),
+            "frame": frame.name if frame is not None else "none",
+            "frame_provenance": frame.provenance if frame is not None else None,
+            "seed": frame.seed if frame is not None else None,
             "chars": len(answer), "answer_tokens": len(answer_ids),
             "settled_at": settled_at,
             "prompt_tokens": prompt_tokens, "family_id": row.get("family_id"),
@@ -340,9 +414,42 @@ def capture_command(args):
     unknown = [kind for kind in kinds if kind not in {"refusal", "harmless", "capability", "code", "math"}]
     if unknown:
         raise ValueError(f"unknown --kinds entries {unknown}; kinds are suite 'kind' values")
-    rows, filtered = read_rows(args.suite, kinds, args.limit)
+    from . import frames as frames_module
+    local_frames = frames_module.load_frame_file(args.frame_file) if getattr(args, "frame_file", None) else ()
+    if local_frames and getattr(args, "frame", "none") not in (None, "none"):
+        raise ValueError("--frame and --frame-file are alternatives; name the frames in the file")
+    frame_names = (tuple(frame.name for frame in local_frames) if local_frames
+                   else frames_module.parse_frames(getattr(args, "frame", "none")))
+    frame_by_name = {frame.name: frame for frame in local_frames} if local_frames else dict(frames_module.FRAMES)
+    framed_names = tuple(name for name in frame_names if name != "none")
+    mirror_by_id = {}
+    for row_id, mirror_name, mirror_answer in (
+            read_mirror_answers(args.mirror_answers) if getattr(args, "mirror_answers", None) else ()):
+        if mirror_name in framed_names:
+            # A mirror label names where the answer came from; reusing a frame the
+            # same run is generating under would make two records indistinguishable.
+            raise ValueError(f"mirror frame {mirror_name!r} is also being generated in this run")
+        if row_id in mirror_by_id:
+            raise ValueError(f"mirror answers name row {row_id!r} twice")
+        mirror_by_id[row_id] = (mirror_frame(mirror_name), mirror_answer)
+    exclude_families = tuple(f.strip() for f in (getattr(args, "exclude_families", "") or "").split(",") if f.strip())
+    exclude_categories = tuple(c.strip() for c in (getattr(args, "exclude_categories", "") or "").split(",") if c.strip())
+    rows, filtered, excluded = read_rows(args.suite, kinds, args.limit, exclude_families, exclude_categories)
+    protected_skipped = {}
+    if framed_names or mirror_by_id:
+        # The seed/fiction frames stay off the protective families permanently:
+        # a framed capture there is the one contrast this project never builds.
+        kept = []
+        for row in rows:
+            reason = frames_module.protected_reason(row)
+            if reason is None:
+                kept.append(row)
+            else:
+                key = f"{row.get('family_id') or 'unfamilied'}: {reason}"
+                protected_skipped[key] = protected_skipped.get(key, 0) + 1
+        rows = kept
     if not rows:
-        raise ValueError(f"{args.suite} has no rows for kinds {list(kinds)}")
+        raise ValueError(f"{args.suite} has no rows for kinds {list(kinds)} after the frame/exclusion guard")
 
     from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoTokenizer
     from .compat import compatible_source
@@ -408,6 +515,14 @@ def capture_command(args):
     tokens = {"prompt": 0, "answer": 0}
     settled = 0
     reused = 0
+    answers_missing = 0
+    by_frame = {name: {"records": 0, "labels": {}, "tokens": {"prompt": 0, "answer": 0}, "answers_reused": 0}
+                for name in frame_names}
+    if args.answers:
+        # The refusal side of a pair is already banked: the plain-prompt wave
+        # costs ZERO output tokens, and only the framed side is generated.
+        by_frame.setdefault("none", {"records": 0, "labels": {}, "tokens": {"prompt": 0, "answer": 0},
+                                    "answers_reused": 0})
     answers = read_answers(args.answers) if args.answers else {}
     # Resolution happens once per capture: a spelling that is not exactly one id
     # refuses the statistic (a sequence margin is a different measurement). The
@@ -419,29 +534,54 @@ def capture_command(args):
     except MarginRefused as error:
         margin_available, margin_refusal = False, str(error)
     for row in rows:
-        try:
-            captured, reason = capture_one(
-                model, tokenizer, row, layers, width, locus=args.locus,
-                max_tokens=args.max_tokens, ctx_size=args.ctx_size,
-                system=args.system, raw=args.raw_prompt, device=device,
-                settle=args.settle, settle_min_tokens=args.settle_min_tokens,
-                answer_text=answers.get(row.get("id")), margin_pairs=margin_pairs)
-        except (ValueError, RuntimeError) as error:
-            discarded[str(error)[:200]] = discarded.get(str(error)[:200], 0) + 1
-            continue
-        if captured is None:
-            key = reason.get("reason", "unknown")
-            discarded[key] = discarded.get(key, 0) + 1
-            continue
-        meta, residual = captured
-        records.append((meta, residual))
-        labels[meta["label"]] = labels.get(meta["label"], 0) + 1
-        tokens["prompt"] += meta["prompt_tokens"]
-        if meta.get("answer_source") == "banked":
-            reused += 1
-        else:
-            tokens["answer"] += meta["answer_tokens"]
-        settled += 1 if meta.get("settled_at") else 0
+        plans = []
+        if "none" in frame_names:
+            plans.append((None, answers.get(row.get("id"))))
+        elif answers and row.get("id") in answers:
+            # Implicit plain side: --answers is the banked plain-prompt wave and
+            # the pair needs its refusal answer, not another decode.
+            plans.append((None, answers[row.get("id")]))
+        for name in framed_names:
+            plans.append((frame_by_name[name], None))
+        mirror = mirror_by_id.get(row.get("id"))
+        if mirror is not None:
+            # The delivery side of a pair whose answer was produced elsewhere:
+            # teacher-forced under the plain prompt, labelled for provenance.
+            plans.append((mirror[0], mirror[1]))
+        for frame, banked in plans:
+            if frame is None and args.answers and row.get("id") not in answers:
+                answers_missing += 1
+            try:
+                captured, reason = capture_one(
+                    model, tokenizer, row, layers, width, locus=args.locus,
+                    max_tokens=args.max_tokens, ctx_size=args.ctx_size,
+                    system=args.system, raw=args.raw_prompt, device=device,
+                    settle=args.settle, settle_min_tokens=args.settle_min_tokens,
+                    answer_text=banked, margin_pairs=margin_pairs, frame=frame)
+            except (ValueError, RuntimeError) as error:
+                discarded[str(error)[:200]] = discarded.get(str(error)[:200], 0) + 1
+                continue
+            if captured is None:
+                key = reason.get("reason", "unknown")
+                discarded[key] = discarded.get(key, 0) + 1
+                continue
+            meta, residual = captured
+            records.append((meta, residual))
+            frame_tally = by_frame.setdefault(meta["frame"], {"records": 0, "labels": {},
+                                                              "tokens": {"prompt": 0, "answer": 0},
+                                                              "answers_reused": 0})
+            frame_tally["records"] += 1
+            labels[meta["label"]] = labels.get(meta["label"], 0) + 1
+            frame_tally["labels"][meta["label"]] = frame_tally["labels"].get(meta["label"], 0) + 1
+            tokens["prompt"] += meta["prompt_tokens"]
+            frame_tally["tokens"]["prompt"] += meta["prompt_tokens"]
+            if meta.get("answer_source") == "banked":
+                reused += 1
+                frame_tally["answers_reused"] += 1
+            else:
+                tokens["answer"] += meta["answer_tokens"]
+                frame_tally["tokens"]["answer"] += meta["answer_tokens"]
+            settled += 1 if meta.get("settled_at") else 0
 
     bad, good = labels.get("bad", 0), labels.get("good", 0)
     out = Path(args.out)
@@ -453,6 +593,18 @@ def capture_command(args):
         "dtype": args.dtype, "max_tokens": args.max_tokens, "ctx_size": args.ctx_size,
         "kinds": list(kinds), "suite": str(args.suite),
         "suite_sha256": hashlib.sha256(Path(args.suite).read_bytes()).hexdigest(),
+        "frames": {
+            "names": list(frame_names),
+            "file": str(args.frame_file) if getattr(args, "frame_file", None) else None,
+            "file_sha256": (hashlib.sha256(Path(args.frame_file).read_bytes()).hexdigest()
+                            if getattr(args, "frame_file", None) else None),
+            "pinned": {name: {"seed": frame_by_name[name].seed,
+                              "template": frame_by_name[name].template,
+                              "provenance": frame_by_name[name].provenance,
+                              "measured": frame_by_name[name].measured}
+                       for name in framed_names},
+            "protected_skipped": protected_skipped,
+        },
         "targets": {index: [name for name, _ in found] for index, found in targets.items()},
         "compute_backend": {"type": backend["type"], "rank": backend["rank"], "name": backend["name"]},
         "margin": {"resolution": margin_resolution, "pairs": margin_pairs,
@@ -463,7 +615,10 @@ def capture_command(args):
         "records": str(out), "records_bytes": out.stat().st_size,
         "identity": identity,
         "rows_read": len(rows), "records_written": len(records),
-        "labels": labels, "filtered_kinds": filtered, "discarded": discarded,
+        "labels": labels, "filtered_kinds": filtered, "filtered_excluded": excluded,
+        "filtered_protected_families": protected_skipped,
+        "by_frame": by_frame,
+        "discarded": discarded,
         "tokens": tokens, "elapsed_s": round(time.monotonic() - t0, 1),
         "settling": {
             "enabled": bool(args.settle), "min_tokens": args.settle_min_tokens,
@@ -473,6 +628,7 @@ def capture_command(args):
                     "decode to the full budget, so a procedure is never cut short",
         },
         "answers_reused": reused,
+        "answers_missing": answers_missing,
         "answers_reused_note": (f"{reused} row(s) took their answer from --answers and cost ZERO "
                                 f"output tokens (prefill only); rows not found there were generated"),
         "target_suffixes": suffix_counts,
@@ -562,6 +718,65 @@ def capture_command(args):
             f"python -m jdewitt.spanfit build --gguf-in <artifact.gguf> --in-place "
             f"--records {out} --shape perlayer --scale 1.0 --gguf-targets auto",
         ]
+    if (framed_names or mirror_by_id) and getattr(args, "pairs_out", None):
+        # One pair per (suite id, frame) whose framed answer is a shape-delivery
+        # CANDIDATE, against the plain answer the capture already holds. A mirror
+        # record is a candidate by construction (the answer was hand-read as a
+        # delivery elsewhere), so it is written with a null verdict too: the read
+        # still has to be recorded here (R2).
+        from .delivery_pairs import make_pair, summarize as summarize_pairs, write_pairs
+        mirror_names = {frame.name for frame, _ in mirror_by_id.values()}
+        plain_by_id = {meta["prompt_id"]: meta for meta, _ in records if meta["frame"] == "none"}
+        pairs, candidates = [], []
+        for meta, _ in records:
+            if meta["frame"] == "none" or meta["kind"] != "refusal":
+                continue
+            if meta["label"] != "deliver" and meta["frame"] not in mirror_names:
+                continue
+            plain = plain_by_id.get(meta["prompt_id"])
+            candidates.append({"prompt_id": meta["prompt_id"], "frame": meta["frame"],
+                               "shape": meta["shape"], "chars": meta["chars"],
+                               "plain_side": plain is not None,
+                               "plain_shape": plain["shape"] if plain is not None else None})
+
+            def _side(record):
+                if record is None:
+                    return None
+                return {"frame": record["frame"], "answer": record["answer"], "shape": record["shape"],
+                        "declining": bool(record["declining"] or record.get("embedded_decline")),
+                        "answer_source": record["answer_source"], "chars": record["chars"],
+                        "seed": record.get("seed")}
+
+            pair = make_pair(
+                prompt_id=meta["prompt_id"], prompt=meta["prompt"],
+                kind=meta["kind"], family_id=meta.get("family_id"), category=meta.get("category"),
+                source=dict({"kind": "capture", "model": args.model, "revision": identity["revision"],
+                             "suite": str(args.suite), "suite_sha256": identity["suite_sha256"],
+                             "records": str(out), "locus": args.locus,
+                             "plain_answer": ("banked" if plain is not None and plain["answer_source"] == "banked"
+                                              else "generated" if plain is not None else "missing")},
+                            **({"mirror_answers": str(args.mirror_answers),
+                                "mirror_frames": sorted(mirror_names)} if mirror_names else {})),
+                refusal=_side(plain), delivery=_side(meta))
+            pairs.append(pair)
+        pairs_dir = Path(args.pairs_out)
+        pairs_dir.mkdir(parents=True, exist_ok=True)
+        pairs_path = write_pairs(pairs_dir / "pairs.jsonl", pairs)
+        report["pairs_out"] = str(pairs_path)
+        report["pairs_candidates"] = candidates
+        report["pairs_summary"] = summarize_pairs(pairs)
+        report["notes"].append(
+            f"{len(pairs)} shape-delivery candidate(s) written to {pairs_path} with verdict null. "
+            "Every candidate must be agent-read (scripts/delivery_pairs.py vet) against the request "
+            "before any axis is fitted from it; a shape-clean pivot is not a delivery (R2).")
+        if not pairs:
+            report["notes"].append(
+                "no framed answer reached the delivery shape; there is no pair corpus from this "
+                "capture and the next step is a higher-yield source, not a fit.")
+    elif framed_names:
+        report["notes"].append(
+            "no --pairs-out: the framed records exist, but no candidate pair JSONL was written, so "
+            "no read can be recorded against this run.")
     atomic_json(out.with_suffix(out.suffix + ".capture.json"), report)
     del model
     source_context.__exit__(None, None, None)
