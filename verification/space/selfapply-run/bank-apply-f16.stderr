@@ -1,0 +1,23 @@
+	Command being timed: ".venv/bin/python -m jdewitt bank-apply --bank /home/dario/.agentboard/worktrees/t_069c4418/spaces/bank --entry qwen3-4b-instruct-2507/f15s15-l935 --gguf /mnt/ssd/models/unsloth-qwen3-4b-q4km/Qwen3-4B-Instruct-2507-Q4_K_M.gguf --out /mnt/ssd/models/qwen3-4b-instruct-2507-q4km-selfapply-f16.gguf --edit-type f16"
+	User time (seconds): 594.34
+	System time (seconds): 31.81
+	Percent of CPU this job got: 139%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:27.71
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 4250392
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 28
+	Minor (reclaiming a frame) page faults: 7313526
+	Voluntary context switches: 7799
+	Involuntary context switches: 55010
+	Swaps: 0
+	File system inputs: 7590024
+	File system outputs: 6827752
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

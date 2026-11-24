@@ -1,0 +1,228 @@
+{
+ "artifact": {
+  "architecture": "qwen3",
+  "declared_block_count": null,
+  "hidden": 2560,
+  "layers": 36,
+  "path": "q3-4b-base-q4_k_m.gguf",
+  "requant": "python -m jdewitt requant --gguf q3-4b-base-q8.gguf --out q3-4b-base-q4_k_m.gguf --type q4_k_m --threads 16",
+  "sha256": "a8b02c91a77727a903dd9196842f9ff191269de24b6ac1f95e9c185bb1b85c17",
+  "source": {
+   "file": "q3-4b-base-q8.gguf",
+   "quant": "Q8_0",
+   "sha256": "dc4ae2660e73cc2af48989d74044a2c1f484d5e7a71fc36ee559e8c7ebc32e73"
+  },
+  "source_types": [
+   "Q4_K",
+   "Q6_K"
+  ],
+  "tensor_layers": 36,
+  "tensors": 398
+ },
+ "bank": "spaces/bank",
+ "bundle": {
+  "file": "qwen3-4b-instruct-2507-f15s15-l935.tar",
+  "sha256": "5df68bc77469c3c722d73ff2871a1de98266f2053c7040ee87c2932432066f5c",
+  "verified": true
+ },
+ "edit": {
+  "method": "directional",
+  "min_cos": 0.95,
+  "repair": "none",
+  "row_normalization": "none",
+  "shape": "shared",
+  "space": "output",
+  "types": [
+   "q6_k",
+   "q8_0",
+   "f16"
+  ]
+ },
+ "edit_types": [
+  "q6_k",
+  "q8_0",
+  "f16"
+ ],
+ "entry": {
+  "architecture": "qwen3",
+  "base": {
+   "repo": "Qwen/Qwen3-4B-Instruct-2507",
+   "revision": "cdbee75f17c01a7cc42f958dc650907174af0554"
+  },
+  "key": "qwen3-4b-instruct-2507/f15s15-l935"
+ },
+ "footprint": {
+  "first": 15,
+  "fraction": [
+   0.4167,
+   0.9722
+  ],
+  "last": 35,
+  "layers": [
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31,
+   32,
+   33,
+   34,
+   35
+  ],
+  "projected": false
+ },
+ "geometry": {
+  "hidden": 2560,
+  "hidden_source": "artifact",
+  "layers": 36
+ },
+ "layers": [
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+  21,
+  22,
+  23,
+  24,
+  25,
+  26,
+  27,
+  28,
+  29,
+  30,
+  31,
+  32,
+  33,
+  34,
+  35
+ ],
+ "measurement": {
+  "artifact_class": null,
+  "config": null,
+  "removal": null,
+  "retention": null,
+  "state": "banked_unmeasured"
+ },
+ "refusal": null,
+ "schema": "jdewitt-space-bank-v1",
+ "sources": {
+  "covered": true,
+  "quant_types": [
+   "q4_k",
+   "q5_k",
+   "q6_k",
+   "q8_0"
+  ]
+ },
+ "strength": {
+  "attn": 1.5,
+  "mlp": 1.5
+ },
+ "target_names": [
+  "blk.15.attn_output.weight",
+  "blk.15.ffn_down.weight",
+  "blk.16.attn_output.weight",
+  "blk.16.ffn_down.weight",
+  "blk.17.attn_output.weight",
+  "blk.17.ffn_down.weight",
+  "blk.18.attn_output.weight",
+  "blk.18.ffn_down.weight",
+  "blk.19.attn_output.weight",
+  "blk.19.ffn_down.weight",
+  "blk.20.attn_output.weight",
+  "blk.20.ffn_down.weight",
+  "blk.21.attn_output.weight",
+  "blk.21.ffn_down.weight",
+  "blk.22.attn_output.weight",
+  "blk.22.ffn_down.weight",
+  "blk.23.attn_output.weight",
+  "blk.23.ffn_down.weight",
+  "blk.24.attn_output.weight",
+  "blk.24.ffn_down.weight",
+  "blk.25.attn_output.weight",
+  "blk.25.ffn_down.weight",
+  "blk.26.attn_output.weight",
+  "blk.26.ffn_down.weight",
+  "blk.27.attn_output.weight",
+  "blk.27.ffn_down.weight",
+  "blk.28.attn_output.weight",
+  "blk.28.ffn_down.weight",
+  "blk.29.attn_output.weight",
+  "blk.29.ffn_down.weight",
+  "blk.30.attn_output.weight",
+  "blk.30.ffn_down.weight",
+  "blk.31.attn_output.weight",
+  "blk.31.ffn_down.weight",
+  "blk.32.attn_output.weight",
+  "blk.32.ffn_down.weight",
+  "blk.33.attn_output.weight",
+  "blk.33.ffn_down.weight",
+  "blk.34.attn_output.weight",
+  "blk.34.ffn_down.weight",
+  "blk.35.attn_output.weight",
+  "blk.35.ffn_down.weight"
+ ],
+ "targets": {
+  "attn": [
+   "blk.15.attn_output.weight",
+   "blk.16.attn_output.weight",
+   "blk.17.attn_output.weight",
+   "blk.18.attn_output.weight",
+   "blk.19.attn_output.weight",
+   "blk.20.attn_output.weight",
+   "blk.21.attn_output.weight",
+   "blk.22.attn_output.weight",
+   "blk.23.attn_output.weight",
+   "blk.24.attn_output.weight",
+   "blk.25.attn_output.weight",
+   "blk.26.attn_output.weight",
+   "blk.27.attn_output.weight",
+   "blk.28.attn_output.weight",
+   "blk.29.attn_output.weight",
+   "blk.30.attn_output.weight",
+   "blk.31.attn_output.weight",
+   "blk.32.attn_output.weight",
+   "blk.33.attn_output.weight",
+   "blk.34.attn_output.weight",
+   "blk.35.attn_output.weight"
+  ],
+  "mlp": [
+   "blk.15.ffn_down.weight",
+   "blk.16.ffn_down.weight",
+   "blk.17.ffn_down.weight",
+   "blk.18.ffn_down.weight",
+   "blk.19.ffn_down.weight",
+   "blk.20.ffn_down.weight",
+   "blk.21.ffn_down.weight",
+   "blk.22.ffn_down.weight",
+   "blk.23.ffn_down.weight",
+   "blk.24.ffn_down.weight",
+   "blk.25.ffn_down.weight",
+   "blk.26.ffn_down.weight",
+   "blk.27.ffn_down.weight",
+   "blk.28.ffn_down.weight",
+   "blk.29.ffn_down.weight",
+   "blk.30.ffn_down.weight",
+   "blk.31.ffn_down.weight",
+   "blk.32.ffn_down.weight",
+   "blk.33.ffn_down.weight",
+   "blk.34.ffn_down.weight",
+   "blk.35.ffn_down.weight"
+  ]
+ }
+}
