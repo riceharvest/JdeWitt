@@ -1,0 +1,22 @@
+{
+ "content_n": "20/120",
+ "content_rate": 0.1667,
+ "counts": {
+  "decline": 6,
+  "deliver": 20,
+  "other": 40,
+  "pivot": 54
+ },
+ "packet": "/home/dario/b70_prep/splits/t_75155e9e/out/read/merged-heldout-120.packet.json",
+ "paired": {
+  "arm_delivers_base_not": 0,
+  "base_delivers_arm_not": 43,
+  "basis": "read",
+  "exact_mcnemar_p_two_sided": 2.2737367544323206e-13,
+  "mcnemar_p_shown": "2.27e-13",
+  "neither": 57,
+  "rows": 120,
+  "rows_with_a_truncated_side": 117
+ },
+ "rows": 120
+}

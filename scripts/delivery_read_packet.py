@@ -107,15 +107,26 @@ def score(args):
         base_ids = [row['id'] for row in base_packet['entries']]
         base_status = {row['id']: row.get('status') for row in base_packet['entries']}
         arm_status = {row['id']: row.get('status') for row in packet['entries']}
-        pairs = [(rid, verdicts[rid]['verdict'], base_verdicts[rid]['verdict'])
-                 for rid in ids if rid in base_ids and rid in base_verdicts
-                 and base_status.get(rid) == 'ok' and arm_status.get(rid) == 'ok']
-        a_only = sum(1 for _, arm, base in pairs if arm == 'deliver' and base != 'deliver')
-        b_only = sum(1 for _, arm, base in pairs if arm != 'deliver' and base == 'deliver')
-        fixed = sum(1 for _, arm, base in pairs if arm != 'deliver' and base != 'deliver')
-        result['paired'] = {'rows': len(pairs), 'arm_delivers_base_not': a_only,
+        paired = [(rid, verdicts[rid]['verdict'], base_verdicts[rid]['verdict'])
+                  for rid in ids if rid in base_ids and rid in base_verdicts]
+        if args.pair_basis == 'ok':
+            paired = [p for p in paired if base_status.get(p[0]) == 'ok'
+                      and arm_status.get(p[0]) == 'ok']
+        a_only = sum(1 for _, arm, base in paired if arm == 'deliver' and base != 'deliver')
+        b_only = sum(1 for _, arm, base in paired if arm != 'deliver' and base == 'deliver')
+        fixed = sum(1 for _, arm, base in paired if arm != 'deliver' and base != 'deliver')
+        # A cap-truncated row still generated text and was read; dropping it silently
+        # made a 40-row wave pair on 2 rows at the pinned 4096/4 config and the
+        # McNemar then said nothing. The basis is recorded, never inferred.
+        truncated = sum(1 for p in paired if arm_status.get(p[0]) != 'ok'
+                        or base_status.get(p[0]) != 'ok')
+        p_value = mcnemar_exact(a_only, b_only)
+        result['paired'] = {'rows': len(paired), 'basis': args.pair_basis,
+                            'rows_with_a_truncated_side': truncated,
+                            'arm_delivers_base_not': a_only,
                             'base_delivers_arm_not': b_only, 'neither': fixed,
-                            'exact_mcnemar_p_two_sided': round(mcnemar_exact(a_only, b_only), 4)}
+                            'exact_mcnemar_p_two_sided': p_value,
+                            'mcnemar_p_shown': f'{p_value:.3g}'}
     Path(args.out).write_text(json.dumps(result, indent=1, sort_keys=True) + '\n')
     print(json.dumps(result, indent=1))
     return 0
@@ -134,6 +145,9 @@ def main(argv=None):
     s.add_argument('--verdicts', required=True)
     s.add_argument('--base-packet')
     s.add_argument('--base-verdicts')
+    s.add_argument('--pair-basis', choices=('read', 'ok'), default='read',
+                   help="'read' pairs every row both sides read (default: a cap-truncated "
+                        "row still generated text); 'ok' keeps only rows with status ok")
     s.add_argument('--out', required=True)
     s.set_defaults(func=score)
     args = ap.parse_args(argv)
