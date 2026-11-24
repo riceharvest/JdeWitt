@@ -416,7 +416,20 @@ Done gate: a measured row on a fine-tune's Q4_K_M at one pinned config, or `verd
 
 Deploy the staged tree to a free personal account, run one full loop on the covered base, log GPU
 seconds per call and wall clock per stage, download the output and **serve it** (`export-smoke`)
-to prove it loads, and write the numbers into `verification/space/live-run.json`. If the edit
+to prove it loads, and write the numbers into `verification/space/live-run.json`.
+
+**Done (2026-11-24), and the answer is not the one the phase assumed.**
+`verification/space/live-run.json` is one real run in `darioooooo0o/banked-gguf-edit`
+(gradio 5.50.0, hardware `zero-a10g`) on the covered base's Q4_K_M: wall clock **964.95 s**
+(coverage 7.284 / licence 0.058 / download 5.711 / edit **933.96** / read-back 15.346 /
+package 2.558), container 192 cores, peak RSS 3.66 GB, download 437 MB/s, output
+2,618,260,064 B sha256 `f29fe435…`, and the file **serves** (`llama-server`, `-ngl 0`,
+`--ctx-size 4096`, first answer `OK`). Three measured facts follow: (1) **0 `@spaces.GPU`
+calls, 0 s of the 300 s/day quota** — the edit is CPU numpy, so the quota is not the binding
+constraint; the 16-minute wall clock is. (2) A CPU-only edit **must not** be routed through the
+GPU queue: the first attempt wrapped it in `@spaces.GPU(duration=120)` and the job sat queued
+after its 3 s download for over ten minutes. (3) The type ladder still stops at `Q6_K` and
+lands at cos 0.8808, below the entry's 0.95 floor, while `Q8_0` clears. If the edit
 exceeds 120 s, shard it by layer block across calls (≤ 240 s total) and prove the sharded output
 is byte-identical to the single-call output. If the proxy verdict was `cuda_codec_required`, the
 CUDA codec card runs first and must prove block-for-block identity against the numpy codec before
@@ -435,6 +448,10 @@ transfer gate passes on the first one; every new entry carries its own measured 
   and stop before widening coverage.
 - **The edit cannot fit 240 s on 2 vCPU and the CUDA port cannot either.** Then the free Space is a
   1.7B-and-below product, and 4B/7B — the models people actually download — are out of scope.
+  **Measured against this on 2026-11-24:** the live ZeroGPU run's edit is 933.96 s (single-core
+  numpy, 192 cores available and unused), 3.2x the five-minute promise, with 0 s of GPU quota
+  spent. The free Space is not blocked by the 300 s/day budget; it is blocked by CPU wall clock,
+  so the sharded/CUDA edit is the only thing that can rescue 4B.
 - **The Spaces proxy cannot stream 3-5 GB, and a Hub push from the container is slower than the
   request window.** Then "one click, five minutes" is false for every model above ~1.5 GB, and the
   honest product is a button that produces a *reproducible command* the visitor runs themselves,

@@ -209,3 +209,43 @@ raised.
 
 Raw transcripts are in `selfapply-run/`; `selfapply-run/make_report.py` rebuilds the
 document from them.
+
+# The live ZeroGPU run
+
+`live-run.json` is the only file that may be quoted as a Space runtime. It is one
+run of the full loop inside the public Space `darioooooo0o/banked-gguf-edit`
+(gradio 5.50.0, hardware `zero-a10g`, tree commit `72afd4a2`), driven over the
+public URL exactly as a visitor drives it: one `POST /gradio_api/call/start` with
+the repo id and the file name, then the event's stream.
+
+| what | measured |
+|---|---|
+| wall clock | **964.95 s** — coverage 7.284, licence 0.058, download 5.711, edit **933.96**, read-back 15.346, package 2.558 |
+| container | 192 cores `Intel(R) Xeon(R) Platinum 8559C`, 2.1 TB RAM, peak RSS **3.66 GB** |
+| download | 2,497,281,120 B at **437 MB/s** end-to-end (the Hub's own line in the same log: 687 MB/s for the transfer) |
+| `@spaces.GPU` calls | **0**, so **0 s of the 300 s/day quota** |
+| output | 2,618,260,064 B, sha256 `f29fe43552ca18ea…`, 42 edited, 356 untouched byte-identical |
+| served | `llama-server` (build b20-35999d101, `-ngl 0 --ctx-size 4096`) loaded it, `/props` echoed the path, first answer `OK` (`stop`, 2 tokens) — `live-run-serve.json` |
+
+Three things this run settles, all of them uncomfortable:
+
+1. **The five-minute promise is false for 4B.** 964.95 s is 3.2x it, and 96.8 % of
+   the wall clock is the edit — single-threaded numpy on a 192-core box. The GPU
+   quota is not the binding constraint and cannot be: 0 s of 300 were spent.
+2. **A CPU-only edit must not be routed through the GPU queue.** The first live
+   attempt wrapped the edit in `@spaces.GPU(duration=120)`, the shape §4 prescribes
+   for an edit that fits one call. It finished the download in 3 s and then sat
+   queued for a card the edit cannot use, with no output for over ten minutes. The
+   Space now declares one `@spaces.GPU` function for ZeroGPU's startup check
+   (`No @spaces.GPU function detected during startup` is otherwise fatal) and no job
+   calls it; the run record says 0 calls.
+3. **The type ladder still stops one step short.** The ladder chose `Q6_K` from its
+   sampled preview and the whole-tensor read-back came in at 0.8808, below the
+   entry's 0.95 floor — the same gap the self-apply run above documents on the
+   base's Q8_0 (sample 0.9974, whole tensor 0.8812). `Q8_0` clears at the same
+   strength. The card is honest about it (`delivered cos 0.8808`, label
+   `banked_unmeasured`) but the preview threshold is the defect.
+
+The artifact was downloaded from the Space's own file URL to
+`/mnt/ssd/hermes/models/space-run-19c`, checked against the Space's `SHA256SUMS`
+(all three OK), and only then served.

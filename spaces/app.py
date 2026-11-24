@@ -16,7 +16,6 @@ The caveat comes from the measurement state, not from this file, and it is rende
 above the download control: `PANEL_ORDER` in `space_loop` is the order used below.
 """
 import json
-import time
 
 import gradio as gr
 
