@@ -251,9 +251,15 @@ run_wave() {  # label artifact suite cap kinds
   fi
   mkdir -p "$dir"
   cfg=$(serve_config "$art" "$cap")
+  # The Spark template opens a reasoning block by default (thinking_effort=high).
+  # At -c 4096 --parallel 4 one slot is 1024 tokens, so a thinking row spends the
+  # whole slot reasoning and returns status=truncated_or_error (the 11:02 attempt:
+  # 40/40 rows, n_ctx_slot=1024, stop at n_tokens=1023). Render with
+  # enable_thinking=false, the project's final-answer policy, as the earlier
+  # Spark-X2.6 waves did; capability_wave records it as serve_structured.no_think.
   must "$PY" "$ROOT/scripts/capability_wave.py" "$suite" "$dir" \
     --label "$label" --port "$PORT" --max-tokens "$cap" --parallel 4 \
-    --kinds "$kinds" --serve-config "$cfg" --preview 5 \
+    --no-think --kinds "$kinds" --serve-config "$cfg" --preview 5 \
     || die "wave $label failed"
   [ "$DRY" = 1 ] && return 0
   wave_done "$label" || die "wave $label wrote no measured wave.json"
@@ -291,25 +297,25 @@ plan() {
   echo "7. arm waves (server: $ARM)"
   start_server "$ARM" arm
   must "$PY" "$ROOT/scripts/capability_wave.py" "$ADV" "$OUT/waves/removal-arm" \
-    --label removal-arm --port "$PORT" --max-tokens 4096 --parallel 4 --kinds refusal \
+    --label removal-arm --port "$PORT" --max-tokens 4096 --parallel 4 --no-think --kinds refusal \
     --serve-config "$(serve_config "$ARM" 4096)" --preview 5
   must "$PY" "$ROOT/scripts/capability_wave.py" "$HOLDOUT" "$OUT/waves/heldout-120-arm" \
-    --label heldout-120-arm --port "$PORT" --max-tokens 4096 --parallel 4 --kinds refusal \
+    --label heldout-120-arm --port "$PORT" --max-tokens 4096 --parallel 4 --no-think --kinds refusal \
     --serve-config "$(serve_config "$ARM" 4096)" --preview 5
   must "$PY" "$ROOT/scripts/capability_wave.py" "$HOLDOUT24" "$OUT/waves/heldout-24-arm" \
-    --label heldout-24-arm --port "$PORT" --max-tokens 4096 --parallel 4 --kinds refusal \
+    --label heldout-24-arm --port "$PORT" --max-tokens 4096 --parallel 4 --no-think --kinds refusal \
     --serve-config "$(serve_config "$ARM" 4096)" --preview 5
   must "$PY" "$ROOT/scripts/capability_wave.py" "$RETENTION" "$OUT/waves/retention-arm" \
-    --label retention-arm --port "$PORT" --max-tokens 1024 --parallel 4 --kinds math,code \
+    --label retention-arm --port "$PORT" --max-tokens 1024 --parallel 4 --no-think --kinds math,code \
     --serve-config "$(serve_config "$ARM" 1024)" --preview 5
   echo "   (stop arm server)"
   echo "8. base waves (server: $BASE)"
   start_server "$BASE" base
   must "$PY" "$ROOT/scripts/capability_wave.py" "$ADV" "$OUT/waves/removal-base" \
-    --label removal-base --port "$PORT" --max-tokens 4096 --parallel 4 --kinds refusal \
+    --label removal-base --port "$PORT" --max-tokens 4096 --parallel 4 --no-think --kinds refusal \
     --serve-config "$(serve_config "$BASE" 4096)" --preview 5
   must "$PY" "$ROOT/scripts/capability_wave.py" "$RETENTION" "$OUT/waves/retention-base" \
-    --label retention-base --port "$PORT" --max-tokens 1024 --parallel 4 --kinds math,code \
+    --label retention-base --port "$PORT" --max-tokens 1024 --parallel 4 --no-think --kinds math,code \
     --serve-config "$(serve_config "$BASE" 1024)" --preview 5
   echo "   (stop base server)"
   echo "9. shape audits + spec"
