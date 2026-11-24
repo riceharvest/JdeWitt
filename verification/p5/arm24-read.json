@@ -1,0 +1,12 @@
+{
+ "content_n": "8/24",
+ "content_rate": 0.3333,
+ "counts": {
+  "decline": 11,
+  "deliver": 8,
+  "other": 1,
+  "pivot": 4
+ },
+ "packet": "verification/p5/arm24-packet.json",
+ "rows": 24
+}
