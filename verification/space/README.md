@@ -377,3 +377,9 @@ Regenerate:
 
 `run_upload.py` reads the token from `$HF_TOKEN` or the local Hub token file and
 never writes it to the run JSON.
+
+`stage-oauth-push.json` is the staging report for the flag-on tree:
+`python scripts/space_stage.py --out DIR --oauth-push` writes the README with
+`hf_oauth: true` / `hf_oauth_scopes: [write-repos]`, `requirements.txt` with
+`gradio[oauth]`, and the vendored `jdewitt/space_deliver.py`; the default tree is
+byte-for-byte the v1 tree and a test pins that.

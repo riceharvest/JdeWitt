@@ -1,0 +1,202 @@
+{
+  "bytes": 1036027,
+  "checks": {
+    "app_parses": true,
+    "imports_resolved": true,
+    "oauth_push": true,
+    "sanitised": true,
+    "size_outside_bank_bytes": 648762
+  },
+  "files": [
+    {
+      "bytes": 30,
+      "path": ".gitignore"
+    },
+    {
+      "bytes": 34523,
+      "path": "LICENSE"
+    },
+    {
+      "bytes": 434,
+      "path": "NOTICE"
+    },
+    {
+      "bytes": 2737,
+      "path": "README.md"
+    },
+    {
+      "bytes": 14070,
+      "path": "app.py"
+    },
+    {
+      "bytes": 67,
+      "path": "jdewitt/__init__.py"
+    },
+    {
+      "bytes": 19472,
+      "path": "jdewitt/answers.py"
+    },
+    {
+      "bytes": 15692,
+      "path": "jdewitt/bank.py"
+    },
+    {
+      "bytes": 29421,
+      "path": "jdewitt/bank_apply.py"
+    },
+    {
+      "bytes": 9073,
+      "path": "jdewitt/bank_licence.py"
+    },
+    {
+      "bytes": 2606,
+      "path": "jdewitt/batching.py"
+    },
+    {
+      "bytes": 823,
+      "path": "jdewitt/clock.py"
+    },
+    {
+      "bytes": 2667,
+      "path": "jdewitt/data.py"
+    },
+    {
+      "bytes": 18999,
+      "path": "jdewitt/errors.py"
+    },
+    {
+      "bytes": 9712,
+      "path": "jdewitt/evaluation.py"
+    },
+    {
+      "bytes": 5885,
+      "path": "jdewitt/ggml_fp4.py"
+    },
+    {
+      "bytes": 1904,
+      "path": "jdewitt/gguf_types.py"
+    },
+    {
+      "bytes": 4121,
+      "path": "jdewitt/ggufgeom.py"
+    },
+    {
+      "bytes": 66344,
+      "path": "jdewitt/ggufio.py"
+    },
+    {
+      "bytes": 8390,
+      "path": "jdewitt/ggufwrite.py"
+    },
+    {
+      "bytes": 12656,
+      "path": "jdewitt/iq1m.py"
+    },
+    {
+      "bytes": 11556,
+      "path": "jdewitt/iq1s.py"
+    },
+    {
+      "bytes": 10352,
+      "path": "jdewitt/iq2.py"
+    },
+    {
+      "bytes": 14811,
+      "path": "jdewitt/iq2xs.py"
+    },
+    {
+      "bytes": 15174,
+      "path": "jdewitt/iq2xxs.py"
+    },
+    {
+      "bytes": 18395,
+      "path": "jdewitt/iq3.py"
+    },
+    {
+      "bytes": 100148,
+      "path": "jdewitt/iq_tables.py"
+    },
+    {
+      "bytes": 1988,
+      "path": "jdewitt/q1.py"
+    },
+    {
+      "bytes": 2046,
+      "path": "jdewitt/q2_0.py"
+    },
+    {
+      "bytes": 3663,
+      "path": "jdewitt/q8.py"
+    },
+    {
+      "bytes": 54184,
+      "path": "jdewitt/quants.py"
+    },
+    {
+      "bytes": 4091,
+      "path": "jdewitt/raw_dtypes.py"
+    },
+    {
+      "bytes": 5102,
+      "path": "jdewitt/refusal_check.py"
+    },
+    {
+      "bytes": 19359,
+      "path": "jdewitt/registry.py"
+    },
+    {
+      "bytes": 15702,
+      "path": "jdewitt/rewrite.py"
+    },
+    {
+      "bytes": 16257,
+      "path": "jdewitt/scoring.py"
+    },
+    {
+      "bytes": 32628,
+      "path": "jdewitt/space_deliver.py"
+    },
+    {
+      "bytes": 55693,
+      "path": "jdewitt/space_loop.py"
+    },
+    {
+      "bytes": 3113,
+      "path": "jdewitt/storage.py"
+    },
+    {
+      "bytes": 4812,
+      "path": "jdewitt/tq.py"
+    },
+    {
+      "bytes": 62,
+      "path": "requirements.txt"
+    },
+    {
+      "bytes": 5468,
+      "path": "spaces/bank/README.md"
+    },
+    {
+      "bytes": 80,
+      "path": "spaces/bank/SHA256SUMS"
+    },
+    {
+      "bytes": 1221,
+      "path": "spaces/bank/bank.json"
+    },
+    {
+      "bytes": 574,
+      "path": "spaces/bank/licences.json"
+    },
+    {
+      "bytes": 378880,
+      "path": "spaces/bank/qwen3-4b-instruct-2507-f15s15-l935.tar"
+    },
+    {
+      "bytes": 1042,
+      "path": "spaces/bank/qwen3-4b-instruct-2507/entry.json"
+    }
+  ],
+  "out": "/tmp/jw-stage-oauth-report",
+  "schema": "jdewitt-space-stage-v1"
+}
