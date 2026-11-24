@@ -565,7 +565,7 @@ step_spec() {
 
 # ---------------------------------------------------------------- summary
 step_summary() {
-  [ "$DRY" -eq 1 ] && return 0
+  if [ "$DRY" -eq 1 ]; then return 0; fi
   uv run python - "$COMPARISON" "$W_BASE_REMOVAL" "$W_HELDOUT" "$W_RETENTION" "$DRIFT_JSON" "$FIDELITY_JSON" <<'PY' || true
 import json, os, sys
 def maybe(path):
