@@ -1,0 +1,5 @@
+2026-11-24T01:25:11+01:00	start	pid=1977838 serve=none
+2026-11-24T01:26:48+01:00	start	pid=1982301 serve=none
+2026-11-24T01:28:29+01:00	operands	sha256 verified
+2026-11-24T01:28:29+01:00	capture-suite	written /home/dario/.agentboard/worktrees/t_d73f52a1/verification/p7-inkling/capture-suite.jsonl
+2026-11-24T01:28:34+01:00	REFUSED	77: CAPTURE_UNSUPPORTED this stack cannot load Inkling-2-Mini (measured; see capture-blocked.json): no residual records -> no fitted axis -> no arm. Capture is the first axis to fail; the analysis card records failed(capture) with these numbers.
