@@ -1,0 +1,147 @@
+{
+  "schema": "jdewitt.vocab-remap-embed-arm/1",
+  "mode": "off",
+  "scope": "One arm of the input-side (embedding-side) denial remap: the prompt token ids are rewritten (on) or sent unchanged (off), and no logit_bias is ever applied. A row here is a token path, the model-visible ids before/after, and the answer; it is not a harmlessness or a capability measurement.",
+  "artifact": {
+    "path": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "sha256": "4537de221ae1e9146317ea756958252ea6e7a3feb8f38a3c21cc60614f0c2cb4",
+    "bytes": 986048096,
+    "tokenizer": {
+      "model": "gpt2",
+      "pre": "qwen2",
+      "n_vocab": 151936,
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
+  "suite": {
+    "path": "verification/vocab-remap/embed-arm/prompts.jsonl",
+    "sha256": "7c09e4551465955099c177b7d61c1b4753b66e27eec70d6380021bd108bc2206",
+    "rows": 20
+  },
+  "table": {
+    "path": "jdewitt/assets/vocab-remap-denial.json",
+    "sha256": "978a88f733ec4870e5c5c7d8090f015a58ecfa605af8a6dc1c4af1f9ab5ef50a",
+    "entries": 20
+  },
+  "affirmative": {
+    "path": "jdewitt/assets/vocab-remap-affirmative.json",
+    "sha256": "9a76ff303aaa97e6150b8402365f72a3dcee40403fefc47937831e3ec8bea505",
+    "entries": 13,
+    "unmapped": [
+      {
+        "id": "en-im-sorry",
+        "reason": "apology, not a negation: no affirmative counterpart exists without inventing a different sentence"
+      },
+      {
+        "id": "en-i-am-sorry",
+        "reason": "apology, not a negation"
+      },
+      {
+        "id": "en-i-apologize",
+        "reason": "apology, not a negation"
+      },
+      {
+        "id": "nl-het-spijt-me",
+        "reason": "apology, not a negation"
+      },
+      {
+        "id": "de-es-tut-mir-leid",
+        "reason": "apology, not a negation"
+      },
+      {
+        "id": "nl-ik-kan-niet",
+        "reason": "refusal_opener scoped to the opener window of a generated answer; an input remap has no generated step. Its 'kan niet' span is covered by nl-kan-niet."
+      },
+      {
+        "id": "de-ich-kann-nicht",
+        "reason": "refusal_opener scoped to the opener window of a generated answer; an input remap has no generated step. Its 'kann nicht' span is covered by de-kann-nicht."
+      }
+    ]
+  },
+  "server": {
+    "argv": [
+      "llama-server",
+      "--device",
+      "Vulkan1",
+      "-m",
+      "qwen25-1.5b-instruct-q4_k_m.gguf",
+      "-ngl",
+      "99",
+      "-c",
+      "4096",
+      "--parallel",
+      "4",
+      "--host",
+      "127.0.0.1",
+      "--port",
+      "34091"
+    ],
+    "port": 34091,
+    "started_by_runner": true,
+    "model_path_reported": "qwen25-1.5b-instruct-q4_k_m.gguf",
+    "model_path_resolves_to_artifact": true,
+    "build_info": "b1-4a3635c",
+    "n_ctx": 1024,
+    "total_slots": 4,
+    "tokenizer_check": {
+      "contexts_checked": 40,
+      "agrees": true
+    },
+    "argv_note": "the loader argv is recorded portably: binary name, repository-relative artifact path, and the pinned flags; the artifact is identified by sha256"
+  },
+  "config": {
+    "template": "chat",
+    "max_tokens": 512,
+    "temperature": 0.0,
+    "cache_prompt": true,
+    "ctx": 4096,
+    "parallel": 4,
+    "ngl": 99,
+    "device": "Vulkan1",
+    "prompt_sent_as": "ids",
+    "logit_bias": "none in either arm"
+  },
+  "rows_file": {
+    "path": "rows.jsonl",
+    "sha256": "1b299b38a1f1b0344c00f664d847c9fde76498603ef8b71fdd04b58e8d97fac7",
+    "rows": 20
+  },
+  "metrics": {
+    "generated_tokens": 1577,
+    "completion_requests": 1577,
+    "rows_input_changed": 0,
+    "prompt_tokens_before": 1106,
+    "prompt_tokens_after": 1106,
+    "plain_checked_rows": 20,
+    "plain_equals_loop": 15,
+    "ids_wave_equals_loop": 15,
+    "ids_wave_equals_text_wave": 20,
+    "plain_first_divergence": [
+      {
+        "id": "er-0008",
+        "at": 53
+      },
+      {
+        "id": "er-0012",
+        "at": 22
+      },
+      {
+        "id": "er-0017",
+        "at": 166
+      },
+      {
+        "id": "er-0018",
+        "at": 30
+      },
+      {
+        "id": "er-0019",
+        "at": 0
+      }
+    ],
+    "wall_seconds": 83.171
+  },
+  "verdict": {
+    "complete": true,
+    "note": "an arm is complete only when it holds every suite row it names"
+  }
+}
