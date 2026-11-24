@@ -171,6 +171,61 @@ def render_prompt(tokenizer, prompt, system, raw):
     return prompt, "raw-no-template"
 
 
+def capture_factories(config):
+    """Model factories to try, in order.
+
+    AutoModelForCausalLM stays first wherever it has a mapping for the config
+    (qwen3_5 carries a vision_config yet maps to its causal LM here, and that
+    path is unchanged). A vision-language config it does not map (minicpmv4_7)
+    goes to AutoModelForImageTextToText first, the same factory hf.py picks for
+    any config with a vision_config; AutoModel would give the headless base.
+    The class named by config.architectures is the next attempt, and AutoModel is
+    the last resort (load_generating_model rejects anything without .generate)."""
+    import transformers
+    from transformers import AutoModel, AutoModelForCausalLM
+    try:
+        causal_mapped = type(config) in AutoModelForCausalLM._model_mapping
+    except Exception:
+        causal_mapped = False
+    factories = [AutoModelForCausalLM]
+    if hasattr(config, "vision_config"):
+        if causal_mapped:
+            factories.append(transformers.AutoModelForImageTextToText)
+        else:
+            factories.insert(0, transformers.AutoModelForImageTextToText)
+    for name in getattr(config, "architectures", None) or ():
+        named = getattr(transformers, name, None)
+        if named is not None and hasattr(named, "from_pretrained"):
+            factories.append(named)
+    factories.append(AutoModel)
+    return factories
+
+
+def load_generating_model(factories, source, *, revision, dtype, device, trust_remote_code):
+    """First factory whose loaded model can generate; a headless base class
+    (no .generate) is recorded as an attempt and skipped."""
+    attempts = []
+    for factory in factories:
+        for attention in ("eager", None):
+            kwargs = {"revision": revision, "dtype": dtype, "device_map": {"": device},
+                      "trust_remote_code": trust_remote_code}
+            if attention:
+                kwargs["attn_implementation"] = attention
+            try:
+                candidate = factory.from_pretrained(source, **kwargs).eval()
+            except (ValueError, TypeError, RuntimeError, KeyError) as error:
+                attempts.append(f"{factory.__name__}({attention or 'default'}): {error}")
+                continue
+            if hasattr(candidate, "generate"):
+                return candidate
+            attempts.append(f"{factory.__name__}({attention or 'default'}): "
+                            f"{type(candidate).__name__} has no generate")
+            del candidate
+            break
+    raise ValueError("no model factory loaded a generating model for this checkpoint: "
+                     + " | ".join(attempts[:4]))
+
+
 def _hook_factory(width, position, span_end):
     def hook(module, args, output):
         hidden = output[0] if isinstance(output, tuple) else output
@@ -451,7 +506,7 @@ def capture_command(args):
     if not rows:
         raise ValueError(f"{args.suite} has no rows for kinds {list(kinds)} after the frame/exclusion guard")
 
-    from transformers import AutoConfig, AutoModel, AutoModelForCausalLM, AutoTokenizer
+    from transformers import AutoConfig, AutoTokenizer
     from .compat import compatible_source
     backend = resolve_backend(allow_secondary=args.allow_cuda)
     device = backend_device(backend)
@@ -461,29 +516,14 @@ def capture_command(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model, revision=args.revision,
                                               trust_remote_code=args.trust_remote_code)
     dtype = {"bfloat16": torch.bfloat16, "float16": torch.float16}[args.dtype]
-    attempts = []
-    model = None
     # Vendor remote-code checkpoints get the same private metadata repair the rest
     # of the tool uses (compat.compatible_source); the user's download is never
     # written to.
     source_context = compatible_source(args.model)
     prepared = source_context.__enter__()
     try:
-        for factory in (AutoModelForCausalLM, AutoModel):
-            for attention in ("eager", None):
-                kwargs = {"revision": args.revision, "dtype": dtype, "device_map": {"": device},
-                          "trust_remote_code": args.trust_remote_code}
-                if attention:
-                    kwargs["attn_implementation"] = attention
-                try:
-                    model = factory.from_pretrained(str(prepared), **kwargs).eval()
-                    break
-                except (ValueError, TypeError, RuntimeError) as error:
-                    attempts.append(f"{factory.__name__}({attention or 'default'}): {error}")
-            if model is not None:
-                break
-        if model is None:
-            raise ValueError("no model factory loaded this checkpoint: " + " | ".join(attempts[:4]))
+        model = load_generating_model(capture_factories(config), str(prepared), revision=args.revision,
+                                      dtype=dtype, device=device, trust_remote_code=args.trust_remote_code)
     except BaseException:
         source_context.__exit__(None, None, None)
         raise
