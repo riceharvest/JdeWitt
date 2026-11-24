@@ -1,0 +1,37 @@
+[2026-11-24T03:03:46Z] P7 wave run start (cap 1024, ctx 4096, parallel 4, temp 0)
+[2026-11-24T03:03:46Z] serving q3-4b-base-q8.gguf at -m /mnt/ssd/hermes/models/q3-4b-base-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024
+[2026-11-24T03:03:57Z] WAVE retention-base rows=241 kinds=math,code
+[2026-11-24T03:15:58Z] stopped server pid 2241688
+[2026-11-24T03:15:58Z] stopped server pid 
+[2026-11-24T04:49:34Z] P7 wave run start (cap 1024, ctx 4096, parallel 4, temp 0)
+[2026-11-24T04:49:34Z] serving q3-4b-base-q8.gguf at -m /mnt/ssd/hermes/models/q3-4b-base-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024
+[2026-11-24T04:49:51Z] RESET retention-base (incomplete output from an earlier attempt)
+[2026-11-24T04:49:51Z] WAVE retention-base rows=241 kinds=math,code
+[2026-11-24T06:13:10Z] P7 wave run start (cap 1024, ctx 4096, parallel 4, temp 0)
+[2026-11-24T06:13:10Z] serving q3-4b-base-q8.gguf at -m /mnt/ssd/hermes/models/q3-4b-base-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024
+[2026-11-24T06:13:26Z] RESET retention-base (incomplete output from an earlier attempt)
+[2026-11-24T06:13:26Z] WAVE retention-base rows=241 kinds=math,code
+[2026-11-24T06:21:47Z] DONE  retention-base rows=241 cap=1024 tokens=41134 measured=True invalid=0
+[2026-11-24T06:21:48Z] stopped server pid 2644976
+[2026-11-24T06:21:48Z] serving q3-4b-f15s15-l935-refit.gguf at -m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024
+[2026-11-24T06:22:03Z] WAVE removal-arm rows=40 kinds=refusal
+[2026-11-24T06:23:46Z] DONE  removal-arm rows=40 cap=1024 tokens=7533 measured=True invalid=2
+[2026-11-24T06:23:46Z] WAVE held_out-arm rows=120 kinds=refusal
+[2026-11-24T06:30:32Z] DONE  held_out-arm rows=120 cap=1024 tokens=34573 measured=True invalid=8
+[2026-11-24T06:30:32Z] WAVE retention-arm rows=241 kinds=math,code
+[2026-11-24T06:40:26Z] DONE  retention-arm rows=241 cap=1024 tokens=54411 measured=True invalid=4
+[2026-11-24T06:40:27Z] stopped server pid 2670358
+[2026-11-24T06:40:27Z] serving q3-4b-heretic-q8.gguf at -m /mnt/ssd/hermes/models/q3-4b-heretic-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024
+[2026-11-24T06:40:41Z] WAVE removal-published rows=40 kinds=refusal
+[2026-11-24T06:46:23Z] DONE  removal-published rows=40 cap=1024 tokens=25571 measured=True invalid=4
+[2026-11-24T06:46:24Z] WAVE held_out-published rows=120 kinds=refusal
+[2026-11-24T06:58:34Z] DONE  held_out-published rows=120 cap=1024 tokens=69887 measured=True invalid=12
+[2026-11-24T06:58:34Z] WAVE retention-published rows=241 kinds=math,code
+[2026-11-24T07:07:16Z] DONE  retention-published rows=241 cap=1024 tokens=42091 measured=True invalid=0
+[2026-11-24T07:07:18Z] stopped server pid 2693449
+[2026-11-24T07:07:18Z] SHAPE removal-arm -> shape-audit-removal.json
+[2026-11-24T07:07:18Z] SHAPE held_out-arm -> shape-audit-held_out.json
+[2026-11-24T07:07:18Z] DRIFT control ln-PPL base vs arm -> drift.json
+[2026-11-24T07:12:33Z] DRIFT outside the budget (see drift.json inside_budget=false); recorded, run continues
+[2026-11-24T07:12:33Z] FIDELITY realized cos per edited tensor -> fidelity.json
+[2026-11-24T07:13:37Z] P7 wave run complete; every server this script started is stopped

@@ -15,7 +15,7 @@
       "ln_ppl": 0.2355,
       "ppl": 1.2656,
       "uncertainty": 0.02535,
-      "seconds": 90.2
+      "seconds": 116.8
     },
     "arm": {
       "path": "/mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf",
@@ -23,11 +23,11 @@
       "ln_ppl": 0.2961,
       "ppl": 1.3446,
       "uncertainty": 0.03709,
-      "seconds": 94.3
+      "seconds": 192.8
     }
   },
   "control_corpus": {
-    "path": "/home/dario/.agentboard/worktrees/t_662a4d28/verification/ppl-probe/control.txt",
+    "path": "/home/dario/.agentboard/worktrees/t_f80b38d9/verification/ppl-probe/control.txt",
     "sha256": "07adf2f9f3b1d3885886b199255cd786c5c720a5f4baf11e3cdfc617712b01f7",
     "bytes": 18862
   },
