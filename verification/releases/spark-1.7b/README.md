@@ -55,11 +55,12 @@ both inventories of the 56 edited tensors, two whole block windows each, scale 1
 chosen). The rule in the table is "smallest candidate type whose worst edited
 tensor clears the floor; if none does, the row is `failed(codec)` at the measured
 cos values — never accepted at a raised scale". Q6_K is refused as a codec event:
-0.8004 < 0.90, and the delivered-byte probe
-(`verification/p7-spark/evidence/q6k-merge-probe.json`: attention 0.7766, FFN
-0.8713) shows the same floor on merged bytes, not just in the simulation. The
-documented counterexample stands: the scale bisection that landed at 6.61 read
-+10.2 nats control PPL — a collapsed model — and no scale above 1.0 was tried.
+0.8004 < 0.90, and the one delivered-byte writer probe on this lineage
+(`verification/p7-spark/evidence/q6k-merge-probe.json`, 2 of 56 tensors: first and
+last edited tensor) reads attention 0.7766 / FFN 0.8713 at Q6_K, i.e. the same floor
+on merged bytes, not only in the simulation. The documented counterexample stands:
+the scale bisection that landed at 6.61 read +10.2 nats control PPL — a collapsed
+model — and no scale above 1.0 was tried.
 
 ## Per edited tensor — chosen type, realized cos, byte cost
 
