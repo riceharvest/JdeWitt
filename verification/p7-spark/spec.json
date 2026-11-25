@@ -1,0 +1,97 @@
+{
+ "arm": {
+  "byte_cost": 1307821248,
+  "byte_cost_source": "size of the merged artifact written by the recorded merge command",
+  "chosen_type": "Q8_0",
+  "codec_table": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/codec-table.json",
+  "codec_verdict": "cleared",
+  "edited_tensor_footprint": "blk.* x {attn_output.weight, ffn_down.weight} (every layer the artifact carries)",
+  "edited_tensors": 56,
+  "label": "spark-1.7b-q4km-s1.0",
+  "realized_cos": 0.9687,
+  "realized_cos_kind": "arm-preview",
+  "scale": 1.0
+ },
+ "artifact": {
+  "bytes": 1307821248,
+  "recipe": {
+   "base_sha256_prefix_16": "80ff5222ae51de05",
+   "command": "/home/dario/.agentboard/worktrees/t_0ad8db9b/.venv/bin/python -m jdewitt edit-quantized --gguf /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf --out /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --records '/mnt/ssd/dev workspace/JdeWitt/runs/p4/records.pt' --shape shared --scale 1 --edit-type q8_0 --min-cos 0.9 --axis-space output",
+   "edit": "shared sign-aligned rank-1 axis, output space, attn_output + ffn_down, every discovered layer, scale 1, edited tensors encoded at Q8_0 (floor 0.9)"
+  },
+  "sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c",
+  "sha256_prefix_16": "c8d34cb82cd2b6a6"
+ },
+ "base": {
+  "bytes": 1107458592,
+  "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+  "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "sha256_prefix_16": "80ff5222ae51de05"
+ },
+ "configs": {
+  "held_out": {
+   "argv": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096"
+  },
+  "removal": {
+   "argv": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096"
+  },
+  "retention": {
+   "argv": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024"
+  }
+ },
+ "inputs": {
+  "drift": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/drift.json",
+  "fidelity": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/fidelity.json",
+  "held_out": {
+   "suite": "verification/screens/q3-holdout-wider.jsonl",
+   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/heldout-120-arm"
+  },
+  "removal": {
+   "suite": "verification/p7-spark/suites/harmful-40.jsonl",
+   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/removal-arm"
+  },
+  "retention": {
+   "base_wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/retention-base",
+   "suite": "verification/capability/capability-run-en.jsonl",
+   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/retention-arm"
+  },
+  "shape_audit": [
+   {
+    "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
+    "axis": "removal",
+    "path": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/shape/removal.json"
+   },
+   {
+    "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
+    "axis": "held_out",
+    "path": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/shape/heldout.json"
+   }
+  ],
+  "wording_inventory": {
+   "shipped": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472",
+   "wide": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+  }
+ },
+ "lineage": "spark-1.7b",
+ "notes": [
+  "scale is 1.0: the arm is the fitted rank-1 removal, not a scale search. A type is chosen from measured cos (see arm.codec_table); no scale was raised to clear a floor.",
+  "held_out is the registered 120-row/120-family suite; the 24-family wave (waves/heldout-24-arm) is supplementary evidence and certify.refuses it as a probe.",
+  "the base removal wave (waves/removal-base) is the baseline for the removal number, not a certifiable axis."
+ ],
+ "pinned_cert_argv": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096",
+ "schema_version": 1,
+ "suites": {
+  "held_out": {
+   "in_clone": true,
+   "path": "verification/screens/q3-holdout-wider.jsonl"
+  },
+  "removal": {
+   "in_clone": true,
+   "path": "verification/p7-spark/suites/harmful-40.jsonl"
+  },
+  "retention": {
+   "in_clone": true,
+   "path": "verification/capability/capability-run-en.jsonl"
+  }
+ }
+}

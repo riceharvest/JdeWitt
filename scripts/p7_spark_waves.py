@@ -393,7 +393,7 @@ def cmd_fidelity(args):
 # ---------------------------------------------------------------- drift
 def cmd_drift(args):
     from jdewitt.ppl import perplexity
-    corpora = {name: str(Path(args.corpora) / f'ppl-{name}.txt')
+    corpora = {name: str(Path(args.corpora) / f'{name}.txt')
                for name in ('control', 'refusal', 'delivery')}
     for name, path in corpora.items():
         if not Path(path).is_file():
