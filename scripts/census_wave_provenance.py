@@ -22,6 +22,13 @@ have to trust the label on the directory:
   * wave.json carries the serve argv and a token ledger that agrees with the
     per-row ``completion_tokens`` in predictions.jsonl.
 
+Because the committed argv is sanitised to ``<local>/<basename>``, the check also
+hashes the model operand on the run that can still see it and records name,
+size and sha256, so the served artifact stays checkable by whoever holds the
+file. That digest is a one-time measurement: ``--check`` cannot recompute it
+from a sanitised argv, so it is listed as a run record rather than part of the
+drift comparison.
+
 It also sanitises the committed artifacts: absolute ``/mnt``, ``/home``,
 ``/Users`` and ``/root`` paths become repo-relative or ``<local>/<basename>``,
 board task ids become ``<task>``, and every rewrite is listed in the check file.
@@ -53,6 +60,7 @@ EXPECTED_HOLDOUT = 'holdout'
 ABSOLUTE_PATH = re.compile(r'(?<![\w<>])(/(?:mnt|home|Users|root)/[^\s"\';,)\]]*)')
 TASK_ID = re.compile(r'\bt_[0-9a-f]{8}\b')
 REVISION = re.compile(r'^[0-9a-f]{40}$')
+MODEL_OPERAND = re.compile(r'(?:^|\s)(?:-m|--model)(?:\s+|=)(\S+)')
 
 
 def file_sha256(path: Path) -> str:
@@ -280,6 +288,7 @@ def build_check(wave_dir: Path, holdout_path: Path, provenance_path: Path,
         'unresolved_rows': unresolved,
         'argv': {'serve_config': (sanitised_wave or {}).get('serve_config'),
                  'structured': (sanitised_wave or {}).get('serve_structured')},
+        'artifact': artifact_identity(argv, repo_root),
         'screen': screen,
         'claims': {'removal': False, 'capability': False,
                    'note': 'a refusal-check pass is a screen over wording; it is not evidence that '
@@ -293,6 +302,32 @@ def build_check(wave_dir: Path, holdout_path: Path, provenance_path: Path,
     }
 
 
+def artifact_identity(argv: str, repo_root: Path) -> dict:
+    """Identify the served file by digest, not by the path in the argv.
+
+    The committed argv is sanitised to ``<local>/<basename>``, which loses the
+    only link between a wave and a concrete file on disk. The digest is what
+    keeps it checkable: whoever holds the artifact can hash it and compare. It is
+    measured on the run that can still see the file, so it is a run record, not
+    something ``--check`` can recompute.
+    """
+    match = MODEL_OPERAND.search(argv or '')
+    if match is None:
+        return {'name': None, 'bytes': None, 'sha256': None, 'resolved': False,
+                'note': 'serve_config names no model operand'}
+    operand = Path(match.group(1))
+    if not operand.is_absolute():
+        operand = repo_root / operand
+    if not operand.is_file():
+        return {'name': Path(match.group(1)).name, 'bytes': None, 'sha256': None,
+                'resolved': False,
+                'note': 'the argv path is sanitised or absent here; hash the file the '
+                        'wave record names to check it'}
+    return {'name': operand.name, 'bytes': operand.stat().st_size,
+            'sha256': file_sha256(operand), 'resolved': True,
+            'note': 'hashed from the operand the wave argv named, before sanitisation'}
+
+
 def portable_path(path: Path, repo_root: Path) -> str:
     try:
         return path.resolve().relative_to(repo_root.resolve()).as_posix()
@@ -303,12 +338,15 @@ def portable_path(path: Path, repo_root: Path) -> str:
 def comparable(report: dict) -> dict:
     """The parts of the check that can be recomputed from the inputs.
 
-    ``generated`` is a run stamp, and ``sanitisation.rewrites`` records a
+    ``generated`` is a run stamp, ``sanitisation.rewrites`` records a
     one-time edit to wave.json that a re-run of the check cannot see again
-    (the file it describes is already portable). Everything else — ids, digests,
-    licences, argv, ledger, screen counts — must match exactly.
+    (the file it describes is already portable), and ``artifact`` is a digest of
+    the file the pre-sanitisation argv named, which a re-run cannot resolve.
+    Everything else — ids, digests, licences, argv, ledger, screen counts — must
+    match exactly.
     """
-    return {key: value for key, value in report.items() if key not in {'generated', 'sanitisation'}}
+    return {key: value for key, value in report.items()
+            if key not in {'generated', 'sanitisation', 'artifact'}}
 
 
 def main(argv=None):
@@ -362,6 +400,7 @@ def main(argv=None):
 
     print(json.dumps({'rows': report['wave']['rows'],
                       'screen': report['screen'],
+                      'artifact': report['artifact'],
                       'resolved_provenance': report['resolved_provenance'],
                       'ok': report['ok'],
                       'failed_checks': report['failed_checks'],

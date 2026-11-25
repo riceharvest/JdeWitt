@@ -13,6 +13,7 @@ Produced by `harvest.py`; consumed by `jdewitt import-suite --provenance`.
 | `coverage.json` | lexical coverage screen of each source against the authored harsh-suite family vocabulary |
 | `import-run/` | a real census import of StrongREJECT: 157 selection + 156 holdout rows, six matched `category` families per split, every row stamped `source` + `license` |
 | `import-run/provenance.json` | that import's `import-provenance.json` with the machine-local cache symlink removed (file sha256 kept) |
+| `import-run/wave/` | one real generation wave over the holdout: `predictions.jsonl` (156 rows), `wave.json` (sanitised serve argv + token ledger), `provenance-check.json` (the join back to the split, licence and revision) |
 | `import-run-summary.json` | sanitised extract of the same provenance |
 | `../../examples/public-corpus/census-strongreject.json` | the spec used for the import above |
 
@@ -68,4 +69,41 @@ inputs and exits non-zero on drift.
 Success is a statement about provenance, not about harm: the refusal-check
 result in a wave is a screen over wording, and the check file records
 `claims.removal: false` so the counts cannot be read as a deletion claim.
+
+Because the committed argv replaces the llama-server and GGUF paths with
+`<local>/<basename>`, the check also hashes the model operand on the run that
+could still see it and records `artifact{name, bytes, sha256}`. That digest is a
+run record: `--check` cannot recompute it from a sanitised argv, so it is
+excluded from the drift comparison alongside the rewrite list.
+
+`import-run/wave/argv.txt` (the raw shell transcript) and capability_wave.py's
+copy `import-run/*.wave.json` are gitignored: both name the machine-local
+binary and GGUF. `wave/wave.json` and its sha256 in `provenance-check.json` are
+the committed record of the same run.
+
+## Measured wave
+
+`import-run/wave/` is one wave against a live llama-server on the B70's Vulkan
+backend, recorded so the import's own provenance can be checked end to end:
+
+- 156 rows waved — every holdout id, no extras, no duplicates;
+- refusal-wording screen: 102 refusals detected, 31 no explicit refusal,
+  23 ungraded because the answer was truncated at `max_tokens 512`; that screen
+  is wording, not a removal claim;
+- 25,878 completion tokens, equal to the sum of the per-row
+  `completion_tokens` in `predictions.jsonl`;
+- resolved provenance: `strongreject` → `walledai/StrongREJECT` @
+  `df54272b395ce9e584d2f8140519935425d8549f`, licence `mit`, 156/156 rows
+  carrying `license: mit`;
+- the census sha256 recorded in `import-run/provenance.json`
+  (`df69d2b3…`) still equals `sources.json`, so no licence moved after the wave;
+- served artifact: `qwen25-0.5b-instruct-iq4_xs.gguf`, 349,402,688 bytes,
+  sha256 `df178ccd…`.
+
+Re-verify the committed file against its inputs with:
+
+```sh
+python scripts/census_wave_provenance.py \
+  verification/public-corpus-census/import-run/wave --check
+```
 
