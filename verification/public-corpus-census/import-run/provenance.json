@@ -120,9 +120,9 @@
   ],
   "census": {
     "path": "verification/public-corpus-census/sources.json",
-    "sha256": "df69d2b3312c1efee7ec135f6126aa815959e84aa21adbf69fd4a1e333c9981e",
-    "generated": "2026-11-22",
-    "sources": 19
+    "sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec",
+    "generated": "2026-11-25",
+    "sources": 24
   },
   "unlicensed_sources": []
 }

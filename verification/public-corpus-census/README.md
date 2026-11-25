@@ -6,15 +6,16 @@ Produced by `harvest.py`; consumed by `jdewitt import-suite --provenance`.
 
 | file | what it is |
 | --- | --- |
-| `harvest.py` | the manifest and harvester. Every source entry carries dataset id, pinned revision, licence, row count and the release file that references it. Run: `uv run python verification/public-corpus-census/harvest.py` |
-| `sources.json` | the canonical inventory (`format: jdewitt-public-corpora/1`): 19 source entries, 6 vendored, 13 referenced. This is the file `--provenance` reads. |
-| `rows.jsonl` | one row per unique vendored prompt: `sha256` of the normalised prompt, `source`, `dataset`, `revision`, `license`, `language`, `split`, `source_row`, `prompt`. 9,160 rows. |
+| `harvest.py` | the manifest and harvester. Every source entry carries dataset id, pinned revision, licence, row count and the release file that references it. Run: `uv run --extra datasets python verification/public-corpus-census/harvest.py` (pyarrow is the `datasets` extra; without it parquet sources cannot be read) |
+| `sources.json` | the canonical inventory (`format: jdewitt-public-corpora/1`): 24 source entries, 9 vendored, 15 referenced. This is the file `--provenance` reads. |
+| `rows.jsonl` | one row per unique vendored prompt: `sha256` of the normalised prompt, `source`, `dataset`, `revision`, `license`, `language`, `split`, `source_row`, `prompt`. 9,704 rows. |
 | `dedupe.json` | rows in / unique / duplicates, per-source counts, and every cross-source duplicate group with its member sources |
 | `coverage.json` | lexical coverage screen of each source against the authored harsh-suite family vocabulary |
 | `import-run/` | a real census import of StrongREJECT: 157 selection + 156 holdout rows, six matched `category` families per split, every row stamped `source` + `license` |
 | `import-run/provenance.json` | that import's `import-provenance.json` with the machine-local cache symlink removed (file sha256 kept) |
 | `import-run/wave/` | one real generation wave over the holdout: `predictions.jsonl` (156 rows), `wave.json` (sanitised serve argv + token ledger), `provenance-check.json` (the join back to the split, licence and revision) |
 | `import-run-summary.json` | sanitised extract of the same provenance |
+| `raw/` | what the release pages and API endpoints actually returned: `part-probes.json` (Hub/GitHub responses for the ORCA composite parts) and `orca-qwen38-27b-card-eval.txt` (the ORCA card's evaluation section, transcribed with its repo sha) |
 | `../../examples/public-corpus/census-strongreject.json` | the spec used for the import above |
 
 ## Policy
@@ -33,11 +34,13 @@ Produced by `harvest.py`; consumed by `jdewitt import-suite --provenance`.
 
 ## Dedupe
 
-Counts are in `dedupe.json`. Current: 10,047 vendored rows → 9,160 unique
-prompts (887 duplicates, 867 cross-source groups). The largest groups are the
+Counts are in `dedupe.json`. Current: 10,637 vendored rows → 9,704 unique
+prompts (933 duplicates, 913 cross-source groups). The largest groups are the
 English files of `heretic-org/Multilingual-Harmless-Harmful` being byte-equal,
 after normalisation, to `heretic-org/Semantic-{Harmful,Harmless}` (815 groups),
-plus 17 StrongREJECT prompts that appear verbatim inside Semantic-Harmful.
+plus 17 StrongREJECT prompts that appear verbatim inside Semantic-Harmful, 34
+that ForbiddenQuestions shares with StrongREJECT and 12 that MaliciousInstruct
+shares with StrongREJECT.
 
 ## Next command
 

@@ -25,10 +25,10 @@
   "sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1"
  },
  "census": {
-  "declared_sha256": "df69d2b3312c1efee7ec135f6126aa815959e84aa21adbf69fd4a1e333c9981e",
+  "declared_sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec",
   "matches": true,
   "path": "verification/public-corpus-census/sources.json",
-  "sha256": "df69d2b3312c1efee7ec135f6126aa815959e84aa21adbf69fd4a1e333c9981e"
+  "sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec"
  },
  "checks": [
   {
@@ -62,7 +62,7 @@
    "ok": true
   },
   {
-   "detail": "provenance census sha256=df69d2b3312c1efe..., on disk=df69d2b3312c1efe...",
+   "detail": "provenance census sha256=15a6637484a12df6..., on disk=15a6637484a12df6...",
    "id": "census_digest_matches_provenance",
    "ok": true
   },
@@ -109,7 +109,7 @@
  },
  "failed_checks": [],
  "format": "jdewitt-census-wave-provenance/1",
- "generated": "2026-11-25T15:14:55Z",
+ "generated": "2026-11-25T15:25:39Z",
  "holdout": {
   "declared_digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",
   "digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",

@@ -1,0 +1,90 @@
+{
+  "format": "jdewitt-public-corpora-probes/1",
+  "retrieved": "2026-11-25T15:24:42Z",
+  "what": "what the Hub and GitHub answered when the ORCA composite parts were added to the census; values are the API responses, not re-typed",
+  "parts": {
+    "walledai/MaliciousInstruct": {
+      "query": "https://huggingface.co/api/datasets/walledai/MaliciousInstruct",
+      "observed": {
+        "sha": "4669349f48fea45dbacec02aaa9aca4fd7ac1c15",
+        "gated": false,
+        "license": "cc-by-sa-4.0",
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "data/train-00000-of-00001.parquet"
+        ],
+        "num_rows": 100
+      },
+      "rows_query": "https://datasets-server.huggingface.co/size?dataset=walledai%2FMaliciousInstruct"
+    },
+    "walledai/SimpleSafetyTests": {
+      "query": "https://huggingface.co/api/datasets/walledai/SimpleSafetyTests",
+      "observed": {
+        "sha": "4e479cf8c573c8fc804c87903696e54caebc8100",
+        "gated": false,
+        "license": "cc-by-2.0",
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "data/info-00000-of-00001.parquet",
+          "data/instruct-00000-of-00001.parquet"
+        ],
+        "num_rows": 100
+      },
+      "rows_query": "https://datasets-server.huggingface.co/size?dataset=walledai%2FSimpleSafetyTests"
+    },
+    "walledai/ForbiddenQuestions": {
+      "query": "https://huggingface.co/api/datasets/walledai/ForbiddenQuestions",
+      "observed": {
+        "sha": "46804e8403d125a07e5af5b693b476d60cfa5daa",
+        "gated": false,
+        "license": "mit",
+        "siblings": [
+          ".gitattributes",
+          "README.md",
+          "data/train-00000-of-00001.parquet"
+        ],
+        "num_rows": 390
+      },
+      "rows_query": "https://datasets-server.huggingface.co/size?dataset=walledai%2FForbiddenQuestions"
+    },
+    "JailbreakBench/JailbreakBench": {
+      "query": "https://huggingface.co/api/datasets/JailbreakBench/JailbreakBench",
+      "error": "HTTP Error 401: Unauthorized",
+      "github_license_query": "https://api.github.com/repos/JailbreakBench/jailbreakbench",
+      "observed_release_repo_license": "MIT (harness code; not claimed as the prompt-set licence)"
+    },
+    "centerforaisafety/HarmBench": {
+      "query": "https://huggingface.co/api/datasets/centerforaisafety/HarmBench",
+      "error": "HTTP Error 401: Unauthorized",
+      "github_pin": {
+        "query": "https://api.github.com/repos/centerforaisafety/HarmBench/commits/main",
+        "observed_sha": "8e1604d1171fe8a48d8febecd22f600e462bdcdd",
+        "license_query": "https://api.github.com/repos/centerforaisafety/HarmBench",
+        "observed_license": "MIT",
+        "csv_url": "https://raw.githubusercontent.com/centerforaisafety/HarmBench/8e1604d1171fe8a48d8febecd22f600e462bdcdd/data/behavior_datasets/harmbench_behaviors_text_all.csv",
+        "observed_csv_rows": 400,
+        "observed_functional_category": {
+          "standard": 200,
+          "contextual": 100,
+          "copyright": 100
+        }
+      }
+    },
+    "llm-attacks/advbench": {
+      "query": "https://huggingface.co/api/datasets/llm-attacks/advbench",
+      "error": "HTTP Error 401: Unauthorized"
+    },
+    "orcarouter/Qwen3.8-27B-Uncensored-GGUF": {
+      "query": "https://huggingface.co/api/models/orcarouter/Qwen3.8-27B-Uncensored-GGUF",
+      "observed": {
+        "sha": "b2e5cef033c0832fff1cc8c4937865abab9455f4",
+        "gated": "auto",
+        "license": "apache-2.0"
+      },
+      "card_url": "https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-GGUF",
+      "note": "card body is served to anonymous readers; the raw README endpoint returns 401 for a gated repo"
+    }
+  }
+}
