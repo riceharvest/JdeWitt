@@ -46,8 +46,9 @@ were served at `-c 4096 --parallel 4 -dev Vulkan1 --jinja --no-webui`, temp 0.
 2. **The held-out axis has the same shape**: 18/40 wide over 40 graded rows
    (29 shipped), 80 of 120 truncated, 40 of the suite's 120 families measured.
 3. **The codec is NOT the failure** — and that is the lineage's deciding result.
-   The Q6_K step is the codec floor the roadmap records (min cos 0.8004, attention
-   0.7766–0.8116 on merged bytes); the Q8_0 type choice clears it at 0.9687 without
+   The Q6_K step is the codec floor the roadmap records: min cos 0.8004 on the
+   pristine codec table (attention 0.8004–0.8116) and 0.7766 on the one
+   merged-byte writer probe; the Q8_0 type choice clears it at 0.9687 without
    touching the scale. Scale stayed 1.0; the 6.61/+10.2-nat counterexample was not
    approached. The price is bytes: +200,362,656 B (+18.1%), because the 28
    `ffn_down` and 28 `attn_output` tensors move to Q8_0.
