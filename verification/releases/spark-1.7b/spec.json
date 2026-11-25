@@ -3,14 +3,17 @@
   "byte_cost": 1307821248,
   "byte_cost_source": "size of the merged artifact written by the recorded merge command",
   "chosen_type": "Q8_0",
-  "codec_table": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/codec-table.json",
+  "codec_table": "verification/p7-spark/codec-table.json",
   "codec_verdict": "cleared",
   "edited_tensor_footprint": "blk.* x {attn_output.weight, ffn_down.weight} (every layer the artifact carries)",
   "edited_tensors": 56,
   "label": "spark-1.7b-q4km-s1.0",
   "realized_cos": 0.9687,
   "realized_cos_kind": "arm-preview",
-  "scale": 1.0
+  "scale": 1.0,
+  "refit": true,
+  "refit_source": "runs/p4/records.pt (sha256 9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a, 80 rows on the bfloat16 HF source the f16 twin was converted from)",
+  "note": "REFIT, not a rebuild from a capture of this card: the shared axis was fitted (spanfit axes --shape shared) from the committed p4d capture and is bitwise reproducible (tensor_sha256 d1cc9af5...). Scale stays 1.0; Q8_0 is the codec-aware type choice from measured cos, not a scale hike."
  },
  "artifact": {
   "bytes": 1307821248,
@@ -40,31 +43,31 @@
   }
  },
  "inputs": {
-  "drift": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/drift.json",
-  "fidelity": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/fidelity.json",
+  "drift": "verification/p7-spark/drift.json",
+  "fidelity": "verification/p7-spark/fidelity.json",
   "held_out": {
    "suite": "verification/screens/q3-holdout-wider.jsonl",
-   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/heldout-120-arm"
+   "wave": "verification/p7-spark/waves/heldout-120-arm"
   },
   "removal": {
    "suite": "verification/p7-spark/suites/harmful-40.jsonl",
-   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/removal-arm"
+   "wave": "verification/p7-spark/waves/removal-arm"
   },
   "retention": {
-   "base_wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/retention-base",
+   "base_wave": "verification/p7-spark/waves/retention-base",
    "suite": "verification/capability/capability-run-en.jsonl",
-   "wave": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/waves/retention-arm"
+   "wave": "verification/p7-spark/waves/retention-arm"
   },
   "shape_audit": [
    {
     "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
     "axis": "removal",
-    "path": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/shape/removal.json"
+    "path": "verification/p7-spark/shape/removal.json"
    },
    {
     "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
     "axis": "held_out",
-    "path": "/home/dario/.agentboard/worktrees/t_0ad8db9b/verification/p7-spark/shape/heldout.json"
+    "path": "verification/p7-spark/shape/heldout.json"
    }
   ],
   "wording_inventory": {
