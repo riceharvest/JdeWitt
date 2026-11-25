@@ -2,10 +2,12 @@
   "method": "lexical keyword screen over the authored harsh-suite family vocabulary; a hit is a coverage lead, not a family claim",
   "families": {
     "chemical-biological": {
+      "forbiddenquestions": 2,
       "multilingual-harmless-harmful": 1,
       "semantic-harmful": 2
     },
     "copyright": {
+      "forbiddenquestions": 3,
       "multilingual-harmless-harmful": 7,
       "semantic-harmful": 2,
       "semantic-harmless": 8,
@@ -13,25 +15,35 @@
       "xstest": 2
     },
     "cybercrime-intrusion": {
+      "forbiddenquestions": 33,
+      "maliciousinstruct": 5,
       "multilingual-harmless-harmful": 115,
       "semantic-harmful": 80,
       "semantic-harmless": 7,
+      "simplesafetytests": 5,
       "strongreject": 10
     },
     "harassment-bullying": {
+      "forbiddenquestions": 6,
+      "maliciousinstruct": 9,
       "multilingual-harmless-harmful": 1,
       "semantic-harmful": 15,
       "semantic-harmless": 7,
       "strongreject": 10
     },
     "illegal": {
+      "forbiddenquestions": 25,
+      "maliciousinstruct": 3,
       "multilingual-harmless-harmful": 16,
       "semantic-harmful": 31,
       "semantic-harmless": 2,
+      "simplesafetytests": 10,
       "strongreject": 31,
       "xstest": 10
     },
     "misinformation-disinformation": {
+      "forbiddenquestions": 2,
+      "maliciousinstruct": 2,
       "multilingual-harmless-harmful": 6,
       "semantic-harmful": 27,
       "semantic-harmless": 6,
@@ -39,28 +51,36 @@
     },
     "harmful": {
       "deccp": 2,
+      "forbiddenquestions": 18,
+      "maliciousinstruct": 12,
       "multilingual-harmless-harmful": 1,
       "semantic-harmful": 34,
       "semantic-harmless": 8,
+      "simplesafetytests": 14,
       "strongreject": 18,
       "xstest": 38
     },
     "violence": {
       "deccp": 1,
+      "forbiddenquestions": 7,
       "multilingual-harmless-harmful": 55,
       "semantic-harmful": 35,
       "semantic-harmless": 1,
+      "simplesafetytests": 5,
       "strongreject": 11,
       "xstest": 11
     },
     "sexual-content": {
+      "forbiddenquestions": 4,
       "multilingual-harmless-harmful": 11,
       "semantic-harmful": 5,
       "semantic-harmless": 1,
+      "simplesafetytests": 1,
       "strongreject": 33,
       "xstest": 4
     },
     "privacy": {
+      "forbiddenquestions": 9,
       "multilingual-harmless-harmful": 3,
       "semantic-harmful": 4,
       "semantic-harmless": 4,
@@ -68,64 +88,90 @@
       "xstest": 12
     },
     "fraud-deception": {
+      "forbiddenquestions": 19,
+      "maliciousinstruct": 20,
       "multilingual-harmless-harmful": 39,
       "semantic-harmful": 55,
       "semantic-harmless": 24,
+      "simplesafetytests": 8,
       "strongreject": 29,
       "xstest": 5
     },
     "non-violent-crimes": {
+      "forbiddenquestions": 6,
+      "maliciousinstruct": 12,
       "semantic-harmful": 60,
       "semantic-harmless": 3,
+      "simplesafetytests": 1,
       "strongreject": 12,
       "xstest": 10
     },
     "illegal-goods-and-services": {
+      "forbiddenquestions": 4,
       "semantic-harmful": 7,
       "semantic-harmless": 1,
+      "simplesafetytests": 6,
       "strongreject": 11,
       "xstest": 3
     },
     "expert-advice": {
+      "forbiddenquestions": 4,
+      "maliciousinstruct": 2,
       "semantic-harmful": 1,
+      "simplesafetytests": 2,
       "strongreject": 3
     },
     "government-decision-making": {
       "deccp": 11,
+      "forbiddenquestions": 19,
+      "maliciousinstruct": 1,
       "multilingual-harmless-harmful": 3,
       "semantic-harmful": 23,
       "semantic-harmless": 11,
+      "simplesafetytests": 1,
       "strongreject": 11,
       "xstest": 11
     },
     "economic-harm": {
+      "forbiddenquestions": 20,
+      "maliciousinstruct": 2,
       "multilingual-harmless-harmful": 27,
       "semantic-harmful": 20,
       "semantic-harmless": 15,
+      "simplesafetytests": 2,
       "strongreject": 10,
       "xstest": 1
     },
     "physical-harm": {
+      "forbiddenquestions": 1,
       "multilingual-harmless-harmful": 7,
       "semantic-harmful": 6,
+      "simplesafetytests": 2,
       "strongreject": 6,
       "xstest": 4
     },
     "hate-harassment-and-discrimination": {
+      "forbiddenquestions": 2,
+      "maliciousinstruct": 1,
       "semantic-harmful": 5,
       "semantic-harmless": 2,
       "strongreject": 14,
       "xstest": 8
     },
     "malware-hacking": {
+      "forbiddenquestions": 20,
+      "maliciousinstruct": 1,
       "multilingual-harmless-harmful": 87,
       "semantic-harmful": 31,
       "semantic-harmless": 18,
       "strongreject": 7
     },
     "disinformation-and-deception": {
+      "forbiddenquestions": 8,
+      "maliciousinstruct": 4,
       "multilingual-harmless-harmful": 4,
       "semantic-harmful": 27,
+      "simplesafetytests": 1,
       "strongreject": 5
     }
   },

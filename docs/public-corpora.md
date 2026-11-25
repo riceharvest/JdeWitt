@@ -46,7 +46,7 @@ file references, and that is what this table cites.
 | abliterator | AdvBench `goal` column (test split) + `tatsu-lab/alpaca` instructions with empty `input` | `FailSpy/abliterator` `abliterator.py` |
 | DECCP | `augmxnt/deccp`: 95 censored + 37 uncensored prompts, Apache-2.0 | dataset card; `augmxnt/Qwen2-7B-Instruct-deccp` |
 | Josiefied / JOSIE | model cards say "custom dataset"; the author's published corpora are `JOSIE-Prompts-Only-Corpus-300` (300) and `Josiefication-prompts-online-po` (4.0M), both with no licence field | model + dataset cards |
-| ORCA (OrcaRouter) | **unresolved**: model cards are gated (HTTP 401 without accepting the gate) and no dataset id is published | `orcarouter/*-abliterated` repos |
+| ORCA (OrcaRouter) | no dataset id: the card documents an evaluation composite of eight benchmarks with sample counts (AdvBench 100, JailbreakBench harmful 100, StrongREJECT 150, HarmBench standard 150, MaliciousInstruct 100, SimpleSafetyTests 50, ForbiddenQuestions 150, zh/en probes 11; XSTest-safe 250 under over-refusal) | `orcarouter/Qwen3.8-27B-Uncensored-GGUF` model card, "Evaluation" table |
 
 ## Census table
 
@@ -63,11 +63,16 @@ importable at all when the release publishes nothing).
 | `heretic-org/Semantic-Harmless@7e9f2b01` | 416 | en | one-to-one with Semantic-Harmful | CC-BY-4.0 | heretic semantic contrast (harmless) | yes |
 | `heretic-org/Multilingual-Harmless-Harmful@f5a870a4` | 8,320 | en, bn, fr, hi, it, ja, ko, mr, ru, ta | 416 harmful + 416 harmless per language | CC-BY-SA-4.0 | multilingual contrast | yes |
 | `augmxnt/deccp@2c964c69` | 132 | en (zh topics) | censored 95 / uncensored 37 | Apache-2.0 | Chinese-censorship refusal contrast | yes |
+| `walledai/MaliciousInstruct@4669349f` | 100 | en | no; prompt-only | CC-BY-SA-4.0 | ORCA eval (100) | yes |
 | `heretic-org/harmful_behaviors@55eeb6b5` | 520 | en | no; prompt-only | **unstated** (mirror of mlabonne) | heretic default harmful | no |
 | `heretic-org/harmless_alpaca@50f4f3fb` | 31,323 | en | no; prompt-only | **unstated** (mirror of mlabonne) | heretic default harmless | no |
 | `mlabonne/harmful_behaviors@01cead01` | 520 | en | no; prompt-only | **unstated** (AdvBench upstream is MIT) | shared harmful list | no |
 | `mlabonne/harmless_alpaca@02c6a92c` | 31,323 | en | no; instruction-only | **unstated** (alpaca upstream is CC-BY-NC-4.0) | shared harmless list | no |
-| `llm-attacks/advbench` | 520 | en | no; prompt-only | MIT | abliterator harmful, Blackfrost bench | no — gated, no reachable revision |
+| `llm-attacks/advbench` | 520 | en | no; prompt-only | MIT | abliterator harmful, Blackfrost bench, ORCA eval (100) | no — gated, no reachable revision |
+| `centerforaisafety/HarmBench@8e1604d1` | 400 | en | no; prompt-only, 200 standard + 100 contextual + 100 copyright | MIT | ORCA eval (150 standard) | no — HF mirror gated; pinned on GitHub, no fetch path |
+| `walledai/SimpleSafetyTests@4e479cf8` | 100 | en | no; 50 info + 50 instruct, each with `harm_type` | CC-BY-2.0 | ORCA eval (50) | yes |
+| `walledai/ForbiddenQuestions@46804e84` | 390 | en | no; prompt-only, each with a category | MIT | ORCA eval (150) | yes |
+| `JailbreakBench/JailbreakBench` | 100 | en | no; 100 harmful behaviours | **unstated** | ORCA eval (100) | no — gated, no reachable revision |
 | `tatsu-lab/alpaca@dce01c9b` | 52,002 | en | instruction+input+output | CC-BY-NC-4.0 | abliterator harmless | no — non-commercial |
 | `Goekdeniz-Guelmez/JOSIE-Prompts-Only-Corpus-300@9a5ffe35` | 300 | en | no; prompt-only | **unstated** | Josiefied corpus | no |
 | `Goekdeniz-Guelmez/Josiefication-prompts-online-po@0006ee4c` | 4,019,573 | en | no; prompt-only | **unstated** | Josiefication scrape | no |
@@ -75,12 +80,15 @@ importable at all when the release publishes nothing).
 | `pliny-the-prompter/OBLITERATUS-TELEMETRY@30ecd955` | not claimed | en | run telemetry, not prompt/response | AGPL-3.0 | OBLITERATUS crowd data | no |
 | `Blackfrost R1-HARMFUL-BENCH-450` | 450 | en | composite 150/150/150; no dataset id | composite (MIT + MIT + CC-BY-4.0) | Blackfrost release score | no — reference to parts |
 | `AEON-7 heretic defaults` | — | en | heretic contrast pair | composite | AEON abliteration | no — reference to parts |
-| `ORCA / OrcaRouter` | — | — | unresolved; cards gated, no dataset id | **unstated** | ORCA abliterated family | no |
+| `ORCA / OrcaRouter` | — | en, zh | composite of eight benchmarks by name; no prompt file | composite (weights apache-2.0; parts licensed separately) | ORCA abliterated release eval | no — reference to parts |
 
-Per-source licences are the *dataset card's* statement, fetched 2026-11-22;
-where a card states none, the table says `unstated` even when the known upstream
-is permissive. That is deliberate: a claim about a corpus should cite what the
-corpus says about itself, not what its ancestor presumably said.
+Per-source licences are the *dataset card's* statement, fetched 2026-11-22 and
+re-checked 2026-11-25; where a card states none, the table says `unstated` even
+when the known upstream is permissive. That is deliberate: a claim about a corpus
+should cite what the corpus says about itself, not what its ancestor presumably
+said. A gated card (AdvBench, JailbreakBench, the HarmBench HF mirror) is
+recorded with the licence its release/repo states and `revision: null`, and the
+importer refuses it until a revision exists.
 
 ## Dedupe report
 
@@ -89,10 +97,10 @@ corpus says about itself, not what its ancestor presumably said.
 
 | number | value |
 | --- | --- |
-| rows harvested (vendored) | 10,047 |
-| unique normalised prompts | 9,160 |
-| duplicate rows | 887 |
-| cross-source duplicate groups | 867 |
+| rows harvested (vendored) | 10,637 |
+| unique normalised prompts | 9,704 |
+| duplicate rows | 933 |
+| cross-source duplicate groups | 913 |
 
 Normalisation: NFKC, casefold, whitespace collapse, sha256. The duplicates are
 not noise; they are the evidence that the "different" releases are largely the
@@ -102,6 +110,8 @@ same prompt list:
 - 416 groups: `Semantic-Harmless` == English `Multilingual-...-harmless`;
 - 17 groups: `StrongREJECT` appears verbatim inside `Semantic-Harmful` (and its
   multilingual copy);
+- 34 groups: `ForbiddenQuestions` == `StrongREJECT`;
+- 12 groups: `MaliciousInstruct` == `StrongREJECT` (ORCA scores all three);
 - 35 groups are duplicates *within* the multilingual corpus (identical text
   under more than one language file).
 
@@ -120,8 +130,8 @@ screen, not a family claim.
   violence, sexual content, privacy, misinformation/disinformation,
   non-violent crimes, illegal goods, government decision-making, economic harm,
   physical harm, hate/harassment, malware/hacking, copyright.
-- Thin: chemical/biological (3 hits), expert advice (4), harassment/bullying as
-  distinct from hate (26).
+- Thin: chemical/biological (5 hits), expert advice (12). Harassment/bullying
+  gathers 48 hits but the lists do not separate it from hate.
 - Absent by construction: maths and code. Public refusal corpora cannot supply
   capability retention; that stays authored (the 241-row suite, 76 families).
 - Absent as a family: over-refusal on *safe* prompts is only in XSTest (250

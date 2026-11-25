@@ -2,8 +2,8 @@
   "command": "jdewitt import-suite examples/public-corpus/census-strongreject.json --output verification/public-corpus-census/import-run --provenance verification/public-corpus-census/sources.json",
   "census": {
     "path": "verification/public-corpus-census/sources.json",
-    "sha256": "df69d2b3312c1efee7ec135f6126aa815959e84aa21adbf69fd4a1e333c9981e",
-    "sources": 19
+    "sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec",
+    "sources": 24
   },
   "splits": {
     "selection": {

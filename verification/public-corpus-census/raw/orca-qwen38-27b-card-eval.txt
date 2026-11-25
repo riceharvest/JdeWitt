@@ -1,0 +1,55 @@
+ORCA / OrcaRouter abliterated release: the prompt set it evaluates on
+=======================================================================
+
+Release repo : orcarouter/Qwen3.8-27B-Uncensored-GGUF
+Repo sha     : b2e5cef033c0832fff1cc8c4937865abab9455f4  (queried 2026-11-25)
+Repo state   : gated "auto"; licence apache-2.0 (inherited from Qwen/Qwen3.8-27B-FP8)
+Card body    : served to anonymous readers at the repo page; /raw/main/README.md -> HTTP 401
+Datasets     : none published by the org that relate to abliteration
+               (orcarouter/orca-incident-alignment, orcarouter/spoken-multihop-rag)
+
+The card states no dataset id and ships no prompt file. Its "Evaluation" section
+names the benchmark composite it scores, with the sample count (n). Excerpt of
+that section, transcribed from the repo page:
+
+  Measured on this exact abliterated build (served with vLLM) vs the official
+  Qwen/Qwen3.8-27B-FP8, using the same scripts and settings. Refusal is judged
+  by a rule-based opening-phrase classifier - indicative, not an LLM-judge /
+  publication-grade number.
+
+  Safety - harmful-prompt refusal, thinking OFF (lower = more uncensored)
+    Benchmark                    n    Base FP8   This model
+    AdvBench                     100  99.0%      0.0%
+    JailbreakBench (harmful)     100  94.0%      0.0%
+    StrongREJECT                 150  97.3%      2.0%
+    HarmBench (standard)         150  98.7%      2.7%
+    MaliciousInstruct            100  99.0%      0.0%
+    SimpleSafetyTests             50  64.0%      6.0%
+    ForbiddenQuestions           150  73.3%      4.7%
+    Custom probes (zh/en)         11  63.6%      0.0%
+
+  Safety - harmful-prompt refusal, thinking ON (enable_thinking=true)
+    AdvBench 60, JailbreakBench 60, StrongREJECT 60, HarmBench 60,
+    MaliciousInstruct 60, SimpleSafetyTests 50, ForbiddenQuestions 60,
+    Custom probes 11. (Same columns, same classifier.)
+
+  Over-refusal - benign prompts wrongly refused (lower = better)
+    XSTest-safe                 250  5.6% / 0.0% (base)   0.4% / 0.0% (this model)
+
+  Capability retention - vs the official base FP8 (same scripts)
+    MMLU 300, MMLU-Pro (CoT) 250, GSM8K, ...
+
+What this does and does not license a re-run to claim
+----------------------------------------------------
+The counts are ORCA's sampled subsets, not each upstream dataset's full size
+(StrongREJECT ships 313 rows; AdvBench ships 520). No selection seed, row index
+list or prompt file is published, so a re-run can reproduce the benchmark
+families and the n, not the exact rows. The parts are cited separately in
+sources.json: strongreject, xstest, maliciousinstruct, simplesafetytests and
+forbiddenquestions are vendored; advbench-harmful, jailbreakbench and harmbench
+are referenced (gated or pinned on GitHub without a fetch path).
+
+How to re-check this file
+-------------------------
+  curl -s https://huggingface.co/api/models/orcarouter/Qwen3.8-27B-Uncensored-GGUF
+  curl -s https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-GGUF   # grep "Evaluation"

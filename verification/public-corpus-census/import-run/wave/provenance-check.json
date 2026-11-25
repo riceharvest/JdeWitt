@@ -1,0 +1,189 @@
+{
+ "argv": {
+  "serve_config": "<local>/llama-server -m <local>/qwen25-0.5b-instruct-iq4_xs.gguf --host 127.0.0.1 --port 8134 -c 4096 --parallel 2 -ngl 99 -dev Vulkan1 --jinja --no-webui --temp 0",
+  "structured": {
+   "ctx": 4096,
+   "cuda": false,
+   "jinja": true,
+   "max_tokens": 512,
+   "parallel": 2,
+   "sampling": {
+    "seed": null,
+    "temperature": 0.0,
+    "top_k": null,
+    "top_p": null
+   },
+   "suite": "verification/public-corpus-census/import-run/holdout.jsonl",
+   "temperature": 0.0
+  }
+ },
+ "artifact": {
+  "bytes": 349402688,
+  "name": "qwen25-0.5b-instruct-iq4_xs.gguf",
+  "note": "hashed on the run that could still see the file; the committed argv is sanitised, so this digest is the only pin on the served artifact",
+  "resolved": true,
+  "sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1"
+ },
+ "census": {
+  "declared_sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec",
+  "matches": true,
+  "path": "verification/public-corpus-census/sources.json",
+  "sha256": "15a6637484a12df6eceeac2f9f311159c2187386bec12827cfcbdc1f2dd6a7ec"
+ },
+ "checks": [
+  {
+   "detail": "predictions.jsonl: 156 rows",
+   "id": "predictions_present",
+   "ok": true
+  },
+  {
+   "detail": "156 distinct ids over 156 rows",
+   "id": "prediction_ids_unique",
+   "ok": true
+  },
+  {
+   "detail": "missing from wave: 0 []; not in holdout: 0 []",
+   "id": "ids_resolve_to_holdout",
+   "ok": true
+  },
+  {
+   "detail": "wave.json exists: True",
+   "id": "wave_json_present",
+   "ok": true
+  },
+  {
+   "detail": "wave.json rows=156, predictions=156",
+   "id": "wave_rows_match",
+   "ok": true
+  },
+  {
+   "detail": "provenance digest=d7f96ab2d9a716ba..., tasks=156; on disk digest=d7f96ab2d9a716ba..., tasks=156",
+   "id": "holdout_matches_provenance",
+   "ok": true
+  },
+  {
+   "detail": "provenance census sha256=15a6637484a12df6..., on disk=15a6637484a12df6...",
+   "id": "census_digest_matches_provenance",
+   "ok": true
+  },
+  {
+   "detail": "156/156 rows carry a census source; unresolved: []",
+   "id": "every_holdout_row_resolves",
+   "ok": true
+  },
+  {
+   "detail": "strongreject->walledai/StrongREJECT@df54272b395c mit rows_license=['mit']",
+   "id": "rows_carry_census_license_and_pinned_revision",
+   "ok": true
+  },
+  {
+   "detail": "prediction rows carry no source/license, or agree with the holdout/census",
+   "id": "predictions_do_not_contradict_census",
+   "ok": true
+  },
+  {
+   "detail": "serve_config names the served artifact",
+   "id": "wave_carries_argv",
+   "ok": true
+  },
+  {
+   "detail": "wave ledger=25878, sum of prediction rows=25878",
+   "id": "token_ledger_agrees",
+   "ok": true
+  },
+  {
+   "detail": "measured=True, invalid rows=23/156",
+   "id": "wave_measured",
+   "ok": true
+  },
+  {
+   "detail": "0 row/field leaks",
+   "id": "predictions_have_no_local_paths",
+   "ok": true
+  }
+ ],
+ "claims": {
+  "capability": false,
+  "note": "a refusal-check pass is a screen over wording; it is not evidence that the asked-for harm was or was not delivered, and nothing here claims a row was removed from the model",
+  "removal": false
+ },
+ "failed_checks": [],
+ "format": "jdewitt-census-wave-provenance/1",
+ "generated": "2026-11-25T15:25:39Z",
+ "holdout": {
+  "declared_digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",
+  "digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",
+  "path": "verification/public-corpus-census/import-run/holdout.jsonl",
+  "tasks": 156
+ },
+ "not_checked": [
+  "that the answers are honest reads of the model",
+  "that refusing wording means refusing the request",
+  "that the server loaded the bytes the argv named (the artifact digest pins the file that path held at check time, not the weights the process had mapped)",
+  "token budgets and model fit"
+ ],
+ "ok": true,
+ "resolved_provenance": [
+  {
+   "dataset": "walledai/StrongREJECT",
+   "id": "strongreject",
+   "license": "mit",
+   "license_url": "https://huggingface.co/datasets/walledai/StrongREJECT",
+   "revision": "df54272b395ce9e584d2f8140519935425d8549f",
+   "row_license_values": [
+    "mit"
+   ],
+   "rows": 156
+  }
+ ],
+ "sanitisation": {
+  "carried_forward": true,
+  "predictions_leaks": [],
+  "rewrites": [
+   {
+    "field": "wave.predictions",
+    "kind": "repo-relative",
+    "to": "verification/public-corpus-census/import-run/wave/predictions.jsonl"
+   },
+   {
+    "field": "wave.serve_config",
+    "kind": "redacted-local",
+    "to": "<local>/llama-server"
+   },
+   {
+    "field": "wave.serve_config",
+    "kind": "redacted-local",
+    "to": "<local>/qwen25-0.5b-instruct-iq4_xs.gguf"
+   },
+   {
+    "field": "wave.serve_structured.suite",
+    "kind": "repo-relative",
+    "to": "verification/public-corpus-census/import-run/holdout.jsonl"
+   },
+   {
+    "field": "wave.suite",
+    "kind": "repo-relative",
+    "to": "verification/public-corpus-census/import-run/holdout.jsonl"
+   }
+  ]
+ },
+ "screen": {
+  "completion_tokens_total": 25878,
+  "invalid": 23,
+  "no_explicit_refusal": 31,
+  "refusals_detected": 102,
+  "removal_claimed": false,
+  "rows": 156,
+  "scope": "screen over refusal wording only",
+  "ungraded": 23
+ },
+ "unresolved_rows": [],
+ "wave": {
+  "label": "census-strongreject",
+  "predictions": "predictions.jsonl",
+  "predictions_sha256": "b6653a98ba2731f793157ecd6760fdcc42a4bde8e0d7c8cd7bc17adc95a27467",
+  "rows": 156,
+  "wave_json": "wave.json",
+  "wave_json_sha256": "8649aaf2e5f39da2638b2ac19b23732d2bd99e86204fff02e5fa1ce7507d5d6d"
+ }
+}

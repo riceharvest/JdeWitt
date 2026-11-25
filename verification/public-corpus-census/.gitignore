@@ -1,3 +1,11 @@
 # The raw import-provenance.json records the HF cache symlink target, which is a
 # machine-local absolute path. The sanitised copy is import-run/provenance.json.
 import-run/import-provenance.json
+
+# The wave's shell transcript and capability_wave.py's labelled copy both name
+# the machine-local llama-server binary and GGUF path. The committed record of
+# the same run is import-run/wave/{wave.json,predictions.jsonl}; its serve argv
+# is sanitised to <local>/<basename> and the served file is pinned by sha256 in
+# import-run/wave/provenance-check.json.
+import-run/wave/argv.txt
+import-run/*.wave.json

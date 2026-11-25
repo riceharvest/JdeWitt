@@ -77,6 +77,23 @@ SOURCES = [
         'vendored': True,
     },
     {
+        'id': 'maliciousinstruct',
+        'dataset': 'walledai/MaliciousInstruct',
+        'revision': '4669349f48fea45dbacec02aaa9aca4fd7ac1c15',
+        'license': 'cc-by-sa-4.0',
+        'license_url': 'https://huggingface.co/datasets/walledai/MaliciousInstruct',
+        'url': 'https://huggingface.co/datasets/walledai/MaliciousInstruct',
+        'files': [{'path': 'data/train-00000-of-00001.parquet', 'column': 'prompt',
+                   'language': 'en', 'split': 'train'}],
+        'rows': 100, 'languages': ['en'], 'structure': 'prompt-only',
+        'pairing': 'none', 'role': 'harmful evaluation (ORCA 100)',
+        'referenced_by': [
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF card, "Evaluation": MaliciousInstruct n=100',
+            'walledai/MaliciousInstruct dataset card',
+        ],
+        'vendored': True,
+    },
+    {
         'id': 'semantic-harmful',
         'dataset': 'heretic-org/Semantic-Harmful',
         'revision': '001ca2ceaef94a748235e0ba1366aee48436e286',
@@ -306,18 +323,115 @@ SOURCES = [
     {
         'id': 'orca-abliterated',
         'dataset': None,
-        'revision': None,
-        'license': 'unstated',
-        'license_url': None,
-        'url': 'https://huggingface.co/orcarouter',
-        'files': [], 'rows': None, 'languages': ['en'], 'structure': 'unknown',
-        'pairing': 'unknown', 'role': 'ORCA / OrcaRouter abliterated release family',
+        'revision': 'b2e5cef033c0832fff1cc8c4937865abab9455f4',
+        'license': 'composite (see parts)',
+        'license_url': 'https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-GGUF',
+        'url': 'https://huggingface.co/orcarouter/Qwen3.8-27B-Uncensored-GGUF',
+        'files': [], 'rows': None, 'languages': ['en', 'zh'],
+        'structure': ('no dataset; the card publishes an evaluation composite of eight named '
+                      'benchmarks with sampled counts (thinking OFF): AdvBench 100, '
+                      'JailbreakBench (harmful) 100, StrongREJECT 150, HarmBench (standard) 150, '
+                      'MaliciousInstruct 100, SimpleSafetyTests 50, ForbiddenQuestions 150, '
+                      'custom probes zh/en 11; XSTest-safe 250 sits under over-refusal'),
+        'pairing': 'none', 'role': 'ORCA / OrcaRouter abliterated release family',
         'referenced_by': [
-            'orcarouter/*-abliterated model repos (e.g. orcarouter/Flint-abliterated-GGUF, orcarouter/Hy4-flash-abliterated-GGUF)',
-            'orcarouter model cards are gated (HTTP 401 without an accepted gate) at census time',
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF model card, "Evaluation" table (measured with a rule-based refusal classifier against Qwen/Qwen3.8-27B-FP8)',
+            'orcarouter/*-abliterated model repos; the card body is served to anonymous readers while the raw README is gated (HTTP 401)',
+            'the card names benchmarks, not dataset ids; each part is cited separately in this census',
         ],
         'vendored': False,
-        'reference_only_reason': 'The release publishes no dataset id; its model cards are gated, so no corpus can be cited. Recorded as unresolved rather than guessed.',
+        'composite_of': ['advbench-harmful', 'jailbreakbench', 'strongreject', 'harmbench',
+                         'maliciousinstruct', 'simplesafetytests', 'forbiddenquestions', 'xstest'],
+        'license_note': ('The model repo is apache-2.0 (inherited from Qwen3.8-27B); that licences '
+                         'the weights, not the benchmark prompts. Each part carries its own licence.'),
+        'revision_note': ('The revision is the model repo sha (the card that states the composition), '
+                          'not a dataset revision: the release publishes no prompt file.'),
+        'reference_only_reason': ('The release publishes no dataset id and no prompt file. The card '
+                                  'documents the composite by benchmark name and sample count; the '
+                                  'counts are ORCA\'s sampled subsets, not each upstream dataset\'s '
+                                  'full size. A re-run can match the benchmark families, not the '
+                                  'exact rows, because no selection seed is published.'),
+    },
+    {
+        'id': 'jailbreakbench',
+        'dataset': 'JailbreakBench/JailbreakBench',
+        'revision': None,
+        'license': 'unstated',
+        'license_url': 'https://github.com/JailbreakBench/jailbreakbench',
+        'url': 'https://huggingface.co/datasets/JailbreakBench/JailbreakBench',
+        'files': [], 'rows': 100, 'languages': ['en'],
+        'structure': 'prompt-only: 100 harmful behaviours (JBB-Behaviors also ships judge artefacts)',
+        'pairing': 'none', 'role': 'harmful evaluation (ORCA 100)',
+        'referenced_by': [
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF card, "Evaluation": JailbreakBench (harmful) n=100',
+            'JailbreakBench/JailbreakBench dataset (100 behaviours)',
+        ],
+        'vendored': False,
+        'reference_only_reason': ('HF dataset repo is gated (HTTP 401 without accepting the gate), so '
+                                  'no revision is reachable. The GitHub release repo is MIT, but that '
+                                  'licences the harness code, not the prompt set, so no dataset licence '
+                                  'is claimed.'),
+        'revision_note': 'The importer must not use this entry until a revision is recorded.',
+    },
+    {
+        'id': 'harmbench',
+        'dataset': 'centerforaisafety/HarmBench',
+        'revision': '8e1604d1171fe8a48d8febecd22f600e462bdcdd',
+        'license': 'mit',
+        'license_url': 'https://github.com/centerforaisafety/HarmBench',
+        'url': 'https://github.com/centerforaisafety/HarmBench',
+        'files': [], 'rows': 400, 'languages': ['en'],
+        'structure': ('prompt-only CSV: 200 standard + 100 contextual + 100 copyright behaviours '
+                      '(data/behavior_datasets/harmbench_behaviors_text_all.csv)'),
+        'pairing': 'none', 'role': 'harmful evaluation (ORCA 150 standard)',
+        'referenced_by': [
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF card, "Evaluation": HarmBench (standard) n=150',
+            'centerforaisafety/HarmBench data/behavior_datasets/harmbench_behaviors_text_all.csv at the pinned commit',
+        ],
+        'vendored': False,
+        'reference_only_reason': ('Pinned by GitHub commit, where the release repo is MIT. Both '
+                                  'harvest.py and the importer fetch through the HF hub, whose mirror '
+                                  'of this dataset is gated, so the text is not vendored in this pass '
+                                  'and the entry is not importable through --provenance yet.'),
+        'revision_note': 'Revision is a GitHub commit sha, not an HF dataset revision.',
+    },
+    {
+        'id': 'simplesafetytests',
+        'dataset': 'walledai/SimpleSafetyTests',
+        'revision': '4e479cf8c573c8fc804c87903696e54caebc8100',
+        'license': 'cc-by-2.0',
+        'license_url': 'https://huggingface.co/datasets/walledai/SimpleSafetyTests',
+        'url': 'https://huggingface.co/datasets/walledai/SimpleSafetyTests',
+        'files': [{'path': 'data/info-00000-of-00001.parquet', 'column': 'prompt',
+                   'category': 'harm_type', 'language': 'en', 'split': 'train'},
+                  {'path': 'data/instruct-00000-of-00001.parquet', 'column': 'prompt',
+                   'category': 'harm_type', 'language': 'en', 'split': 'train'}],
+        'rows': 100, 'languages': ['en'],
+        'structure': 'prompt-only: 50 "info" + 50 "instruct" prompts, each with a harm_type',
+        'pairing': 'none', 'role': 'harmful evaluation (ORCA 50)',
+        'referenced_by': [
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF card, "Evaluation": SimpleSafetyTests n=50',
+            'walledai/SimpleSafetyTests dataset card (cc-by-2.0)',
+        ],
+        'vendored': True,
+    },
+    {
+        'id': 'forbiddenquestions',
+        'dataset': 'walledai/ForbiddenQuestions',
+        'revision': '46804e8403d125a07e5af5b693b476d60cfa5daa',
+        'license': 'mit',
+        'license_url': 'https://huggingface.co/datasets/walledai/ForbiddenQuestions',
+        'url': 'https://huggingface.co/datasets/walledai/ForbiddenQuestions',
+        'files': [{'path': 'data/train-00000-of-00001.parquet', 'column': 'prompt',
+                   'category': 'category', 'language': 'en', 'split': 'train'}],
+        'rows': 390, 'languages': ['en'],
+        'structure': 'prompt-only; questions harvested from the "Do Anything Now" jailbreak set, each with a category',
+        'pairing': 'none', 'role': 'harmful evaluation (ORCA 150)',
+        'referenced_by': [
+            'orcarouter/Qwen3.8-27B-Uncensored-GGUF card, "Evaluation": ForbiddenQuestions n=150',
+            'walledai/ForbiddenQuestions dataset card (mit)',
+        ],
+        'vendored': True,
     },
     {
         'id': 'blackfrost-bench-450',
@@ -507,13 +621,6 @@ def main():
                 'members': [{'source': m['source'], 'language': m['language'],
                              'source_row': m['source_row']} for m in members],
             })
-    per_source = {}
-    for row in all_rows:
-        entry = per_source.setdefault(row['source'], {'rows': 0, 'unique_after_dedupe': 0})
-        entry['rows'] += 1
-    unique_keys = {row['sha256'] for row in unique}
-    for row in unique:
-        per_source[row['source']]['unique_after_dedupe'] += 1
     # A source's "unique" count is its own rows that are not duplicated anywhere
     # later in the file order; report it per source instead of the global set.
     per_source = {}
