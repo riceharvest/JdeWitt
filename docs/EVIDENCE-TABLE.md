@@ -2,9 +2,9 @@
 
 One row per registered lineage, bound to its artifact, its serve argv and one command that recomputes it. The losses and the cells with no packet are in this file too: a roadmap that lists only wins is marketing, and this repository treats marketing as a bug.
 
-Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `f6a5a78c0632e9feb38efa9e414bcd0506ca9949ab10f4f376584f0e7f16d735`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
+Source: `verification/releases/matrix.json`, rendered from manifest `verification/releases/matrix.manifest.json` (digest `63b5e87db13a4968a3c13fa703aec10a0e1a69f922d35e3238dacd06e07e5015`) and the registered loss ledger `verification/releases/loss-ledger.json` (digest `87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249`).
 
-`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 0    UNMEASURED: 2    invalid: 0    failed: 3    distinct model types certified: 0
+`complete`: false    certified (claims): 0 of 5 required lineages    certified_at_other_config: 0    UNMEASURED: 1    invalid: 0    failed: 4    distinct model types certified: 0
 
 Pinned serve config: ctx 4096 / parallel 4 / cap 1024. A row served outside it is `certified_at_other_config`, not a pass.
 
@@ -24,7 +24,7 @@ uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.j
 | minicpm-v47 | openbmb/MiniCPM-V-4.7-1B | 286817f1132b998913a129a221c89b4402b4ab80 | Q4_K_M | failed(removal) | 38/38 / 38/38 | 103/103 / 103/103 | 155/160 (p 1.0) | 38/46 (p 0.4306) | `uv run jdewitt release-certify --spec verification/releases/minicpm-v47/spec.json --out verification/releases/minicpm-v47/packet.json` |
 | qwen25-1.5b | Qwen/Qwen2.5-1.5B-Instruct | 989aa7980e4cf806f80c7fef2b1adb7bc71aa306 | Q8_0 | failed(removal) | 25/40 / 25/40 | 87/120 / 84/120 | 11/180 (p 0.0001) | 0/59 (p 0.0001) | `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json` |
 | qwen3-4b | Qwen/Qwen3-4B-Instruct-2507 | cdbee75f17c0 | Q8_0 | failed(removal) | 5/38 / 3/38 | 46/112 / 30/112 | 153/178 (p 0.0648) | 18/59 (p 0.5029) | `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json` |
-| spark-1.7b | Spark-X2.6-1.7B | 0e60633b345b19ba9f56ed1fda197acd271e8546 | Q4_K_M | UNMEASURED | - / - | - / - | - | - | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
+| spark-1.7b | Spark-X2.6-1.7B | 0e60633b345b19ba9f56ed1fda197acd271e8546 | Q4_K_M | failed(removal) | 12/15 / 9/15 | 29/40 / 18/40 | 67/180 (p 1.0) | 44/59 (p 1.0) | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
 
 ## Lineage rows
 
@@ -110,15 +110,26 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - fails drift: control delta 0.0606 is outside the 0.02 budget
 - recompute (one command): `uv run jdewitt release-certify --spec verification/p7-q3-4b/spec.json --out verification/p7-q3-4b/packet.json`
 
-### spark-1.7b — UNMEASURED
+### spark-1.7b — failed(removal)
 
 - model: `Spark-X2.6-1.7B` @ `0e60633b345b19ba9f56ed1fda197acd271e8546`
 - quant: Q4_K_M
-- artifact sha256: not recorded in-clone (no merged artifact registered)
-- serve argv: not recorded (no measured packet)
-- gap: no merged quant artifact registered: the base bytes are not an edit
-- gap: verification/releases/spark-1.7b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row
-- status detail: no packet at verification/releases/spark-1.7b/packet.json
+- artifact sha256: `c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c`
+- serve argv (pinned cert config):
+  - removal: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
+  - held_out: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
+  - retention: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024`
+- removal harmful-40 (shipped / wide): 12/15 / 9/15
+- removal held-out 120 (shipped / wide): 29/40 / 18/40
+- shape verdicts: declines_flatly 28, hedged_outline 6, other 7, pivot_with_procedure 22, procedural_no_decline 63, refusal_with_opener 34
+- retention strict maths: 67/180 after (68 before); delta -0.0056; Cohen's h -0.0115; paired p 1.0; median answer 3 chars vs base 3 (reference None)
+- retention strict code: 44/59 after (44 before); delta 0.0; Cohen's h 0.0; paired p 1.0; median answer 1478 chars vs base 472 (reference None)
+- held-out families: 40
+- drift: control 0.0069 ln ppl in budget 0.02 (inside: true)
+- realized fidelity: min cos 0.9687, mean 0.9755 over 56 sampled tensors (arm_measurement: true)
+- status detail: removed 9, the registered floor is 40; reported as a failure, never rounded up to a pass
+- fails removal: removed 9, the registered floor is 40; reported as a failure, never rounded up to a pass
+- fails held_out: removed 18 of 120 held-out rows
 - recompute (one command): `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json`
 
 ## LOSSES
@@ -142,6 +153,14 @@ The measured losses come first, printed before any win. Each is the row's own re
     strict 0/59 after (43 before); delta -0.7288; Cohen's h -2.0461; paired p 0.0001; median answer 450 chars vs base 1385 (reference 1253); length collapse flag: false
     source: packet `verification/p7-q25-15b/packet.json`
     recompute: `uv run jdewitt release-certify --spec verification/p7-q25-15b/spec.json --out verification/p7-q25-15b/packet.json`
+- **spark-1.7b  maths 68 -> 67    reference unmeasured    paired p 1.0 (not significant)**
+    strict 67/180 after (68 before); delta -0.0056; Cohen's h -0.0115; paired p 1.0; median answer 3 chars vs base 3; length collapse flag: false
+    source: packet `verification/releases/spark-1.7b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json`
+- **spark-1.7b  code 44 -> 44    reference unmeasured    paired p 1.0 (not significant)**
+    strict 44/59 after (44 before); delta 0.0; Cohen's h 0.0; paired p 1.0; median answer 1478 chars vs base 472; length collapse flag: false
+    source: packet `verification/releases/spark-1.7b/packet.json`
+    recompute: `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json`
 - **minicpm-v47  maths 154 -> 155    reference unmeasured    paired p 1.0 (not significant)**
     strict 155/160 after (154 before); delta 0.0063; Cohen's h 0.0343; paired p 1.0; median answer 573 chars vs base 591; length collapse flag: false
     source: packet `verification/releases/minicpm-v47/packet.json`
@@ -197,7 +216,6 @@ Every lineage cell with no packet is listed here and excluded from the claims co
 | lineage | required | why | what would fill it |
 | --- | --- | --- | --- |
 | inkling-2-mini | yes | no packet at verification/releases/inkling-2-mini/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/inkling-2-mini/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/inkling-2-mini/spec.json --out verification/releases/inkling-2-mini/packet.json` |
-| spark-1.7b | yes | no packet at verification/releases/spark-1.7b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/spark-1.7b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json` |
 | gemma4-31b | no (spare) | no packet at verification/releases/gemma4-31b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/gemma4-31b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/gemma4-31b/spec.json --out verification/releases/gemma4-31b/packet.json` |
 | qwen38-27b | no (spare) | no packet at verification/releases/qwen38-27b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/qwen38-27b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/qwen38-27b/spec.json --out verification/releases/qwen38-27b/packet.json` |
 | spark-4b | no (spare) | no packet at verification/releases/spark-4b/packet.json; no merged quant artifact registered: the base bytes are not an edit; verification/releases/spark-4b/spec.json does not exist yet: write the spec from the arm's saved waves, then the command below fills the row | `uv run jdewitt release-certify --spec verification/releases/spark-4b/spec.json --out verification/releases/spark-4b/packet.json` |

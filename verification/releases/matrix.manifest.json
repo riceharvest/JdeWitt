@@ -167,12 +167,15 @@
         "note": "the Q4_K_M artifact the user already serves; sha256 measured on this box"
       },
       "artifact": {
-        "sha256": null,
-        "identity_digest": null,
+        "sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c",
+        "identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
         "quant_type": "Q4_K_M",
-        "scale": null,
-        "edited_tensors": null,
-        "note": "no certified edited artifact. Merged bytes do exist in the scratch cache (spark-auto-edit.gguf 1236261408 B, spark-iq4nl-edited.gguf 1080506912 B) but no wave or spec was saved for them, so there is nothing to certify and no digest to bind a row to"
+        "scale": 1.0,
+        "edited_tensors": 56,
+        "note": "REFIT: the shared axis was fitted in the wave card (spanfit axes --shape shared, output space) from the committed p4d capture runs/p4/records.pt (sha256 9d5e648f..., on the bfloat16 HF source the f16 twin was converted from; the repo capture path loads HF checkpoints, not GGUF), and the fit is bitwise reproducible (tensor_sha256 d1cc9af5...). Merged in place-style into the served Q4_K_M (base bytes untouched, arm written beside it): 56 residual-write tensors re-encoded at Q8_0 to clear the 0.90 codec floor (min realized cos 0.9687), +200,362,656 bytes over the base. The packet binds the full sha256 and the merge recipe.",
+        "bytes": 1307821248,
+        "footprint": "blk.* x {attn_output.weight, ffn_down.weight} (every layer the artifact carries)",
+        "refit": true
       },
       "packet": "verification/releases/spark-1.7b/packet.json",
       "spec": "verification/releases/spark-1.7b/spec.json",

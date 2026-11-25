@@ -1,0 +1,685 @@
+{
+  "schema_version": 1,
+  "kind": "release-packet",
+  "lineage": "spark-1.7b",
+  "arm": {
+    "byte_cost": 1307821248,
+    "byte_cost_source": "size of the merged artifact written by the recorded merge command",
+    "chosen_type": "Q8_0",
+    "codec_table": "verification/p7-spark/codec-table.json",
+    "codec_verdict": "cleared",
+    "edited_tensor_footprint": "blk.* x {attn_output.weight, ffn_down.weight} (every layer the artifact carries)",
+    "edited_tensors": 56,
+    "label": "spark-1.7b-q4km-s1.0",
+    "realized_cos": 0.9687,
+    "realized_cos_kind": "arm-preview",
+    "scale": 1.0,
+    "refit": true,
+    "refit_source": "runs/p4/records.pt (sha256 9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a, 80 rows on the bfloat16 HF source the f16 twin was converted from)",
+    "note": "REFIT, not a rebuild from a capture of this card: the shared axis was fitted (spanfit axes --shape shared) from the committed p4d capture and is bitwise reproducible (tensor_sha256 d1cc9af5...). Scale stays 1.0; Q8_0 is the codec-aware type choice from measured cos, not a scale hike.",
+    "realized_cos_source_artifact_sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c"
+  },
+  "artifact_sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c",
+  "artifact_sha256_prefix_16": "c8d34cb82cd2b6a6",
+  "artifact_sha256_complete": true,
+  "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
+  "artifact_bytes": 1307821248,
+  "base_sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad",
+  "base_sha256_prefix_16": "80ff5222ae51de05",
+  "base_sha256_complete": true,
+  "removal": {
+    "harmful40": {
+      "inventories": {
+        "shipped": {
+          "removed": 12,
+          "total": 15,
+          "n_m": "12/15",
+          "rate": 0.8,
+          "wilson_lower": 0.5481,
+          "inventory": "shipped",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 9,
+          "total": 15,
+          "n_m": "9/15",
+          "rate": 0.6,
+          "wilson_lower": 0.3575,
+          "inventory": "wide",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      },
+      "ungraded": {
+        "rows": 25,
+        "of": 40,
+        "reasons": {
+          "truncated_or_error": 25
+        },
+        "scored_as": "neither_pass_nor_failure"
+      },
+      "families": 12
+    },
+    "held_out_120": {
+      "inventories": {
+        "shipped": {
+          "removed": 29,
+          "total": 40,
+          "n_m": "29/40",
+          "rate": 0.725,
+          "wilson_lower": 0.5717,
+          "inventory": "shipped",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "3574537db75b9416fab3adf01415403fbe41e917cdaf77101d15237442ea9472"
+        },
+        "wide": {
+          "removed": 18,
+          "total": 40,
+          "n_m": "18/40",
+          "rate": 0.45,
+          "wilson_lower": 0.3071,
+          "inventory": "wide",
+          "graded_from": "answer text with the shipped RefusalChecker",
+          "digest": "8a482cd7d47b854fe1016173163da7602a35b9eedb6546580b940cfa0b33b4bc"
+        }
+      },
+      "ungraded": {
+        "rows": 80,
+        "of": 120,
+        "reasons": {
+          "truncated_or_error": 80
+        },
+        "scored_as": "neither_pass_nor_failure"
+      },
+      "families": 40
+    }
+  },
+  "shape": {
+    "audits": [
+      {
+        "path": "verification/p7-spark/shape/removal.json",
+        "axis": "removal",
+        "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
+        "rows": 40,
+        "shapes": {
+          "declines_flatly": 7,
+          "hedged_outline": 1,
+          "other": 1,
+          "pivot_with_procedure": 6,
+          "procedural_no_decline": 16,
+          "refusal_with_opener": 9
+        }
+      },
+      {
+        "path": "verification/p7-spark/shape/heldout.json",
+        "axis": "held_out",
+        "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9",
+        "rows": 120,
+        "shapes": {
+          "declines_flatly": 21,
+          "hedged_outline": 5,
+          "other": 6,
+          "pivot_with_procedure": 16,
+          "procedural_no_decline": 47,
+          "refusal_with_opener": 25
+        }
+      }
+    ],
+    "verdict_counts": {
+      "declines_flatly": 28,
+      "hedged_outline": 6,
+      "other": 7,
+      "pivot_with_procedure": 22,
+      "procedural_no_decline": 63,
+      "refusal_with_opener": 34
+    },
+    "artifact_identity_digest": "9eb6afc20c6a652bbc16e5576a287a41551ab160e96737f9b6b3d0e6612dccb9"
+  },
+  "retention": {
+    "math": {
+      "strict": {
+        "before": 68,
+        "after": 67,
+        "paired_rows": 180,
+        "before_rate": 0.3778,
+        "after_rate": 0.3722,
+        "delta": -0.0056,
+        "all_rows": {
+          "before": "68/180",
+          "after": "67/180"
+        }
+      },
+      "cohens_h": -0.0115,
+      "paired_sign_flip_p_two_sided": 1.0,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 7,
+      "broke": 8,
+      "median_answer_chars": 3,
+      "base_median_answer_chars": 3,
+      "length_ratio": 1.0,
+      "length_collapse_flag": false
+    },
+    "code": {
+      "strict": {
+        "before": 44,
+        "after": 44,
+        "paired_rows": 59,
+        "before_rate": 0.7458,
+        "after_rate": 0.7458,
+        "delta": 0.0,
+        "all_rows": {
+          "before": "44/60",
+          "after": "44/60"
+        }
+      },
+      "cohens_h": 0.0,
+      "paired_sign_flip_p_two_sided": 1.0,
+      "paired_test": "seeded sign-flip permutation (10000 resamples)",
+      "fixed": 5,
+      "broke": 5,
+      "median_answer_chars": 1478,
+      "base_median_answer_chars": 472,
+      "length_ratio": 3.1314,
+      "length_collapse_flag": false
+    },
+    "ungraded": {
+      "rows": 1,
+      "of": 241,
+      "reasons": {
+        "truncated_or_error": 1
+      },
+      "sides": {
+        "base": {
+          "rows": 1,
+          "reasons": {
+            "truncated_or_error": 1
+          }
+        },
+        "arm": {
+          "rows": 1,
+          "reasons": {
+            "truncated_or_error": 1
+          }
+        }
+      },
+      "scored_as": "neither_pass_nor_failure",
+      "note": "rows and reasons are the base-side loss, the side all_rows.before counts; sides.arm is the arm-side loss; the paired stat is over ids that answered on both sides"
+    }
+  },
+  "held_out_families": 40,
+  "drift": {
+    "control_delta_ln_ppl": 0.0069,
+    "budget": 0.02,
+    "inside_budget": true,
+    "instrument": "llama-perplexity /mnt/ssd/dev workspace/llama.cpp-dspark/build-perp/bin/llama-perplexity prefill, ngl 0, ctx 512, threads 16; zero generated tokens",
+    "source": {
+      "arm": {
+        "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf",
+        "sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c"
+      },
+      "base": {
+        "path": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.gguf",
+        "sha256": "80ff5222ae51de055fe2e86b1ec4f6784c2f9db704ed3b043b97ce900d3a75ad"
+      }
+    }
+  },
+  "realized_fidelity": {
+    "min_cos": 0.9687,
+    "mean_cos": 0.9755,
+    "sampled": 56,
+    "chosen_type": "Q8_0",
+    "arm_measurement": true,
+    "artifact_sha256": "c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c",
+    "scope": "compare_edit over all 56 edited tensors of the merged artifact at scale 1, output space: the edit these bytes kept, not an adapter curve and not a codec proxy",
+    "tensors": [
+      {
+        "cos": 0.9713,
+        "name": "blk.0.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.079,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9704,
+        "name": "blk.0.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.0,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9702,
+        "name": "blk.1.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.002,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9729,
+        "name": "blk.1.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.187,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9704,
+        "name": "blk.2.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.014,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9721,
+        "name": "blk.2.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.12,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9727,
+        "name": "blk.3.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.184,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9722,
+        "name": "blk.3.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.131,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9716,
+        "name": "blk.4.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.104,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9724,
+        "name": "blk.4.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.145,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9725,
+        "name": "blk.5.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.172,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9721,
+        "name": "blk.5.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.123,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9744,
+        "name": "blk.6.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.329,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9733,
+        "name": "blk.6.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.216,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.976,
+        "name": "blk.7.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.479,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9733,
+        "name": "blk.7.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.218,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9747,
+        "name": "blk.8.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.356,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9721,
+        "name": "blk.8.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.121,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9707,
+        "name": "blk.9.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.033,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.972,
+        "name": "blk.9.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.115,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9753,
+        "name": "blk.10.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.413,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9741,
+        "name": "blk.10.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.283,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9766,
+        "name": "blk.11.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.535,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9799,
+        "name": "blk.11.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.88,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9759,
+        "name": "blk.12.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.465,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9779,
+        "name": "blk.12.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.652,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9771,
+        "name": "blk.13.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.587,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.978,
+        "name": "blk.13.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.658,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9777,
+        "name": "blk.14.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.656,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.977,
+        "name": "blk.14.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.548,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.983,
+        "name": "blk.15.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.342,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9774,
+        "name": "blk.15.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.597,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9838,
+        "name": "blk.16.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.482,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9772,
+        "name": "blk.16.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.574,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9772,
+        "name": "blk.17.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.591,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9765,
+        "name": "blk.17.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.502,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9829,
+        "name": "blk.18.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.332,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9762,
+        "name": "blk.18.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.474,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9818,
+        "name": "blk.19.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.155,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9796,
+        "name": "blk.19.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.836,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9818,
+        "name": "blk.20.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.16,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9765,
+        "name": "blk.20.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.506,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9813,
+        "name": "blk.21.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.092,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.975,
+        "name": "blk.21.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.361,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9837,
+        "name": "blk.22.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.462,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9719,
+        "name": "blk.22.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.103,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9836,
+        "name": "blk.23.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 5.452,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9697,
+        "name": "blk.23.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 3.949,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9768,
+        "name": "blk.24.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.562,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9687,
+        "name": "blk.24.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 3.886,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9732,
+        "name": "blk.25.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.23,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.97,
+        "name": "blk.25.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 3.969,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9758,
+        "name": "blk.26.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.454,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.972,
+        "name": "blk.26.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.114,
+        "source_type": "Q6_K"
+      },
+      {
+        "cos": 0.9798,
+        "name": "blk.27.attn_output.weight",
+        "qtype": "Q8_0",
+        "snr": 4.89,
+        "source_type": "Q4_K"
+      },
+      {
+        "cos": 0.9771,
+        "name": "blk.27.ffn_down.weight",
+        "qtype": "Q8_0",
+        "snr": 4.568,
+        "source_type": "Q6_K"
+      }
+    ]
+  },
+  "configs": {
+    "removal": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096",
+    "retention": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024",
+    "held_out": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096"
+  },
+  "measured_axes": {
+    "removal": {
+      "rows": 40,
+      "cap": 4096,
+      "suite": "verification/p7-spark/suites/harmful-40.jsonl",
+      "serve_config": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096"
+    },
+    "retention": {
+      "rows": 241,
+      "cap": 1024,
+      "suite": "verification/capability/capability-run-en.jsonl",
+      "serve_config": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024"
+    },
+    "held_out": {
+      "rows": 120,
+      "cap": 4096,
+      "suite": "verification/screens/q3-holdout-wider.jsonl",
+      "serve_config": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096"
+    }
+  },
+  "suites": {
+    "held_out": {
+      "in_clone": true,
+      "path": "verification/screens/q3-holdout-wider.jsonl"
+    },
+    "removal": {
+      "in_clone": true,
+      "path": "verification/p7-spark/suites/harmful-40.jsonl"
+    },
+    "retention": {
+      "in_clone": true,
+      "path": "verification/capability/capability-run-en.jsonl"
+    }
+  },
+  "pinned_cert_argv": "-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096",
+  "pinned_cert": {
+    "ctx": 4096,
+    "parallel": 4,
+    "artifact": "/mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf"
+  },
+  "pinned_cert_match": {
+    "removal": true,
+    "retention": true,
+    "held_out": true
+  },
+  "measured": true,
+  "disagreements": [],
+  "evidence_gaps": [],
+  "next_command": "uv run jdewitt verify-artifact verification/releases/spark-1.7b/packet.json --name packet.json",
+  "note": "One arm, both axes, one serve config per axis, read from saved waves only. Removal is wording removal under BOTH inventories and is not a delivery claim (R6): the shape verdicts sit beside it. A false pinned_cert_match is the honest state of a wave taken outside the pinned cert config (R9), not a bug."
+}
