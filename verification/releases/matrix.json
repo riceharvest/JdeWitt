@@ -1075,6 +1075,16 @@
       "gaps": [],
       "numbers": {
         "arm.byte_cost": 1307821248,
+        "arm.codec_table_summary.candidates.f16.mean_cos": 1.0,
+        "arm.codec_table_summary.candidates.f16.min_cos": 1.0,
+        "arm.codec_table_summary.candidates.f16.tensors": 56,
+        "arm.codec_table_summary.candidates.q6_k.mean_cos": 0.8731,
+        "arm.codec_table_summary.candidates.q6_k.min_cos": 0.8004,
+        "arm.codec_table_summary.candidates.q6_k.tensors": 56,
+        "arm.codec_table_summary.candidates.q8_0.mean_cos": 0.9899,
+        "arm.codec_table_summary.candidates.q8_0.min_cos": 0.9861,
+        "arm.codec_table_summary.candidates.q8_0.tensors": 56,
+        "arm.codec_table_summary.floor": 0.9,
         "arm.edited_tensors": 56,
         "arm.realized_cos": 0.9687,
         "arm.scale": 1.0,
@@ -1312,7 +1322,7 @@
       },
       "next_command": "uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json",
       "recompute_command": "uv run jdewitt release-certify --spec verification/releases/spark-1.7b/spec.json --out verification/releases/spark-1.7b/packet.json",
-      "packet_digest": "a3f326eb58aad442f0709839944b81164aefe9d075d0d82921ac2516f19f317a",
+      "packet_digest": "57ce7bdfd0369f59d1b56b045fbb8a459f5afad90e341205cf3f0974c0f075ec",
       "packet_numbers": {
         "removal": {
           "harmful40": {

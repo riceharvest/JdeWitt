@@ -13,7 +13,35 @@
   "scale": 1.0,
   "refit": true,
   "refit_source": "runs/p4/records.pt (sha256 9d5e648f9fee7638d174c9397c96ca50c01d14e34a026b582638fc02fabadf6a, 80 rows on the bfloat16 HF source the f16 twin was converted from)",
-  "note": "REFIT, not a rebuild from a capture of this card: the shared axis was fitted (spanfit axes --shape shared) from the committed p4d capture and is bitwise reproducible (tensor_sha256 d1cc9af5...). Scale stays 1.0; Q8_0 is the codec-aware type choice from measured cos, not a scale hike."
+  "note": "REFIT, not a rebuild from a capture of this card: the shared axis was fitted (spanfit axes --shape shared) from the committed p4d capture and is bitwise reproducible (tensor_sha256 d1cc9af5...). Scale stays 1.0; Q8_0 is the codec-aware type choice from measured cos, not a scale hike.",
+  "codec_table_summary": {
+   "source": "verification/p7-spark/codec-table.json",
+   "floor": 0.9,
+   "verdict": "cleared",
+   "rule": "smallest candidate type whose worst edited tensor clears the floor; if none does, the row is failed(codec) at the measured cos values - never accepted at a raised scale",
+   "chosen_type": "Q8_0",
+   "best_available_type": "F16",
+   "candidates": {
+    "f16": {
+     "min_cos": 1.0,
+     "mean_cos": 1.0,
+     "clears_floor": true,
+     "tensors": 56
+    },
+    "q6_k": {
+     "min_cos": 0.8004,
+     "mean_cos": 0.8731,
+     "clears_floor": false,
+     "tensors": 56
+    },
+    "q8_0": {
+     "min_cos": 0.9861,
+     "mean_cos": 0.9899,
+     "clears_floor": true,
+     "tensors": 56
+    }
+   }
+  }
  },
  "artifact": {
   "bytes": 1307821248,
