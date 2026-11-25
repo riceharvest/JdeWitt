@@ -20,7 +20,7 @@
  "artifact": {
   "bytes": 349402688,
   "name": "qwen25-0.5b-instruct-iq4_xs.gguf",
-  "note": "hashed from the operand the wave argv named, before sanitisation",
+  "note": "hashed on the run that could still see the file; the committed argv is sanitised, so this digest is the only pin on the served artifact",
   "resolved": true,
   "sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1"
  },
@@ -109,7 +109,7 @@
  },
  "failed_checks": [],
  "format": "jdewitt-census-wave-provenance/1",
- "generated": "2026-11-25T15:09:22Z",
+ "generated": "2026-11-25T15:14:55Z",
  "holdout": {
   "declared_digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",
   "digest": "d7f96ab2d9a716ba1d89acb9b6f7348b0292964b42933349867afc8f0b1f106a",
@@ -119,7 +119,7 @@
  "not_checked": [
   "that the answers are honest reads of the model",
   "that refusing wording means refusing the request",
-  "that the model was the artifact the argv names",
+  "that the server loaded the bytes the argv named (the artifact digest pins the file that path held at check time, not the weights the process had mapped)",
   "token budgets and model fit"
  ],
  "ok": true,
@@ -137,6 +137,7 @@
   }
  ],
  "sanitisation": {
+  "carried_forward": true,
   "predictions_leaks": [],
   "rewrites": [
    {

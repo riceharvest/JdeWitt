@@ -178,6 +178,26 @@ def test_artifact_identity_hashes_the_argv_operand(tmp_path):
     assert module.artifact_identity('no model here', tmp_path)['name'] is None
 
 
+def test_second_write_pass_keeps_the_artifact_digest(tmp_path):
+    paths = _fixture(tmp_path)
+    model = tmp_path / 'tiny.gguf'
+    model.write_bytes(b'gguf-bytes')
+    wave = json.loads((paths['wave_dir'] / 'wave.json').read_text())
+    wave['serve_config'] = f'<server> -m {model} --ctx-size 4096'
+    (paths['wave_dir'] / 'wave.json').write_text(json.dumps(wave, indent=1, sort_keys=True) + '\n')
+    argv = [str(paths['wave_dir']), '--holdout', str(paths['holdout']),
+            '--provenance', str(paths['provenance']), '--census', str(paths['census'])]
+
+    assert module.main(argv) == 0
+    first = json.loads((paths['wave_dir'] / 'provenance-check.json').read_text())
+    assert first['artifact']['resolved'] is True
+
+    assert module.main(argv) == 0
+    again = json.loads((paths['wave_dir'] / 'provenance-check.json').read_text())
+    assert again['artifact']['sha256'] == first['artifact']['sha256'] == hashlib.sha256(b'gguf-bytes').hexdigest()
+    assert module.main(argv + ['--check']) == 0
+
+
 def test_main_writes_the_check_and_check_mode_detects_drift(tmp_path, capsys):
     paths = _fixture(tmp_path)
     argv = [str(paths['wave_dir']), '--holdout', str(paths['holdout']),
@@ -193,6 +213,14 @@ def test_main_writes_the_check_and_check_mode_detects_drift(tmp_path, capsys):
 
     assert module.main(argv + ['--check']) == 0
 
+    # A second write pass must not erase the record of the one-time rewrite.
+    first = json.loads(out_path.read_text())
+    assert module.main(argv) == 0
+    again = json.loads(out_path.read_text())
+    assert again['sanitisation']['rewrites'] == first['sanitisation']['rewrites']
+    assert again['sanitisation']['carried_forward'] is True
+    assert again['artifact'] == first['artifact']
+    assert module.main(argv + ['--check']) == 0
     rows = [json.loads(line) for line in (paths['wave_dir'] / 'predictions.jsonl').read_text().splitlines()]
     rows[0]['completion_tokens'] = 99
     (paths['wave_dir'] / 'predictions.jsonl').write_text(

@@ -32,6 +32,8 @@ drift comparison.
 It also sanitises the committed artifacts: absolute ``/mnt``, ``/home``,
 ``/Users`` and ``/root`` paths become repo-relative or ``<local>/<basename>``,
 board task ids become ``<task>``, and every rewrite is listed in the check file.
+A re-run sees the already-portable file and carries the earlier rewrite list
+forward instead of erasing the only record that the substitution happened.
 Absolute paths inside model output are *not* rewritten (that would edit evidence);
 they are reported and fail the run so a human can decide.
 
@@ -297,7 +299,9 @@ def build_check(wave_dir: Path, holdout_path: Path, provenance_path: Path,
         'sanitisation': {'rewrites': rewrites, 'predictions_leaks': leaked},
         'not_checked': ['that the answers are honest reads of the model',
                         'that refusing wording means refusing the request',
-                        'that the model was the artifact the argv names',
+                        'that the server loaded the bytes the argv named (the artifact'
+                        ' digest pins the file that path held at check time, not the'
+                        ' weights the process had mapped)',
                         'token budgets and model fit'],
     }
 
@@ -391,6 +395,27 @@ def main(argv=None):
         # machine-local prefix, and the rewrite is listed in the check file.
         wave_path = args.wave_dir / 'wave.json'
         rewrites = [item for item in report['sanitisation']['rewrites'] if item['field'].startswith('wave')]
+        if not rewrites and out_path.is_file():
+            # The wave is already sanitised, so this run sees nothing to rewrite.
+            # The list describes the edit that produced the committed file and
+            # cannot be rediscovered by a later run; carry it forward rather than
+            # erasing the only record that the substitution happened.
+            try:
+                prior = json.loads(out_path.read_text(encoding='utf-8'))
+            except (OSError, json.JSONDecodeError):
+                prior = {}
+            carried = (prior.get('sanitisation') or {}).get('rewrites') or []
+            if carried:
+                report['sanitisation']['rewrites'] = carried
+                report['sanitisation']['carried_forward'] = True
+            # Same for the artifact digest: once the argv is portable the file
+            # can no longer be found by the check, and dropping the digest would
+            # leave the served artifact unpinned in the committed record.
+            prior_artifact = prior.get('artifact') or {}
+            if report['artifact']['sha256'] is None and prior_artifact.get('sha256'):
+                report['artifact'] = dict(prior_artifact, note=(
+                    'hashed on the run that could still see the file; the committed argv is '
+                    'sanitised, so this digest is the only pin on the served artifact'))
         if wave_path.is_file() and rewrites:
             wave = json.loads(wave_path.read_text(encoding='utf-8'))
             wave_path.write_text(json.dumps(sanitise_value(wave, 'wave', REPO, []), indent=1,

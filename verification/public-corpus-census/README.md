@@ -64,7 +64,9 @@ rewrites absolute `/mnt`, `/home`, `/Users` and `/root` paths in the committed
 JSON to repo-relative or `<local>/<basename>` form and lists every rewrite; an
 absolute path inside a model answer is reported and fails instead of being
 edited. `--check` compares an existing `provenance-check.json` against its
-inputs and exits non-zero on drift.
+inputs and exits non-zero on drift. Re-running the write pass on an
+already-sanitised wave reproduces the same file: the rewrite list and the
+artifact digest are carried forward rather than recomputed into nothing.
 
 Success is a statement about provenance, not about harm: the refusal-check
 result in a wave is a screen over wording, and the check file records
