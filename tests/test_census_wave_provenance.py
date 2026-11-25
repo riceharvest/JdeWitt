@@ -98,6 +98,9 @@ def test_happy_path_resolves_dataset_revision_and_licence(tmp_path):
     assert report['screen']['removal_claimed'] is False
     assert report['claims']['removal'] is False
     assert report['wave']['rows'] == 2
+    # the fixture's model operand does not exist here, so identity is name-only
+    assert report['artifact']['name'] == 'tiny.gguf'
+    assert report['artifact']['resolved'] is False
 
 
 def test_absolute_paths_are_rewritten_not_committed(tmp_path):
@@ -157,6 +160,22 @@ def test_absolute_path_inside_an_answer_is_reported_not_rewritten(tmp_path):
     report = _build(paths, tmp_path)
     assert 'predictions_have_no_local_paths' in _failed(report)
     assert report['sanitisation']['predictions_leaks'][0]['id'] == rows[0]['id']
+
+
+def test_artifact_identity_hashes_the_argv_operand(tmp_path):
+    artifact = tmp_path / 'tiny.gguf'
+    artifact.write_bytes(b'gguf-bytes')
+
+    resolved = module.artifact_identity(f'<server> -m {artifact} --port 8199', tmp_path)
+    assert resolved['resolved'] is True
+    assert resolved['name'] == 'tiny.gguf'
+    assert resolved['bytes'] == 10
+    assert resolved['sha256'] == hashlib.sha256(b'gguf-bytes').hexdigest()
+
+    sanitised = module.artifact_identity('<local>/llama-server -m <local>/tiny.gguf', tmp_path)
+    assert sanitised['resolved'] is False
+    assert sanitised['name'] == 'tiny.gguf' and sanitised['sha256'] is None
+    assert module.artifact_identity('no model here', tmp_path)['name'] is None
 
 
 def test_main_writes_the_check_and_check_mode_detects_drift(tmp_path, capsys):
