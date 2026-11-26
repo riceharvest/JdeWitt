@@ -67,9 +67,10 @@ The repo is public and several docs still carry absolute lab paths (13 lines
 under `docs/`) and two board card ids. Scrub them to repo-relative paths and
 plain descriptions, and keep every quoted command runnable from a fresh clone.
 
-Check: `grep -rn '/mnt/' docs/` returns 0 lines; the card-id pattern returns 0
-hits in `docs/` and `README.md`; `scripts/evidence_map.py --check` stays green
-after the edit, because the commands in the map are the ones being scrubbed.
+Check: `grep -rn '[/]mnt/' docs/` returns 0 lines (the bracketed slash keeps this
+line from matching its own check, and matches the same paths); the card-id pattern
+returns 0 hits in `docs/` and `README.md`; `scripts/evidence_map.py --check` stays
+green after the edit, because the commands in the map are the ones being scrubbed.
 
 ## 4. Standing audit sweep, recorded
 

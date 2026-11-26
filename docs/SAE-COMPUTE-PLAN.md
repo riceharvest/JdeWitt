@@ -1,9 +1,9 @@
 # SAE compute plan (P5 workstream b, first train step)
 
-Status: authored by t_fc23e61a. The card `t_10d92751` ("the compute plan first")
-was closed `done` with a gateway-timeout result and its branch carries no commits,
-so the plan this card's gate refers to did not exist; the numbers below are the
-plan, priced on the B70 (`scripts/sae_budget.py --timing`) before training.
+Status: authored on an earlier board card. The card that asked for the compute
+plan first was closed `done` with a gateway-timeout result and its branch carries
+no commits, so the plan this card's gate refers to did not exist; the numbers below
+are the plan, priced on the B70 (`scripts/sae_budget.py --timing`) before training.
 
 What is trained: one small **top-k autoencoder** per non-protective content
 family, on that family's captured refusal residuals at one layer
@@ -142,7 +142,7 @@ task, not a compute one.
 | config + seed | plan numbers, split ids, seeds, median choice | checkpoint config block + `train-report.json` |
 | capacity sweep | every candidate's per-family, per-seed FVU and its control | `verification/p5/sae/capacity-sweep.json` |
 | feature table | top-k features by `|contrast|`, per-family means both sides, `cos_to_axis` | `verification/p5/sae/feature-table.json` / `.md` |
-| ablation stage (next card) | pre-registers from the feature table | t_35ced455 |
+| ablation stage (next card) | pre-registers from the feature table | a follow-up board card, not this one |
 
 ## Measured vs assumed
 
