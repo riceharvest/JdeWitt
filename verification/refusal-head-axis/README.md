@@ -19,11 +19,13 @@ number below is weight algebra or a tokenizer encode, and the report states
 Both Qwen checkpoints set `tie_word_embeddings: true`. The twin nonetheless
 saves a distinct `lm_head.weight` (max |lm_head − embedding| = 0.0140); a
 config-tied loader discards it, so the served head — and the axis built here — is
-`model.embed_tokens.weight`. The tidied reporting trap: reading `lm_head` because
-it exists would build an axis the twin's runtime never scores with.
+`model.embed_tokens.weight`. The trap: reading `lm_head` because it exists builds
+an axis the twin never scores with.
 
-Downloads were hashed, read, then deleted (the script resolves the snapshot
-symlink into the blob store before unlinking, so bytes are actually freed).
+Downloads were hashed, read, then deleted. This run removed the snapshot
+symlinks and the content-addressed blobs behind them by hand; the committed
+script now resolves the symlink into the blob store before unlinking, so a rerun
+frees the bytes itself.
 
 ## Axis
 
