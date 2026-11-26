@@ -11,7 +11,6 @@ loaded anywhere.
 """
 from __future__ import annotations
 
-import json
 import struct
 
 import numpy as np
@@ -184,7 +183,8 @@ def test_the_byte_alphabet_arm_makes_the_string_unrepresentable(tmp_path):
     rows = {row['text']: row for row in report['encode']['rows']}
     assert rows['I']['after']['single_token'] is False
     assert rows['I']['after']['representable'] is False
-    assert rows['I']['after']['ids'] == [None]
+    assert rows['I']['after']['ids'] == []
+    assert rows['I']['after']['dropped_bytes'] == 1
     # a sentence that contains the byte is unrepresentable as a whole
     assert rows["I'm sorry, but I can't"]['after']['representable'] is False
     assert report['apply']['tokenizer']['special_tokens_resolve']
@@ -215,22 +215,35 @@ def test_the_encoder_uses_the_merge_list_then_the_byte_fallback():
     tokens = [BYTE_TO_UNICODE[byte] for byte in range(256)]
     vocab = {token: token_id for token_id, token in enumerate(tokens)}
     merges = []
-    for merge in _merges(''.join(BYTE_TO_UNICODE[byte] for byte in b'Sorry')):
-        if merge not in merges:
-            merges.append(merge)
+    for surface in ('Sorry', ' I'):
+        for merge in _merges(''.join(BYTE_TO_UNICODE[byte] for byte in surface.encode())):
+            if merge not in merges:
+                merges.append(merge)
     ranks = _merge_ranks(merges)
     # a merge the tokenizer lacks: five byte tokens, still spellable
     encoded = _encode('Sorry', vocab, _merge_ranks([]))
     assert encoded['representable'] is True and encoded['single_token'] is False
     assert encoded['kinds'] == ['token'] * 5
-    # the merge list builds 'Sorry'; absent from the vocabulary it falls back to bytes
+    assert encoded['lossless'] is True
+    # the merge list builds 'Sorry'; absent from the vocabulary it falls back to ASCII bytes
     encoded = _encode('Sorry', vocab, ranks)
     assert encoded['pieces'] == [tokens[byte] for byte in b'Sorry']
     assert encoded['kinds'] == ['byte'] * 5
-    # one byte of the fallback has no token: unrepresentable, not silently dropped
+    assert encoded['lossless'] is True and encoded['dropped_bytes'] == 0
+    # llama.cpp drops the non-ASCII bytes of the unknown symbol; the reference path keeps them
+    encoded = _encode(' I', vocab, ranks)
+    assert encoded['symbols'][0]['symbol'] == BYTE_TO_UNICODE[0x20] + 'I'
+    assert encoded['ids'] == [vocab['I']] and encoded['dropped_bytes'] == 2
+    assert encoded['lossless'] is False and encoded['representable'] is True
+    reference = _encode(' I', vocab, ranks, mode='reference')
+    assert reference['ids'] == [vocab['Ġ'], vocab['I']]
+    assert reference['lossless'] is True
+    # one dropped byte does not make the symbol unrepresentable (llama.cpp emits the rest)
     vocab_missing = {token: token_id for token_id, token in enumerate(tokens)
                      if token != BYTE_TO_UNICODE[ord('S')]}
     encoded = _encode('Sorry', vocab_missing, ranks)
-    assert encoded['representable'] is False
-    assert encoded['ids'] == [None]
-    assert encoded['single_token'] is False
+    assert encoded['representable'] is True and encoded['lossless'] is False
+    assert encoded['ids'] == [vocab['o'], vocab['r'], vocab['r'], vocab['y']]
+    # a symbol whose every byte is gone produces no token at all
+    encoded = _encode('Sorry', {}, ranks)
+    assert encoded['representable'] is False and encoded['ids'] == []

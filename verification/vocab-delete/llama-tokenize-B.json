@@ -1,0 +1,478 @@
+{
+  "schema": "jdewitt.vocab-delete-llama-tokenize/1",
+  "purpose": "Cross-check the static byte-level BPE + byte fallback against llama.cpp's own tokenizer on both files. Tokenization only: llama-tokenize loads the vocabulary and tokenizes; no forward pass, no logits, no serve. CUDA_VISIBLE_DEVICES is empty so no device is visible.",
+  "binary": "/mnt/ssd/dev workspace/beellama-cpp/build/bin/llama-tokenize",
+  "pristine": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+  "pruned": "/home/dario/.agentboard/worktrees/t_301ea985/runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-B.gguf",
+  "records": [
+    {
+      "text": "Sorry",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          19152
+        ],
+        "stdout_tail": [
+          "[19152]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          49,
+          77,
+          80,
+          80,
+          87
+        ],
+        "stdout_tail": [
+          "[49, 77, 80, 80, 87]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        19152
+      ],
+      "static_after": [
+        49,
+        77,
+        80,
+        80,
+        87
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Sorry,",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          19152,
+          11
+        ],
+        "stdout_tail": [
+          "[19152, 11]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          49,
+          77,
+          80,
+          80,
+          87,
+          11
+        ],
+        "stdout_tail": [
+          "[49, 77, 80, 80, 87, 11]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        19152,
+        11
+      ],
+      "static_after": [
+        49,
+        77,
+        80,
+        80,
+        87,
+        11
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "I",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          40
+        ],
+        "stdout_tail": [
+          "[40]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [],
+        "stdout_tail": [
+          "[]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        40
+      ],
+      "static_after": [],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": " I",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          358
+        ],
+        "stdout_tail": [
+          "[358]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [],
+        "stdout_tail": [
+          "[]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        358
+      ],
+      "static_after": [],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Cannot",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          17444
+        ],
+        "stdout_tail": [
+          "[17444]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          34,
+          63,
+          76,
+          76,
+          77,
+          82
+        ],
+        "stdout_tail": [
+          "[34, 63, 76, 76, 77, 82]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        17444
+      ],
+      "static_after": [
+        34,
+        63,
+        76,
+        76,
+        77,
+        82
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Cannot,",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          17444,
+          11
+        ],
+        "stdout_tail": [
+          "[17444, 11]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          34,
+          63,
+          76,
+          76,
+          77,
+          82,
+          11
+        ],
+        "stdout_tail": [
+          "[34, 63, 76, 76, 77, 82, 11]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        17444,
+        11
+      ],
+      "static_after": [
+        34,
+        63,
+        76,
+        76,
+        77,
+        82,
+        11
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "I'm sorry, but I can't",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          40,
+          2776,
+          14589,
+          11,
+          714,
+          358,
+          646,
+          944
+        ],
+        "stdout_tail": [
+          "[40, 2776, 14589, 11, 714, 358, 646, 944]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          2774,
+          14586,
+          11,
+          712,
+          644,
+          942
+        ],
+        "stdout_tail": [
+          "[2774, 14586, 11, 712, 644, 942]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        40,
+        2776,
+        14589,
+        11,
+        714,
+        358,
+        646,
+        944
+      ],
+      "static_after": [
+        2774,
+        14586,
+        11,
+        712,
+        644,
+        942
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Es",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          17360
+        ],
+        "stdout_tail": [
+          "[17360]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          36,
+          81
+        ],
+        "stdout_tail": [
+          "[36, 81]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        17360
+      ],
+      "static_after": [
+        36,
+        81
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": " Es",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          9236
+        ],
+        "stdout_tail": [
+          "[9236]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          36,
+          81
+        ],
+        "stdout_tail": [
+          "[36, 81]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        9236
+      ],
+      "static_after": [
+        36,
+        81
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Sure",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          39814
+        ],
+        "stdout_tail": [
+          "[39814]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          39806
+        ],
+        "stdout_tail": [
+          "[39806]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        39814
+      ],
+      "static_after": [
+        39806
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Here",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          8420
+        ],
+        "stdout_tail": [
+          "[8420]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          8418
+        ],
+        "stdout_tail": [
+          "[8418]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        8420
+      ],
+      "static_after": [
+        8418
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Certainly",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          95456
+        ],
+        "stdout_tail": [
+          "[95456]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          95448
+        ],
+        "stdout_tail": [
+          "[95448]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        95456
+      ],
+      "static_after": [
+        95448
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    },
+    {
+      "text": "Hier",
+      "llama_tokenize_pristine": {
+        "returncode": 0,
+        "ids": [
+          74909
+        ],
+        "stdout_tail": [
+          "[74909]"
+        ],
+        "stderr_tail": []
+      },
+      "llama_tokenize_pruned": {
+        "returncode": 0,
+        "ids": [
+          74901
+        ],
+        "stdout_tail": [
+          "[74901]"
+        ],
+        "stderr_tail": []
+      },
+      "static_before": [
+        74909
+      ],
+      "static_after": [
+        74901
+      ],
+      "pristine_matches_static": true,
+      "pruned_matches_static": true
+    }
+  ],
+  "all_pristine_match": true,
+  "all_pruned_match": true
+}

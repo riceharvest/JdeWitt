@@ -1,0 +1,3173 @@
+{
+  "schema": "jdewitt.vocab-delete/1",
+  "scope": "Delete the denial-opener ids from a quantized artifact: the tokenizer arrays, the scalar ids that share the vocabulary id space, and the token-row matrix. Storage fidelity, the renumbering map, and the static encoder paths of the deleted surfaces. No model is loaded and no behavioural claim is made.",
+  "method": "The denial surfaces of the opener table are resolved against the artifact tokenizer in both contexts (bare and with the leading space); every id a surface resolves to in a single token is a deletion candidate. A candidate is deleted when its stored token_type is NORMAL and, unless the byte-alphabet arm is asked for, its piece is more than one raw byte (a single raw byte IS the tokenizer's alphabet). The write rebuilds the GGUF container: tokenizer.ggml.tokens and tokenizer.ggml.token_type lose the entries, every scalar *_token_id is renumbered down by the number of deleted ids below it, and each vocabulary-wide token-row matrix loses the rows (surviving rows are copied as whole stored rows). Every other KV entry and tensor payload is copied verbatim; tensor offsets are recomputed under the file alignment. The revert sidecar stores the deleted entries and raw row bytes and re-inserts them. No model is loaded and no logits are read; the encoder paths are string automata over the metadata: llama.cpp's byte-level BPE plus its byte fallback (whose behaviour for the deleted symbols was checked against llama-tokenize on the written file) and the reference byte-alphabet fallback.",
+  "gated": "Whether the model then refuses less is out of scope: that needs a serve/forward pass, which this card forbids. Even the static result is limited \u2014 a merged token whose bytes survive is still spellable as a sequence, so the model can emit the denial string in several tokens; the deleted id is gone, the string is not.",
+  "removal_measured": false,
+  "dry_run": true,
+  "artifact": {
+    "path": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "bytes": 342752576,
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+  },
+  "table": {
+    "path": "jdewitt/assets/vocab-conjugate-openers.json",
+    "schema": "jdewitt.vocab-conjugate-pairs/1",
+    "pairs": 4,
+    "sha256": "d5f8a6256a089bdc7ab3b04895946cbcc51fd8561b4cdb6f7d5c97632537c0ec"
+  },
+  "tokenizer": {
+    "model": "gpt2",
+    "pre": "qwen2",
+    "n_vocab": 151936,
+    "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+  },
+  "discovery": {
+    "n_vocab_old": 151936,
+    "n_vocab_new": 151929,
+    "deleted": 7,
+    "tied": true,
+    "vocab_wide_tensors": [
+      "token_embd.weight"
+    ],
+    "tensor_count": 290,
+    "how": "vocabulary-wide 2-D tensors are found by row count == tokenizer vocabulary; the artifact name decides the role"
+  },
+  "policy": {
+    "include_byte_alphabet": false,
+    "deleted_ids": [
+      358,
+      9236,
+      17360,
+      17444,
+      19152,
+      32286,
+      34655
+    ],
+    "definition": "candidates are the ids the table's denial surfaces resolve to in one token in either context; a candidate is deleted when its token_type is NORMAL and, unless --include-byte-alphabet, its piece is more than one raw byte"
+  },
+  "candidates": [
+    {
+      "id": 40,
+      "piece": "I",
+      "piece_bytes_hex": "49",
+      "piece_bytes": 1,
+      "token_type": 1,
+      "byte_alphabet": true,
+      "attested_by": [
+        {
+          "pair": "en-i-here",
+          "context": "bare",
+          "surface": "I",
+          "text": "I",
+          "piece": "I"
+        }
+      ],
+      "refused": "single raw byte: this id IS one entry of the tokenizer's byte alphabet, so deleting it makes every string containing that byte unrepresentable (whole-tokenizer breakage, not a targeted removal); pass --include-byte-alphabet to measure that arm",
+      "deleted": false
+    },
+    {
+      "id": 358,
+      "piece": "\u0120I",
+      "piece_bytes_hex": "2049",
+      "piece_bytes": 2,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "en-i-here",
+          "context": "leads_with_space",
+          "surface": "I",
+          "text": " I",
+          "piece": "\u0120I"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 9236,
+      "piece": "\u0120Es",
+      "piece_bytes_hex": "204573",
+      "piece_bytes": 3,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "de-es-hier",
+          "context": "leads_with_space",
+          "surface": "Es",
+          "text": " Es",
+          "piece": "\u0120Es"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 17360,
+      "piece": "Es",
+      "piece_bytes_hex": "4573",
+      "piece_bytes": 2,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "de-es-hier",
+          "context": "bare",
+          "surface": "Es",
+          "text": "Es",
+          "piece": "Es"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 17444,
+      "piece": "Cannot",
+      "piece_bytes_hex": "43616e6e6f74",
+      "piece_bytes": 6,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "en-cannot-certainly",
+          "context": "bare",
+          "surface": "Cannot",
+          "text": "Cannot",
+          "piece": "Cannot"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 19152,
+      "piece": "Sorry",
+      "piece_bytes_hex": "536f727279",
+      "piece_bytes": 5,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "en-sorry-sure",
+          "context": "bare",
+          "surface": "Sorry",
+          "text": "Sorry",
+          "piece": "Sorry"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 32286,
+      "piece": "\u0120Sorry",
+      "piece_bytes_hex": "20536f727279",
+      "piece_bytes": 6,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "en-sorry-sure",
+          "context": "leads_with_space",
+          "surface": "Sorry",
+          "text": " Sorry",
+          "piece": "\u0120Sorry"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    },
+    {
+      "id": 34655,
+      "piece": "\u0120Cannot",
+      "piece_bytes_hex": "2043616e6e6f74",
+      "piece_bytes": 7,
+      "token_type": 1,
+      "byte_alphabet": false,
+      "attested_by": [
+        {
+          "pair": "en-cannot-certainly",
+          "context": "leads_with_space",
+          "surface": "Cannot",
+          "text": " Cannot",
+          "piece": "\u0120Cannot"
+        }
+      ],
+      "refused": null,
+      "deleted": true
+    }
+  ],
+  "refused_ids": [
+    {
+      "id": 40,
+      "piece": "I",
+      "reason": "single raw byte: this id IS one entry of the tokenizer's byte alphabet, so deleting it makes every string containing that byte unrepresentable (whole-tokenizer breakage, not a targeted removal); pass --include-byte-alphabet to measure that arm"
+    }
+  ],
+  "surfaces": [
+    {
+      "pair": "en-i-here",
+      "context": "bare",
+      "surface": "I",
+      "text": "I",
+      "pieces": [
+        "I"
+      ],
+      "ids": [
+        40
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "en-i-here",
+      "context": "leads_with_space",
+      "surface": "I",
+      "text": " I",
+      "pieces": [
+        "\u0120I"
+      ],
+      "ids": [
+        358
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "en-sorry-sure",
+      "context": "bare",
+      "surface": "Sorry",
+      "text": "Sorry",
+      "pieces": [
+        "Sorry"
+      ],
+      "ids": [
+        19152
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "en-sorry-sure",
+      "context": "leads_with_space",
+      "surface": "Sorry",
+      "text": " Sorry",
+      "pieces": [
+        "\u0120Sorry"
+      ],
+      "ids": [
+        32286
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "en-cannot-certainly",
+      "context": "bare",
+      "surface": "Cannot",
+      "text": "Cannot",
+      "pieces": [
+        "Cannot"
+      ],
+      "ids": [
+        17444
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "en-cannot-certainly",
+      "context": "leads_with_space",
+      "surface": "Cannot",
+      "text": " Cannot",
+      "pieces": [
+        "\u0120Cannot"
+      ],
+      "ids": [
+        34655
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "de-es-hier",
+      "context": "bare",
+      "surface": "Es",
+      "text": "Es",
+      "pieces": [
+        "Es"
+      ],
+      "ids": [
+        17360
+      ],
+      "representable": true,
+      "single_token": true
+    },
+    {
+      "pair": "de-es-hier",
+      "context": "leads_with_space",
+      "surface": "Es",
+      "text": " Es",
+      "pieces": [
+        "\u0120Es"
+      ],
+      "ids": [
+        9236
+      ],
+      "representable": true,
+      "single_token": true
+    }
+  ],
+  "renumber": {
+    "rule": "new_id = old_id - (number of deleted ids below old_id)",
+    "segments": [
+      {
+        "old_start": 0,
+        "old_end": 357,
+        "shift": 0,
+        "new_start": 0,
+        "new_end": 357
+      },
+      {
+        "old_start": 359,
+        "old_end": 9235,
+        "shift": -1,
+        "new_start": 358,
+        "new_end": 9234
+      },
+      {
+        "old_start": 9237,
+        "old_end": 17359,
+        "shift": -2,
+        "new_start": 9235,
+        "new_end": 17357
+      },
+      {
+        "old_start": 17361,
+        "old_end": 17443,
+        "shift": -3,
+        "new_start": 17358,
+        "new_end": 17440
+      },
+      {
+        "old_start": 17445,
+        "old_end": 19151,
+        "shift": -4,
+        "new_start": 17441,
+        "new_end": 19147
+      },
+      {
+        "old_start": 19153,
+        "old_end": 32285,
+        "shift": -5,
+        "new_start": 19148,
+        "new_end": 32280
+      },
+      {
+        "old_start": 32287,
+        "old_end": 34654,
+        "shift": -6,
+        "new_start": 32281,
+        "new_end": 34648
+      },
+      {
+        "old_start": 34656,
+        "old_end": 151935,
+        "shift": -7,
+        "new_start": 34649,
+        "new_end": 151928
+      }
+    ],
+    "deleted_entries": [
+      {
+        "old_id": 358,
+        "piece": "\u0120I",
+        "token_type": 1
+      },
+      {
+        "old_id": 9236,
+        "piece": "\u0120Es",
+        "token_type": 1
+      },
+      {
+        "old_id": 17360,
+        "piece": "Es",
+        "token_type": 1
+      },
+      {
+        "old_id": 17444,
+        "piece": "Cannot",
+        "token_type": 1
+      },
+      {
+        "old_id": 19152,
+        "piece": "Sorry",
+        "token_type": 1
+      },
+      {
+        "old_id": 32286,
+        "piece": "\u0120Sorry",
+        "token_type": 1
+      },
+      {
+        "old_id": 34655,
+        "piece": "\u0120Cannot",
+        "token_type": 1
+      }
+    ],
+    "scalar_ids": {
+      "tokenizer.ggml.eos_token_id": {
+        "old": 151645,
+        "new": 151638,
+        "deleted_below": 7
+      },
+      "tokenizer.ggml.padding_token_id": {
+        "old": 151643,
+        "new": 151636,
+        "deleted_below": 7
+      },
+      "tokenizer.ggml.bos_token_id": {
+        "old": 151643,
+        "new": 151636,
+        "deleted_below": 7
+      }
+    },
+    "invariant": "every surviving id keeps its piece and its row: the token at new_id is the token that was at old_id, and no surviving piece changes"
+  },
+  "encode": {
+    "algorithm": "byte-level BPE merge ranks (tokenizer.ggml.merges), then the vocabulary lookup; a merged symbol absent from the vocabulary falls back byte by byte. ``after`` models llama.cpp exactly (src/llama-vocab.cpp: each UTF-8 byte of the unknown symbol is looked up as a token text, so a non-ASCII byte is DROPPED); ``after_reference`` models the byte-alphabet fallback Hugging Face uses (the symbol is mapped back through the byte alphabet and every byte is looked up). Tokenization only; the llama.cpp path was checked against llama-tokenize on the written artifact.",
+    "divergence": "llama.cpp rebuilds a deleted merged symbol from the merge list and then loses every non-ASCII byte of it: the leading-space marker \u0120 is two UTF-8 bytes with no single-byte token text, so it is dropped and \" Sorry\" encodes as the five byte tokens of \"Sorry\". The reference path keeps the space as token 220. Both paths leave the string spellable; neither can produce the deleted id.",
+    "rows": [
+      {
+        "text": "I",
+        "before": {
+          "text": "I",
+          "mode": "llama_cpp",
+          "pieces": [
+            "I"
+          ],
+          "ids": [
+            40
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "I",
+          "mode": "reference",
+          "pieces": [
+            "I"
+          ],
+          "ids": [
+            40
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "I",
+          "mode": "llama_cpp",
+          "pieces": [
+            "I"
+          ],
+          "ids": [
+            40
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "I",
+          "mode": "reference",
+          "pieces": [
+            "I"
+          ],
+          "ids": [
+            40
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": " I",
+        "before": {
+          "text": " I",
+          "mode": "llama_cpp",
+          "pieces": [
+            "\u0120I"
+          ],
+          "ids": [
+            358
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": " I",
+          "mode": "reference",
+          "pieces": [
+            "\u0120I"
+          ],
+          "ids": [
+            358
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120I",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": " I",
+          "mode": "llama_cpp",
+          "pieces": [
+            "I"
+          ],
+          "ids": [
+            40
+          ],
+          "kinds": [
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120I",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 73,
+                  "id": 40,
+                  "piece": "I"
+                }
+              ],
+              "dropped_bytes": 2,
+              "raw": [
+                196,
+                160,
+                73
+              ]
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": false,
+          "representable": true,
+          "lossless": false,
+          "dropped_bytes": 2
+        },
+        "after_reference": {
+          "text": " I",
+          "mode": "reference",
+          "pieces": [
+            "\u0120",
+            "I"
+          ],
+          "ids": [
+            220,
+            40
+          ],
+          "kinds": [
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120I",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 32,
+                  "id": 220,
+                  "piece": "\u0120"
+                },
+                {
+                  "byte": 73,
+                  "id": 40,
+                  "piece": "I"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                32,
+                73
+              ]
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Sorry",
+        "before": {
+          "text": "Sorry",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Sorry"
+          ],
+          "ids": [
+            19152
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Sorry",
+          "mode": "reference",
+          "pieces": [
+            "Sorry"
+          ],
+          "ids": [
+            19152
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Sorry",
+          "mode": "llama_cpp",
+          "pieces": [
+            "S",
+            "o",
+            "r",
+            "r",
+            "y"
+          ],
+          "ids": [
+            50,
+            78,
+            81,
+            81,
+            88
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            }
+          ],
+          "n_tokens": 5,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Sorry",
+          "mode": "reference",
+          "pieces": [
+            "S",
+            "o",
+            "r",
+            "r",
+            "y"
+          ],
+          "ids": [
+            50,
+            78,
+            81,
+            81,
+            88
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            }
+          ],
+          "n_tokens": 5,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": " Sorry",
+        "before": {
+          "text": " Sorry",
+          "mode": "llama_cpp",
+          "pieces": [
+            "\u0120Sorry"
+          ],
+          "ids": [
+            32286
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": " Sorry",
+          "mode": "reference",
+          "pieces": [
+            "\u0120Sorry"
+          ],
+          "ids": [
+            32286
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": " Sorry",
+          "mode": "llama_cpp",
+          "pieces": [
+            "S",
+            "o",
+            "r",
+            "r",
+            "y"
+          ],
+          "ids": [
+            50,
+            78,
+            81,
+            81,
+            88
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 2,
+              "raw": [
+                196,
+                160,
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            }
+          ],
+          "n_tokens": 5,
+          "single_token": false,
+          "representable": true,
+          "lossless": false,
+          "dropped_bytes": 2
+        },
+        "after_reference": {
+          "text": " Sorry",
+          "mode": "reference",
+          "pieces": [
+            "\u0120",
+            "S",
+            "o",
+            "r",
+            "r",
+            "y"
+          ],
+          "ids": [
+            220,
+            50,
+            78,
+            81,
+            81,
+            88
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 32,
+                  "id": 220,
+                  "piece": "\u0120"
+                },
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                32,
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Cannot",
+        "before": {
+          "text": "Cannot",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Cannot"
+          ],
+          "ids": [
+            17444
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Cannot",
+          "mode": "reference",
+          "pieces": [
+            "Cannot"
+          ],
+          "ids": [
+            17444
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Cannot",
+          "mode": "llama_cpp",
+          "pieces": [
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t"
+          ],
+          "ids": [
+            34,
+            64,
+            77,
+            77,
+            78,
+            83
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Cannot",
+          "mode": "reference",
+          "pieces": [
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t"
+          ],
+          "ids": [
+            34,
+            64,
+            77,
+            77,
+            78,
+            83
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": " Cannot",
+        "before": {
+          "text": " Cannot",
+          "mode": "llama_cpp",
+          "pieces": [
+            "\u0120Cannot"
+          ],
+          "ids": [
+            34655
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": " Cannot",
+          "mode": "reference",
+          "pieces": [
+            "\u0120Cannot"
+          ],
+          "ids": [
+            34655
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": " Cannot",
+          "mode": "llama_cpp",
+          "pieces": [
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t"
+          ],
+          "ids": [
+            34,
+            64,
+            77,
+            77,
+            78,
+            83
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 2,
+              "raw": [
+                196,
+                160,
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": false,
+          "dropped_bytes": 2
+        },
+        "after_reference": {
+          "text": " Cannot",
+          "mode": "reference",
+          "pieces": [
+            "\u0120",
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t"
+          ],
+          "ids": [
+            220,
+            34,
+            64,
+            77,
+            77,
+            78,
+            83
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 32,
+                  "id": 220,
+                  "piece": "\u0120"
+                },
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                32,
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            }
+          ],
+          "n_tokens": 7,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Es",
+        "before": {
+          "text": "Es",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Es"
+          ],
+          "ids": [
+            17360
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Es",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Es",
+          "mode": "reference",
+          "pieces": [
+            "Es"
+          ],
+          "ids": [
+            17360
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Es",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Es",
+          "mode": "llama_cpp",
+          "pieces": [
+            "E",
+            "s"
+          ],
+          "ids": [
+            36,
+            82
+          ],
+          "kinds": [
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Es",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 69,
+                  "id": 36,
+                  "piece": "E"
+                },
+                {
+                  "byte": 115,
+                  "id": 82,
+                  "piece": "s"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                69,
+                115
+              ]
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Es",
+          "mode": "reference",
+          "pieces": [
+            "E",
+            "s"
+          ],
+          "ids": [
+            36,
+            82
+          ],
+          "kinds": [
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "Es",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 69,
+                  "id": 36,
+                  "piece": "E"
+                },
+                {
+                  "byte": 115,
+                  "id": 82,
+                  "piece": "s"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                69,
+                115
+              ]
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": " Es",
+        "before": {
+          "text": " Es",
+          "mode": "llama_cpp",
+          "pieces": [
+            "\u0120Es"
+          ],
+          "ids": [
+            9236
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Es",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": " Es",
+          "mode": "reference",
+          "pieces": [
+            "\u0120Es"
+          ],
+          "ids": [
+            9236
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Es",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": " Es",
+          "mode": "llama_cpp",
+          "pieces": [
+            "E",
+            "s"
+          ],
+          "ids": [
+            36,
+            82
+          ],
+          "kinds": [
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Es",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 69,
+                  "id": 36,
+                  "piece": "E"
+                },
+                {
+                  "byte": 115,
+                  "id": 82,
+                  "piece": "s"
+                }
+              ],
+              "dropped_bytes": 2,
+              "raw": [
+                196,
+                160,
+                69,
+                115
+              ]
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": false,
+          "dropped_bytes": 2
+        },
+        "after_reference": {
+          "text": " Es",
+          "mode": "reference",
+          "pieces": [
+            "\u0120",
+            "E",
+            "s"
+          ],
+          "ids": [
+            220,
+            36,
+            82
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte"
+          ],
+          "symbols": [
+            {
+              "symbol": "\u0120Es",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 32,
+                  "id": 220,
+                  "piece": "\u0120"
+                },
+                {
+                  "byte": 69,
+                  "id": 36,
+                  "piece": "E"
+                },
+                {
+                  "byte": 115,
+                  "id": 82,
+                  "piece": "s"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                32,
+                69,
+                115
+              ]
+            }
+          ],
+          "n_tokens": 3,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Sorry,",
+        "before": {
+          "text": "Sorry,",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Sorry",
+            ","
+          ],
+          "ids": [
+            19152,
+            11
+          ],
+          "kinds": [
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Sorry,",
+          "mode": "reference",
+          "pieces": [
+            "Sorry",
+            ","
+          ],
+          "ids": [
+            19152,
+            11
+          ],
+          "kinds": [
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Sorry,",
+          "mode": "llama_cpp",
+          "pieces": [
+            "S",
+            "o",
+            "r",
+            "r",
+            "y",
+            ","
+          ],
+          "ids": [
+            50,
+            78,
+            81,
+            81,
+            88,
+            11
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Sorry,",
+          "mode": "reference",
+          "pieces": [
+            "S",
+            "o",
+            "r",
+            "r",
+            "y",
+            ","
+          ],
+          "ids": [
+            50,
+            78,
+            81,
+            81,
+            88,
+            11
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sorry",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 83,
+                  "id": 50,
+                  "piece": "S"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 114,
+                  "id": 81,
+                  "piece": "r"
+                },
+                {
+                  "byte": 121,
+                  "id": 88,
+                  "piece": "y"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                83,
+                111,
+                114,
+                114,
+                121
+              ]
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 6,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Cannot,",
+        "before": {
+          "text": "Cannot,",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Cannot",
+            ","
+          ],
+          "ids": [
+            17444,
+            11
+          ],
+          "kinds": [
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Cannot,",
+          "mode": "reference",
+          "pieces": [
+            "Cannot",
+            ","
+          ],
+          "ids": [
+            17444,
+            11
+          ],
+          "kinds": [
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 2,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Cannot,",
+          "mode": "llama_cpp",
+          "pieces": [
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t",
+            ","
+          ],
+          "ids": [
+            34,
+            64,
+            77,
+            77,
+            78,
+            83,
+            11
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 7,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Cannot,",
+          "mode": "reference",
+          "pieces": [
+            "C",
+            "a",
+            "n",
+            "n",
+            "o",
+            "t",
+            ","
+          ],
+          "ids": [
+            34,
+            64,
+            77,
+            77,
+            78,
+            83,
+            11
+          ],
+          "kinds": [
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "byte",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Cannot",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 67,
+                  "id": 34,
+                  "piece": "C"
+                },
+                {
+                  "byte": 97,
+                  "id": 64,
+                  "piece": "a"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 110,
+                  "id": 77,
+                  "piece": "n"
+                },
+                {
+                  "byte": 111,
+                  "id": 78,
+                  "piece": "o"
+                },
+                {
+                  "byte": 116,
+                  "id": 83,
+                  "piece": "t"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                67,
+                97,
+                110,
+                110,
+                111,
+                116
+              ]
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 7,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "I'm sorry, but I can't",
+        "before": {
+          "text": "I'm sorry, but I can't",
+          "mode": "llama_cpp",
+          "pieces": [
+            "I",
+            "'m",
+            "\u0120sorry",
+            ",",
+            "\u0120but",
+            "\u0120I",
+            "\u0120can",
+            "'t"
+          ],
+          "ids": [
+            40,
+            2776,
+            14589,
+            11,
+            714,
+            358,
+            646,
+            944
+          ],
+          "kinds": [
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'m",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120but",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120can",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'t",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 8,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "I'm sorry, but I can't",
+          "mode": "reference",
+          "pieces": [
+            "I",
+            "'m",
+            "\u0120sorry",
+            ",",
+            "\u0120but",
+            "\u0120I",
+            "\u0120can",
+            "'t"
+          ],
+          "ids": [
+            40,
+            2776,
+            14589,
+            11,
+            714,
+            358,
+            646,
+            944
+          ],
+          "kinds": [
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'m",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120but",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120can",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'t",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 8,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "I'm sorry, but I can't",
+          "mode": "llama_cpp",
+          "pieces": [
+            "I",
+            "'m",
+            "\u0120sorry",
+            ",",
+            "\u0120but",
+            "I",
+            "\u0120can",
+            "'t"
+          ],
+          "ids": [
+            40,
+            2775,
+            14587,
+            11,
+            713,
+            40,
+            645,
+            943
+          ],
+          "kinds": [
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "byte",
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'m",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120but",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120I",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 73,
+                  "id": 40,
+                  "piece": "I"
+                }
+              ],
+              "dropped_bytes": 2,
+              "raw": [
+                196,
+                160,
+                73
+              ]
+            },
+            {
+              "symbol": "\u0120can",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'t",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 8,
+          "single_token": false,
+          "representable": true,
+          "lossless": false,
+          "dropped_bytes": 2
+        },
+        "after_reference": {
+          "text": "I'm sorry, but I can't",
+          "mode": "reference",
+          "pieces": [
+            "I",
+            "'m",
+            "\u0120sorry",
+            ",",
+            "\u0120but",
+            "\u0120",
+            "I",
+            "\u0120can",
+            "'t"
+          ],
+          "ids": [
+            40,
+            2775,
+            14587,
+            11,
+            713,
+            220,
+            40,
+            645,
+            943
+          ],
+          "kinds": [
+            "token",
+            "token",
+            "token",
+            "token",
+            "token",
+            "byte",
+            "byte",
+            "token",
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "I",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'m",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120sorry",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": ",",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120but",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "\u0120I",
+              "path": "fallback",
+              "found": [
+                {
+                  "byte": 32,
+                  "id": 220,
+                  "piece": "\u0120"
+                },
+                {
+                  "byte": 73,
+                  "id": 40,
+                  "piece": "I"
+                }
+              ],
+              "dropped_bytes": 0,
+              "raw": [
+                32,
+                73
+              ]
+            },
+            {
+              "symbol": "\u0120can",
+              "path": "token",
+              "dropped_bytes": 0
+            },
+            {
+              "symbol": "'t",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 9,
+          "single_token": false,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Sure",
+        "before": {
+          "text": "Sure",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Sure"
+          ],
+          "ids": [
+            39814
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sure",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Sure",
+          "mode": "reference",
+          "pieces": [
+            "Sure"
+          ],
+          "ids": [
+            39814
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sure",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Sure",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Sure"
+          ],
+          "ids": [
+            39807
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sure",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Sure",
+          "mode": "reference",
+          "pieces": [
+            "Sure"
+          ],
+          "ids": [
+            39807
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Sure",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Here",
+        "before": {
+          "text": "Here",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Here"
+          ],
+          "ids": [
+            8420
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Here",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Here",
+          "mode": "reference",
+          "pieces": [
+            "Here"
+          ],
+          "ids": [
+            8420
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Here",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Here",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Here"
+          ],
+          "ids": [
+            8419
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Here",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Here",
+          "mode": "reference",
+          "pieces": [
+            "Here"
+          ],
+          "ids": [
+            8419
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Here",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Certainly",
+        "before": {
+          "text": "Certainly",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Certainly"
+          ],
+          "ids": [
+            95456
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Certainly",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Certainly",
+          "mode": "reference",
+          "pieces": [
+            "Certainly"
+          ],
+          "ids": [
+            95456
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Certainly",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Certainly",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Certainly"
+          ],
+          "ids": [
+            95449
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Certainly",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Certainly",
+          "mode": "reference",
+          "pieces": [
+            "Certainly"
+          ],
+          "ids": [
+            95449
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Certainly",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      },
+      {
+        "text": "Hier",
+        "before": {
+          "text": "Hier",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Hier"
+          ],
+          "ids": [
+            74909
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Hier",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "before_reference": {
+          "text": "Hier",
+          "mode": "reference",
+          "pieces": [
+            "Hier"
+          ],
+          "ids": [
+            74909
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Hier",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after": {
+          "text": "Hier",
+          "mode": "llama_cpp",
+          "pieces": [
+            "Hier"
+          ],
+          "ids": [
+            74902
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Hier",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        },
+        "after_reference": {
+          "text": "Hier",
+          "mode": "reference",
+          "pieces": [
+            "Hier"
+          ],
+          "ids": [
+            74902
+          ],
+          "kinds": [
+            "token"
+          ],
+          "symbols": [
+            {
+              "symbol": "Hier",
+              "path": "token",
+              "dropped_bytes": 0
+            }
+          ],
+          "n_tokens": 1,
+          "single_token": true,
+          "representable": true,
+          "lossless": true,
+          "dropped_bytes": 0
+        }
+      }
+    ]
+  },
+  "tensors": [
+    {
+      "name": "token_embd.weight",
+      "roles": [
+        "embedding"
+      ],
+      "qtype": "Q8_0",
+      "old_dims": [
+        896,
+        151936
+      ],
+      "new_dims": [
+        896,
+        151929
+      ],
+      "rows_old": 151936,
+      "rows_new": 151929,
+      "row_bytes": 952,
+      "bytes_old": 144643072,
+      "bytes_new": 144636408,
+      "rows_deleted": 7,
+      "row_policy": "whole stored rows are copied for surviving rows and the deleted rows are dropped; no value is re-encoded, so every surviving row is byte-identical"
+    }
+  ],
+  "arrays_touched": {
+    "metadata": [
+      "tokenizer.ggml.tokens",
+      "tokenizer.ggml.token_type",
+      "tokenizer.ggml.bos_token_id",
+      "tokenizer.ggml.eos_token_id",
+      "tokenizer.ggml.padding_token_id"
+    ],
+    "tensors": [
+      "token_embd.weight"
+    ],
+    "untouched": "tokenizer.ggml.merges and every other KV entry keep their exact encoding; every other tensor keeps its payload; only offsets after the shrunken matrix move",
+    "renumbering_ties": "the tokenizer arrays, the scalar id fields and the matrix rows share one id space. A file that renumbers one without the others is broken: a token id that disagrees with its row reads the wrong embedding, and a scalar id that is not renumbered points at a different token. This is why the report names every one of them."
+  },
+  "mapping": {
+    "rows": 151929,
+    "sha256": "eb5e6c275808581d4813667f96f716908910806bb4bde2fccd4da355080c075f",
+    "segments": [
+      {
+        "old_start": 0,
+        "old_end": 357,
+        "shift": 0,
+        "new_start": 0,
+        "new_end": 357
+      },
+      {
+        "old_start": 359,
+        "old_end": 9235,
+        "shift": -1,
+        "new_start": 358,
+        "new_end": 9234
+      },
+      {
+        "old_start": 9237,
+        "old_end": 17359,
+        "shift": -2,
+        "new_start": 9235,
+        "new_end": 17357
+      },
+      {
+        "old_start": 17361,
+        "old_end": 17443,
+        "shift": -3,
+        "new_start": 17358,
+        "new_end": 17440
+      },
+      {
+        "old_start": 17445,
+        "old_end": 19151,
+        "shift": -4,
+        "new_start": 17441,
+        "new_end": 19147
+      },
+      {
+        "old_start": 19153,
+        "old_end": 32285,
+        "shift": -5,
+        "new_start": 19148,
+        "new_end": 32280
+      },
+      {
+        "old_start": 32287,
+        "old_end": 34654,
+        "shift": -6,
+        "new_start": 32281,
+        "new_end": 34648
+      },
+      {
+        "old_start": 34656,
+        "old_end": 151935,
+        "shift": -7,
+        "new_start": 34649,
+        "new_end": 151928
+      }
+    ],
+    "path": "verification/vocab-delete/dryrun-A-id-map.tsv"
+  },
+  "plan": {
+    "writer": "jdewitt.vocabdelete._write_container: KV entries verbatim except the named ones, tensor payloads streamed from the source except the shrunken matrices, offsets recomputed under the file alignment",
+    "out": null,
+    "apply": false,
+    "revert_sidecar": null
+  },
+  "verdict": {
+    "ok": true,
+    "problems": [],
+    "notes": [
+      "deletion removes a single-token id; a merged token whose bytes survive is still spellable as a sequence, so this edit does not make the string unsampleable",
+      "llama.cpp rebuilds the deleted merged symbol and then drops every non-ASCII byte of it: the leading-space marker (\u0120) is lost on encode, so \" Sorry\" becomes the five byte tokens of \"Sorry\". The space token itself survives, so generation can still emit it",
+      "a byte-alphabet id cannot be deleted without breaking every string that uses its byte",
+      "removal_measured is false: no forward pass, no logits, no serve"
+    ]
+  }
+}

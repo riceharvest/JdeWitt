@@ -43,7 +43,7 @@ import numpy as np
 
 from .vocabremap import (BYTE_TO_UNICODE, _merge_ranks, _portable_path, _sha256_file,
                          bpe_symbols, read_tokenizer, resolve)
-from .vocabremap_weights import _vocab_role, discover_vocab_tensors
+from .vocabremap_weights import discover_vocab_tensors
 
 SCHEMA = 'jdewitt.vocab-delete/1'
 REVERT_SCHEMA = 'jdewitt.vocab-delete-revert/1'
@@ -68,11 +68,13 @@ METHOD = (
     'vocabulary-wide token-row matrix loses the rows (surviving rows are copied as whole stored rows). Every '
     'other KV entry and tensor payload is copied verbatim; tensor offsets are recomputed under the file '
     'alignment. The revert sidecar stores the deleted entries and raw row bytes and re-inserts them. No model '
-    'is loaded and no logits are read; the encoder paths are string automata (llama.cpp\'s byte-level BPE plus '
-    'byte fallback) over the metadata.')
+    'is loaded and no logits are read; the encoder paths are string automata over the metadata: llama.cpp\'s '
+    'byte-level BPE plus its byte fallback (whose behaviour for the deleted symbols was checked against '
+    'llama-tokenize on the written file) and the reference byte-alphabet fallback.')
 GATED = ('Whether the model then refuses less is out of scope: that needs a serve/forward pass, which this '
          'card forbids. Even the static result is limited — a merged token whose bytes survive is still '
-         'spellable as a sequence, so the model can emit the denial string in several tokens.')
+         'spellable as a sequence, so the model can emit the denial string in several tokens; the deleted id '
+         'is gone, the string is not.')
 
 
 # --- the container ---------------------------------------------------------
@@ -288,40 +290,76 @@ def piece_bytes(piece):
                          f'(no mapping for {error.args[0]!r})') from None
 
 
-def _encode(text, vocab, ranks):
-    """llama.cpp's byte-level BPE, then its byte fallback, as string automata.
+def _encode(text, vocab, ranks, mode='llama_cpp'):
+    """Byte-level BPE followed by the runtime's byte fallback, as string automata.
 
     Merges are symbolic strings, so a deleted token can still be *built* by the
-    merge list; the vocabulary lookup then misses and the runtime splits the
-    merged symbol into its raw bytes. A byte that has no token of its own is
-    unrepresentable: that is the broken-tokenizer case, reported as such.
+    merge list; the vocabulary lookup then misses and the runtime falls back.
+
+    Two fallbacks are modelled because they disagree:
+
+      * ``llama_cpp`` mirrors src/llama-vocab.cpp exactly: the unknown symbol's
+        UTF-8 bytes are looked up as token *texts* one byte at a time, so only
+        ASCII bytes resolve (a non-ASCII byte has no single-byte token text) and
+        every other byte is silently DROPPED. Verified against llama-tokenize.
+      * ``reference`` is the byte-level semantics Hugging Face uses: the symbol is
+        mapped back through the byte alphabet to its raw bytes and each one is
+        looked up. That is lossless when the byte alphabet survives.
+
+    ``lossless`` is false when a byte is dropped; ``representable`` is false when a
+    whole symbol produces no token at all (the only case in which the string truly
+    cannot be encoded).
     """
     pieces, ids, kinds = [], [], []
-    representable = True
+    symbols = []
+    representable, lossless = True, True
     for symbol in bpe_symbols(text, ranks):
         token_id = vocab.get(symbol)
         if token_id is not None:
             pieces.append(symbol)
             ids.append(int(token_id))
             kinds.append('token')
+            symbols.append({'symbol': symbol, 'path': 'token', 'dropped_bytes': 0})
             continue
-        raw = piece_bytes(symbol)
-        fallback = [vocab.get(BYTE_TO_UNICODE[byte]) for byte in raw]
-        if any(token_id is None for token_id in fallback):
+        if mode == 'llama_cpp':
+            raw = symbol.encode('utf-8')
+            found, dropped = [], 0
+            for byte in raw:
+                spelling = chr(byte) if byte < 0x80 else None
+                fallback = vocab.get(spelling) if spelling is not None else None
+                if fallback is None:
+                    dropped += 1
+                    continue
+                pieces.append(spelling)
+                ids.append(int(fallback))
+                kinds.append('byte')
+                found.append({'byte': byte, 'id': int(fallback), 'piece': spelling})
+        elif mode == 'reference':
+            raw = piece_bytes(symbol)
+            found, dropped = [], 0
+            for byte in raw:
+                spelling = BYTE_TO_UNICODE[byte]
+                fallback = vocab.get(spelling)
+                if fallback is None:
+                    dropped += 1
+                    continue
+                pieces.append(spelling)
+                ids.append(int(fallback))
+                kinds.append('byte')
+                found.append({'byte': byte, 'id': int(fallback), 'piece': spelling})
+        else:
+            raise ValueError(f'unknown encode mode {mode!r}')
+        if dropped and not found:
             representable = False
-            pieces.append(symbol)
-            ids.append(None)
-            kinds.append('unrepresentable')
-            continue
-        for byte in raw:
-            spelling = BYTE_TO_UNICODE[byte]
-            pieces.append(spelling)
-            ids.append(int(vocab[spelling]))
-            kinds.append('byte')
-    return {'text': text, 'pieces': pieces, 'ids': ids, 'kinds': kinds,
-            'n_tokens': len(ids) if representable else None,
-            'single_token': bool(representable and len(ids) == 1),
-            'representable': representable}
+        if dropped:
+            lossless = False
+        symbols.append({'symbol': symbol, 'path': 'fallback', 'found': found,
+                        'dropped_bytes': dropped, 'raw': list(raw)})
+    return {'text': text, 'mode': mode, 'pieces': pieces, 'ids': ids, 'kinds': kinds,
+            'symbols': symbols, 'n_tokens': len(ids),
+            'single_token': bool(representable and len(ids) == 1 and not symbols[0]['dropped_bytes']),
+            'representable': representable, 'lossless': lossless,
+            'dropped_bytes': sum(item['dropped_bytes'] for item in symbols)}
 
 
 def _mapping_segments(deleted_ids, n_vocab):
@@ -528,9 +566,13 @@ def _reencode_on_file(path, tokenizer, probes):
     vocab = {token: token_id for token_id, token in enumerate(tokenizer['tokens'])}
     ranks = _merge_ranks(tokenizer['merges'])
     return {'n_vocab': len(tokenizer['tokens']),
-            'rows': [{'text': text, 'encode': _encode(text, vocab, ranks)} for text in probes],
-            'note': ('computed from the written file\'s tokenizer.ggml arrays, not from the plan; the same '
-                     'byte-level BPE + byte fallback as the dry run')}
+            'rows': [{'text': text,
+                      'encode': _encode(text, vocab, ranks),
+                      'encode_reference': _encode(text, vocab, ranks, mode='reference')}
+                     for text in probes],
+            'note': ('computed from the written file\'s tokenizer.ggml arrays, not from the plan; encode '
+                     'models llama.cpp\'s byte fallback (verified against llama-tokenize), '
+                     'encode_reference the byte-alphabet fallback')}
 
 
 def _write_sidecar(pristine, pruned, sidecar, tokens, deleted, types, edits, scanned):
@@ -808,7 +850,10 @@ def vocab_delete(weights, table=None, out=None, apply=False, include_byte_alphab
         before_after.append({'text': text,
                              'before': _encode(text, resolved['vocab'], resolved['ranks'])})
     for row in before_after:
+        row['before_reference'] = _encode(row['text'], resolved['vocab'], resolved['ranks'],
+                                          mode='reference')
         row['after'] = _encode(row['text'], new_vocab, resolved['ranks'])
+        row['after_reference'] = _encode(row['text'], new_vocab, resolved['ranks'], mode='reference')
 
     segments = _mapping_segments(deleted, n_old)
     report = {
@@ -849,8 +894,19 @@ def vocab_delete(weights, table=None, out=None, apply=False, include_byte_alphab
                      'invariant': ('every surviving id keeps its piece and its row: the token at new_id is the '
                                    'token that was at old_id, and no surviving piece changes')},
         'encode': {'algorithm': ('byte-level BPE merge ranks (tokenizer.ggml.merges), then the vocabulary '
-                                'lookup; a merged symbol absent from the vocabulary falls back to the tokens of '
-                                'its raw bytes, exactly as llama.cpp does. Tokenization only.'),
+                                'lookup; a merged symbol absent from the vocabulary falls back byte by byte. '
+                                '``after`` models llama.cpp exactly (src/llama-vocab.cpp: each UTF-8 byte of '
+                                'the unknown symbol is looked up as a token text, so a non-ASCII byte is '
+                                'DROPPED); ``after_reference`` models the byte-alphabet fallback Hugging Face '
+                                'uses (the symbol is mapped back through the byte alphabet and every byte is '
+                                'looked up). Tokenization only; the llama.cpp path was checked against '
+                                'llama-tokenize on the written artifact.'),
+                   'divergence': ('llama.cpp rebuilds a deleted merged symbol from the merge list and then '
+                                  'loses every non-ASCII byte of it: the leading-space marker Ġ is two UTF-8 '
+                                  'bytes with no single-byte token text, so it is dropped and " Sorry" '
+                                  'encodes as the five byte tokens of "Sorry". The reference path keeps the '
+                                  'space as token 220. Both paths leave the string spellable; neither can '
+                                  'produce the deleted id.'),
                    'rows': before_after},
         'tensors': [{'name': edit['record']['name'], 'roles': edit['roles'], 'qtype': edit['record']['qtype'],
                      'old_dims': edit['old_dims'], 'new_dims': edit['new_dims'],
@@ -881,8 +937,11 @@ def vocab_delete(weights, table=None, out=None, apply=False, include_byte_alphab
                  'revert_sidecar': (_portable_path(f'{out_path}.revert.npz')
                                     if out_path is not None else None)},
         'verdict': {'ok': True, 'problems': [], 'notes': [
-            'deletion removes a single-token spelling; a merged token whose bytes all survive the byte '
-            'alphabet remains spellable as a sequence, so this edit does not make the string unsampleable',
+            'deletion removes a single-token id; a merged token whose bytes survive is still spellable as a '
+            'sequence, so this edit does not make the string unsampleable',
+            'llama.cpp rebuilds the deleted merged symbol and then drops every non-ASCII byte of it: the '
+            'leading-space marker (Ġ) is lost on encode, so " Sorry" becomes the five byte tokens of "Sorry". '
+            'The space token itself survives, so generation can still emit it',
             'a byte-alphabet id cannot be deleted without breaking every string that uses its byte',
             'removal_measured is false: no forward pass, no logits, no serve']},
     }
