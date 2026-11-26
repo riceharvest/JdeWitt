@@ -173,6 +173,13 @@ def build_parser():
     conj.add_argument('--out',type=Path,help='New GGUF to write with --apply (plus <out>.revert.npz); refused if it exists')
     conj.add_argument('--apply',action='store_true',help='Write --out instead of only printing the dry run; never edits the input in place')
     conj.add_argument('--json',type=Path,help='Also write the same JSON to this path')
+    cent=sub.add_parser('vocab-centroid',help='Rewrite each denial-opener row of the token/head matrix as a value: the compliance centroid (mode centroid), the centroid off the denial-vs-compliance mean (centroid-orthogonal, the default alternative), or the row itself off that mean (row-orthogonal). Ids stay intact; CPU-only weight algebra plus a byte-exact revert; no model loads')
+    cent.add_argument('--weights',type=Path,required=True,help='GGUF whose token-row matrix is rewritten (read for tokenizer and header; never edited in place)')
+    cent.add_argument('--table',type=Path,help='Opener-pair JSON override; default is the packaged assets/vocab-conjugate-openers.json')
+    cent.add_argument('--mode',choices=['centroid','centroid-orthogonal','row-orthogonal'],default='centroid',help='Which target the denial rows are assigned (default centroid)')
+    cent.add_argument('--out',type=Path,help='New GGUF to write with --apply (plus <out>.revert.npz); refused if it exists')
+    cent.add_argument('--apply',action='store_true',help='Write --out instead of only printing the dry run; never edits the input in place')
+    cent.add_argument('--json',type=Path,help='Also write the same JSON to this path')
     vdel=sub.add_parser('vocab-delete',help='Delete denial-opener ids from the vocabulary: drop the token entries, renumber every surviving id and the scalar *_token_id fields, delete the matching token_embd rows; every other KV entry and tensor stays byte-identical and a sidecar reverts byte-exactly. No model loads')
     vdel.add_argument('--weights',type=Path,help='GGUF whose vocabulary loses the ids (read for tokenizer, KV and header; never edited in place)')
     vdel.add_argument('--table',type=Path,help='Opener-pair JSON override; default is the packaged assets/vocab-conjugate-openers.json')
@@ -951,6 +958,11 @@ def main():
             from .vocabconjugate import vocab_conjugate
             result=vocab_conjugate(weights=args.weights,table=args.table,out=args.out,
                                    apply=args.apply,json_out=args.json)
+            exit_code=0 if result['verdict']['ok'] else 1
+        elif args.command=='vocab-centroid':
+            from .vocabcentroid import vocab_centroid
+            result=vocab_centroid(weights=args.weights,table=args.table,mode=args.mode,out=args.out,
+                                  apply=args.apply,json_out=args.json)
             exit_code=0 if result['verdict']['ok'] else 1
         elif args.command=='vocab-delete':
             from .vocabdelete import revert_delete,vocab_delete

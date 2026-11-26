@@ -1,0 +1,819 @@
+{
+  "schema": "jdewitt.vocab-centroid/1",
+  "scope": "Denial-opener rows rewritten as values on a quantized artifact: the id map is left intact, the compliance centroid and the denial-vs-compliance mean are measured, and every mapped row gets a pre/post table. No model is loaded, no logits or generations are read, and no behavioural claim is made.",
+  "method": "The opener-pair table is resolved against the artifact tokenizer in two contexts (bare and with the leading space running text carries) and must give exactly one token per surface in each. The denial ids are then rewritten as ROW VALUES while every id keeps its meaning: mode centroid writes the mean of the compliance-opener rows into each denial row, mode centroid-orthogonal writes that mean with its component along the denial-vs-compliance mean removed, and mode row-orthogonal removes that component from each denial row itself. The compliance rows are never edited: they stay the centroid and the untouched control. For a head tied to the token embedding (no output.weight) the same matrix is the embedding and the head, so the edit lands on both sides; the report names it as tied. The write reuses ggufio.edit_tensors: every untouched tensor is copied byte for byte and the edited tensor is requantized at its own stored type, so every tensor offset and byte length stays put and the pre-edit bytes restore the file. Storage fidelity only: no model, no logits, no generation, no behavioral claim, removal_measured false.",
+  "gated": "A behavioural claim is out of scope: an opener-only row rewrite does not re-plan the continuation, so the model is expected to read a denial id as compliance-like and then continue with whatever the hidden plan already was. Measuring that needs a serve, which this card forbids.",
+  "removal_measured": false,
+  "dry_run": true,
+  "mode": "row-orthogonal",
+  "artifact": {
+    "path": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "bytes": 342752576,
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+  },
+  "table": {
+    "schema": "jdewitt.vocab-conjugate-pairs/1",
+    "sha256": "d5f8a6256a089bdc7ab3b04895946cbcc51fd8561b4cdb6f7d5c97632537c0ec",
+    "pairs": 4,
+    "path": "packaged asset"
+  },
+  "tokenizer": {
+    "model": "gpt2",
+    "pre": "qwen2",
+    "n_vocab": 151936,
+    "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+  },
+  "discovery": {
+    "n_vocab": 151936,
+    "roles": {
+      "embedding": "token_embd.weight",
+      "output_head": null,
+      "output_head_tied_to_embedding": true
+    },
+    "tied": true,
+    "vocab_wide_tensors": [
+      "token_embd.weight"
+    ],
+    "unmapped_vocab_wide": [],
+    "how": "2-D tensors whose logical row count is the tokenizer vocabulary size; the artifact name decides the role, no per-model table"
+  },
+  "groups": {
+    "definition": "denial ids are the rows the edit rewrites; compliance ids are the rows it averages and never writes, so each row is edited or a reference, never both",
+    "denial_ids": [
+      40,
+      358,
+      9236,
+      17360,
+      17444,
+      19152,
+      32286,
+      34655
+    ],
+    "compliance_ids": [
+      5692,
+      8420,
+      22555,
+      38747,
+      39814,
+      52366,
+      74909,
+      95456
+    ],
+    "n_denial": 8,
+    "n_compliance": 8,
+    "denial_rows": [
+      {
+        "pair": "en-i-here",
+        "context": "bare",
+        "language": "en",
+        "denial": "I",
+        "compliance": "Here",
+        "denial_token": "I",
+        "compliance_token": "Here",
+        "denial_id": 40,
+        "compliance_id": 8420
+      },
+      {
+        "pair": "en-i-here",
+        "context": "leads_with_space",
+        "language": "en",
+        "denial": "I",
+        "compliance": "Here",
+        "denial_token": "\u0120I",
+        "compliance_token": "\u0120Here",
+        "denial_id": 358,
+        "compliance_id": 5692
+      },
+      {
+        "pair": "de-es-hier",
+        "context": "leads_with_space",
+        "language": "de",
+        "denial": "Es",
+        "compliance": "Hier",
+        "denial_token": "\u0120Es",
+        "compliance_token": "\u0120Hier",
+        "denial_id": 9236,
+        "compliance_id": 38747
+      },
+      {
+        "pair": "de-es-hier",
+        "context": "bare",
+        "language": "de",
+        "denial": "Es",
+        "compliance": "Hier",
+        "denial_token": "Es",
+        "compliance_token": "Hier",
+        "denial_id": 17360,
+        "compliance_id": 74909
+      },
+      {
+        "pair": "en-cannot-certainly",
+        "context": "bare",
+        "language": "en",
+        "denial": "Cannot",
+        "compliance": "Certainly",
+        "denial_token": "Cannot",
+        "compliance_token": "Certainly",
+        "denial_id": 17444,
+        "compliance_id": 95456
+      },
+      {
+        "pair": "en-sorry-sure",
+        "context": "bare",
+        "language": "en",
+        "denial": "Sorry",
+        "compliance": "Sure",
+        "denial_token": "Sorry",
+        "compliance_token": "Sure",
+        "denial_id": 19152,
+        "compliance_id": 39814
+      },
+      {
+        "pair": "en-sorry-sure",
+        "context": "leads_with_space",
+        "language": "en",
+        "denial": "Sorry",
+        "compliance": "Sure",
+        "denial_token": "\u0120Sorry",
+        "compliance_token": "\u0120Sure",
+        "denial_id": 32286,
+        "compliance_id": 22555
+      },
+      {
+        "pair": "en-cannot-certainly",
+        "context": "leads_with_space",
+        "language": "en",
+        "denial": "Cannot",
+        "compliance": "Certainly",
+        "denial_token": "\u0120Cannot",
+        "compliance_token": "\u0120Certainly",
+        "denial_id": 34655,
+        "compliance_id": 52366
+      }
+    ],
+    "checks": {
+      "problems": [],
+      "ok": true
+    }
+  },
+  "edit": {
+    "algebra": "W_d <- W_d - (W_d.a) a, each denial row projected off the denial axis a",
+    "axis": "a = unit(mean(denial-opener rows) - mean(compliance-opener rows)); the two group means are taken over the same rows the table resolves, so the axis is the group contrast, not a fitted refusal direction",
+    "tensors_targeted": 1,
+    "rows_edited_per_tensor": {
+      "token_embd.weight": 8
+    },
+    "ids_per_tensor": {
+      "token_embd.weight": [
+        40,
+        358,
+        9236,
+        17360,
+        17444,
+        19152,
+        32286,
+        34655
+      ]
+    },
+    "rows": {
+      "token_embd.weight": [
+        {
+          "id": 40,
+          "token": "I",
+          "pair": "en-i-here",
+          "context": "bare",
+          "language": "en",
+          "denial": "I",
+          "compliance": "Here",
+          "compliance_id": 8420,
+          "compliance_token": "Here",
+          "cos_before_centroid": 0.002484,
+          "cos_after_centroid": 0.255466,
+          "cos_before_axis": 0.326144,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.466851,
+          "norm_after": 0.441323,
+          "norm_change": -0.025527,
+          "norm_ratio": 0.94532,
+          "delta_norm": 0.15226,
+          "cos_to_own_partner_before": 0.052209,
+          "cos_to_own_partner_after": 0.211577
+        },
+        {
+          "id": 358,
+          "token": "\u0120I",
+          "pair": "en-i-here",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "I",
+          "compliance": "Here",
+          "compliance_id": 5692,
+          "compliance_token": "\u0120Here",
+          "cos_before_centroid": -0.100872,
+          "cos_after_centroid": 0.166351,
+          "cos_before_axis": 0.350257,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.452987,
+          "norm_after": 0.424292,
+          "norm_change": -0.028695,
+          "norm_ratio": 0.936654,
+          "delta_norm": 0.158662,
+          "cos_to_own_partner_before": 0.071066,
+          "cos_to_own_partner_after": 0.235997
+        },
+        {
+          "id": 9236,
+          "token": "\u0120Es",
+          "pair": "de-es-hier",
+          "context": "leads_with_space",
+          "language": "de",
+          "denial": "Es",
+          "compliance": "Hier",
+          "compliance_id": 38747,
+          "compliance_token": "\u0120Hier",
+          "cos_before_centroid": 0.0077,
+          "cos_after_centroid": 0.249343,
+          "cos_before_axis": 0.312672,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.41093,
+          "norm_after": 0.390326,
+          "norm_change": -0.020604,
+          "norm_ratio": 0.949861,
+          "delta_norm": 0.128486,
+          "cos_to_own_partner_before": 0.089518,
+          "cos_to_own_partner_after": 0.223541
+        },
+        {
+          "id": 17360,
+          "token": "Es",
+          "pair": "de-es-hier",
+          "context": "bare",
+          "language": "de",
+          "denial": "Es",
+          "compliance": "Hier",
+          "compliance_id": 74909,
+          "compliance_token": "Hier",
+          "cos_before_centroid": 0.101135,
+          "cos_after_centroid": 0.3064,
+          "cos_before_axis": 0.265129,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.435811,
+          "norm_after": 0.420215,
+          "norm_change": -0.015596,
+          "norm_ratio": 0.964213,
+          "delta_norm": 0.115546,
+          "cos_to_own_partner_before": 0.139469,
+          "cos_to_own_partner_after": 0.252656
+        },
+        {
+          "id": 17444,
+          "token": "Cannot",
+          "pair": "en-cannot-certainly",
+          "context": "bare",
+          "language": "en",
+          "denial": "Cannot",
+          "compliance": "Certainly",
+          "compliance_id": 95456,
+          "compliance_token": "Certainly",
+          "cos_before_centroid": 0.157947,
+          "cos_after_centroid": 0.324858,
+          "cos_before_axis": 0.217176,
+          "cos_after_axis": -0.0,
+          "norm_before": 0.371156,
+          "norm_after": 0.362297,
+          "norm_change": -0.008859,
+          "norm_ratio": 0.976132,
+          "delta_norm": 0.080606,
+          "cos_to_own_partner_before": 0.195181,
+          "cos_to_own_partner_after": 0.311626
+        },
+        {
+          "id": 19152,
+          "token": "Sorry",
+          "pair": "en-sorry-sure",
+          "context": "bare",
+          "language": "en",
+          "denial": "Sorry",
+          "compliance": "Sure",
+          "compliance_id": 39814,
+          "compliance_token": "Sure",
+          "cos_before_centroid": 0.268237,
+          "cos_after_centroid": 0.377977,
+          "cos_before_axis": 0.144344,
+          "cos_after_axis": -0.0,
+          "norm_before": 0.406514,
+          "norm_after": 0.402257,
+          "norm_change": -0.004257,
+          "norm_ratio": 0.989528,
+          "delta_norm": 0.058678,
+          "cos_to_own_partner_before": 0.245144,
+          "cos_to_own_partner_after": 0.32062
+        },
+        {
+          "id": 32286,
+          "token": "\u0120Sorry",
+          "pair": "en-sorry-sure",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "Sorry",
+          "compliance": "Sure",
+          "compliance_id": 22555,
+          "compliance_token": "\u0120Sure",
+          "cos_before_centroid": 0.250125,
+          "cos_after_centroid": 0.371599,
+          "cos_before_axis": 0.159282,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.385225,
+          "norm_after": 0.380307,
+          "norm_change": -0.004918,
+          "norm_ratio": 0.987233,
+          "delta_norm": 0.061359,
+          "cos_to_own_partner_before": 0.24945,
+          "cos_to_own_partner_after": 0.328594
+        },
+        {
+          "id": 34655,
+          "token": "\u0120Cannot",
+          "pair": "en-cannot-certainly",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "Cannot",
+          "compliance": "Certainly",
+          "compliance_id": 52366,
+          "compliance_token": "\u0120Certainly",
+          "cos_before_centroid": 0.124054,
+          "cos_after_centroid": 0.317524,
+          "cos_before_axis": 0.250215,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.379668,
+          "norm_after": 0.36759,
+          "norm_change": -0.012077,
+          "norm_ratio": 0.96819,
+          "delta_norm": 0.094999,
+          "cos_to_own_partner_before": 0.107221,
+          "cos_to_own_partner_after": 0.238291
+        }
+      ]
+    },
+    "cos_definition": "cos_*_centroid = cos(row values at this id before the edit, the compliance centroid c); cos_*_axis = cos(row, a) with a the unit denial-vs-compliance mean. post values are the intended algebra, before the codec; the shipped file's realized values are measured separately."
+  },
+  "tensors": [
+    {
+      "name": "token_embd.weight",
+      "roles": [
+        "embedding"
+      ],
+      "qtype": "Q8_0",
+      "codec_chosen": "Q8_0",
+      "codec_reason": "the tensor requantizes at its own stored type, so every tensor offset and byte length stays put and the pre-edit bytes restore the file exactly",
+      "shape": [
+        151936,
+        896
+      ],
+      "tied": true,
+      "bytes": {
+        "source": 144643072,
+        "reencoded": 144643072,
+        "blocks_total": 4254208,
+        "touched_blocks": 448,
+        "touched_bytes": 15232,
+        "touched_fraction": 0.000105,
+        "bytes_read_to_measure": 15232
+      },
+      "storage": {
+        "cos": 0.9998,
+        "cos_touched_rows": 0.9998,
+        "norm_ratio": 1.0004,
+        "snr": 51.795,
+        "rows_touched": 8,
+        "blocks_touched": 224,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 0.9999,
+            "norm_ratio": 1.0005,
+            "retained_scale": 0.945131
+          },
+          {
+            "row": 358,
+            "cos": 0.9999,
+            "norm_ratio": 1.0003,
+            "retained_scale": 0.936457
+          },
+          {
+            "row": 9236,
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "retained_scale": 0.949757
+          },
+          {
+            "row": 17360,
+            "cos": 0.9998,
+            "norm_ratio": 1.0008,
+            "retained_scale": 0.964216
+          },
+          {
+            "row": 17444,
+            "cos": 0.9997,
+            "norm_ratio": 1.0008,
+            "retained_scale": 0.976275
+          },
+          {
+            "row": 19152,
+            "cos": 0.9993,
+            "norm_ratio": 1.0028,
+            "retained_scale": 0.989572
+          },
+          {
+            "row": 32286,
+            "cos": 0.9994,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.986961
+          },
+          {
+            "row": 34655,
+            "cos": 0.9998,
+            "norm_ratio": 0.9992,
+            "retained_scale": 0.968085
+          }
+        ]
+      },
+      "rows": [
+        {
+          "id": 40,
+          "token": "I",
+          "pair": "en-i-here",
+          "context": "bare",
+          "language": "en",
+          "denial": "I",
+          "compliance": "Here",
+          "compliance_id": 8420,
+          "compliance_token": "Here",
+          "cos_before_centroid": 0.002484,
+          "cos_after_centroid": 0.255466,
+          "cos_before_axis": 0.326144,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.466851,
+          "norm_after": 0.441323,
+          "norm_change": -0.025527,
+          "norm_ratio": 0.94532,
+          "delta_norm": 0.15226,
+          "cos_to_own_partner_before": 0.052209,
+          "cos_to_own_partner_after": 0.211577
+        },
+        {
+          "id": 358,
+          "token": "\u0120I",
+          "pair": "en-i-here",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "I",
+          "compliance": "Here",
+          "compliance_id": 5692,
+          "compliance_token": "\u0120Here",
+          "cos_before_centroid": -0.100872,
+          "cos_after_centroid": 0.166351,
+          "cos_before_axis": 0.350257,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.452987,
+          "norm_after": 0.424292,
+          "norm_change": -0.028695,
+          "norm_ratio": 0.936654,
+          "delta_norm": 0.158662,
+          "cos_to_own_partner_before": 0.071066,
+          "cos_to_own_partner_after": 0.235997
+        },
+        {
+          "id": 9236,
+          "token": "\u0120Es",
+          "pair": "de-es-hier",
+          "context": "leads_with_space",
+          "language": "de",
+          "denial": "Es",
+          "compliance": "Hier",
+          "compliance_id": 38747,
+          "compliance_token": "\u0120Hier",
+          "cos_before_centroid": 0.0077,
+          "cos_after_centroid": 0.249343,
+          "cos_before_axis": 0.312672,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.41093,
+          "norm_after": 0.390326,
+          "norm_change": -0.020604,
+          "norm_ratio": 0.949861,
+          "delta_norm": 0.128486,
+          "cos_to_own_partner_before": 0.089518,
+          "cos_to_own_partner_after": 0.223541
+        },
+        {
+          "id": 17360,
+          "token": "Es",
+          "pair": "de-es-hier",
+          "context": "bare",
+          "language": "de",
+          "denial": "Es",
+          "compliance": "Hier",
+          "compliance_id": 74909,
+          "compliance_token": "Hier",
+          "cos_before_centroid": 0.101135,
+          "cos_after_centroid": 0.3064,
+          "cos_before_axis": 0.265129,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.435811,
+          "norm_after": 0.420215,
+          "norm_change": -0.015596,
+          "norm_ratio": 0.964213,
+          "delta_norm": 0.115546,
+          "cos_to_own_partner_before": 0.139469,
+          "cos_to_own_partner_after": 0.252656
+        },
+        {
+          "id": 17444,
+          "token": "Cannot",
+          "pair": "en-cannot-certainly",
+          "context": "bare",
+          "language": "en",
+          "denial": "Cannot",
+          "compliance": "Certainly",
+          "compliance_id": 95456,
+          "compliance_token": "Certainly",
+          "cos_before_centroid": 0.157947,
+          "cos_after_centroid": 0.324858,
+          "cos_before_axis": 0.217176,
+          "cos_after_axis": -0.0,
+          "norm_before": 0.371156,
+          "norm_after": 0.362297,
+          "norm_change": -0.008859,
+          "norm_ratio": 0.976132,
+          "delta_norm": 0.080606,
+          "cos_to_own_partner_before": 0.195181,
+          "cos_to_own_partner_after": 0.311626
+        },
+        {
+          "id": 19152,
+          "token": "Sorry",
+          "pair": "en-sorry-sure",
+          "context": "bare",
+          "language": "en",
+          "denial": "Sorry",
+          "compliance": "Sure",
+          "compliance_id": 39814,
+          "compliance_token": "Sure",
+          "cos_before_centroid": 0.268237,
+          "cos_after_centroid": 0.377977,
+          "cos_before_axis": 0.144344,
+          "cos_after_axis": -0.0,
+          "norm_before": 0.406514,
+          "norm_after": 0.402257,
+          "norm_change": -0.004257,
+          "norm_ratio": 0.989528,
+          "delta_norm": 0.058678,
+          "cos_to_own_partner_before": 0.245144,
+          "cos_to_own_partner_after": 0.32062
+        },
+        {
+          "id": 32286,
+          "token": "\u0120Sorry",
+          "pair": "en-sorry-sure",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "Sorry",
+          "compliance": "Sure",
+          "compliance_id": 22555,
+          "compliance_token": "\u0120Sure",
+          "cos_before_centroid": 0.250125,
+          "cos_after_centroid": 0.371599,
+          "cos_before_axis": 0.159282,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.385225,
+          "norm_after": 0.380307,
+          "norm_change": -0.004918,
+          "norm_ratio": 0.987233,
+          "delta_norm": 0.061359,
+          "cos_to_own_partner_before": 0.24945,
+          "cos_to_own_partner_after": 0.328594
+        },
+        {
+          "id": 34655,
+          "token": "\u0120Cannot",
+          "pair": "en-cannot-certainly",
+          "context": "leads_with_space",
+          "language": "en",
+          "denial": "Cannot",
+          "compliance": "Certainly",
+          "compliance_id": 52366,
+          "compliance_token": "\u0120Certainly",
+          "cos_before_centroid": 0.124054,
+          "cos_after_centroid": 0.317524,
+          "cos_before_axis": 0.250215,
+          "cos_after_axis": 0.0,
+          "norm_before": 0.379668,
+          "norm_after": 0.36759,
+          "norm_change": -0.012077,
+          "norm_ratio": 0.96819,
+          "delta_norm": 0.094999,
+          "cos_to_own_partner_before": 0.107221,
+          "cos_to_own_partner_after": 0.238291
+        }
+      ],
+      "groups": {
+        "n_denial": 8,
+        "n_compliance": 8,
+        "axis": "a = unit(mean(denial-opener rows) - mean(compliance-opener rows)); the two group means are taken over the same rows the table resolves, so the axis is the group contrast, not a fitted refusal direction",
+        "axis_norm_before_normalisation": 0.291775,
+        "centroid_norm": 0.253054,
+        "cos_denial_mean_compliance_centroid": 0.193853,
+        "group_mean_projection_on_axis": {
+          "denial": 0.106325,
+          "compliance": -0.18545
+        },
+        "groups": {
+          "denial": {
+            "ids": [
+              40,
+              358,
+              9236,
+              17360,
+              17444,
+              19152,
+              32286,
+              34655
+            ],
+            "norm_of_group_mean": 0.20236,
+            "cos_to_axis": [
+              0.326144,
+              0.350257,
+              0.312672,
+              0.265129,
+              0.217176,
+              0.144344,
+              0.159282,
+              0.250215
+            ],
+            "mean_cos_to_axis": 0.253152,
+            "min_cos_to_axis": 0.144344,
+            "max_cos_to_axis": 0.350257
+          },
+          "compliance": {
+            "ids": [
+              5692,
+              8420,
+              22555,
+              38747,
+              39814,
+              52366,
+              74909,
+              95456
+            ],
+            "norm_of_group_mean": 0.253054,
+            "cos_to_axis": [
+              -0.428203,
+              -0.453171,
+              -0.470543,
+              -0.39279,
+              -0.499628,
+              -0.493535,
+              -0.392807,
+              -0.50193
+            ],
+            "mean_cos_to_axis": -0.454076,
+            "min_cos_to_axis": -0.50193,
+            "max_cos_to_axis": -0.39279
+          }
+        },
+        "note": "the axis is the contrast of the two group means; a group is \"denial-like\" on it when its mean cosine is positive and \"compliance-like\" when negative"
+      },
+      "targets": {
+        "mode": "row-orthogonal",
+        "algebra": "W_d <- W_d - (W_d.a) a, each denial row projected off the denial axis a",
+        "same_target_for_every_denial_id": false,
+        "denial_ids": [
+          40,
+          358,
+          9236,
+          17360,
+          17444,
+          19152,
+          32286,
+          34655
+        ],
+        "compliance_ids": [
+          5692,
+          8420,
+          22555,
+          38747,
+          39814,
+          52366,
+          74909,
+          95456
+        ]
+      }
+    }
+  ],
+  "untouched": {
+    "tensors": 289,
+    "tensor_data_bytes": 192161024,
+    "guarantee": "edit_tensors copies the input and rewrites only the edited tensors; --apply measures it (no differing byte outside the edited ranges), gguf-tensor-diff on the two files is the independent check, and a row-level check names exactly the denial rows"
+  },
+  "dry_run_measurement": {
+    "sample": "the block-aligned spans holding the denial rows only",
+    "tensors": [
+      {
+        "name": "token_embd.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          151936,
+          896
+        ],
+        "cos": 0.9998,
+        "norm_ratio": 1.0004,
+        "snr": 51.795,
+        "delta_norm": 0.3177,
+        "noise_norm": 0.0061,
+        "windows": 8,
+        "blocks_per_window": 32,
+        "row_scoped": true,
+        "rows_touched": 8,
+        "blocks_touched": 224,
+        "cos_touched_rows": 0.9998,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 0.9999,
+            "norm_ratio": 1.0005,
+            "retained_scale": 0.945131
+          },
+          {
+            "row": 358,
+            "cos": 0.9999,
+            "norm_ratio": 1.0003,
+            "retained_scale": 0.936457
+          },
+          {
+            "row": 9236,
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "retained_scale": 0.949757
+          },
+          {
+            "row": 17360,
+            "cos": 0.9998,
+            "norm_ratio": 1.0008,
+            "retained_scale": 0.964216
+          },
+          {
+            "row": 17444,
+            "cos": 0.9997,
+            "norm_ratio": 1.0008,
+            "retained_scale": 0.976275
+          },
+          {
+            "row": 19152,
+            "cos": 0.9993,
+            "norm_ratio": 1.0028,
+            "retained_scale": 0.989572
+          },
+          {
+            "row": 32286,
+            "cos": 0.9994,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.986961
+          },
+          {
+            "row": 34655,
+            "cos": 0.9998,
+            "norm_ratio": 0.9992,
+            "retained_scale": 0.968085
+          }
+        ]
+      }
+    ],
+    "min_cos": 0.9998
+  },
+  "plan": {
+    "writer": "jdewitt.ggufio.edit_tensors (copy + requantize the edited tensors at their own type; every other byte verbatim)",
+    "out": null,
+    "apply": false,
+    "revert_sidecar": null
+  },
+  "verdict": {
+    "ok": true,
+    "cos_floor": 0.95,
+    "problems": [],
+    "notes": [
+      "W_d <- W_d - (W_d.a) a, each denial row projected off the denial axis a",
+      "the id map is intact: every denial id still decodes as its own token, and only its row values moved",
+      "a row edit is not a sentence: the rest of a refusal is planned upstream, so an opener rewrite is expected to read compliance-like and continue with the hidden plan",
+      "the compliance rows are the centroid and the control, and the edit never writes them",
+      "tied head: there is no separate output.weight, so the row is the head row and the embedding row at once (reported as tied=true)"
+    ]
+  },
+  "next": {
+    "commands": [
+      "jdewitt gguf-inspect verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "jdewitt gguf-tensor-diff <source> <out>",
+      "jdewitt gguf-revert <out>"
+    ],
+    "note": "the diff names the edited tensor; the row-level check in apply.row_identity names the denial rows. A behavioural reading needs a serve and stays gated."
+  }
+}
