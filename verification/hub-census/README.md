@@ -38,3 +38,31 @@ transformers installed for the run (5.20.0), the PyPI releases searched up to
 loader and decision. `scripts/hub_census_triage.py` writes it and renders
 `docs/HUB-CENSUS.md` from the artifact, so no number there is retyped by hand.
 
+
+## The 2026-11-26 refresh
+
+`2026-11-26.json` is the next quarterly observation, written by
+
+    uv run jdewitt hub-census --out verification/hub-census/2026-11-26.json
+
+on 2026-11-26 (3.2 s, exit 0, 0 author errors), and `2026-11-26-loader.json` is
+the loader evidence `scripts/hub_census_triage.py` measured for it. This
+artifact is also the first one carrying the `next` block: one capture/tune pair
+per worklist row, in the same download order, built from the checkpoint the row
+actually saw (14 commands; `docs/HUB-CENSUS.md` renders them from the artifact,
+never by hand).
+
+Measured content: 137 repositories checked (up from 134), 13 derived
+GGUF/MLX artifacts skipped, 22 model types, a 7-row worklist (top: lfm3 226,041;
+mimo_v2 130,428; dory 60,494; ernie5_5_moe 10,201; nemotron_labs_sigma 8,945;
+bolmo 4,403; llada2_moe 1,568), 1 untyped row (`no-model-type` 205,077),
+quarter `2026-Q4`, sha256
+701d2e28000cd448461fe51e47820d7679393413ac5344f3981fde1161131d25. The triage
+decisions are unchanged in kind from 2026-11-22 (5 adapter cards, dory blocked on
+transformers>=5.24.0, ernie5_5_moe blocked on a loader nobody publishes), but the
+ernie row's examples moved to the `baidu/ERNIE-5.5-Flash-Preview*` checkpoints
+and every download count was re-read.
+
+Reproducibility: a second run without `--out` produced the same JSON apart from
+`census_at`, and re-rendering the triage table from the same artifact produced
+byte-identical markdown and evidence.

@@ -1,0 +1,93 @@
+{
+  "artifact": "verification/hub-census/2026-11-26.json",
+  "artifact_sha256": "701d2e28000cd448461fe51e47820d7679393413ac5344f3981fde1161131d25",
+  "census_at": "2026-11-26T17:28:06Z",
+  "quarter": "2026-Q4",
+  "installed_transformers": "5.20.0",
+  "latest_transformers": "5.24.1",
+  "checked_tags": [
+    "5.20.0",
+    "5.20.1",
+    "5.20.2",
+    "5.21.0",
+    "5.21.1",
+    "5.22.0",
+    "5.22.1",
+    "5.22.2",
+    "5.23.0",
+    "5.24.0",
+    "5.24.1"
+  ],
+  "rows": {
+    "lfm3": {
+      "installed_support": false,
+      "auto_map": "3/3",
+      "auto_map_have": 3,
+      "floor": "5.23.0",
+      "decision": "adapter card"
+    },
+    "mimo_v2": {
+      "installed_support": false,
+      "auto_map": "3/3",
+      "auto_map_have": 3,
+      "floor": null,
+      "decision": "adapter card"
+    },
+    "dory": {
+      "installed_support": false,
+      "auto_map": "0/3",
+      "auto_map_have": 0,
+      "floor": "5.24.0",
+      "decision": "blocked on loader: transformers>=5.24.0"
+    },
+    "ernie5_5_moe": {
+      "installed_support": false,
+      "auto_map": "0/3",
+      "auto_map_have": 0,
+      "floor": null,
+      "decision": "blocked on loader: no published loader registers this type"
+    },
+    "nemotron_labs_sigma": {
+      "installed_support": false,
+      "auto_map": "3/3",
+      "auto_map_have": 3,
+      "floor": null,
+      "decision": "adapter card"
+    },
+    "bolmo": {
+      "installed_support": false,
+      "auto_map": "3/3",
+      "auto_map_have": 3,
+      "floor": null,
+      "decision": "adapter card"
+    },
+    "llada2_moe": {
+      "installed_support": false,
+      "auto_map": "1/1",
+      "auto_map_have": 1,
+      "floor": null,
+      "decision": "adapter card"
+    },
+    "no-model-type": {
+      "installed_support": null,
+      "auto_map": "n/a",
+      "auto_map_have": 0,
+      "floor": null,
+      "decision": "not-an-architecture"
+    }
+  },
+  "mapping_sources": {
+    "5.20.1": "github-tag",
+    "5.20.2": "github-tag",
+    "5.21.0": "pypi-wheel",
+    "5.21.1": "github-tag",
+    "5.22.0": "github-tag",
+    "5.22.1": "github-tag",
+    "5.22.2": "github-tag",
+    "5.23.0": "github-tag",
+    "5.24.0": "github-tag",
+    "5.24.1": "github-tag"
+  },
+  "installed_hits": [],
+  "evidence_path": "verification/hub-census/2026-11-26-loader.json"
+}

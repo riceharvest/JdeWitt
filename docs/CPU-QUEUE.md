@@ -100,6 +100,15 @@ Check: a rerun produces the same JSON apart from the timestamp; the worklist is
 download-ordered; the triage table is rendered, never hand-edited; every `next`
 is a command the CLI parses.
 
+Landed 2026-11-26 (3.2 s, exit 0): `verification/hub-census/2026-11-26.json`
+(137 repositories, 13 derived artifacts, 22 model types, 0 author errors, a
+7-row worklist, 14 `next` commands, sha256 `701d2e28000cd448…`); a second run
+was identical apart from `census_at`; the triage script rendered
+`docs/HUB-CENSUS.md` and `2026-11-26-loader.json` from it, and both are
+byte-identical on a re-render. All 14 `next` lines parse through the CLI;
+`capture` needs its required `--ctx-size`, which the earlier in-tree line
+omitted, so the pair carries a literal 4096 default.
+
 ## 6. Space skeleton, CPU dry run before any quota
 
 `docs/SPACE-ROADMAP.md` is design only and no GPU second has been spent on it.

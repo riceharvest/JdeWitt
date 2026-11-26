@@ -1568,3 +1568,26 @@ not be re-run. It is an instrument now:
   prompt-side jailbreak of this model is a low-yield fit-data source, and the
   compliant side remains a data-sourcing task (response mirrors / GCG), not
   another frame round.
+
+## 2026-11-26 — hub-census refresh, CPU and network only
+
+The quarterly census re-ran against the live Hub (no model forward, 3.2 s):
+`verification/hub-census/2026-11-26.json`, 137 text-generation repositories
+across the 21 inventory publishers, 13 derived GGUF/MLX artifacts skipped, 22
+model types, 0 author errors. The adapter worklist is still 7 rows and still
+download-ordered: lfm3 226,041; mimo_v2 130,428; dory 60,494; ernie5_5_moe
+10,201; nemotron_labs_sigma 8,945; bolmo 4,403; llada2_moe 1,568. The loader
+half is re-measured, not retyped: installed transformers 5.20.0 names none of
+them, 5 rows load today through their `auto_map` (adapter cards), dory is
+blocked until transformers 5.24.0, and ernie5_5_moe is blocked on a loader no
+published release registers.
+
+Two things changed beyond the numbers. The census artifact now carries a `next`
+block — one capture/tune pair per row, using the checkpoint the row actually
+saw, 14 commands in download order — and `scripts/hub_census_triage.py` renders
+that block into `docs/HUB-CENSUS.md` from the artifact, so the documented
+commands are the artifact's, not a second list. `capture` requires `--ctx-size`,
+so each line names a literal 4096 the operator overrides rather than failing at
+parse time. Verified: a second run is identical apart from `census_at`; all 14
+lines parse through `jdewitt.cli`; a re-rendered triage table and loader
+evidence are byte-identical.

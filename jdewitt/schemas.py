@@ -443,7 +443,8 @@ SCHEMAS = {
                                           'downloads': {'type': 'integer'},
                                           'example_models': {'type': 'array'}}}},
                        'supported_model_types': {'type': 'array'}, 'unresolved_gaps': {'type': 'array'},
-                       'author_errors': {'type': 'array'}}},
+                       'author_errors': {'type': 'array'},
+                       'next': {'type': 'array', 'items': {'type': 'string'}}}},
     'run-ls.command.json': {
         'description': 'run-ls output contract.',
         'type': 'object',
