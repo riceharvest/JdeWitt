@@ -609,7 +609,8 @@ def main(argv=None):
             'deltas_npz': display(shards),
             'delta_space': 'float32 [out, in] torch layout; dW = W_twin - W_base',
         },
-        'related_artifacts': ['verification/twin-transplant/top-directions.json'],
+        'related_artifacts': ['verification/twin-transplant/tensor-diff.json',
+                              'verification/twin-transplant/top-directions.json'],
         'artifact': {
             'path': args.artifact_label or display(artifact), 'sha256': artifact_sha,
             'bytes': int(artifact.stat().st_size),
@@ -636,6 +637,13 @@ def main(argv=None):
     rewrite = write_artifact(artifact, full_out, full_edits, tag='full')
     delivered = measure(artifact, full_out, full_edits)
     diff = cli_json(['gguf-tensor-diff', str(artifact), str(full_out)])
+    # The command's own rows travel with the report: its summary alone cannot
+    # carry the per-tensor rel_rms a README quotes, and a number with no
+    # committed artifact is the drift this project exists to catch.
+    diff_doc = {**diff, 'before': args.artifact_label or display(artifact),
+                'after': display(full_out)}
+    (args.report.parent / 'tensor-diff.json').write_text(
+        json.dumps(diff_doc, indent=1) + '\n')
     edited_names = sorted(full_edits)
     differing = sorted(row['name'] for row in diff['differing_tensors'])
     report['stages']['full'] = {

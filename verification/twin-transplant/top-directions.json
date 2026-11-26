@@ -1,6 +1,6 @@
 {
  "schema": "jdewitt-twin-delta-spectrum-v1",
- "shards": "/home/dario/.cache/twin-transplant/run/twin-deltas.npz",
+ "shards": "~/.cache/twin-transplant/run/twin-deltas.npz",
  "tensors": 48,
  "per_tensor": [
   {

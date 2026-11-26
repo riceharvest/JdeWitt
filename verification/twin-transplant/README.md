@@ -50,13 +50,14 @@ layout). They are 123,863,040 of the model's weights.
 | delivered snr | min 5.34, and norm_ratio 1.007-1.019 |
 
 `gguf-tensor-diff` splits those 48 in two ways, and the split is honest about what
-the tool can see. The 24 `attn_output` are Q5_0, which shares Q8_0's 32-element
-block grid, so it value-compares them: **rel_rms 0.0293-0.0457** (median 0.0369) —
-the same size as the delta's own relative norm, which is the check that the stored
-change is the edit and not codec drift. The 21 IQ3_S and 3 Q4_K `ffn_down` use
-256-element blocks, so it reports them as differing with `codec_unsupported` and no
-rel_rms ("block grids differ"). The per-tensor cos above is `compare_edit`'s, which
-decodes both sides independently and therefore covers all 48.
+the tool can see (its own rows are in `tensor-diff.json`). The 24 `attn_output` are
+Q5_0, which shares Q8_0's 32-element block grid, so it value-compares them:
+**rel_rms 0.0293-0.0457** (median 0.0369) — the same size as the delta's own
+relative norm, which is the check that the stored change is the edit and not codec
+drift. The 21 IQ3_S and 3 Q4_K `ffn_down` use 256-element blocks, so it reports them
+as differing with `codec_unsupported` and no rel_rms ("block grids differ"). The
+per-tensor cos above is `compare_edit`'s, which decodes both sides independently and
+therefore covers all 48.
 
 The delivery number is a codec ceiling, not an axis question. The delta is
 2.9%-4.5% of the weight norm it is added to (median 3.55%), Q8_0 rounds every
@@ -67,9 +68,11 @@ measured against `dequant(pristine)`, not against the fp32 base.
 
 ## Rank-k, and what the delta actually is
 
-One economy SVD per delta, reused for every k (562.8 s for 48 tensors on a loaded
-CPU; the whole run took 708.9 s). `cos(dW, dW_k)` is exact linear algebra on the
-pair; the realized cos is what the Q8_0 re-encode kept.
+One economy SVD per delta, reused for every k (317.7 s for 48 tensors on this host;
+the whole run took 454.5 s — the same run under heavier machine load took 562.8 s of
+factorizations and 708.9 s end to end, and shipped the same digests, so load changes
+the clock and nothing else). `cos(dW, dW_k)` is exact linear algebra on the pair; the
+realized cos is what the Q8_0 re-encode kept.
 
 | k | cos(dW, dW_k): min / median / mean | energy in top k | realized cos vs dW_k | realized cos vs **full** dW |
 |---|---|---|---|---|
@@ -131,6 +134,7 @@ and the refusal.
 ```
 .venv/bin/python scripts/twin_transplant.py \
   --artifact verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf \
+  --artifact-label verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf \
   --base Qwen/Qwen2.5-0.5B-Instruct@7ae557604adf67be50417f59c2c2f167def9a775 \
   --twin Goekdeniz-Guelmez/Josiefied-Qwen2.5-0.5B-Instruct-abliterated-v1@a42fe88f75b3ab545466ca5692fef0b4d7bc8009 \
   --cache ~/.cache/twin-transplant --work ~/.cache/twin-transplant/run \
@@ -139,6 +143,13 @@ and the refusal.
   --shards ~/.cache/twin-transplant/run/twin-deltas.npz \
   --out verification/twin-transplant/top-directions.json
 ```
+
+Two runs of the first command, at different machine loads, produced the same
+`64fe0060…` output digest for the full-delta artifact: the writer emits no
+timestamps or host paths into the file, so the digest is a function of the inputs
+and the flags only. The report records the artifact's sha256, so a re-run is
+checkable rather than trusted. That command writes `report.json` and
+`tensor-diff.json`; the second writes `top-directions.json`.
 
 Downloads are hashed against the Hub's LFS oid and deleted; the 48 fp32 deltas are
 kept as one `.npz` (495,465,534 bytes) so the rank-k and spectrum numbers can be
