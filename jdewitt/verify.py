@@ -27,7 +27,8 @@ from .quants import type_name_for_id
 FLOATS = {'F32': np.float32, 'F16': np.float16}
 RECOMPUTABLE = ('edited', 'untouched', 'layers', 'edit_type')
 NOT_RECOMPUTABLE = {
-    'edit_sha256': 'hashes the fitted axes; the file holds the re-encoded delta, not the axis',
+    'edit_sha256': 'hashes the fitted axes (or the explicit delta, for a delta edit); '\
+                   'the file holds the re-encoded delta, not the axis',
     'axis_norm_by_layer': 'axis norm and scale are inseparable in the stored delta',
     'scale': 'scale multiplies the axis; only their product survives in the file',
     'axis_space': 'output/input projection is not identifiable from one file pair',

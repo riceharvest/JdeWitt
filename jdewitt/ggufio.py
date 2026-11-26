@@ -359,10 +359,18 @@ def compare_edit(source, edited, edits, names=None, limit=None, renormalize=Fals
     """
     from gguf import GGUFReader
 
+    # One reader per artifact, built once. GGUFReader dequantizes every tensor at
+    # construction (11.7 s on a 342 MB IQ3_M here), so building it per tensor made
+    # a 48-tensor comparison take longer than the write it was checking.
+    readers = {}
+
     def load(path, name):
         # Any quant type decodes: the source may be IQ/TQ/whatever the user runs,
         # and the edited side may hold the re-encoded type.
-        reader = GGUFReader(str(path))
+        key = str(path)
+        reader = readers.get(key)
+        if reader is None:
+            reader = readers[key] = GGUFReader(key)
         tensor = next((item for item in reader.tensors if item.name == name), None)
         if tensor is None:
             raise ValueError(f'no tensor {name!r} in {path}')
@@ -880,6 +888,40 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
     return result
 
 
+def save_whole_file_revert(pristine, edited, sidecar):
+    """A revert sidecar for an in-place edit that moved the file's byte layout.
+
+    ``_patch_inplace`` rewrites bytes inside tensors it keeps at their width, so its
+    sidecar is a list of changed tiles and the file size never moves. An edit that
+    RE-ENCODES a tensor (IQ3_M -> Q8_0 on the tensors an edit touches) moves every
+    offset after the first edited tensor and grows the file, so there is no tile list
+    to save: this sidecar carries the whole pre-edit bytes plus ``truncate_to``, and
+    ``revert_inplace`` writes them back and cuts the file to its old length. One copy
+    of the original is the only form that can restore byte-exactly once the layout
+    moved, and ``revert_inplace`` still refuses if the artifact changed since.
+
+    Stored uncompressed: a quantized artifact is high-entropy, so compression costs
+    CPU and saves almost nothing.
+    """
+    pristine, edited, sidecar = Path(pristine), Path(edited), Path(sidecar)
+    for candidate in (pristine, edited):
+        if not candidate.is_file():
+            raise ValueError(f'{candidate} does not exist')
+    original_sha256 = _sha256(pristine)
+    patched_sha256 = _sha256(edited)
+    data = np.fromfile(pristine, dtype=np.uint8)
+    np.savez(sidecar,
+             offsets=np.array([0], dtype=np.int64),
+             lengths=np.array([int(data.size)], dtype=np.int64),
+             data=data,
+             sha256=np.array(patched_sha256),
+             original_sha256=np.array(original_sha256),
+             truncate_to=np.array(int(data.size), dtype=np.int64))
+    return {'sidecar': str(sidecar), 'original_sha256': original_sha256,
+            'patched_sha256': patched_sha256, 'truncate_to': int(data.size),
+            'bytes': int(Path(sidecar).stat().st_size)}
+
+
 def revert_inplace(path, sidecar):
     """Write an in-place patch's saved pre-patch bytes back, then drop the sidecar.
 
@@ -887,7 +929,9 @@ def revert_inplace(path, sidecar):
     ``original_sha256`` (an out-of-place ship that was reverted into place, or any
     writer that recorded its input) the returned ``byte_exact`` says whether the
     artifact is now the exact pre-edit file rather than asking the caller to trust
-    that the saved ranges were all that changed.
+    that the saved ranges were all that changed. ``truncate_to`` (written by
+    ``save_whole_file_revert``) cuts a grown artifact back to its pre-edit length;
+    without it the saved ranges are restored into a file that keeps its size.
     """
     path, sidecar = Path(path), Path(sidecar)
     for candidate in (path, sidecar):
@@ -901,6 +945,7 @@ def revert_inplace(path, sidecar):
         if current != recorded:
             raise ValueError(f'{path} changed since the patch (sha256 {current[:16]} != recorded '
                              f'{recorded[:16]}); refusing to write pre-patch bytes over a different file')
+    truncate_to = int(payload['truncate_to']) if 'truncate_to' in payload else None
     restored, position = 0, 0
     with open(path, 'r+b') as f:
         for at, length in zip(offsets.tolist(), lengths.tolist()):
@@ -908,12 +953,14 @@ def revert_inplace(path, sidecar):
             f.write(data[position:position + int(length)].tobytes())
             position += int(length)
             restored += 1
+        if truncate_to is not None:
+            f.truncate(truncate_to)
         f.flush()
         os.fsync(f.fileno())
     sidecar.unlink()
     restored_sha256 = _sha256(path)
     result = {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored,
-              'restored_sha256': restored_sha256}
+              'restored_sha256': restored_sha256, 'truncated_to': truncate_to}
     if recorded is not None:
         result['patched_sha256'] = recorded
     if 'original_sha256' in payload:

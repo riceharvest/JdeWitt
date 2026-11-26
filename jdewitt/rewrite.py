@@ -90,10 +90,11 @@ def _add_packed(writer, name, raw, ggml_shape, qtype):
 def axis_fingerprint(edits, names=None):
     """Digest of the axis -> tensor map: what anyone can recompute from the two files.
 
-    ``edits`` is the same map ``rewrite_with_edits`` takes. Only entries that carry
-    a (axis, space) tuple contribute, and only those in ``names`` (the tensors the
-    writer actually re-encoded) are hashed, so the digest describes the edit as it
-    landed rather than the request.
+    ``edits`` is the same map ``rewrite_with_edits`` takes. Entries carrying a
+    (axis, space) tuple hash the axis rows; entries carrying an explicit float32
+    delta hash the delta itself, tagged so the two forms cannot collide. Only
+    entries in ``names`` (the tensors the writer actually re-encoded) are hashed,
+    so the digest describes the edit as it landed rather than the request.
     """
     import hashlib
 
@@ -102,10 +103,21 @@ def axis_fingerprint(edits, names=None):
     for name in sorted(names if names is not None else edits):
         entry = edits[name]
         if not isinstance(entry, tuple):
+            # An explicit delta is the edit: hash the rounded matrix so two runs that
+            # ship different deltas cannot carry the same fingerprint, and a reduced
+            # (rank-k) transplant is distinguishable from the full one.
+            delta = np.asarray(entry, dtype=np.float32)
+            delta = delta.reshape(1, -1) if delta.ndim == 1 else delta
+            digest.update(name.encode())
+            digest.update(b'delta')
+            digest.update(np.round(delta, 6).tobytes())
+            layer = int(name.split('.')[1])
+            layer_norms[layer] = round(float(np.linalg.norm(delta)), 4)
             continue
         axis = np.asarray(entry[0], dtype=np.float32)
         axis = axis.reshape(1, -1) if axis.ndim == 1 else axis
         digest.update(name.encode())
+        digest.update(b'axis')
         digest.update(np.round(axis, 6).tobytes())
         layer = int(name.split('.')[1])
         layer_norms[layer] = round(float(np.linalg.norm(axis, axis=1).sum()), 4)
