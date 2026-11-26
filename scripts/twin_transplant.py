@@ -74,6 +74,25 @@ def sha256_file(path):
     return digest.hexdigest()
 
 
+def display(path):
+    """Repo-relative when the file is in the clone, ``~``-relative when it is not.
+
+    Committed artifacts in this repo name their operands relatively (a cloned tree
+    has no /mnt/ssd), so a report that records an absolute lab path is a path nobody
+    else can follow. Anything genuinely outside the clone keeps its real location,
+    with the home directory abbreviated.
+    """
+    resolved = Path(path)
+    try:
+        return str(resolved.resolve().relative_to(REPO.resolve()))
+    except ValueError:
+        pass
+    try:
+        return '~/' + str(resolved.resolve().relative_to(Path.home().resolve()))
+    except ValueError:
+        return str(resolved)
+
+
 # --------------------------------------------------------------------------- sources
 def hub_facts(repo, revision):
     """Revision, file size and the Hub's LFS sha256 for `model.safetensors`."""
@@ -128,7 +147,7 @@ def model_card(repo, revision, cache, out_dir):
     quoted = [line for line in lines
               if line and not line.startswith(('---', '#', '- ', 'tags')) and
               any(key in line.lower() for key in keys)]
-    return {'url': url, 'path': str(target), 'sha256': sha256_file(target),
+    return {'url': url, 'path': display(target), 'sha256': sha256_file(target),
             'quoted_lines': quoted[:12],
             'note': 'the card is what the twin CREATOR claims about the twin; this run '
                     'measured weights and bytes only and no behaviour'}
@@ -217,16 +236,42 @@ def build_deltas(base, twin, targets, shards=None):
     return deltas, rows
 
 
+def svd_factors(delta, kmax):
+    """Top-``kmax`` singular triplets of one delta: (U*S, Vt, all singular values).
+
+    One factorization serves every k, which matters because an SVD of the 896x4864
+    FFN deltas is the expensive step here (14.5 s on this host under load, measured);
+    doing it once per tensor per k cost three times that for no new information. The
+    factors are trimmed to kmax, so the whole set is a few tens of MB, not the 94 MB
+    a full Vt per tensor would take.
+    """
+    u, s, vt = np.linalg.svd(np.ascontiguousarray(delta, dtype=np.float32),
+                             full_matrices=False)
+    k = min(int(kmax), int(s.size))
+    return (np.ascontiguousarray(u[:, :k] * s[:k]), np.ascontiguousarray(vt[:k]),
+            np.ascontiguousarray(s))
+
+
+def reduce_from(factors, k):
+    """The rank-k reconstruction of a delta from its saved factors."""
+    us, vt, _s = factors
+    k = min(int(k), int(us.shape[1]))
+    return np.ascontiguousarray(us[:, :k] @ vt[:k], dtype=np.float32)
+
+
+def energy_from(factors, k):
+    """Fraction of the delta's squared Frobenius norm that the top-k triplets hold."""
+    s = factors[2]
+    k = min(int(k), int(s.size))
+    total = float(np.sum(s.astype(np.float64) ** 2))
+    return float(np.sum(s[:k].astype(np.float64) ** 2) / total) if total else 1.0
+
+
 def rank_k(delta, k):
-    """(dW_k, cos(dW, dW_k), energy fraction) from the economy SVD of one delta."""
-    values = delta.astype(np.float64, copy=False)
-    u, s, vt = np.linalg.svd(values, full_matrices=False)
-    k = min(int(k), s.size)
-    reduced = (u[:, :k] * s[:k]) @ vt[:k]
-    denom = float(np.linalg.norm(values) * np.linalg.norm(reduced))
-    cosine = float(np.sum(values * reduced) / denom) if denom else 1.0
-    energy = float(np.sum(s[:k] ** 2) / np.sum(s ** 2)) if s.size else 1.0
-    return reduced.astype(np.float32), cosine, energy
+    """(dW_k, cos(dW, dW_k), energy fraction) — the single-k convenience form."""
+    factors = svd_factors(delta, k)
+    reduced = reduce_from(factors, k)
+    return reduced, cos64(delta, reduced), energy_from(factors, k)
 
 
 def cos64(a, b):
@@ -236,15 +281,144 @@ def cos64(a, b):
     return float(np.sum(a * b) / denom) if denom else 1.0
 
 
-def summarize(values):
+def top_direction(delta, iterations=64, seed=0):
+    """(sigma1, u1, v1, residual) of one delta by power iteration on A A^T.
+
+    The full SVD is what the rank-k stages use, but for "is this delta one
+    direction?" the first triplet is enough and a 64-step iteration on a 896x4864
+    float32 matrix costs ~1 s instead of ~14 s. ``residual`` is
+    ||A^T u - sigma v|| / sigma, so a caller can see the triplet converged rather
+    than trust it.
+    """
+    a = np.ascontiguousarray(delta, dtype=np.float32)
+    rng = np.random.default_rng(seed)
+    v = rng.standard_normal(a.shape[1]).astype(np.float32)
+    v /= max(float(np.linalg.norm(v)), 1e-30)
+    for _ in range(int(iterations)):
+        u = a @ v
+        u /= max(float(np.linalg.norm(u)), 1e-30)
+        v = a.T @ u
+        v /= max(float(np.linalg.norm(v)), 1e-30)
+    u = a @ v
+    sigma = float(np.linalg.norm(u))
+    u = u / max(sigma, 1e-30)
+    residual = float(np.linalg.norm(a.T @ u - sigma * v) / max(sigma, 1e-30))
+    return sigma, u, v, residual
+
+
+def analyse_shards(shards, exact_sample=4):
+    """The twin delta's spectrum: how much of it one direction holds, and whether
+    that direction is shared.
+
+    Two facts decide what a transplant CAN be: the fraction of the delta's energy
+    in its top direction (a rank-1 abliteration delta is ~all of it) and the
+    overlap of that direction across tensors (a shared refusal axis is ~1). Both
+    are read from the same float32 deltas the stages shipped, and a full SVD on a
+    sample of the tensors cross-checks the power iteration.
+    """
+    loaded = np.load(shards)
+    names = sorted(loaded.files)
+    rows, lefts, rights = [], {}, {}
+    for name in names:
+        delta = loaded[name]
+        sigma, u, v, residual = top_direction(delta)
+        fro = float(np.linalg.norm(delta.astype(np.float64)))
+        lefts[name], rights[name] = u, v
+        rows.append({'name': name, 'shape': list(delta.shape),
+                     'sigma1': round(sigma, 6), 'frobenius': round(fro, 6),
+                     'energy_top1': round((sigma / fro) ** 2, 6) if fro else None,
+                     'residual': round(residual, 9)})
+    kinds = {name: name.split('.')[2] for name in names}
+    layers = {name: int(name.split('.')[1]) for name in names}
+
+    def overlap(directions, subset):
+        values, signed = [], []
+        for i, first in enumerate(subset):
+            for second in subset[i + 1:]:
+                left, right = directions[first], directions[second]
+                # right singular vectors live in the module's input space: 896 for
+                # attn_output, 4864 for ffn_down, so only equal widths are comparable
+                if left.size != right.size:
+                    continue
+                cosine = cos64(left, right)
+                values.append(abs(cosine))
+                signed.append(cosine)
+        # 6 decimals: the question is whether these are 1.0 or merely close
+        return {**summarize(values, ndigits=6), 'signed': summarize(signed, ndigits=6)}
+
+    def same_layer(directions):
+        values = []
+        for layer in sorted(set(layers.values())):
+            attn = [name for name in names
+                    if layers[name] == layer and kinds[name] == 'attn_output']
+            mlp = [name for name in names
+                   if layers[name] == layer and kinds[name] == 'ffn_down']
+            for first in attn:
+                for second in mlp:
+                    values.append(abs(cos64(directions[first], directions[second])))
+        return summarize(values)
+
+    exact = {}
+    for name in names[:int(exact_sample)]:
+        singular = np.linalg.svd(loaded[name].astype(np.float32), compute_uv=False)
+        total = float(np.sum(singular.astype(np.float64) ** 2))
+        exact[name] = {
+            'rank': int(singular.size),
+            'energy_top1': round(float(singular[0]) ** 2 / total, 6),
+            'energy_top4': round(float(np.sum(singular[:4].astype(np.float64) ** 2)) / total, 6),
+            'singular_ratio_s2_over_s1': round(float(singular[1] / singular[0]), 6),
+            'power_iteration_energy_top1': next(row['energy_top1'] for row in rows
+                                                if row['name'] == name)}
+    return {
+        'schema': 'jdewitt-twin-delta-spectrum-v1',
+        'shards': display(shards), 'tensors': len(names),
+        'per_tensor': rows,
+        'energy_top1': summarize([row['energy_top1'] for row in rows]),
+        'max_power_residual': max(row['residual'] for row in rows),
+        'overlap_top_left': {
+            'all_pairs': overlap(lefts, names),
+            'same_layer_attn_vs_mlp': same_layer(lefts),
+            'ffn_down_layers': overlap(lefts, [n for n in names
+                                               if kinds[n] == 'ffn_down']),
+        },
+        'overlap_top_right': {
+            'all_pairs': overlap(rights, names),
+            'ffn_down_layers': overlap(rights, [n for n in names
+                                                if kinds[n] == 'ffn_down']),
+        },
+        'exact_svd_sample': exact,
+        'note': 'abs cos between the TOP left (output-space) and right (input-space) '
+                'singular vectors of each delta; a shared abliteration axis shows up '
+                'here as ~1, per-tensor noise as ~0. The exact SVD sample checks the '
+                'power iteration rather than trusting it',
+    }
+
+
+def analyse_main(argv):
+    parser = argparse.ArgumentParser(description='the twin delta spectrum, from the npz')
+    parser.add_argument('--shards', type=Path, required=True)
+    parser.add_argument('--out', type=Path, required=True)
+    parser.add_argument('--exact-sample', type=int, default=4)
+    args = parser.parse_args(argv)
+    report = analyse_shards(args.shards.expanduser(), exact_sample=args.exact_sample)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(report, indent=1) + '\n')
+    print(json.dumps({'energy_top1': report['energy_top1'],
+                      'overlap_all_pairs': report['overlap_top_left']['all_pairs'],
+                      'same_layer': report['overlap_top_left']['same_layer_attn_vs_mlp'],
+                      'ffn_down': report['overlap_top_left']['ffn_down_layers']}, indent=1))
+    return report
+
+
+def summarize(values, ndigits=4):
     ordered = sorted(float(v) for v in values if v is not None)
     if not ordered:
         return {'n': 0}
     middle = ordered[len(ordered) // 2] if len(ordered) % 2 else \
         0.5 * (ordered[len(ordered) // 2 - 1] + ordered[len(ordered) // 2])
-    return {'n': len(ordered), 'min': round(ordered[0], 4),
-            'median': round(middle, 4), 'mean': round(sum(ordered) / len(ordered), 4),
-            'max': round(ordered[-1], 4)}
+    return {'n': len(ordered), 'min': round(ordered[0], ndigits),
+            'median': round(middle, ndigits), 'mean': round(sum(ordered) / len(ordered), ndigits),
+            'max': round(ordered[-1], ndigits)}
 
 
 # ---------------------------------------------------------------------- measurement
@@ -341,9 +515,15 @@ def cross_cos(pristine, out, references, names):
 
 # --------------------------------------------------------------------------- report
 def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] in ('analyse', 'analyze'):
+        return analyse_main(argv[1:])
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument('--artifact', type=Path, required=True,
                         help="the user's quantized artifact (never modified here)")
+    parser.add_argument('--artifact-label', default=None,
+                        help='how the report names the artifact (default: repo-relative '
+                             'when it lives in the clone, else ~/...)')
     parser.add_argument('--base', required=True, help='repo@revision of the base model')
     parser.add_argument('--twin', required=True, help='repo@revision of the twin model')
     parser.add_argument('--cache', type=Path, default=Path.home() / '.cache/twin-transplant')
@@ -426,11 +606,12 @@ def main(argv=None):
                       'sha256_upstream_lfs')},
             'twin_card': model_card(twin_repo, twin_rev, cache, args.report.parent),
             'downloads_deleted_bytes': freed,
-            'deltas_npz': str(shards),
+            'deltas_npz': display(shards),
             'delta_space': 'float32 [out, in] torch layout; dW = W_twin - W_base',
         },
+        'related_artifacts': ['verification/twin-transplant/top-directions.json'],
         'artifact': {
-            'path': str(artifact), 'sha256': artifact_sha,
+            'path': args.artifact_label or display(artifact), 'sha256': artifact_sha,
             'bytes': int(artifact.stat().st_size),
             'architecture': 'qwen2', 'hidden': hidden,
             'tensors': len(header['tensors']), 'writeback_targets': len(targets),
@@ -458,7 +639,7 @@ def main(argv=None):
     edited_names = sorted(full_edits)
     differing = sorted(row['name'] for row in diff['differing_tensors'])
     report['stages']['full'] = {
-        'output': str(full_out), 'sha256': sha256_file(full_out),
+        'output': display(full_out), 'sha256': sha256_file(full_out),
         'bytes_in': rewrite['bytes_in'], 'bytes_out': rewrite['bytes_out'],
         'bytes_delta': delivered['bytes_delta'],
         'edited_tensors': len(edited_names),
@@ -485,14 +666,25 @@ def main(argv=None):
           f"bytes+{delivered['bytes_delta']}", flush=True)
 
     # ---- stage 2: rank-k reductions of the same delta
+    factor_t0 = time.monotonic()
+    kmax = max(ranks)
+    factors = {}
+    for name, delta in full_edits.items():
+        factors[name] = svd_factors(delta, kmax)
+    factor_seconds = round(time.monotonic() - factor_t0, 1)
+    report['factorizations'] = {'tensors': len(factors), 'kmax': kmax,
+                                'seconds': factor_seconds,
+                                'note': 'one economy SVD per delta, reused for every k'}
+    report_path.write_text(json.dumps(report, indent=1) + '\n')
+    print(f'factorizations: {len(factors)} tensors, kmax={kmax}, {factor_seconds}s',
+          flush=True)
     for k in ranks:
         stage_t0 = time.monotonic()
         reduced, reported_cos, energy = {}, {}, {}
         for name, delta in full_edits.items():
-            value, cosine, fraction = rank_k(delta, k)
-            reduced[name] = value
-            reported_cos[name] = cosine
-            energy[name] = fraction
+            reduced[name] = reduce_from(factors[name], k)
+            reported_cos[name] = cos64(delta, reduced[name])
+            energy[name] = energy_from(factors[name], k)
         out = work / f'{artifact.stem}-rank{k}-{EDIT_TYPE}.gguf'
         stage_rewrite = write_artifact(artifact, out, reduced, tag=f'rank{k}')
         stage_delivered = measure(artifact, out, reduced)
@@ -506,7 +698,7 @@ def main(argv=None):
                  'snr': row['snr']}
                 for row in stage_delivered['per_tensor']]
         report['stages'][f'rank{k}'] = {
-            'output': str(out), 'sha256': sha256_file(out),
+            'output': display(out), 'sha256': sha256_file(out),
             'bytes_delta': stage_delivered['bytes_delta'],
             'edit_digest': stage_rewrite['fingerprint']['edit_sha256'],
             'cos_delta_vs_rank': summarize([row['cos_delta_vs_rank'] for row in rows]),
@@ -542,16 +734,20 @@ def main(argv=None):
     patched_sha = sha256_file(inplace)
     patched_bytes = int(inplace.stat().st_size)
     revert = cli_json(['gguf-revert', str(inplace), str(sidecar)])
+    if isinstance(revert, dict):  # the command prints the paths it was handed
+        for key in ('artifact', 'sidecar'):
+            if key in revert:
+                revert[key] = display(revert[key])
     restored_sha = sha256_file(inplace)
     report['stages']['in_place'] = {
-        'artifact': str(inplace),
+        'artifact': display(inplace),
         'pristine_sha256': artifact_sha, 'patched_sha256': patched_sha,
         'patched_equals_full_stage': patched_sha == sha256_file(full_out),
         'bytes_before': int(artifact.stat().st_size), 'bytes_after': patched_bytes,
         'bytes_delta': patched_bytes - int(artifact.stat().st_size),
-        'sidecar': {'path': saved['sidecar'], 'bytes': saved['bytes'],
+        'sidecar': {'path': display(saved['sidecar']), 'bytes': saved['bytes'],
                     'truncate_to': saved['truncate_to']},
-        'revert_command': f'jdewitt gguf-revert {inplace} {sidecar}',
+        'revert_command': f'jdewitt gguf-revert {display(inplace)} {display(sidecar)}',
         'revert': revert,
         'restored_sha256': restored_sha,
         'restored_byte_exact': restored_sha == artifact_sha,
@@ -573,8 +769,9 @@ def main(argv=None):
                    'claim, not as an observation',
     }
     report['next'] = [
-        f'jdewitt gguf-tensor-diff {artifact} {full_out}  # only the named tensors differ',
-        f'jdewitt gguf-inspect {full_out}',
+        f'jdewitt gguf-tensor-diff {args.artifact_label or display(artifact)} '
+        f'{display(full_out)}  # only the named tensors differ',
+        f'jdewitt gguf-inspect {display(full_out)}',
         '# certify any behavioural claim on the edited artifact with a real serve config '
         'and a judge wave; this run measured weights and bytes only',
     ]
