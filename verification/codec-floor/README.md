@@ -22,8 +22,8 @@ size — the same wall the codec cards hit, measured from the other side.
 
 ## What was measured
 
-The artifact is the in-clone stand-in used by the earlier cards — the user's
-`Qwen2.5-0.5B-Instruct-IQ3_M.gguf`, 342,752,576 B, 290 tensors, sha256 `0b2e1747…`,
+The artifact is the stand-in the earlier cards used — the user's
+`Qwen2.5-0.5B-Instruct-IQ3_M.gguf` (kept outside the clone, `*.gguf` is gitignored), 342,752,576 B, 290 tensors, sha256 `0b2e1747…`,
 header sha256 `5898b9ea…`. Its 48 writeback tensors are `blk.N.attn_output.weight`
 (`ne = [896, 896]`, stored Q5_0) and `blk.N.ffn_down.weight` (`ne = [4864, 896]`, stored
 Q4_K on 3 layers and IQ3_S on 21). Tokenizer metadata is read from the file itself
