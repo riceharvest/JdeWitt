@@ -700,6 +700,7 @@
         ]
       }
     ],
+    "shorter_than_min_chars": 4256,
     "wide_inventory": {
       "flagged": 1586,
       "covered": 1577,

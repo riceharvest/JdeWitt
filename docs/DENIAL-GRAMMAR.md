@@ -119,9 +119,9 @@ to be made against a task's own answers, not against this scan.
 
 The floor (`min_chars=48`) is a policy dial, not a property of the table. It is
 counted in code points. It rules out a terse "No." or a one-word answer; on the
-saved predictions it would block end-of-sequence for every answer shorter than
-48 characters, which includes the short-answer capability rows. Use it only on
-answer-shaped generation, not on classification.
+saved predictions it would block end-of-sequence for 4,256 of 17,847 answers
+(23.8%), which includes the short-answer capability and classification rows.
+Use it only on answer-shaped generation, not on classification.
 
 ## Limits
 

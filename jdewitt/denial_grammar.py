@@ -634,10 +634,13 @@ def compile_report(table=None, artifact=None, min_chars=MIN_ANSWER_CHARS,
              'non_wording_flags': 0, 'non_wording_flagged_rows': [],
              'compliant_flagged': 0, 'surface_hits_overall': {}, 'compliant_flagged_by_surface': {},
              'compliant_rows': [],
+             'shorter_than_min_chars': 0,
              'wide_inventory': {'flagged': 0, 'covered': 0, 'uncovered': 0, 'examples': []}}
     for row in prediction_rows:
         scan = checker.scan(row['answer'])
         hits = {hit['id'] for hit in scan['surfaces']}
+        if len(row['answer']) < min_chars:
+            saved['shorter_than_min_chars'] += 1
         if not scan['ok']:
             saved['surface_rejected'] += 1
             for surface_id in hits:
