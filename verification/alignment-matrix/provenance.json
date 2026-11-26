@@ -1,0 +1,30 @@
+{
+  "base": {
+    "repo": "Qwen/Qwen2.5-0.5B",
+    "revision": "060db6499f32faf8b98477b0a26969ef7d8b9987",
+    "filename": "model.safetensors",
+    "bytes": 988097824,
+    "sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342"
+  },
+  "instruct": {
+    "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+    "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+    "filename": "model.safetensors",
+    "bytes": 988097824,
+    "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+  },
+  "twin": {
+    "repo": "Goekdeniz-Guelmez/Josiefied-Qwen2.5-0.5B-Instruct-abliterated-v1",
+    "revision": "a42fe88f75b3ab545466ca5692fef0b4d7bc8009",
+    "filename": "model.safetensors",
+    "bytes": 1260367448,
+    "sha256": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406"
+  },
+  "iq3m": {
+    "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+    "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+    "filename": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "bytes": 342752576,
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+  }
+}

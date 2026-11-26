@@ -1,0 +1,4030 @@
+{
+  "schema": "jdewitt-alignment-matrix-v1",
+  "generated_at": "2026-11-26T18:59:32Z",
+  "removal_measured": false,
+  "experiment": {
+    "delta": "W_instruct - W_base, HF [out, in] layout",
+    "removal": "W_k = W_instruct - U[:, :k] S[:k] Vt[:k] (rank-k truncation of the delta)",
+    "writeback_tensors": [
+      {
+        "name": "model.layers.0.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 0
+      },
+      {
+        "name": "model.layers.0.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 0
+      },
+      {
+        "name": "model.layers.1.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 1
+      },
+      {
+        "name": "model.layers.1.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 1
+      },
+      {
+        "name": "model.layers.2.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 2
+      },
+      {
+        "name": "model.layers.2.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 2
+      },
+      {
+        "name": "model.layers.3.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 3
+      },
+      {
+        "name": "model.layers.3.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 3
+      },
+      {
+        "name": "model.layers.4.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 4
+      },
+      {
+        "name": "model.layers.4.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 4
+      },
+      {
+        "name": "model.layers.5.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 5
+      },
+      {
+        "name": "model.layers.5.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 5
+      },
+      {
+        "name": "model.layers.6.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 6
+      },
+      {
+        "name": "model.layers.6.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 6
+      },
+      {
+        "name": "model.layers.7.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 7
+      },
+      {
+        "name": "model.layers.7.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 7
+      },
+      {
+        "name": "model.layers.8.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 8
+      },
+      {
+        "name": "model.layers.8.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 8
+      },
+      {
+        "name": "model.layers.9.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 9
+      },
+      {
+        "name": "model.layers.9.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 9
+      },
+      {
+        "name": "model.layers.10.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 10
+      },
+      {
+        "name": "model.layers.10.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 10
+      },
+      {
+        "name": "model.layers.11.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 11
+      },
+      {
+        "name": "model.layers.11.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 11
+      },
+      {
+        "name": "model.layers.12.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 12
+      },
+      {
+        "name": "model.layers.12.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 12
+      },
+      {
+        "name": "model.layers.13.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 13
+      },
+      {
+        "name": "model.layers.13.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 13
+      },
+      {
+        "name": "model.layers.14.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 14
+      },
+      {
+        "name": "model.layers.14.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 14
+      },
+      {
+        "name": "model.layers.15.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 15
+      },
+      {
+        "name": "model.layers.15.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 15
+      },
+      {
+        "name": "model.layers.16.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 16
+      },
+      {
+        "name": "model.layers.16.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 16
+      },
+      {
+        "name": "model.layers.17.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 17
+      },
+      {
+        "name": "model.layers.17.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 17
+      },
+      {
+        "name": "model.layers.18.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 18
+      },
+      {
+        "name": "model.layers.18.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 18
+      },
+      {
+        "name": "model.layers.19.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 19
+      },
+      {
+        "name": "model.layers.19.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 19
+      },
+      {
+        "name": "model.layers.20.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 20
+      },
+      {
+        "name": "model.layers.20.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 20
+      },
+      {
+        "name": "model.layers.21.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 21
+      },
+      {
+        "name": "model.layers.21.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 21
+      },
+      {
+        "name": "model.layers.22.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 22
+      },
+      {
+        "name": "model.layers.22.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 22
+      },
+      {
+        "name": "model.layers.23.self_attn.o_proj.weight",
+        "kind": "attn",
+        "layer": 23
+      },
+      {
+        "name": "model.layers.23.mlp.down_proj.weight",
+        "kind": "ffn",
+        "layer": 23
+      }
+    ],
+    "tensor_count": 48,
+    "layers": 24,
+    "ks": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "twin_proxy": "W_twin - W_instruct; twin_capture is the share of the twin delta inside the removed U_k / V_k subspace (static proxy, not a refusal measurement)"
+  },
+  "provenance": {
+    "base": {
+      "repo": "Qwen/Qwen2.5-0.5B",
+      "revision": "060db6499f32faf8b98477b0a26969ef7d8b9987",
+      "filename": "model.safetensors",
+      "bytes": 988097824,
+      "sha256": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342"
+    },
+    "instruct": {
+      "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "filename": "model.safetensors",
+      "bytes": 988097824,
+      "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe"
+    },
+    "twin": {
+      "repo": "Goekdeniz-Guelmez/Josiefied-Qwen2.5-0.5B-Instruct-abliterated-v1",
+      "revision": "a42fe88f75b3ab545466ca5692fef0b4d7bc8009",
+      "filename": "model.safetensors",
+      "bytes": 1260367448,
+      "sha256": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406"
+    },
+    "iq3m": {
+      "repo": "bartowski/Qwen2.5-0.5B-Instruct-GGUF",
+      "revision": "41ba88dbac95fed2528c92514c131d73eb5a174b",
+      "filename": "Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "bytes": 342752576,
+      "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+    }
+  },
+  "inputs_sha256": {
+    "base_sha256": {
+      "expected": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+      "actual": "88c142557820ccad55bb59756bfcfcf891de9cc6202816bd346445188a0ed342",
+      "ok": true,
+      "seconds": 1.33
+    },
+    "instruct_sha256": {
+      "expected": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "actual": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "ok": true,
+      "seconds": 1.29
+    },
+    "twin_sha256": {
+      "expected": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406",
+      "actual": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406",
+      "ok": true,
+      "seconds": 1.97
+    }
+  },
+  "aggregate": {
+    "all": {
+      "1": {
+        "removed_energy_fraction": 0.004717531641786513,
+        "removed_energy": 1.0914537572186578,
+        "delta_residual_norm_ratio": 0.997638445709774,
+        "weight_norm_ratio": 1.0001433474457577,
+        "twin_left_capture": 0.004155600677792017,
+        "twin_left_overlap": 0.00415525558872642,
+        "twin_right_capture": 0.008392728783972146,
+        "twin_right_overlap": 0.008407830747377509,
+        "tensors": 48
+      },
+      "2": {
+        "removed_energy_fraction": 0.008253989430868408,
+        "removed_energy": 1.9096528567114803,
+        "delta_residual_norm_ratio": 0.9958644539138505,
+        "weight_norm_ratio": 1.0002332984930018,
+        "twin_left_capture": 0.00563480318613007,
+        "twin_left_overlap": 0.06435185262472931,
+        "twin_right_capture": 0.01215077332158786,
+        "twin_right_overlap": 0.006529307212251383,
+        "tensors": 48
+      },
+      "4": {
+        "removed_energy_fraction": 0.014557755543409195,
+        "removed_energy": 3.3680997163396986,
+        "delta_residual_norm_ratio": 0.9926944365999996,
+        "weight_norm_ratio": 1.0003640824620084,
+        "twin_left_capture": 0.00880256558261691,
+        "twin_left_overlap": 0.10838923024914839,
+        "twin_right_capture": 0.01686195565050806,
+        "twin_right_overlap": 0.005564926623192729,
+        "tensors": 48
+      },
+      "8": {
+        "removed_energy_fraction": 0.0262042429947302,
+        "removed_energy": 6.0626449684687165,
+        "delta_residual_norm_ratio": 0.9868109023542807,
+        "weight_norm_ratio": 1.0006000770939691,
+        "twin_left_capture": 0.012522785587364029,
+        "twin_left_overlap": 0.07056314972800926,
+        "twin_right_capture": 0.019855338145099734,
+        "twin_right_overlap": 0.005527288662414155,
+        "tensors": 48
+      }
+    },
+    "attn": {
+      "1": {
+        "removed_energy_fraction": 0.011024862631640613,
+        "removed_energy": 0.3181132416287693,
+        "delta_residual_norm_ratio": 0.9944722909002338,
+        "weight_norm_ratio": 1.0001452524687175,
+        "twin_left_capture": 0.002524211603990975,
+        "twin_left_overlap": 0.002524675515313211,
+        "twin_right_capture": 0.009712879264377326,
+        "twin_right_overlap": 0.009724584004588763,
+        "tensors": 24
+      },
+      "2": {
+        "removed_energy_fraction": 0.019175163668449638,
+        "removed_energy": 0.5532833992712519,
+        "delta_residual_norm_ratio": 0.9903660112966066,
+        "weight_norm_ratio": 1.0003315667779549,
+        "twin_left_capture": 0.005002511113400502,
+        "twin_left_overlap": 0.04882813765294704,
+        "twin_right_capture": 0.015983696617694516,
+        "twin_right_overlap": 0.00959223648798129,
+        "tensors": 24
+      },
+      "4": {
+        "removed_energy_fraction": 0.03327224595301567,
+        "removed_energy": 0.9600429837562935,
+        "delta_residual_norm_ratio": 0.983223145601742,
+        "weight_norm_ratio": 1.0006375423374645,
+        "twin_left_capture": 0.008808386931288265,
+        "twin_left_overlap": 0.05837404480933168,
+        "twin_right_capture": 0.027083184893646462,
+        "twin_right_overlap": 0.011578132031146568,
+        "tensors": 24
+      },
+      "8": {
+        "removed_energy_fraction": 0.05879524350069762,
+        "removed_energy": 1.6964878499875213,
+        "delta_residual_norm_ratio": 0.9701570782606816,
+        "weight_norm_ratio": 1.0011844840476027,
+        "twin_left_capture": 0.015373680437111409,
+        "twin_left_overlap": 0.05853589327334594,
+        "twin_right_capture": 0.03703498978974761,
+        "twin_right_overlap": 0.015589509408008215,
+        "tensors": 24
+      }
+    },
+    "ffn": {
+      "1": {
+        "removed_energy_fraction": 0.0038188329996314,
+        "removed_energy": 0.7733405155898885,
+        "delta_residual_norm_ratio": 0.998088757075426,
+        "weight_norm_ratio": 1.0001429992670723,
+        "twin_left_capture": 0.004491253456570718,
+        "twin_left_overlap": 0.004490741918414239,
+        "twin_right_capture": 0.008121112292069568,
+        "twin_right_overlap": 0.008136913222645597,
+        "tensors": 24
+      },
+      "2": {
+        "removed_energy_fraction": 0.006697888367860664,
+        "removed_energy": 1.3563694574402285,
+        "delta_residual_norm_ratio": 0.9966454292435897,
+        "weight_norm_ratio": 1.0002153370970472,
+        "twin_left_capture": 0.0057648951394352,
+        "twin_left_overlap": 0.06754580442379762,
+        "twin_right_capture": 0.011362162329982854,
+        "twin_right_overlap": 0.005899119883482527,
+        "tensors": 24
+      },
+      "4": {
+        "removed_energy_fraction": 0.011891225572682664,
+        "removed_energy": 2.4080567325834066,
+        "delta_residual_norm_ratio": 0.9940366061807369,
+        "weight_norm_ratio": 1.0003140945155706,
+        "twin_left_capture": 0.008801367859836269,
+        "twin_left_overlap": 0.11867968532427772,
+        "twin_right_capture": 0.014758972338256257,
+        "twin_right_overlap": 0.004327729968538069,
+        "tensors": 24
+      },
+      "8": {
+        "removed_energy_fraction": 0.021560521593664637,
+        "removed_energy": 4.366157118481196,
+        "delta_residual_norm_ratio": 0.9891609972124533,
+        "weight_norm_ratio": 1.0004932289829007,
+        "twin_left_capture": 0.011936223623887075,
+        "twin_left_overlap": 0.0730377170246296,
+        "twin_right_capture": 0.016320682981852408,
+        "twin_right_overlap": 0.00345702081020024,
+        "tensors": 24
+      }
+    }
+  },
+  "selection": {
+    "k": 8,
+    "feasible": true,
+    "residual_floor": 0.95,
+    "rule": "max twin_capture (left+right) subject to weight_norm_ratio >= floor",
+    "twin_capture": 0.032378123732463765,
+    "weight_norm_ratio": 1.0006000770939691,
+    "removed_energy_fraction": 0.0262042429947302,
+    "delta_residual_norm_ratio": 0.9868109023542807
+  },
+  "checks": {
+    "max_removed_energy_error": 4.440892098500626e-16,
+    "max_removed_energy_rel_error": 5.108478712537167e-15,
+    "max_delta_remain_error": 1.1102230246251565e-15,
+    "energy_identity_holds": true,
+    "remain_identity_holds": true,
+    "singular_values_descending": true
+  },
+  "per_tensor": [
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 11.763602705986782,
+      "delta_norm": 1.2508729528794171,
+      "delta_energy": 1.5646831442452727,
+      "twin_delta_norm": 0.4241824848021668,
+      "singular_values": [
+        0.19715893996246245,
+        0.15557460509668566,
+        0.15007445091165988,
+        0.14559858858448588,
+        0.14157581626402693,
+        0.13808012485866308,
+        0.13639163105043484,
+        0.13450060046090667
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.03887164760712187,
+          "removed_energy_fraction": 0.024843143322715134,
+          "delta_residual_norm_ratio": 0.9875003071783252,
+          "weight_norm_ratio": 1.0010252412855118,
+          "twin_left_capture": 0.0005908002783373383,
+          "twin_right_capture": 0.001205004615296322,
+          "twin_left_overlap": 0.0005887699313764076,
+          "twin_right_overlap": 0.0012053165027448385
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.06307510535811156,
+          "removed_energy_fraction": 0.040311743364843326,
+          "delta_residual_norm_ratio": 0.979636798326378,
+          "weight_norm_ratio": 1.00123473987314,
+          "twin_left_capture": 0.00525657710621557,
+          "twin_right_capture": 0.0016601268812094434,
+          "twin_left_overlap": 0.030898246095454326,
+          "twin_right_overlap": 0.001440512795513371
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10679639517234216,
+          "removed_energy_fraction": 0.06825432712375486,
+          "delta_residual_norm_ratio": 0.9652697409927679,
+          "weight_norm_ratio": 1.0016032971524937,
+          "twin_left_capture": 0.005698318947029621,
+          "twin_right_capture": 0.0023777454647330347,
+          "twin_left_overlap": 0.032471847456161315,
+          "twin_right_overlap": 0.0020445326367321114
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.18259931634909404,
+          "removed_energy_fraction": 0.11670050707753428,
+          "delta_residual_norm_ratio": 0.9398401422169972,
+          "weight_norm_ratio": 1.002257486370786,
+          "twin_left_capture": 0.012912608962690779,
+          "twin_right_capture": 0.004809181555084448,
+          "twin_left_overlap": 0.03043451434461865,
+          "twin_right_overlap": 0.004750027767172553
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.5265566588595902e-16,
+        "max_removed_energy_rel_error": 2.6776176201890343e-15,
+        "max_delta_remain_error": 7.771561172376096e-16
+      },
+      "name": "model.layers.0.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 0
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.90594201245228,
+      "delta_norm": 2.3108228505695996,
+      "delta_energy": 5.339902246714609,
+      "twin_delta_norm": 1.296864115098534,
+      "singular_values": [
+        0.3369043459802666,
+        0.13772824327633487,
+        0.12676780442059973,
+        0.12321640145589213,
+        0.11917286372007892,
+        0.11755676833204518,
+        0.11476126206776649,
+        0.11385399266904735
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.11350453834039118,
+          "removed_energy_fraction": 0.021255920632297188,
+          "delta_residual_norm_ratio": 0.9893149545861025,
+          "weight_norm_ratio": 1.0000397337367068,
+          "twin_left_capture": 0.0007685460690256909,
+          "twin_right_capture": 2.3563443519495715e-05,
+          "twin_left_overlap": 0.0007677504021639449,
+          "twin_right_overlap": 2.3154353295867092e-05
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.13247360733637645,
+          "removed_energy_fraction": 0.02480824577226694,
+          "delta_residual_norm_ratio": 0.9875179766605432,
+          "weight_norm_ratio": 1.0001956756635646,
+          "twin_left_capture": 0.005102764465527808,
+          "twin_right_capture": 0.016243749935404058,
+          "twin_left_overlap": 0.0030747798126923393,
+          "twin_right_overlap": 0.008437006785122936
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.16372596516173546,
+          "removed_energy_fraction": 0.030660854374716006,
+          "delta_residual_norm_ratio": 0.9845502250394768,
+          "weight_norm_ratio": 1.0002766459668446,
+          "twin_left_capture": 0.005185977632640767,
+          "twin_right_capture": 0.019042520741515225,
+          "twin_left_overlap": 0.18122797613031352,
+          "twin_right_overlap": 0.005615167351724696
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.21788060930772418,
+          "removed_energy_fraction": 0.04080235915213165,
+          "delta_residual_norm_ratio": 0.9793863593331633,
+          "weight_norm_ratio": 1.0004405383756827,
+          "twin_left_capture": 0.011010445860831065,
+          "twin_right_capture": 0.02037943187182508,
+          "twin_left_overlap": 0.09977409057254248,
+          "twin_right_overlap": 0.004048686411684702
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.440892098500626e-16,
+        "max_removed_energy_rel_error": 2.567593756384589e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.0.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 0
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 13.320737455353289,
+      "delta_norm": 0.9729812816427839,
+      "delta_energy": 0.9466925744272343,
+      "twin_delta_norm": 0.47998014709538234,
+      "singular_values": [
+        0.1478477687241985,
+        0.08092676276285898,
+        0.07492754145815045,
+        0.07365240200676981,
+        0.07212106598448577,
+        0.07196002190679242,
+        0.07095438504341148,
+        0.07002399287831677
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.02185896271672409,
+          "removed_energy_fraction": 0.023089821666710704,
+          "delta_residual_norm_ratio": 0.9883876660163707,
+          "weight_norm_ratio": 1.0002898019779196,
+          "twin_left_capture": 0.0005871945546412389,
+          "twin_right_capture": 9.167098301955907e-05,
+          "twin_left_overlap": 0.0005859696331720342,
+          "twin_right_overlap": 8.990394715994176e-05
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.028408103648000147,
+          "removed_energy_fraction": 0.030007738959173257,
+          "delta_residual_norm_ratio": 0.9848818513105145,
+          "weight_norm_ratio": 1.000348868410743,
+          "twin_left_capture": 0.004527341221182202,
+          "twin_right_capture": 0.0005758131909858903,
+          "twin_left_overlap": 0.002573161464985662,
+          "twin_right_overlap": 0.00097771594517859
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.039446916438329836,
+          "removed_energy_fraction": 0.041668137581195155,
+          "delta_residual_norm_ratio": 0.9789442590969134,
+          "weight_norm_ratio": 1.0007030545219686,
+          "twin_left_capture": 0.012288968472220144,
+          "twin_right_capture": 0.006884573555423749,
+          "twin_left_overlap": 0.04260510972692179,
+          "twin_right_overlap": 0.0053041412714888575
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.05976449368540568,
+          "removed_energy_fraction": 0.0631297797192127,
+          "delta_residual_norm_ratio": 0.9679205650676027,
+          "weight_norm_ratio": 1.001246198919786,
+          "twin_left_capture": 0.013587053899194804,
+          "twin_right_capture": 0.00868372991691049,
+          "twin_left_overlap": 0.02935009294940113,
+          "twin_right_overlap": 0.007075015698678218
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 7.632783294297951e-17,
+        "max_removed_energy_rel_error": 2.442575537559934e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.1.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 1
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 35.48425332248047,
+      "delta_norm": 2.592240055676869,
+      "delta_energy": 6.719708506255618,
+      "twin_delta_norm": 1.2773122215293689,
+      "singular_values": [
+        0.20472820267307118,
+        0.16067087130001492,
+        0.14122431632025684,
+        0.1268692732855613,
+        0.12445946812740709,
+        0.12409115182428972,
+        0.1238691697515764,
+        0.12348377863792129
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.04191363696974611,
+          "removed_energy_fraction": 0.006237418919396161,
+          "delta_residual_norm_ratio": 0.9968764121397417,
+          "weight_norm_ratio": 1.0000311468225038,
+          "twin_left_capture": 0.0002550345162029131,
+          "twin_right_capture": 0.0002629355430327075,
+          "twin_left_overlap": 0.00025324845382684657,
+          "twin_right_overlap": 0.0002630812151880731
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.06772876585405206,
+          "removed_energy_fraction": 0.01007912259750567,
+          "delta_residual_norm_ratio": 0.994947675710886,
+          "weight_norm_ratio": 1.0000714044714476,
+          "twin_left_capture": 0.0014747447737267735,
+          "twin_right_capture": 0.0004087329828412355,
+          "twin_left_overlap": 0.0008849445777920344,
+          "twin_right_overlap": 0.0005739200932731296
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10376888587818246,
+          "removed_energy_fraction": 0.015442468342425908,
+          "delta_residual_norm_ratio": 0.9922487246943545,
+          "weight_norm_ratio": 1.000314929506666,
+          "twin_left_capture": 0.014348482138856351,
+          "twin_right_capture": 0.04862308469018437,
+          "twin_left_overlap": 0.15452526745318115,
+          "twin_right_overlap": 0.01292031222211664
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.16524947384746244,
+          "removed_energy_fraction": 0.02459176223099942,
+          "delta_residual_norm_ratio": 0.9876275805023869,
+          "weight_norm_ratio": 1.000502462004388,
+          "twin_left_capture": 0.019651453488109687,
+          "twin_right_capture": 0.04959843925449343,
+          "twin_left_overlap": 0.08686386750565428,
+          "twin_right_overlap": 0.007310192906534124
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.7755575615628914e-16,
+        "max_removed_energy_rel_error": 2.6747493124492104e-15,
+        "max_delta_remain_error": 9.992007221626409e-16
+      },
+      "name": "model.layers.1.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 1
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 13.538478124407746,
+      "delta_norm": 0.9819420958465543,
+      "delta_energy": 0.9642102795955236,
+      "twin_delta_norm": 0.5635624647444776,
+      "singular_values": [
+        0.09840338335744117,
+        0.08454734279284583,
+        0.07305336855309769,
+        0.07109591901687479,
+        0.07016532666993254,
+        0.0690872716187253,
+        0.06885415664359185,
+        0.06774499465758423
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.00968322585619153,
+          "removed_energy_fraction": 0.010042649472948518,
+          "delta_residual_norm_ratio": 0.994966004709232,
+          "weight_norm_ratio": 1.0003188671138947,
+          "twin_left_capture": 0.0007577514296666155,
+          "twin_right_capture": 0.002340631248289654,
+          "twin_left_overlap": 0.0007570593145127278,
+          "twin_right_overlap": 0.002342284152536893
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01683147902952251,
+          "removed_energy_fraction": 0.017456232717808343,
+          "delta_residual_norm_ratio": 0.991233457507459,
+          "weight_norm_ratio": 1.0004319287400905,
+          "twin_left_capture": 0.0076991033573160835,
+          "twin_right_capture": 0.01262083072364411,
+          "twin_left_overlap": 0.19952841178145098,
+          "twin_right_overlap": 0.0068060292701937995
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.02722290338733125,
+          "removed_energy_fraction": 0.028233367724259256,
+          "delta_residual_norm_ratio": 0.9857822438427974,
+          "weight_norm_ratio": 1.0006682601094237,
+          "twin_left_capture": 0.01712453382206258,
+          "twin_right_capture": 0.017696960119873015,
+          "twin_left_overlap": 0.1061206304715249,
+          "twin_right_overlap": 0.005610269072311565
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.04624940674200552,
+          "removed_energy_fraction": 0.047966100051750823,
+          "delta_residual_norm_ratio": 0.9757222452871765,
+          "weight_norm_ratio": 1.0011635189497698,
+          "twin_left_capture": 0.01883741832712426,
+          "twin_right_capture": 0.028988794680547103,
+          "twin_left_overlap": 0.07872500495957283,
+          "twin_right_overlap": 0.012367142692646483
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 3.122502256758253e-17,
+        "max_removed_energy_rel_error": 1.855156193511792e-15,
+        "max_delta_remain_error": 1.1102230246251565e-16
+      },
+      "name": "model.layers.2.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 2
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 35.44595081942186,
+      "delta_norm": 2.627720898216288,
+      "delta_energy": 6.904917118922616,
+      "twin_delta_norm": 1.199016155791798,
+      "singular_values": [
+        0.13038466622298725,
+        0.12760815711200904,
+        0.12588775535036834,
+        0.12575915905741442,
+        0.1253416852501215,
+        0.12502962832709627,
+        0.12490107596514217,
+        0.12467408228230452
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.017000161186079794,
+          "removed_energy_fraction": 0.002462036964859667,
+          "delta_residual_norm_ratio": 0.9987682228801334,
+          "weight_norm_ratio": 1.000105722773729,
+          "twin_left_capture": 0.010847814904653936,
+          "twin_right_capture": 0.01789189162895211,
+          "twin_left_overlap": 0.010865432212578215,
+          "twin_right_overlap": 0.017931718351815437
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.033284002947602975,
+          "removed_energy_fraction": 0.004820333448520281,
+          "delta_residual_norm_ratio": 0.9975869218025463,
+          "weight_norm_ratio": 1.0001539355042341,
+          "twin_left_capture": 0.011114741434632178,
+          "twin_right_capture": 0.017929132010211547,
+          "twin_left_overlap": 0.0065168049056083645,
+          "twin_right_overlap": 0.009028101335781209
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.06494709598158523,
+          "removed_energy_fraction": 0.009405919703742804,
+          "delta_residual_norm_ratio": 0.9952859289150318,
+          "weight_norm_ratio": 1.0002432760558233,
+          "twin_left_capture": 0.011374417204609535,
+          "twin_right_capture": 0.01911302226886681,
+          "twin_left_overlap": 0.007099928970069912,
+          "twin_right_overlap": 0.0052069793513059666
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.12743394757272264,
+          "removed_energy_fraction": 0.018455536160382813,
+          "delta_residual_norm_ratio": 0.9907292585967257,
+          "weight_norm_ratio": 1.0004224941240778,
+          "twin_left_capture": 0.015564387828690095,
+          "twin_right_capture": 0.020413954033379738,
+          "twin_left_overlap": 0.035196317987156,
+          "twin_right_overlap": 0.0038762834092471448
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.1102230246251565e-16,
+        "max_removed_energy_rel_error": 4.2857467757825954e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.2.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 2
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 14.509375350192771,
+      "delta_norm": 1.127954073009362,
+      "delta_energy": 1.2722803908184086,
+      "twin_delta_norm": 0.59126244380751,
+      "singular_values": [
+        0.08917363821692123,
+        0.08631464653167052,
+        0.08426431053938668,
+        0.08283793452031324,
+        0.082549748014016,
+        0.08240640428773237,
+        0.08126416721390227,
+        0.08086298610068901
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.007951937752842355,
+          "removed_energy_fraction": 0.006250145652034441,
+          "delta_residual_norm_ratio": 0.9968700288141705,
+          "weight_norm_ratio": 1.000105510662989,
+          "twin_left_capture": 0.0007570735674790412,
+          "twin_right_capture": 0.006956034811477718,
+          "twin_left_overlap": 0.0007541936675091823,
+          "twin_right_overlap": 0.006964712307988767
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.015402155958729577,
+          "removed_energy_fraction": 0.01210594462500673,
+          "delta_residual_norm_ratio": 0.9939285967185936,
+          "weight_norm_ratio": 1.0002521431427749,
+          "twin_left_capture": 0.0023237745267628397,
+          "twin_right_capture": 0.008480654345068322,
+          "twin_left_overlap": 0.007461972391733468,
+          "twin_right_overlap": 0.005046927846942142
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.029364753384999474,
+          "removed_energy_fraction": 0.023080410259337776,
+          "delta_residual_norm_ratio": 0.9883924269947955,
+          "weight_norm_ratio": 1.0005499826654904,
+          "twin_left_capture": 0.006186381934460842,
+          "twin_right_capture": 0.014241590731175811,
+          "twin_left_overlap": 0.05493757795397268,
+          "twin_right_overlap": 0.010698612953713528
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.0561127171438995,
+          "removed_energy_fraction": 0.044104049350162794,
+          "delta_residual_norm_ratio": 0.9776993150503059,
+          "weight_norm_ratio": 1.0010266659599023,
+          "twin_left_capture": 0.00877836715924499,
+          "twin_right_capture": 0.02814263623410852,
+          "twin_left_overlap": 0.06265842970633198,
+          "twin_right_overlap": 0.01912102266721885
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 6.245004513516506e-17,
+        "max_removed_energy_rel_error": 2.181510381361756e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.3.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 3
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 36.266292121423135,
+      "delta_norm": 2.7512650690854983,
+      "delta_energy": 7.569459480370031,
+      "twin_delta_norm": 1.2870117173164857,
+      "singular_values": [
+        0.14028146243257256,
+        0.13816244859388788,
+        0.13561794259086163,
+        0.1348539327466039,
+        0.1336265549290438,
+        0.13333942992803316,
+        0.1328604429397051,
+        0.13229635592866776
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.019678888702221266,
+          "removed_energy_fraction": 0.002599774627667241,
+          "delta_residual_norm_ratio": 0.99869926673265,
+          "weight_norm_ratio": 1.0000503042550346,
+          "twin_left_capture": 0.00015553806553846798,
+          "twin_right_capture": 3.2560435986044035e-06,
+          "twin_left_overlap": 0.00015344118664034577,
+          "twin_right_overlap": 2.855560595755794e-06
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.038767750903679975,
+          "removed_energy_fraction": 0.005121600955024179,
+          "delta_residual_norm_ratio": 0.9974359122494925,
+          "weight_norm_ratio": 1.0001342052756086,
+          "twin_left_capture": 0.00045698223223808416,
+          "twin_right_capture": 0.002988608934025952,
+          "twin_left_overlap": 0.00037450059736479413,
+          "twin_right_overlap": 0.0015287795588030115
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.07534556043348378,
+          "removed_energy_fraction": 0.009953889128923712,
+          "delta_residual_norm_ratio": 0.9950106084213766,
+          "weight_norm_ratio": 1.0002867313238684,
+          "twin_left_capture": 0.003745230857823729,
+          "twin_right_capture": 0.013260006757441918,
+          "twin_left_overlap": 0.029967726986305284,
+          "twin_right_overlap": 0.0037543178285723688
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.14613524327936078,
+          "removed_energy_fraction": 0.019305902047343677,
+          "delta_residual_norm_ratio": 0.9903000040152758,
+          "weight_norm_ratio": 1.0004873071249905,
+          "twin_left_capture": 0.0051265536073422276,
+          "twin_right_capture": 0.014704900580569323,
+          "twin_left_overlap": 0.047696146517389966,
+          "twin_right_overlap": 0.0031128465747211815
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.1102230246251565e-16,
+        "max_removed_energy_rel_error": 2.8208478675420314e-15,
+        "max_delta_remain_error": 8.881784197001252e-16
+      },
+      "name": "model.layers.3.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 3
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.900012475496027,
+      "delta_norm": 1.0463736000287385,
+      "delta_energy": 1.0948977108371025,
+      "twin_delta_norm": 0.6032934705537404,
+      "singular_values": [
+        0.08923532878647555,
+        0.0880827289574056,
+        0.08142372342757728,
+        0.08030241610965083,
+        0.07937152324581588,
+        0.07821316301264987,
+        0.07797990126409815,
+        0.07662403183973722
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.007962943903630393,
+          "removed_energy_fraction": 0.007272774273628114,
+          "delta_residual_norm_ratio": 0.9963569770550973,
+          "weight_norm_ratio": 1.0000815124411309,
+          "twin_left_capture": 0.0017026644158095628,
+          "twin_right_capture": 0.007081767093993945,
+          "twin_left_overlap": 0.0017018723628926134,
+          "twin_right_overlap": 0.007091899066902781
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01572151104421417,
+          "removed_energy_fraction": 0.014358885664483043,
+          "delta_residual_norm_ratio": 0.9927945982606455,
+          "weight_norm_ratio": 1.0002146415272137,
+          "twin_left_capture": 0.0035049768253796604,
+          "twin_right_capture": 0.025585654123284948,
+          "twin_left_overlap": 0.003138646550311054,
+          "twin_right_overlap": 0.017361173169990134
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.028799811814072276,
+          "removed_energy_fraction": 0.026303655153369004,
+          "delta_residual_norm_ratio": 0.9867605306489673,
+          "weight_norm_ratio": 1.0004729230579326,
+          "twin_left_capture": 0.006410425332752437,
+          "twin_right_capture": 0.04378767528662295,
+          "twin_left_overlap": 0.04974653906551403,
+          "twin_right_overlap": 0.017066815234754062
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.05316905664141227,
+          "removed_energy_fraction": 0.048560752401940764,
+          "delta_residual_norm_ratio": 0.9754174734943288,
+          "weight_norm_ratio": 1.0009828181272877,
+          "twin_left_capture": 0.016902385138024622,
+          "twin_right_capture": 0.05718008862979985,
+          "twin_left_overlap": 0.05075542896382079,
+          "twin_right_overlap": 0.018542961661818062
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 5.551115123125783e-17,
+        "max_removed_energy_rel_error": 2.3963446768782594e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.4.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 4
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 36.77444340462029,
+      "delta_norm": 2.7352295100797073,
+      "delta_energy": 7.481480472810876,
+      "twin_delta_norm": 1.3027475337110894,
+      "singular_values": [
+        0.15025848874949915,
+        0.1433792754894599,
+        0.13340676781806254,
+        0.13319296105063205,
+        0.1326083815836803,
+        0.1322149469181339,
+        0.13197993776660527,
+        0.13173201691022796
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.022577613441283364,
+          "removed_energy_fraction": 0.0030178002232759556,
+          "delta_residual_norm_ratio": 0.9984899597776254,
+          "weight_norm_ratio": 1.0002464502855526,
+          "twin_left_capture": 0.005504302504528431,
+          "twin_right_capture": 0.028266000046830157,
+          "twin_left_overlap": 0.005501946868043977,
+          "twin_right_overlap": 0.0283237733761984
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04313523008116579,
+          "removed_energy_fraction": 0.005765600837685459,
+          "delta_residual_norm_ratio": 0.9971130322898781,
+          "weight_norm_ratio": 1.000329305783441,
+          "twin_left_capture": 0.006630809377389849,
+          "twin_right_capture": 0.03605728387647945,
+          "twin_left_overlap": 0.004550303840170906,
+          "twin_right_overlap": 0.018251772828770774
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.07867296065426344,
+          "removed_energy_fraction": 0.010515694178468546,
+          "delta_residual_norm_ratio": 0.9947282572750862,
+          "weight_norm_ratio": 1.0004168034350167,
+          "twin_left_capture": 0.009338713537948861,
+          "twin_right_capture": 0.03620501268666891,
+          "twin_left_overlap": 0.1514187162500144,
+          "twin_right_overlap": 0.009451854050677246
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.14851076396118496,
+          "removed_energy_fraction": 0.019850451324560873,
+          "delta_residual_norm_ratio": 0.990025024267286,
+          "weight_norm_ratio": 1.0005943662986794,
+          "twin_left_capture": 0.009987881172679744,
+          "twin_right_capture": 0.036632487473901944,
+          "twin_left_overlap": 0.0858989152749733,
+          "twin_right_overlap": 0.00616154325011963
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 5.551115123125783e-17,
+        "max_removed_energy_rel_error": 7.055937741456991e-16,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.4.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 4
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.10043185312933,
+      "delta_norm": 1.0461054502036433,
+      "delta_energy": 1.0943366129457672,
+      "twin_delta_norm": 0.5885750513694682,
+      "singular_values": [
+        0.09842364881826014,
+        0.07991307951770171,
+        0.07708982342487815,
+        0.07678423690691386,
+        0.0759593240457076,
+        0.07553111743644023,
+        0.07474691419279068,
+        0.07407537298067528
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.009687214646700202,
+          "removed_energy_fraction": 0.008852134281264587,
+          "delta_residual_norm_ratio": 0.9955640942293649,
+          "weight_norm_ratio": 0.9999605543639083,
+          "twin_left_capture": 3.790016382779913e-05,
+          "twin_right_capture": 0.001928196534861182,
+          "twin_left_overlap": 3.374766321799856e-05,
+          "twin_right_overlap": 0.0019299925291207936
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01607331492470272,
+          "removed_energy_fraction": 0.014687724722502066,
+          "delta_residual_norm_ratio": 0.9926289716089787,
+          "weight_norm_ratio": 1.0001074985607739,
+          "twin_left_capture": 0.007551475594322339,
+          "twin_right_capture": 0.012680670384560978,
+          "twin_left_overlap": 0.054461641178883996,
+          "twin_right_overlap": 0.00710293480033871
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.02791197483775868,
+          "removed_energy_fraction": 0.02550584025752772,
+          "delta_residual_norm_ratio": 0.987164707504514,
+          "weight_norm_ratio": 1.000365122299087,
+          "twin_left_capture": 0.00802109932515357,
+          "twin_right_capture": 0.01739987309495746,
+          "twin_left_overlap": 0.059146126972739854,
+          "twin_right_overlap": 0.006820622540620726
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.05046100551200739,
+          "removed_energy_fraction": 0.04611104564634366,
+          "delta_residual_norm_ratio": 0.9766723884464311,
+          "weight_norm_ratio": 1.000757255934927,
+          "twin_left_capture": 0.01042067498306513,
+          "twin_right_capture": 0.020377058163564946,
+          "twin_left_overlap": 0.037699097268036885,
+          "twin_right_overlap": 0.014325176369503877
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 6.938893903907228e-18,
+        "max_removed_energy_rel_error": 3.5814700907194484e-16,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.5.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 5
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 34.80062519015376,
+      "delta_norm": 2.5983093967500603,
+      "delta_energy": 6.751211721239662,
+      "twin_delta_norm": 1.235595062873982,
+      "singular_values": [
+        0.14326264932002974,
+        0.13367535290935878,
+        0.12745359076984294,
+        0.12620740119646515,
+        0.12607486733210316,
+        0.125742413491088,
+        0.12531351516527817,
+        0.12493898637612887
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.02052418669019382,
+          "removed_energy_fraction": 0.003040074513679324,
+          "delta_residual_norm_ratio": 0.9984788057271525,
+          "weight_norm_ratio": 1.0002156527987283,
+          "twin_left_capture": 0.008088458544867425,
+          "twin_right_capture": 0.020726675076418663,
+          "twin_left_overlap": 0.008093897694326273,
+          "twin_right_overlap": 0.020769065110229676
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.038393286665635434,
+          "removed_energy_fraction": 0.005686873445969434,
+          "delta_residual_norm_ratio": 0.9971525091750156,
+          "weight_norm_ratio": 1.000266842562231,
+          "twin_left_capture": 0.010208366951820052,
+          "twin_right_capture": 0.026209246844669652,
+          "twin_left_overlap": 0.0060992426200995875,
+          "twin_right_overlap": 0.0135163365893388
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.07056601258252754,
+          "removed_energy_fraction": 0.010452347740854163,
+          "delta_residual_norm_ratio": 0.9947600978422607,
+          "weight_norm_ratio": 1.0003632331909424,
+          "twin_left_capture": 0.0125140544934683,
+          "twin_right_capture": 0.027535816373439846,
+          "twin_left_overlap": 0.144331687828729,
+          "twin_right_overlap": 0.007706162512107475
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1335852667056716,
+          "removed_energy_fraction": 0.01978685785922036,
+          "delta_residual_norm_ratio": 0.9900571408463152,
+          "weight_norm_ratio": 1.0005485129158964,
+          "twin_left_capture": 0.020904388141475688,
+          "twin_right_capture": 0.03008319662620814,
+          "twin_left_overlap": 0.08156483791864665,
+          "twin_right_overlap": 0.005205993625688786
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.1102230246251565e-16,
+        "max_removed_energy_rel_error": 1.521376853510177e-15,
+        "max_delta_remain_error": 8.881784197001252e-16
+      },
+      "name": "model.layers.5.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 5
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.652052268928616,
+      "delta_norm": 1.054473037472339,
+      "delta_energy": 1.111913386756141,
+      "twin_delta_norm": 0.6287734985813072,
+      "singular_values": [
+        0.08969408502106281,
+        0.08568589976491514,
+        0.08284681231204928,
+        0.08001158088756595,
+        0.07883885125218489,
+        0.07687508855158126,
+        0.07647695796420542,
+        0.07528542117009833
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.008045028887765645,
+          "removed_energy_fraction": 0.0072353017632389004,
+          "delta_residual_norm_ratio": 0.9963757816390166,
+          "weight_norm_ratio": 1.0001659901532574,
+          "twin_left_capture": 0.0018129456880156983,
+          "twin_right_capture": 0.00533171077321952,
+          "twin_left_overlap": 0.0018093304387780344,
+          "twin_right_overlap": 0.005337992802985059
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01538710230628873,
+          "removed_energy_fraction": 0.013838400085440601,
+          "delta_residual_norm_ratio": 0.9930566952166223,
+          "weight_norm_ratio": 1.000434588049596,
+          "twin_left_capture": 0.0031870337493651087,
+          "twin_right_capture": 0.0066014526253144355,
+          "twin_left_overlap": 0.10702698468891929,
+          "twin_right_overlap": 0.0066137455012166176
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.02865254969268416,
+          "removed_energy_fraction": 0.025768688491352866,
+          "delta_residual_norm_ratio": 0.9870315656090476,
+          "weight_norm_ratio": 1.0009071760427957,
+          "twin_left_capture": 0.006463323387950056,
+          "twin_right_capture": 0.023279417976352256,
+          "twin_left_overlap": 0.12003381493305193,
+          "twin_right_overlap": 0.012414000668030254
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.052294513139479686,
+          "removed_energy_fraction": 0.04703110310780766,
+          "delta_residual_norm_ratio": 0.976201258395108,
+          "weight_norm_ratio": 1.0016516179922295,
+          "twin_left_capture": 0.014027454949682175,
+          "twin_right_capture": 0.041709456800549084,
+          "twin_left_overlap": 0.1453538889936552,
+          "twin_right_overlap": 0.019348504020971012
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.85722573273506e-17,
+        "max_removed_energy_rel_error": 1.4530421854245522e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.6.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 6
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.46584926396977,
+      "delta_norm": 2.797043398005771,
+      "delta_energy": 7.823451770327668,
+      "twin_delta_norm": 1.2769656981200022,
+      "singular_values": [
+        0.1474553062314706,
+        0.1369990552608857,
+        0.13604905858400088,
+        0.1356124785506382,
+        0.1351706697478894,
+        0.13474552730044057,
+        0.13433607502729392,
+        0.13419443159006492
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.02174306733581677,
+          "removed_energy_fraction": 0.0027792166391672037,
+          "delta_residual_norm_ratio": 0.9986094248307662,
+          "weight_norm_ratio": 1.0001488805225496,
+          "twin_left_capture": 0.00742593963068355,
+          "twin_right_capture": 0.008481679142344321,
+          "twin_left_overlap": 0.007432067560344278,
+          "twin_right_overlap": 0.008500021901115278
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04051180847819199,
+          "removed_energy_fraction": 0.005178252473140158,
+          "delta_residual_norm_ratio": 0.9974075132697058,
+          "weight_norm_ratio": 1.000190449639092,
+          "twin_left_capture": 0.009150233844987518,
+          "twin_right_capture": 0.008583823491726211,
+          "twin_left_overlap": 0.006132070434515884,
+          "twin_right_overlap": 0.004460509170769422
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.0774118991584322,
+          "removed_energy_fraction": 0.009894852225207746,
+          "delta_residual_norm_ratio": 0.9950402744486233,
+          "weight_norm_ratio": 1.0002721718126286,
+          "twin_left_capture": 0.009953163524265602,
+          "twin_right_capture": 0.00881873186456282,
+          "twin_left_overlap": 0.12779958037018627,
+          "twin_right_overlap": 0.0030319704901522948
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1498936927695183,
+          "removed_energy_fraction": 0.019159534329594306,
+          "delta_residual_norm_ratio": 0.9903739019534011,
+          "weight_norm_ratio": 1.000439460904485,
+          "twin_left_capture": 0.014964061200955482,
+          "twin_right_capture": 0.009556042860476226,
+          "twin_left_overlap": 0.07492099443545365,
+          "twin_right_overlap": 0.002887305097807302
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.1102230246251565e-16,
+        "max_removed_energy_rel_error": 2.569211606898216e-15,
+        "max_delta_remain_error": 7.771561172376096e-16
+      },
+      "name": "model.layers.6.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 6
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.991271433270958,
+      "delta_norm": 1.0566991201362879,
+      "delta_energy": 1.1166130304968047,
+      "twin_delta_norm": 0.5729250201545619,
+      "singular_values": [
+        0.0749385915499377,
+        0.07315119929055469,
+        0.07302543029238832,
+        0.07271656080554925,
+        0.07234310629632307,
+        0.07211767017859551,
+        0.07187291014881282,
+        0.07166849371637081
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.005615792503488395,
+          "removed_energy_fraction": 0.005029309483330863,
+          "delta_residual_norm_ratio": 0.9974821755383244,
+          "weight_norm_ratio": 1.0001025787996116,
+          "twin_left_capture": 0.0007439912118075486,
+          "twin_right_capture": 1.707082453684459e-05,
+          "twin_left_overlap": 0.0007433087101712829,
+          "twin_right_overlap": 1.4300787074308933e-05
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.010966890461134844,
+          "removed_energy_fraction": 0.00982156768872332,
+          "delta_residual_norm_ratio": 0.9950770986769196,
+          "weight_norm_ratio": 1.0002092483455909,
+          "twin_left_capture": 0.0023572473719805256,
+          "twin_right_capture": 0.0009773097433900765,
+          "twin_left_overlap": 0.0017566270263563682,
+          "twin_right_overlap": 0.00090020298339563
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.021587302145910453,
+          "removed_energy_fraction": 0.019332840972047235,
+          "delta_residual_norm_ratio": 0.9902864025260332,
+          "weight_norm_ratio": 1.0004294523704578,
+          "twin_left_capture": 0.004379335601074098,
+          "twin_right_capture": 0.0027694680934799393,
+          "twin_left_overlap": 0.006101921781841206,
+          "twin_right_overlap": 0.00707646988198081
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.04232387373133304,
+          "removed_energy_fraction": 0.03790379708581965,
+          "delta_residual_norm_ratio": 0.980865027878036,
+          "weight_norm_ratio": 1.0008108657355128,
+          "twin_left_capture": 0.010846996550424298,
+          "twin_right_capture": 0.005600209363038108,
+          "twin_left_overlap": 0.012659378109879533,
+          "twin_right_overlap": 0.012770566583647516
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.163336342344337e-17,
+        "max_removed_energy_rel_error": 1.9286042851505875e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.7.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 7
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.921608534781804,
+      "delta_norm": 2.8980255989657016,
+      "delta_energy": 8.398552372260514,
+      "twin_delta_norm": 1.3268074116948387,
+      "singular_values": [
+        0.16035899483188754,
+        0.1477908343725217,
+        0.1449300234056727,
+        0.1403204656834783,
+        0.14004065684573205,
+        0.13952956653469945,
+        0.1393056732117852,
+        0.1390733563287168
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.025715007223493333,
+          "removed_energy_fraction": 0.003061838050617764,
+          "delta_residual_norm_ratio": 0.9984679073207029,
+          "weight_norm_ratio": 1.0001984279140015,
+          "twin_left_capture": 0.005947661699874848,
+          "twin_right_capture": 0.007701352510246926,
+          "twin_left_overlap": 0.0059478598794841546,
+          "twin_right_overlap": 0.007717114913301159
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04755713794801947,
+          "removed_energy_fraction": 0.005662539904507283,
+          "delta_residual_norm_ratio": 0.9971647106147975,
+          "weight_norm_ratio": 1.0002451693476568,
+          "twin_left_capture": 0.006670735411204148,
+          "twin_right_capture": 0.007714401048994876,
+          "twin_left_overlap": 0.0034684428723471272,
+          "twin_right_overlap": 0.004177978379550307
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.08825168272201651,
+          "removed_energy_fraction": 0.01050796361209844,
+          "delta_residual_norm_ratio": 0.9947321430354511,
+          "weight_norm_ratio": 1.0003211169444899,
+          "twin_left_capture": 0.011666877303749311,
+          "twin_right_capture": 0.009625516854893872,
+          "twin_left_overlap": 0.15209964272181367,
+          "twin_right_overlap": 0.0034450272464781975
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.16607903725868464,
+          "removed_energy_fraction": 0.019774721868404996,
+          "delta_residual_norm_ratio": 0.9900632697618844,
+          "weight_norm_ratio": 1.0004858265225245,
+          "twin_left_capture": 0.017037444054149194,
+          "twin_right_capture": 0.010691218204176964,
+          "twin_left_overlap": 0.08854188245208308,
+          "twin_right_overlap": 0.003032040322185976
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 6.938893903907228e-17,
+        "max_removed_energy_rel_error": 2.698383027311704e-15,
+        "max_delta_remain_error": 7.771561172376096e-16
+      },
+      "name": "model.layers.7.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 7
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.412378006442037,
+      "delta_norm": 0.9351190221986111,
+      "delta_energy": 0.8744475856776864,
+      "twin_delta_norm": 0.5416111028847299,
+      "singular_values": [
+        0.0874098938795307,
+        0.07519860234518926,
+        0.07200146422070332,
+        0.06849488213161943,
+        0.06690857994329594,
+        0.06631473595549656,
+        0.06616888679488543,
+        0.06549826161857872
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.007640489548030819,
+          "removed_energy_fraction": 0.008737504309202856,
+          "delta_residual_norm_ratio": 0.995621662927639,
+          "weight_norm_ratio": 1.0000850629931353,
+          "twin_left_capture": 0.0017262047179675017,
+          "twin_right_capture": 0.0018353546064913727,
+          "twin_left_overlap": 0.0017140722746187577,
+          "twin_right_overlap": 0.0018367767815369973
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.013295319342700722,
+          "removed_energy_fraction": 0.015204249586208198,
+          "delta_residual_norm_ratio": 0.9923687572741251,
+          "weight_norm_ratio": 1.0001923961029637,
+          "twin_left_capture": 0.0032821577319835987,
+          "twin_right_capture": 0.016722017006204105,
+          "twin_left_overlap": 0.0093075025511008,
+          "twin_right_overlap": 0.01059044957614071
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.023171079070850382,
+          "removed_energy_fraction": 0.026497962199636096,
+          "delta_residual_norm_ratio": 0.9866620686944256,
+          "weight_norm_ratio": 1.000373826864943,
+          "twin_left_capture": 0.0052535556869664005,
+          "twin_right_capture": 0.03557108731987626,
+          "twin_left_overlap": 0.1423954288894795,
+          "twin_right_overlap": 0.012354375733951824
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.040713825200456175,
+          "removed_energy_fraction": 0.04655948037057412,
+          "delta_residual_norm_ratio": 0.9764427887129004,
+          "weight_norm_ratio": 1.0007640773106885,
+          "twin_left_capture": 0.011391930329418171,
+          "twin_right_capture": 0.04573804812737664,
+          "twin_left_overlap": 0.0817396541188822,
+          "twin_right_overlap": 0.011632410959381431
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 9.020562075079397e-17,
+        "max_removed_energy_rel_error": 5.108478712537167e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.8.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 8
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.776254729549294,
+      "delta_norm": 3.015031018175368,
+      "delta_energy": 9.090412040559595,
+      "twin_delta_norm": 1.3201456260790068,
+      "singular_values": [
+        0.16138859925641372,
+        0.1483559569792094,
+        0.14775768278526288,
+        0.14655967023431196,
+        0.14638714363286062,
+        0.14603006290258566,
+        0.14557002099758587,
+        0.14507065991872634
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.0260462799699473,
+          "removed_energy_fraction": 0.0028652474556416173,
+          "delta_residual_norm_ratio": 0.9985663485940024,
+          "weight_norm_ratio": 1.0002305150842945,
+          "twin_left_capture": 0.0037149269349982697,
+          "twin_right_capture": 0.01495840343753226,
+          "twin_left_overlap": 0.0037087382598721555,
+          "twin_right_overlap": 0.014989579672624114
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.048055769941164325,
+          "removed_energy_fraction": 0.005286423731592047,
+          "delta_residual_norm_ratio": 0.9973532855856085,
+          "weight_norm_ratio": 1.000272817580247,
+          "twin_left_capture": 0.006804754585089116,
+          "twin_right_capture": 0.014983111792211392,
+          "twin_left_overlap": 0.004124495121909002,
+          "twin_right_overlap": 0.007616961455475257
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.09136783970242497,
+          "removed_energy_fraction": 0.010051011911754934,
+          "delta_residual_norm_ratio": 0.9949618023262221,
+          "weight_norm_ratio": 1.0003587568845602,
+          "twin_left_capture": 0.009459571272290553,
+          "twin_right_capture": 0.016671766506740675,
+          "twin_left_overlap": 0.1528169468995956,
+          "twin_right_overlap": 0.004823780163193077
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.17635794217723819,
+          "removed_energy_fraction": 0.019400434368691367,
+          "delta_residual_norm_ratio": 0.9902522737319569,
+          "weight_norm_ratio": 1.0005356472336846,
+          "twin_left_capture": 0.013992441645807341,
+          "twin_right_capture": 0.01850969950112896,
+          "twin_left_overlap": 0.08474935461142191,
+          "twin_right_overlap": 0.0038059419844599643
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.3877787807814457e-16,
+        "max_removed_energy_rel_error": 2.397656986226867e-15,
+        "max_delta_remain_error": 8.881784197001252e-16
+      },
+      "name": "model.layers.8.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 8
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.056356702208333,
+      "delta_norm": 1.1434442385669368,
+      "delta_energy": 1.307464726711922,
+      "twin_delta_norm": 0.5340571084286697,
+      "singular_values": [
+        0.11308274346579388,
+        0.11021479433545038,
+        0.10741648227069713,
+        0.10487223267889453,
+        0.10198679267100225,
+        0.10047220932580288,
+        0.09923621397729523,
+        0.09798742071198147
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.012787706869750547,
+          "removed_energy_fraction": 0.009780536796514363,
+          "delta_residual_norm_ratio": 0.9950977154046159,
+          "weight_norm_ratio": 1.000182156193804,
+          "twin_left_capture": 0.0005003462459515765,
+          "twin_right_capture": 0.0015235728356804558,
+          "twin_left_overlap": 0.0004988933263383181,
+          "twin_right_overlap": 0.001524195157834875
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.024935007760156173,
+          "removed_energy_fraction": 0.01907126613110549,
+          "delta_residual_norm_ratio": 0.9904184640185656,
+          "weight_norm_ratio": 1.000367988909334,
+          "twin_left_capture": 0.0017517154526535627,
+          "twin_right_capture": 0.006101593710790145,
+          "twin_left_overlap": 0.001651260088960601,
+          "twin_right_overlap": 0.004766739657400916
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.04747149361062336,
+          "removed_energy_fraction": 0.03630804918921757,
+          "delta_residual_norm_ratio": 0.981678129944221,
+          "weight_norm_ratio": 1.0007554393719575,
+          "twin_left_capture": 0.002451612143114776,
+          "twin_right_capture": 0.010005557728608672,
+          "twin_left_overlap": 0.00860328719066164,
+          "twin_right_overlap": 0.006922379960699339
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.08741682511908369,
+          "removed_energy_fraction": 0.06685979616362112,
+          "delta_residual_norm_ratio": 0.9659918238972726,
+          "weight_norm_ratio": 1.0014731811379696,
+          "twin_left_capture": 0.0044557154791917,
+          "twin_right_capture": 0.016075955007914238,
+          "twin_left_overlap": 0.013194142556895869,
+          "twin_right_overlap": 0.008592045819027708
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.163336342344337e-17,
+        "max_removed_energy_rel_error": 1.252256380584618e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.9.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 9
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.52240340782604,
+      "delta_norm": 3.0910805653025064,
+      "delta_energy": 9.554779061190864,
+      "twin_delta_norm": 1.3870171602433403,
+      "singular_values": [
+        0.1810695853848258,
+        0.15674594224387606,
+        0.15174424657094412,
+        0.15096360361035505,
+        0.15033584923434046,
+        0.15025675113163256,
+        0.14979713577910525,
+        0.149019991110133
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.03278619475143272,
+          "removed_energy_fraction": 0.003431392242715699,
+          "delta_residual_norm_ratio": 0.9982828295414508,
+          "weight_norm_ratio": 1.0003480625698302,
+          "twin_left_capture": 0.004937373259598112,
+          "twin_right_capture": 0.023730087472605108,
+          "twin_left_overlap": 0.004928531926002792,
+          "twin_right_overlap": 0.023774784310694838
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05735548516135325,
+          "removed_energy_fraction": 0.006002806008808405,
+          "delta_residual_norm_ratio": 0.9969940792157151,
+          "weight_norm_ratio": 1.0004367088884016,
+          "twin_left_capture": 0.008328657992872673,
+          "twin_right_capture": 0.023730616814113682,
+          "twin_left_overlap": 0.3471463205780766,
+          "twin_right_overlap": 0.012431629107521932
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10317181114376114,
+          "removed_energy_fraction": 0.010797927454211828,
+          "delta_residual_norm_ratio": 0.9945863826464695,
+          "weight_norm_ratio": 1.000511566315032,
+          "twin_left_capture": 0.013597694898043269,
+          "twin_right_capture": 0.028185301606213076,
+          "twin_left_overlap": 0.1785988464764593,
+          "twin_right_overlap": 0.007510790078262728
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1929959096074927,
+          "removed_energy_fraction": 0.020198887736859773,
+          "delta_residual_norm_ratio": 0.9898490350872401,
+          "weight_norm_ratio": 1.000677523319403,
+          "twin_left_capture": 0.019663759071377525,
+          "twin_right_capture": 0.0299665860095583,
+          "twin_left_overlap": 0.09819882518438511,
+          "twin_right_overlap": 0.004912514223715735
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.3877787807814457e-16,
+        "max_removed_energy_rel_error": 2.7513293761195658e-15,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.9.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 9
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.292144627721555,
+      "delta_norm": 0.9461168566017278,
+      "delta_energy": 0.8951371063459345,
+      "twin_delta_norm": 0.6602371274397096,
+      "singular_values": [
+        0.080632370699265,
+        0.07959211772361248,
+        0.07756134598683115,
+        0.07706556084754373,
+        0.07571736017125931,
+        0.07527923945874818,
+        0.07456073822829384,
+        0.07188057965340085
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.006501579204583689,
+          "removed_energy_fraction": 0.007263221643356934,
+          "delta_residual_norm_ratio": 0.9963617708225477,
+          "weight_norm_ratio": 1.0001725911817332,
+          "twin_left_capture": 0.0029726167648473022,
+          "twin_right_capture": 0.013533693238305918,
+          "twin_left_overlap": 0.0029749371222756366,
+          "twin_right_overlap": 0.013552994251200125
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.012836484408313076,
+          "removed_energy_fraction": 0.01434024387695564,
+          "delta_residual_norm_ratio": 0.9928039867582347,
+          "weight_norm_ratio": 1.0002799898536177,
+          "twin_left_capture": 0.0031154925953213366,
+          "twin_right_capture": 0.015285052345004189,
+          "twin_left_overlap": 0.021371476988731,
+          "twin_right_overlap": 0.012213783379385227
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.02479134746834847,
+          "removed_energy_fraction": 0.02769558684652227,
+          "delta_residual_norm_ratio": 0.9860549747115916,
+          "weight_norm_ratio": 1.0005289016214864,
+          "twin_left_capture": 0.009600265862028747,
+          "twin_right_capture": 0.018540310329308533,
+          "twin_left_overlap": 0.05250130545886187,
+          "twin_right_overlap": 0.010628935298561504
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.04691755140959729,
+          "removed_energy_fraction": 0.05241381580205161,
+          "delta_residual_norm_ratio": 0.9734403855388105,
+          "weight_norm_ratio": 1.000986276942022,
+          "twin_left_capture": 0.02643978701864649,
+          "twin_right_capture": 0.02457639826608163,
+          "twin_left_overlap": 0.07402732276010533,
+          "twin_right_overlap": 0.018004647352964007
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.3877787807814457e-17,
+        "max_removed_energy_rel_error": 9.459805306173737e-16,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.10.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 10
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 36.68899041228724,
+      "delta_norm": 3.0642017339287553,
+      "delta_energy": 9.38933226621199,
+      "twin_delta_norm": 1.3988528522488881,
+      "singular_values": [
+        0.18098827719174185,
+        0.15952456634803974,
+        0.15243391830106975,
+        0.15130433460236095,
+        0.15047089988498918,
+        0.14985442562424903,
+        0.14963231581898703,
+        0.1494009261918713
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.03275675648083478,
+          "removed_energy_fraction": 0.0034887205556364963,
+          "delta_residual_norm_ratio": 0.9982541156661285,
+          "weight_norm_ratio": 1.0004183171394894,
+          "twin_left_capture": 0.008418891849309976,
+          "twin_right_capture": 0.015563941563029005,
+          "twin_left_overlap": 0.008413414423983315,
+          "twin_right_overlap": 0.01559129638782699
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05820484374936491,
+          "removed_energy_fraction": 0.006199039729248705,
+          "delta_residual_norm_ratio": 0.9968956616771638,
+          "weight_norm_ratio": 1.0004591680465633,
+          "twin_left_capture": 0.008424898261037359,
+          "twin_right_capture": 0.022206995406816442,
+          "twin_left_overlap": 0.34872827817804797,
+          "twin_right_overlap": 0.011549155460203964
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10433394486744532,
+          "removed_energy_fraction": 0.01111196642203158,
+          "delta_residual_norm_ratio": 0.9944284959603533,
+          "weight_norm_ratio": 1.0005454291648792,
+          "twin_left_capture": 0.009590977394866772,
+          "twin_right_capture": 0.022527869489725617,
+          "twin_left_overlap": 0.17924798014626825,
+          "twin_right_overlap": 0.00630819756116471
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1941422521431594,
+          "removed_energy_fraction": 0.020676896571419735,
+          "delta_residual_norm_ratio": 0.9896075502079497,
+          "weight_norm_ratio": 1.0007239258270302,
+          "twin_left_capture": 0.013969896497625771,
+          "twin_right_capture": 0.026259800673141268,
+          "twin_left_overlap": 0.10057518505862605,
+          "twin_right_overlap": 0.004807971921993822
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.220446049250313e-16,
+        "max_removed_energy_rel_error": 2.7538019768096145e-15,
+        "max_delta_remain_error": 9.992007221626409e-16
+      },
+      "name": "model.layers.10.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 10
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.63035211192956,
+      "delta_norm": 1.4406072812037498,
+      "delta_energy": 2.07534933865726,
+      "twin_delta_norm": 0.5207848610720671,
+      "singular_values": [
+        0.2269279619016045,
+        0.19567202025389754,
+        0.18511688466427345,
+        0.18186504479860477,
+        0.17901904659695214,
+        0.17363241274709118,
+        0.17117094647488637,
+        0.1688781793178974
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.05149629989281606,
+          "removed_energy_fraction": 0.024813316454054858,
+          "delta_residual_norm_ratio": 0.9875154092701265,
+          "weight_norm_ratio": 1.0000251529934623,
+          "twin_left_capture": 5.690128485439245e-06,
+          "twin_right_capture": 0.00017811880065011034,
+          "twin_left_overlap": 2.7220923481564147e-06,
+          "twin_right_overlap": 0.00017634606301979535
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.08978383940305776,
+          "removed_energy_fraction": 0.04326203677167306,
+          "delta_residual_norm_ratio": 0.9781298294338675,
+          "weight_norm_ratio": 1.0004242842068254,
+          "twin_left_capture": 0.00010718121131237404,
+          "twin_right_capture": 0.0021520168972388085,
+          "twin_left_overlap": 0.0011891848597684,
+          "twin_right_overlap": 0.0016226829200155519
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.1571269949104622,
+          "removed_energy_fraction": 0.07571110655140234,
+          "delta_residual_norm_ratio": 0.961399445313236,
+          "weight_norm_ratio": 1.0011078957370616,
+          "twin_left_capture": 0.009343373478101796,
+          "twin_right_capture": 0.014285276221721053,
+          "twin_left_overlap": 0.012593665103136992,
+          "twin_right_overlap": 0.004800218342864987
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.2771423610781565,
+          "removed_energy_fraction": 0.1335401013775667,
+          "delta_residual_norm_ratio": 0.9308382773728385,
+          "weight_norm_ratio": 1.0023889216115331,
+          "twin_left_capture": 0.012743001214466112,
+          "twin_right_capture": 0.0191964015153237,
+          "twin_left_overlap": 0.030036407759395672,
+          "twin_right_overlap": 0.008644899617789328
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.6653345369377348e-16,
+        "max_removed_energy_rel_error": 6.0089498063708e-16,
+        "max_delta_remain_error": 1.1102230246251565e-16
+      },
+      "name": "model.layers.11.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 11
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.39529871933721,
+      "delta_norm": 3.1585275141920257,
+      "delta_energy": 9.976296057908057,
+      "twin_delta_norm": 1.4137487894283096,
+      "singular_values": [
+        0.19369506258588862,
+        0.18766595085712462,
+        0.16459152483878015,
+        0.16185351090132097,
+        0.15948330531727561,
+        0.15737535602187472,
+        0.15713430056543615,
+        0.15672033918003203
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.037517777270151306,
+          "removed_energy_fraction": 0.0037606920496722368,
+          "delta_residual_norm_ratio": 0.9981178827925727,
+          "weight_norm_ratio": 0.9999957933968013,
+          "twin_left_capture": 0.00031050378877909413,
+          "twin_right_capture": 0.00036624848751279197,
+          "twin_left_overlap": 0.00030829989814330696,
+          "twin_right_overlap": 0.0003665316677294898
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.07273628638126002,
+          "removed_energy_fraction": 0.007290910971272057,
+          "delta_residual_norm_ratio": 0.9963478755077106,
+          "weight_norm_ratio": 1.000373042404724,
+          "twin_left_capture": 0.004929840562230508,
+          "twin_right_capture": 0.024479091382694957,
+          "twin_left_overlap": 0.3652892535789457,
+          "twin_right_overlap": 0.012487575897179911
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.12602321542109882,
+          "removed_energy_fraction": 0.012632264989890927,
+          "delta_residual_norm_ratio": 0.9936637937502345,
+          "weight_norm_ratio": 1.0005383219096624,
+          "twin_left_capture": 0.01706947119768206,
+          "twin_right_capture": 0.02912880182606592,
+          "twin_left_overlap": 0.19059240909781727,
+          "twin_right_overlap": 0.007970653208297849
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.22547759590592714,
+          "removed_energy_fraction": 0.022601333661022873,
+          "delta_residual_norm_ratio": 0.9886347487009428,
+          "weight_norm_ratio": 1.0007632224433949,
+          "twin_left_capture": 0.018510434771949708,
+          "twin_right_capture": 0.03040373660640333,
+          "twin_left_overlap": 0.10172889348472315,
+          "twin_right_overlap": 0.005208710540238737
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.498001805406602e-16,
+        "max_removed_energy_rel_error": 4.623737337864448e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.11.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 11
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.01123743303634,
+      "delta_norm": 0.9651791389626502,
+      "delta_energy": 0.9315707702886826,
+      "twin_delta_norm": 0.6119229929510847,
+      "singular_values": [
+        0.08931681476082044,
+        0.08041811700869786,
+        0.07890014597813252,
+        0.07696759192383457,
+        0.07518624887158683,
+        0.0738104927048223,
+        0.07376173481601761,
+        0.07295066192530547
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.007977493399018713,
+          "removed_energy_fraction": 0.008563486160634456,
+          "delta_residual_norm_ratio": 0.9957090507971521,
+          "weight_norm_ratio": 1.0001248852011455,
+          "twin_left_capture": 0.002446799861246138,
+          "twin_right_capture": 0.0027338801995226594,
+          "twin_left_overlap": 0.0024468206249486004,
+          "twin_right_overlap": 0.002735736037529064
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.014444566942243333,
+          "removed_energy_fraction": 0.015505603441987703,
+          "delta_residual_norm_ratio": 0.9922169100342991,
+          "weight_norm_ratio": 1.0002768900027925,
+          "twin_left_capture": 0.006425360280810603,
+          "twin_right_capture": 0.002767742995804348,
+          "twin_left_overlap": 0.0034468786330558243,
+          "twin_right_overlap": 0.0027060075031287417
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.026593810184167878,
+          "removed_energy_fraction": 0.028547278459506383,
+          "delta_residual_norm_ratio": 0.985623011876495,
+          "weight_norm_ratio": 1.000567863213425,
+          "twin_left_capture": 0.012851477484797728,
+          "twin_right_capture": 0.005982011809580362,
+          "twin_left_overlap": 0.07069855304944149,
+          "twin_right_overlap": 0.009621275854386477
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.04845736363528541,
+          "removed_energy_fraction": 0.052016835629427334,
+          "delta_residual_norm_ratio": 0.9736442699315666,
+          "weight_norm_ratio": 1.001122078177833,
+          "twin_left_capture": 0.01634258427403563,
+          "twin_right_capture": 0.014867818617670144,
+          "twin_left_overlap": 0.05292562563118142,
+          "twin_right_overlap": 0.014693352285839716
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.5102810375396984e-17,
+        "max_removed_energy_rel_error": 1.6959890313967906e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.12.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 12
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 38.04060906236089,
+      "delta_norm": 3.190655193019835,
+      "delta_energy": 10.18028056074444,
+      "twin_delta_norm": 1.4370222987685444,
+      "singular_values": [
+        0.1759617508230293,
+        0.16129248161968893,
+        0.15822215200953663,
+        0.15685433883034858,
+        0.15648333803405093,
+        0.15609463980555074,
+        0.15571211034586657,
+        0.15536184287201454
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.030962537752705858,
+          "removed_energy_fraction": 0.0030414228338753856,
+          "delta_residual_norm_ratio": 0.9984781305397352,
+          "weight_norm_ratio": 1.0002724243546344,
+          "twin_left_capture": 0.010868134573081811,
+          "twin_right_capture": 0.01723990588742442,
+          "twin_left_overlap": 0.010870304952838994,
+          "twin_right_overlap": 0.017270875739291966
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05697780237974355,
+          "removed_energy_fraction": 0.005596879382622536,
+          "delta_residual_norm_ratio": 0.9971976336801935,
+          "weight_norm_ratio": 1.000319963468578,
+          "twin_left_capture": 0.01149330887857675,
+          "twin_right_capture": 0.017244602012716572,
+          "twin_left_overlap": 0.3212834160936006,
+          "twin_right_overlap": 0.008652541176966067
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10661533537617826,
+          "removed_energy_fraction": 0.010472730563761783,
+          "delta_residual_norm_ratio": 0.9947498526947552,
+          "weight_norm_ratio": 1.0004038812933351,
+          "twin_left_capture": 0.01298124398369957,
+          "twin_right_capture": 0.018978540387436914,
+          "twin_left_overlap": 0.1748850948936502,
+          "twin_right_overlap": 0.005348358868340255
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.20385147056343378,
+          "removed_energy_fraction": 0.020024150547431178,
+          "delta_residual_norm_ratio": 0.989937295717546,
+          "weight_norm_ratio": 1.0005718596625985,
+          "twin_left_capture": 0.014240072662212253,
+          "twin_right_capture": 0.019683966016293773,
+          "twin_left_overlap": 0.09448475993855868,
+          "twin_right_overlap": 0.0045272114365652195
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.440892098500626e-16,
+        "max_removed_energy_rel_error": 2.343004218476385e-15,
+        "max_delta_remain_error": 5.551115123125783e-16
+      },
+      "name": "model.layers.12.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 12
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 15.594307999774998,
+      "delta_norm": 0.976598514853123,
+      "delta_energy": 0.9537446592133254,
+      "twin_delta_norm": 0.5857068218572717,
+      "singular_values": [
+        0.08621211354568155,
+        0.0824812310838954,
+        0.07579814765428558,
+        0.07245119594758317,
+        0.07193347929648428,
+        0.07143663242084142,
+        0.0710241518524736,
+        0.07064676034791637
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.007432528522013488,
+          "removed_energy_fraction": 0.007792996217817922,
+          "delta_residual_norm_ratio": 0.9960958808177968,
+          "weight_norm_ratio": 1.0001186154343344,
+          "twin_left_capture": 0.017769955281915994,
+          "twin_right_capture": 0.006815288385576349,
+          "twin_left_overlap": 0.017798977421549813,
+          "twin_right_overlap": 0.006825974405629869
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.014235682003128441,
+          "removed_energy_fraction": 0.014926093546747008,
+          "delta_residual_norm_ratio": 0.9925088948988079,
+          "weight_norm_ratio": 1.0002069260550515,
+          "twin_left_capture": 0.019024918620325154,
+          "twin_right_capture": 0.007850126830632461,
+          "twin_left_overlap": 0.011794506697132454,
+          "twin_right_overlap": 0.004218832788036018
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.025230216985184413,
+          "removed_energy_fraction": 0.026453848775410165,
+          "delta_residual_norm_ratio": 0.98668442332115,
+          "weight_norm_ratio": 1.0003997407982697,
+          "twin_left_capture": 0.02354554382124509,
+          "twin_right_capture": 0.012326702890308202,
+          "twin_left_overlap": 0.05331719019016992,
+          "twin_right_overlap": 0.006776215421695216
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.045543229774531714,
+          "removed_energy_fraction": 0.04775201552593439,
+          "delta_residual_norm_ratio": 0.9758319447907335,
+          "weight_norm_ratio": 1.0008595265265283,
+          "twin_left_capture": 0.02805533595002278,
+          "twin_right_capture": 0.022082348124615896,
+          "twin_left_overlap": 0.047976764063245414,
+          "twin_right_overlap": 0.012575064372225154
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 7.632783294297951e-17,
+        "max_removed_energy_rel_error": 1.6759424687456596e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.13.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 13
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 38.69067951174791,
+      "delta_norm": 3.1406780985976908,
+      "delta_energy": 9.863858919011205,
+      "twin_delta_norm": 1.515922340579987,
+      "singular_values": [
+        0.1695965925196333,
+        0.1573664673301639,
+        0.1542442590181382,
+        0.15400189380999998,
+        0.15274818964644682,
+        0.15242018103397695,
+        0.15195212782409054,
+        0.15176686106835327
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.02876300419427054,
+          "removed_energy_fraction": 0.002915999147030974,
+          "delta_residual_norm_ratio": 0.9985409359925951,
+          "weight_norm_ratio": 1.0002080823582393,
+          "twin_left_capture": 0.0050292593364626515,
+          "twin_right_capture": 0.008469145790657153,
+          "twin_left_overlap": 0.005024715852816931,
+          "twin_right_overlap": 0.008483101705443263
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05352720923424609,
+          "removed_energy_fraction": 0.005426599231978054,
+          "delta_residual_norm_ratio": 0.9972830093649556,
+          "weight_norm_ratio": 1.0002554418040273,
+          "twin_left_capture": 0.0053914271803462985,
+          "twin_right_capture": 0.008571479835695022,
+          "twin_left_overlap": 0.005476159859995595,
+          "twin_right_overlap": 0.0047472345640244265
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10103508397136711,
+          "removed_energy_fraction": 0.010242957122656748,
+          "delta_residual_norm_ratio": 0.9948653390672249,
+          "weight_norm_ratio": 1.000345749505278,
+          "twin_left_capture": 0.006356924729793983,
+          "twin_right_capture": 0.009079955182916348,
+          "twin_left_overlap": 0.16336732730433629,
+          "twin_right_overlap": 0.0032498161121110097
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1937216342668739,
+          "removed_energy_fraction": 0.019639538223068315,
+          "delta_residual_norm_ratio": 0.9901315376135297,
+          "weight_norm_ratio": 1.0005151636700358,
+          "twin_left_capture": 0.008274418192000062,
+          "twin_right_capture": 0.009762024541784204,
+          "twin_left_overlap": 0.08879935295577764,
+          "twin_right_overlap": 0.0026173920594478512
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.440892098500626e-16,
+        "max_removed_energy_rel_error": 2.894924545589473e-15,
+        "max_delta_remain_error": 5.551115123125783e-16
+      },
+      "name": "model.layers.13.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 13
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.417045298699996,
+      "delta_norm": 0.8538066578418068,
+      "delta_energy": 0.7289858089749961,
+      "twin_delta_norm": 0.6653609978915072,
+      "singular_values": [
+        0.06327476349333139,
+        0.061322147496714545,
+        0.06076260850465348,
+        0.060573750936381135,
+        0.06044846196045172,
+        0.06011339556521503,
+        0.059732941594837496,
+        0.059327224472580785
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.004003695695137022,
+          "removed_energy_fraction": 0.00549214490302149,
+          "delta_residual_norm_ratio": 0.9972501467019091,
+          "weight_norm_ratio": 1.0001526749155116,
+          "twin_left_capture": 0.00324686587941089,
+          "twin_right_capture": 0.0031492445315404174,
+          "twin_left_overlap": 0.0032453785552960072,
+          "twin_right_overlap": 0.0031521027723217395
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.007764101468745836,
+          "removed_energy_fraction": 0.010650552278462998,
+          "delta_residual_norm_ratio": 0.994660468562784,
+          "weight_norm_ratio": 1.0002607999520705,
+          "twin_left_capture": 0.004279689074422879,
+          "twin_right_capture": 0.003162842896818695,
+          "twin_left_overlap": 0.1442584999448044,
+          "twin_right_overlap": 0.0016577280428583933
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.015125375363538357,
+          "removed_energy_fraction": 0.020748518252784193,
+          "delta_residual_norm_ratio": 0.9895713626349621,
+          "weight_norm_ratio": 1.0004667756155796,
+          "twin_left_capture": 0.006620212980181704,
+          "twin_right_capture": 0.017023584990860596,
+          "twin_left_overlap": 0.07722325642787506,
+          "twin_right_overlap": 0.009785991575199071
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.029480756118494808,
+          "removed_energy_fraction": 0.04044078191308932,
+          "delta_residual_norm_ratio": 0.979570935709564,
+          "weight_norm_ratio": 1.0009092778052315,
+          "twin_left_capture": 0.013123777323642042,
+          "twin_right_capture": 0.028561077506553657,
+          "twin_left_overlap": 0.05118952683347454,
+          "twin_right_overlap": 0.013958334484859352
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.214306433183765e-17,
+        "max_removed_energy_rel_error": 1.2998416523642198e-15,
+        "max_delta_remain_error": 4.440892098500626e-16
+      },
+      "name": "model.layers.14.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 14
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 38.45723804504927,
+      "delta_norm": 3.0935695479752963,
+      "delta_energy": 9.570172548160077,
+      "twin_delta_norm": 1.4788962889933774,
+      "singular_values": [
+        0.16511104839449717,
+        0.15471503689919408,
+        0.15373982766282665,
+        0.15260217944086799,
+        0.15179345094359925,
+        0.1511769779289258,
+        0.15093846387655976,
+        0.150576130810885
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.027261658301929986,
+          "removed_energy_fraction": 0.0028486067690776593,
+          "delta_residual_norm_ratio": 0.9985746808481186,
+          "weight_norm_ratio": 1.0001612404382867,
+          "twin_left_capture": 0.008384859172037072,
+          "twin_right_capture": 0.004429903400107394,
+          "twin_left_overlap": 0.008391157976831551,
+          "twin_right_overlap": 0.004437278638250089
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.051198400944648975,
+          "removed_energy_fraction": 0.0053497886988978244,
+          "delta_residual_norm_ratio": 0.9973215185190292,
+          "weight_norm_ratio": 1.0002142418624678,
+          "twin_left_capture": 0.00879882476745298,
+          "twin_right_capture": 0.004484384662643978,
+          "twin_left_overlap": 0.006430856303130842,
+          "twin_right_overlap": 0.0023271960591694204
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.0981217607245475,
+          "removed_energy_fraction": 0.010252872686544403,
+          "delta_residual_norm_ratio": 0.9948603556848845,
+          "weight_norm_ratio": 1.000305020163457,
+          "twin_left_capture": 0.010118802593191346,
+          "twin_right_capture": 0.0046182044795105015,
+          "twin_left_overlap": 0.1303822548928945,
+          "twin_right_overlap": 0.0018578776728686896
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.18947308217702957,
+          "removed_energy_fraction": 0.019798293209818553,
+          "delta_residual_norm_ratio": 0.9900513657332035,
+          "weight_norm_ratio": 1.000470714260811,
+          "twin_left_capture": 0.012078327155306436,
+          "twin_right_capture": 0.006624646327928936,
+          "twin_left_overlap": 0.08087906099093911,
+          "twin_right_overlap": 0.0024086862249841513
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.7755575615628914e-16,
+        "max_removed_energy_rel_error": 1.4908245479287171e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.14.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 14
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.155259288930456,
+      "delta_norm": 0.9998409292988897,
+      "delta_energy": 0.999681883901267,
+      "twin_delta_norm": 0.7090901706144637,
+      "singular_values": [
+        0.11887339966995078,
+        0.10935167198252889,
+        0.09228550947932798,
+        0.0903329720800711,
+        0.0838789595491062,
+        0.08149599340943309,
+        0.07615785274831849,
+        0.07516562710189027
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.014130885149091854,
+          "removed_energy_fraction": 0.014135381841617412,
+          "delta_residual_norm_ratio": 0.9929071548530517,
+          "weight_norm_ratio": 1.0004778632840527,
+          "twin_left_capture": 0.003532510769477031,
+          "twin_right_capture": 0.08965202717133601,
+          "twin_left_overlap": 0.0035273416001079237,
+          "twin_right_overlap": 0.08976877300025171
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.026088673314466446,
+          "removed_energy_fraction": 0.026096975182400204,
+          "delta_residual_norm_ratio": 0.9868652516010481,
+          "weight_norm_ratio": 1.0008601275713271,
+          "twin_left_capture": 0.0138391089598076,
+          "twin_right_capture": 0.09355142436677163,
+          "twin_left_overlap": 0.17675980724765278,
+          "twin_right_overlap": 0.04784072637041438
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.042765334419144485,
+          "removed_energy_fraction": 0.042778943089628076,
+          "delta_residual_norm_ratio": 0.9783767458961665,
+          "weight_norm_ratio": 1.0014698475262542,
+          "twin_left_capture": 0.015541352999327657,
+          "twin_right_capture": 0.10691980332577347,
+          "twin_left_overlap": 0.17688022277551957,
+          "twin_right_overlap": 0.033434985684497855
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06789250124883042,
+          "removed_energy_fraction": 0.06791410581922257,
+          "delta_residual_norm_ratio": 0.9654459561160208,
+          "weight_norm_ratio": 1.002213903171686,
+          "twin_left_capture": 0.03748259319179948,
+          "twin_right_capture": 0.11777123000346926,
+          "twin_left_overlap": 0.17527187977803446,
+          "twin_right_overlap": 0.029153986627432942
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 6.938893903907228e-17,
+        "max_removed_energy_rel_error": 1.4602959612823335e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.15.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 15
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 39.5683759024814,
+      "delta_norm": 3.0470365806236583,
+      "delta_energy": 9.28443192365872,
+      "twin_delta_norm": 1.511354829443677,
+      "singular_values": [
+        0.16309536146388787,
+        0.15376497000492062,
+        0.15230973889184252,
+        0.15068618842830941,
+        0.15062543106245557,
+        0.15041122384751696,
+        0.14963879507799174,
+        0.14937380584420587
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.026600096931036238,
+          "removed_energy_fraction": 0.00286502148432512,
+          "delta_residual_norm_ratio": 0.9985664617418688,
+          "weight_norm_ratio": 1.0001392782590086,
+          "twin_left_capture": 0.009066910574054893,
+          "twin_right_capture": 0.006882918556774201,
+          "twin_left_overlap": 0.009074880244330402,
+          "twin_right_overlap": 0.006894736805109056
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05024376293165038,
+          "removed_energy_fraction": 0.005411614124028258,
+          "delta_residual_norm_ratio": 0.9972905223032907,
+          "weight_norm_ratio": 1.000180778624843,
+          "twin_left_capture": 0.010242833253918997,
+          "twin_right_capture": 0.008219612675969832,
+          "twin_left_overlap": 0.007021583911766661,
+          "twin_right_overlap": 0.004281183430321394
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.0961483468760036,
+          "removed_energy_fraction": 0.010355867506658864,
+          "delta_residual_norm_ratio": 0.9948085908823583,
+          "weight_norm_ratio": 1.0002676012879115,
+          "twin_left_capture": 0.010281854570465614,
+          "twin_right_capture": 0.008326386918325332,
+          "twin_left_overlap": 0.0937020400323511,
+          "twin_right_overlap": 0.002498426072522864
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1861642064828377,
+          "removed_energy_fraction": 0.020051222090223038,
+          "delta_residual_norm_ratio": 0.9899236222607164,
+          "weight_norm_ratio": 1.0004350753930369,
+          "twin_left_capture": 0.012919566866149819,
+          "twin_right_capture": 0.010673117049493626,
+          "twin_left_overlap": 0.07866461819763812,
+          "twin_right_overlap": 0.002338893541386983
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 3.0531133177191805e-16,
+        "max_removed_energy_rel_error": 1.8260180575010563e-15,
+        "max_delta_remain_error": 1.1102230246251565e-15
+      },
+      "name": "model.layers.15.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 15
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 17.390733410109846,
+      "delta_norm": 1.1143512384231966,
+      "delta_energy": 1.2417786825753117,
+      "twin_delta_norm": 0.5014227981053402,
+      "singular_values": [
+        0.10611027125840526,
+        0.09723683774480409,
+        0.08786309247001599,
+        0.08450299850816062,
+        0.08345728253369734,
+        0.0828576600189702,
+        0.08258819284476045,
+        0.08228876685164199
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.011259389666532347,
+          "removed_energy_fraction": 0.009067146847119019,
+          "delta_residual_norm_ratio": 0.9954561030768162,
+          "weight_norm_ratio": 1.0001240683839419,
+          "twin_left_capture": 0.001953531578230162,
+          "twin_right_capture": 0.0003340420650706612,
+          "twin_left_overlap": 0.0019555869093193672,
+          "twin_right_overlap": 0.0003306032813627895
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.020714392281141705,
+          "removed_energy_fraction": 0.01668122715569762,
+          "delta_residual_norm_ratio": 0.991624310333456,
+          "weight_norm_ratio": 1.0002479701856626,
+          "twin_left_capture": 0.0025641652823371747,
+          "twin_right_capture": 0.003658103833385411,
+          "twin_left_overlap": 0.0012942098252472353,
+          "twin_right_overlap": 0.005079819944959679
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.03557507205640648,
+          "removed_energy_fraction": 0.028648480244988356,
+          "delta_residual_norm_ratio": 0.9855716715465249,
+          "weight_norm_ratio": 1.000533679029166,
+          "twin_left_capture": 0.014240126334604586,
+          "twin_right_capture": 0.008004170423404264,
+          "twin_left_overlap": 0.027975805359226766,
+          "twin_right_overlap": 0.006998350930013246
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06299783263546235,
+          "removed_energy_fraction": 0.0507319327666439,
+          "delta_residual_norm_ratio": 0.9743038885447168,
+          "weight_norm_ratio": 1.0012191317683041,
+          "twin_left_capture": 0.015098469277548444,
+          "twin_right_capture": 0.020473296076742302,
+          "twin_left_overlap": 0.03257464536478201,
+          "twin_right_overlap": 0.013921953428085764
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 6.938893903907228e-17,
+        "max_removed_energy_rel_error": 3.85172626437545e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.16.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 16
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.9857099720094,
+      "delta_norm": 2.9143835902473056,
+      "delta_energy": 8.493631711102775,
+      "twin_delta_norm": 1.3035998409741791,
+      "singular_values": [
+        0.1555043196366575,
+        0.1454806228719538,
+        0.14372521939219302,
+        0.14362494363443915,
+        0.1431075599569585,
+        0.143004650707895,
+        0.14280326197097512,
+        0.14230278408252753
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.024181593425659745,
+          "removed_energy_fraction": 0.002847026366124381,
+          "delta_residual_norm_ratio": 0.998575472177178,
+          "weight_norm_ratio": 1.000161164329498,
+          "twin_left_capture": 0.0010245530117641542,
+          "twin_right_capture": 0.005708565585313385,
+          "twin_left_overlap": 0.0010143648549344468,
+          "twin_right_overlap": 0.005720443717086914
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04534620505687139,
+          "removed_energy_fraction": 0.005338847574188479,
+          "delta_residual_norm_ratio": 0.9973270037584518,
+          "weight_norm_ratio": 1.000201550976441,
+          "twin_left_capture": 0.0010559609257851056,
+          "twin_right_capture": 0.005709906352972452,
+          "twin_left_overlap": 0.00121310017948115,
+          "twin_right_overlap": 0.0028754111362025853
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.08663126818020123,
+          "removed_energy_fraction": 0.010199555517218607,
+          "delta_residual_norm_ratio": 0.9948871516321741,
+          "weight_norm_ratio": 1.0002776773089979,
+          "twin_left_capture": 0.0010930317996062963,
+          "twin_right_capture": 0.005948095834060163,
+          "twin_left_overlap": 0.16359542424873874,
+          "twin_right_overlap": 0.0020101718494097377
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.16820422600831214,
+          "removed_energy_fraction": 0.019803569512960816,
+          "delta_residual_norm_ratio": 0.9900487010683062,
+          "weight_norm_ratio": 1.0004350414421757,
+          "twin_left_capture": 0.003496830147344275,
+          "twin_right_capture": 0.00812691975458485,
+          "twin_left_overlap": 0.09178063204766243,
+          "twin_right_overlap": 0.00220029906420218
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.3877787807814457e-16,
+        "max_removed_energy_rel_error": 3.0604077651943512e-15,
+        "max_delta_remain_error": 7.771561172376096e-16
+      },
+      "name": "model.layers.16.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 16
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 17.01684023659095,
+      "delta_norm": 1.2475939154225182,
+      "delta_energy": 1.5564905777992892,
+      "twin_delta_norm": 0.5653487710334751,
+      "singular_values": [
+        0.09536638576143985,
+        0.0943103252728112,
+        0.09260508670879089,
+        0.09211490942674347,
+        0.09121764721231304,
+        0.08965556961751979,
+        0.08916215856749662,
+        0.08777661631588482
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.009094747533199759,
+          "removed_energy_fraction": 0.0058431112034476665,
+          "delta_residual_norm_ratio": 0.9970741641405377,
+          "weight_norm_ratio": 1.0001556195200394,
+          "twin_left_capture": 0.0013203381656164196,
+          "twin_right_capture": 0.000709638027527195,
+          "twin_left_overlap": 0.0013207923039097182,
+          "twin_right_overlap": 0.0007073933441240469
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01798918498626321,
+          "removed_energy_fraction": 0.011557528996865492,
+          "delta_residual_norm_ratio": 0.9942044412509603,
+          "weight_norm_ratio": 1.0002914749639866,
+          "twin_left_capture": 0.0015163442433069466,
+          "twin_right_capture": 0.0007536006338589615,
+          "twin_left_overlap": 0.0014504971491675828,
+          "twin_right_overlap": 0.00257263329385006
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.03505004360930304,
+          "removed_energy_fraction": 0.022518635261422556,
+          "delta_residual_norm_ratio": 0.9886765723625581,
+          "weight_norm_ratio": 1.000579959189142,
+          "twin_left_capture": 0.0021337082659240235,
+          "twin_right_capture": 0.0014987796232094493,
+          "twin_left_overlap": 0.00927735165218005,
+          "twin_right_overlap": 0.0035743626186878793
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06706344882797645,
+          "removed_energy_fraction": 0.04308631853255223,
+          "delta_residual_norm_ratio": 0.9782196488864081,
+          "weight_norm_ratio": 1.0010950797495566,
+          "twin_left_capture": 0.004308815275082041,
+          "twin_right_capture": 0.009756648821563095,
+          "twin_left_overlap": 0.027312550229130865,
+          "twin_right_overlap": 0.016874119367833063
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.7755575615628914e-17,
+        "max_removed_energy_rel_error": 1.5429034520921018e-15,
+        "max_delta_remain_error": 4.440892098500626e-16
+      },
+      "name": "model.layers.17.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 17
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.36329462041156,
+      "delta_norm": 2.9085904827140654,
+      "delta_energy": 8.459898596134842,
+      "twin_delta_norm": 1.1781124100940368,
+      "singular_values": [
+        0.16200919059898808,
+        0.14342636971835518,
+        0.14310802447884416,
+        0.14231292939620976,
+        0.142097149678673,
+        0.14174518695384683,
+        0.14164861150115524,
+        0.14100055366257308
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.026246977838539246,
+          "removed_energy_fraction": 0.0031025168375577177,
+          "delta_residual_norm_ratio": 0.9984475365097766,
+          "weight_norm_ratio": 1.0001835935799257,
+          "twin_left_capture": 0.0030256038489125956,
+          "twin_right_capture": 0.002709540744803494,
+          "twin_left_overlap": 0.003016927568392152,
+          "twin_right_overlap": 0.002715994955241802
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04681810136912556,
+          "removed_energy_fraction": 0.005534120868838287,
+          "delta_residual_norm_ratio": 0.9972291006239045,
+          "weight_norm_ratio": 1.0002249553165854,
+          "twin_left_capture": 0.003680190965493393,
+          "twin_right_capture": 0.002929886453259616,
+          "twin_left_overlap": 0.0019311567949497606,
+          "twin_right_overlap": 0.0015545354181536676
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.0875509779126936,
+          "removed_energy_fraction": 0.010348939401317871,
+          "delta_residual_norm_ratio": 0.9948120730060943,
+          "weight_norm_ratio": 1.0003060564901773,
+          "twin_left_capture": 0.004511192940013309,
+          "twin_right_capture": 0.003570803274549612,
+          "twin_left_overlap": 0.1614586269109017,
+          "twin_right_overlap": 0.0013955075424216187
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.16777976115743515,
+          "removed_energy_fraction": 0.019832360784334976,
+          "delta_residual_norm_ratio": 0.9900341606306656,
+          "weight_norm_ratio": 1.0004700265016029,
+          "twin_left_capture": 0.007202203782142934,
+          "twin_right_capture": 0.005117961694301413,
+          "twin_left_overlap": 0.0924639118032596,
+          "twin_right_overlap": 0.0018621128380524414
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.163336342344337e-16,
+        "max_removed_energy_rel_error": 2.4814294129538635e-15,
+        "max_delta_remain_error": 7.771561172376096e-16
+      },
+      "name": "model.layers.17.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 17
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 17.497783280205276,
+      "delta_norm": 1.2950421739415783,
+      "delta_energy": 1.677134232287329,
+      "twin_delta_norm": 0.5873323184443017,
+      "singular_values": [
+        0.09371181098700222,
+        0.09232771479863525,
+        0.09154375542301939,
+        0.09128941104356256,
+        0.09078040057640603,
+        0.09008502487935117,
+        0.08975067289305665,
+        0.08940120148752242
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.00878190351846363,
+          "removed_energy_fraction": 0.005236255601608341,
+          "delta_residual_norm_ratio": 0.9973784359000307,
+          "weight_norm_ratio": 1.000129997133607,
+          "twin_left_capture": 0.007213475731307739,
+          "twin_right_capture": 0.003481282686028843,
+          "twin_left_overlap": 0.007227262429605709,
+          "twin_right_overlap": 0.003486619867785928
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.017306310438401758,
+          "removed_energy_fraction": 0.010318977518453523,
+          "delta_residual_norm_ratio": 0.9948271319588874,
+          "weight_norm_ratio": 1.0002776485499256,
+          "twin_left_capture": 0.007458346732326377,
+          "twin_right_capture": 0.011428679368511198,
+          "twin_left_overlap": 0.005330642263609904,
+          "twin_right_overlap": 0.0057920902437239566
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.034020326164031875,
+          "removed_energy_fraction": 0.02028479623699164,
+          "delta_residual_norm_ratio": 0.989805639387354,
+          "weight_norm_ratio": 1.0005155035656421,
+          "twin_left_capture": 0.011636337249748724,
+          "twin_right_capture": 0.013945962047657478,
+          "twin_left_overlap": 0.005863413807385172,
+          "twin_right_overlap": 0.006699605412976267
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06642447711252697,
+          "removed_energy_fraction": 0.03960593960444964,
+          "delta_residual_norm_ratio": 0.9799969695848814,
+          "weight_norm_ratio": 1.0009581884335046,
+          "twin_left_capture": 0.0158188014735808,
+          "twin_right_capture": 0.024387521194121124,
+          "twin_left_overlap": 0.012032019961066997,
+          "twin_right_overlap": 0.013119564416100217
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 5.551115123125783e-17,
+        "max_removed_energy_rel_error": 1.9753388002152546e-15,
+        "max_delta_remain_error": 4.440892098500626e-16
+      },
+      "name": "model.layers.18.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 18
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 38.95127726343178,
+      "delta_norm": 3.0537865327138833,
+      "delta_energy": 9.325612187384683,
+      "twin_delta_norm": 1.2601443525061067,
+      "singular_values": [
+        0.16114182449644576,
+        0.1514104470057722,
+        0.14959006076020004,
+        0.1487288416017557,
+        0.14811159131827234,
+        0.14763346352476167,
+        0.14758388199109282,
+        0.14711711800652008
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.025966687602043327,
+          "removed_energy_fraction": 0.0027844485788471912,
+          "delta_residual_norm_ratio": 0.9986068052147211,
+          "weight_norm_ratio": 1.0001306022954222,
+          "twin_left_capture": 0.006541950426205157,
+          "twin_right_capture": 0.00636129902573837,
+          "twin_left_overlap": 0.006548124987914972,
+          "twin_right_overlap": 0.0063763233275390225
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.048891811064531075,
+          "removed_energy_fraction": 0.005242745471516601,
+          "delta_residual_norm_ratio": 0.9973751824306055,
+          "weight_norm_ratio": 1.0001654061886744,
+          "twin_left_capture": 0.008919201206081532,
+          "twin_right_capture": 0.00642508390501432,
+          "twin_left_overlap": 0.005319961512383539,
+          "twin_right_overlap": 0.003332477044864553
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.09338926566697156,
+          "removed_energy_fraction": 0.01001427721745762,
+          "delta_residual_norm_ratio": 0.9949802625090322,
+          "weight_norm_ratio": 1.0002517346280497,
+          "twin_left_capture": 0.009956433052779365,
+          "twin_right_capture": 0.006535560875713664,
+          "twin_left_overlap": 0.008621963749267306,
+          "twin_right_overlap": 0.0023650521217605074
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1805463973362248,
+          "removed_energy_fraction": 0.019360272945990697,
+          "delta_residual_norm_ratio": 0.9902725519037716,
+          "weight_norm_ratio": 1.0004260849788416,
+          "twin_left_capture": 0.011756702370927546,
+          "twin_right_capture": 0.008370451012730516,
+          "twin_left_overlap": 0.04088234345001579,
+          "twin_right_overlap": 0.002688287189973402
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.3877787807814457e-16,
+        "max_removed_energy_rel_error": 1.0688916522970306e-15,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.18.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 18
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 16.237520918763224,
+      "delta_norm": 1.1471567790621524,
+      "delta_energy": 1.3159686757482516,
+      "twin_delta_norm": 0.7126316347624243,
+      "singular_values": [
+        0.09862635248459727,
+        0.08546198840475575,
+        0.0822988476799832,
+        0.08031802613080137,
+        0.07994867180934825,
+        0.0796681430509134,
+        0.0788797671044898,
+        0.07885105940641718
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.009727157404416025,
+          "removed_energy_fraction": 0.007391632934488523,
+          "delta_residual_norm_ratio": 0.9962973286451746,
+          "weight_norm_ratio": 1.000129194077702,
+          "twin_left_capture": 0.005132317437328106,
+          "twin_right_capture": 0.0331791483900892,
+          "twin_left_overlap": 0.005135219234028027,
+          "twin_right_overlap": 0.033222037517116325
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01703090886651063,
+          "removed_energy_fraction": 0.012941728158405413,
+          "delta_residual_norm_ratio": 0.9935080632997375,
+          "weight_norm_ratio": 1.0002716013228294,
+          "twin_left_capture": 0.006627760836738267,
+          "twin_right_capture": 0.040860831144032404,
+          "twin_left_overlap": 0.009471470689861424,
+          "twin_right_overlap": 0.023362831321228524
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.030254994517511798,
+          "removed_energy_fraction": 0.0229906646526438,
+          "delta_residual_norm_ratio": 0.9884378257368321,
+          "weight_norm_ratio": 1.0005330103614871,
+          "twin_left_capture": 0.015126319492337252,
+          "twin_right_capture": 0.054167921317553006,
+          "twin_left_overlap": 0.026272305200962708,
+          "twin_right_overlap": 0.019588337843635503
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.05543330488674436,
+          "removed_energy_fraction": 0.042123574753954784,
+          "delta_residual_norm_ratio": 0.9787116149540913,
+          "weight_norm_ratio": 1.0009883921232137,
+          "twin_left_capture": 0.020486505256275163,
+          "twin_right_capture": 0.05808301564959026,
+          "twin_left_overlap": 0.035153266986527584,
+          "twin_right_overlap": 0.01978163528872914
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.7755575615628914e-17,
+        "max_removed_energy_rel_error": 1.6297178167753064e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.19.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 19
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 39.98477512136494,
+      "delta_norm": 2.9489577606721022,
+      "delta_energy": 8.69635187422822,
+      "twin_delta_norm": 1.2768650508747907,
+      "singular_values": [
+        0.1485584673947689,
+        0.14533452653368203,
+        0.14451365902208066,
+        0.14432287113998576,
+        0.14382324162494992,
+        0.1431785059300755,
+        0.14305410809526256,
+        0.14290408427792703
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.022069618234682616,
+          "removed_energy_fraction": 0.0025378018913984252,
+          "delta_residual_norm_ratio": 0.9987302929763372,
+          "weight_norm_ratio": 1.0000734863756606,
+          "twin_left_capture": 0.0029696418413534334,
+          "twin_right_capture": 0.002184697642428684,
+          "twin_left_overlap": 0.0029708276150460693,
+          "twin_right_overlap": 0.0021896228932772118
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04319174283745214,
+          "removed_energy_fraction": 0.004966650782088472,
+          "delta_residual_norm_ratio": 0.9975135834753888,
+          "weight_norm_ratio": 1.0001219326719029,
+          "twin_left_capture": 0.0036425425011830555,
+          "twin_right_capture": 0.0021970768404063236,
+          "twin_left_overlap": 0.0030224104826832424,
+          "twin_right_overlap": 0.0011508735996303564
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.08490503161549126,
+          "removed_energy_fraction": 0.009763293027172543,
+          "delta_residual_norm_ratio": 0.9951063797267243,
+          "weight_norm_ratio": 1.0002102707081602,
+          "twin_left_capture": 0.0058174946643711305,
+          "twin_right_capture": 0.002255872699979971,
+          "twin_left_overlap": 0.00555412390420156,
+          "twin_right_overlap": 0.0010031981079962515
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1669762961536126,
+          "removed_energy_fraction": 0.019200729060705277,
+          "delta_residual_norm_ratio": 0.9903531041700706,
+          "weight_norm_ratio": 1.0003919761854836,
+          "twin_left_capture": 0.007868976469324123,
+          "twin_right_capture": 0.005519440113946795,
+          "twin_left_overlap": 0.01085337825562475,
+          "twin_right_overlap": 0.002298322529626835
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.6653345369377348e-16,
+        "max_removed_energy_rel_error": 2.5704520162647087e-15,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.19.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 19
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 18.91917931884537,
+      "delta_norm": 1.2037174525933536,
+      "delta_energy": 1.4489357056778327,
+      "twin_delta_norm": 0.586571215586078,
+      "singular_values": [
+        0.09498578810500574,
+        0.09074184011636979,
+        0.08879248138014122,
+        0.08524977465832491,
+        0.08409413233822637,
+        0.0836570648227528,
+        0.08282516072210731,
+        0.08272369749866126
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.00902229994192905,
+          "removed_energy_fraction": 0.006226846302823554,
+          "delta_residual_norm_ratio": 0.996881714997911,
+          "weight_norm_ratio": 1.0000931119036263,
+          "twin_left_capture": 0.0001183094308416237,
+          "twin_right_capture": 0.0013959474633436725,
+          "twin_left_overlap": 0.00011567047729479547,
+          "twin_right_overlap": 0.0013968232726443567
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.01725638148963387,
+          "removed_energy_fraction": 0.011909694420540965,
+          "delta_residual_norm_ratio": 0.9940273163145262,
+          "weight_norm_ratio": 1.000198532991075,
+          "twin_left_capture": 0.00028452361782044423,
+          "twin_right_capture": 0.0018284083379059134,
+          "twin_left_overlap": 0.0006744137873189433,
+          "twin_right_overlap": 0.002380654480100554
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.03240801031857177,
+          "removed_energy_fraction": 0.022366769064753524,
+          "delta_residual_norm_ratio": 0.9887533721486095,
+          "weight_norm_ratio": 1.000384999212091,
+          "twin_left_capture": 0.0007481046172821469,
+          "twin_right_capture": 0.0037221867480873054,
+          "twin_left_overlap": 0.016810656959082022,
+          "twin_right_overlap": 0.0031293463642236207
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06018155528354208,
+          "removed_energy_fraction": 0.041535007418005684,
+          "delta_residual_norm_ratio": 0.9790122535402682,
+          "weight_norm_ratio": 1.0008489047241282,
+          "twin_left_capture": 0.011397825088254128,
+          "twin_right_capture": 0.007435248054282982,
+          "twin_left_overlap": 0.023276151301906533,
+          "twin_right_overlap": 0.008728838448609019
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 5.551115123125783e-17,
+        "max_removed_energy_rel_error": 1.0705522856382853e-15,
+        "max_delta_remain_error": 1.1102230246251565e-16
+      },
+      "name": "model.layers.20.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 20
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 40.70815056563198,
+      "delta_norm": 2.876191445456132,
+      "delta_energy": 8.272477230915033,
+      "twin_delta_norm": 1.3012668658757014,
+      "singular_values": [
+        0.1444627456492555,
+        0.1423282189359509,
+        0.14178510130357874,
+        0.1414786621915405,
+        0.14096735735911692,
+        0.1406376887362149,
+        0.14014758813358563,
+        0.13993010353704996
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.020869484880521486,
+          "removed_energy_fraction": 0.0025227612355982363,
+          "delta_residual_norm_ratio": 0.9987378228366053,
+          "weight_norm_ratio": 1.0000401318185432,
+          "twin_left_capture": 0.0006187149961469739,
+          "twin_right_capture": 3.910972845749269e-05,
+          "twin_left_overlap": 0.0006172857405717636,
+          "twin_right_overlap": 3.859932943169337e-05
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04112680678600146,
+          "removed_energy_fraction": 0.004971522512302201,
+          "delta_residual_norm_ratio": 0.9975111415356214,
+          "weight_norm_ratio": 1.0000874693911037,
+          "twin_left_capture": 0.0007548730162625182,
+          "twin_right_capture": 0.00014668505858621284,
+          "twin_left_overlap": 0.001271781168180964,
+          "twin_right_overlap": 0.00065783818084479
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.08124603359317557,
+          "removed_energy_fraction": 0.009821245961191822,
+          "delta_residual_norm_ratio": 0.9950772603365068,
+          "weight_norm_ratio": 1.0001793511237775,
+          "twin_left_capture": 0.001333347432893128,
+          "twin_right_capture": 0.00025084337618804187,
+          "twin_left_overlap": 0.004585745903405387,
+          "twin_right_overlap": 0.0009370915851628686
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1601185692626037,
+          "removed_energy_fraction": 0.019355576907993822,
+          "delta_residual_norm_ratio": 0.9902749229845245,
+          "weight_norm_ratio": 1.0003640888664018,
+          "twin_left_capture": 0.0053649344593576865,
+          "twin_right_capture": 0.0009513016784017521,
+          "twin_left_overlap": 0.012469957674365904,
+          "twin_right_overlap": 0.0015662799845343885
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 3.608224830031759e-16,
+        "max_removed_energy_rel_error": 3.823634380617216e-15,
+        "max_delta_remain_error": 3.3306690738754696e-16
+      },
+      "name": "model.layers.20.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 20
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 19.693197848364,
+      "delta_norm": 1.1471354825458384,
+      "delta_energy": 1.315919815315674,
+      "twin_delta_norm": 0.6820979399989707,
+      "singular_values": [
+        0.13836037132455434,
+        0.08704387119423229,
+        0.08586182629287188,
+        0.08381272341511442,
+        0.08216004021564614,
+        0.08189569545221745,
+        0.08102044333299446,
+        0.08086616490280016
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.019143592353068558,
+          "removed_energy_fraction": 0.014547689099488354,
+          "delta_residual_norm_ratio": 0.9926995068501404,
+          "weight_norm_ratio": 1.0000358596429353,
+          "twin_left_capture": 0.0005776350680863591,
+          "twin_right_capture": 0.00021816734643773832,
+          "twin_left_overlap": 0.0005760835670942274,
+          "twin_right_overlap": 0.00021633367245468395
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.02672022786554666,
+          "removed_energy_fraction": 0.020305361735993607,
+          "delta_residual_norm_ratio": 0.9897952506776371,
+          "weight_norm_ratio": 1.0001644615009753,
+          "twin_left_capture": 0.0046864342421326834,
+          "twin_right_capture": 0.006391736034251305,
+          "twin_left_overlap": 0.0048529178894284545,
+          "twin_right_overlap": 0.0032542134387281403
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.041117053686152434,
+          "removed_energy_fraction": 0.03124586559728104,
+          "delta_residual_norm_ratio": 0.9842530845279172,
+          "weight_norm_ratio": 1.0003409291321537,
+          "twin_left_capture": 0.005739986914027046,
+          "twin_right_capture": 0.006922517364452505,
+          "twin_left_overlap": 0.008379251912110718,
+          "twin_right_overlap": 0.00504906872930028
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06767787969195321,
+          "removed_energy_fraction": 0.051430093919300146,
+          "delta_residual_norm_ratio": 0.9739455354796281,
+          "weight_norm_ratio": 1.0007133835821234,
+          "twin_left_capture": 0.01214440412757776,
+          "twin_right_capture": 0.02587554944383028,
+          "twin_left_overlap": 0.01205710491628022,
+          "twin_right_overlap": 0.0128570796034908
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 4.85722573273506e-17,
+        "max_removed_energy_rel_error": 1.1813165821195248e-15,
+        "max_delta_remain_error": 1.1102230246251565e-16
+      },
+      "name": "model.layers.21.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 21
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 41.31419962914836,
+      "delta_norm": 2.9486024266994617,
+      "delta_energy": 8.694256270737952,
+      "twin_delta_norm": 1.2938819471925107,
+      "singular_values": [
+        0.15961852942857338,
+        0.14579806170875856,
+        0.14534345551663577,
+        0.14438835602635214,
+        0.14419021969415857,
+        0.14417162929794286,
+        0.1436530034495258,
+        0.1434436425314915
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.025478074936940345,
+          "removed_energy_fraction": 0.002930449039406773,
+          "delta_residual_norm_ratio": 0.9985337004631312,
+          "weight_norm_ratio": 1.000023964159397,
+          "twin_left_capture": 2.3042963615336746e-05,
+          "twin_right_capture": 0.0005477057857253571,
+          "twin_left_overlap": 2.0192670471770093e-05,
+          "twin_right_overlap": 0.0005486712387218615
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.04673514973497131,
+          "removed_energy_fraction": 0.0053754051272064144,
+          "delta_residual_norm_ratio": 0.9973086758234853,
+          "weight_norm_ratio": 1.000074347150431,
+          "twin_left_capture": 8.257147168864144e-05,
+          "twin_right_capture": 0.0006124537669099093,
+          "twin_left_overlap": 0.001763768135445013,
+          "twin_right_overlap": 0.0003082087608573028
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.0887078671524802,
+          "removed_energy_fraction": 0.010203042605385595,
+          "delta_residual_norm_ratio": 0.9948853991262582,
+          "weight_norm_ratio": 1.000178948241944,
+          "twin_left_capture": 0.002928936404310519,
+          "twin_right_capture": 0.0010564623559663844,
+          "twin_left_overlap": 0.004157488723964568,
+          "twin_right_overlap": 0.00046409757149304366
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.1714964092851252,
+          "removed_energy_fraction": 0.01972525354035474,
+          "delta_residual_norm_ratio": 0.9900882518541698,
+          "weight_norm_ratio": 1.000387826739824,
+          "twin_left_capture": 0.003680736513376596,
+          "twin_right_capture": 0.001651977136486655,
+          "twin_left_overlap": 0.008149904299761217,
+          "twin_right_overlap": 0.0012058292697355538
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.498001805406602e-16,
+        "max_removed_energy_rel_error": 1.4565913162960127e-15,
+        "max_delta_remain_error": 4.440892098500626e-16
+      },
+      "name": "model.layers.21.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 21
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 19.336636677659463,
+      "delta_norm": 1.167584109622348,
+      "delta_energy": 1.363252653042611,
+      "twin_delta_norm": 0.6168027839300145,
+      "singular_values": [
+        0.11830572585537077,
+        0.11024987981203346,
+        0.08930571529210056,
+        0.08568342905847712,
+        0.08457983142356189,
+        0.08356169079178107,
+        0.0829665377334348,
+        0.0826580893478776
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.013996244770166146,
+          "removed_energy_fraction": 0.010266801783901365,
+          "delta_residual_norm_ratio": 0.994853355131347,
+          "weight_norm_ratio": 1.0000561506183447,
+          "twin_left_capture": 0.0033580632822211645,
+          "twin_right_capture": 0.0007202580465891614,
+          "twin_left_overlap": 0.0033638189440485084,
+          "twin_right_overlap": 0.0007192208208797313
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.02615128076873397,
+          "removed_energy_fraction": 0.01918300375969748,
+          "delta_residual_norm_ratio": 0.9903620531100236,
+          "weight_norm_ratio": 1.0003877118424835,
+          "twin_left_capture": 0.006634295651101859,
+          "twin_right_capture": 0.0053552577821049585,
+          "twin_left_overlap": 0.005354323385278746,
+          "twin_right_overlap": 0.005600376702999923
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.04146844156778678,
+          "removed_energy_fraction": 0.03041874994721951,
+          "delta_residual_norm_ratio": 0.9846731691545068,
+          "weight_norm_ratio": 1.0006633558810416,
+          "twin_left_capture": 0.007448865141859722,
+          "twin_right_capture": 0.015836271968100994,
+          "twin_left_overlap": 0.016454027132136513,
+          "twin_right_overlap": 0.01079952053656084
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.06932055173752133,
+          "removed_energy_fraction": 0.05084937966766941,
+          "delta_residual_norm_ratio": 0.9742436144683376,
+          "weight_norm_ratio": 1.0011180472940266,
+          "twin_left_capture": 0.011793916517222234,
+          "twin_right_capture": 0.028482287688302788,
+          "twin_left_overlap": 0.019966105090478165,
+          "twin_right_overlap": 0.013995003501153735
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 1.1102230246251565e-16,
+        "max_removed_energy_rel_error": 1.6015784594862407e-15,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.22.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 22
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 41.7663574296978,
+      "delta_norm": 3.0312420045107307,
+      "delta_energy": 9.188428089910232,
+      "twin_delta_norm": 1.3173287381681165,
+      "singular_values": [
+        0.17523270041967653,
+        0.16726327341633385,
+        0.16025518237785172,
+        0.15671179162917465,
+        0.152858281771301,
+        0.1525142133548604,
+        0.1506408897437238,
+        0.14980510953734277
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.030706499296372106,
+          "removed_energy_fraction": 0.0033418664211009893,
+          "delta_residual_norm_ratio": 0.9983276684430319,
+          "weight_norm_ratio": 1.000013880088565,
+          "twin_left_capture": 2.1673410400524197e-05,
+          "twin_right_capture": 0.00022104627546090758,
+          "twin_left_overlap": 1.8771750326319882e-05,
+          "twin_right_overlap": 0.00022110308894707377
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.05868350193031936,
+          "removed_energy_fraction": 0.006386674777893667,
+          "delta_residual_norm_ratio": 0.9968015475620549,
+          "weight_norm_ratio": 1.0000598686501996,
+          "twin_left_capture": 0.00020499106057602352,
+          "twin_right_capture": 0.0002250833628411468,
+          "twin_left_overlap": 0.003202189525675664,
+          "twin_right_overlap": 0.00015091207713615787
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.10892381104490373,
+          "removed_energy_fraction": 0.011854455406198634,
+          "delta_residual_norm_ratio": 0.994055101387142,
+          "weight_norm_ratio": 1.0001887662273166,
+          "twin_left_capture": 0.006564988039273391,
+          "twin_right_capture": 0.0005468398033406431,
+          "twin_left_overlap": 0.010060249359454678,
+          "twin_right_overlap": 0.0009133375885484083
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.20068429913250607,
+          "removed_energy_fraction": 0.02184098271965327,
+          "delta_residual_norm_ratio": 0.9890192198740867,
+          "weight_norm_ratio": 1.000403144656248,
+          "twin_left_capture": 0.008868309954651597,
+          "twin_right_capture": 0.0020871361287787414,
+          "twin_left_overlap": 0.012580888720240721,
+          "twin_right_overlap": 0.0017854198343646888
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.220446049250313e-16,
+        "max_removed_energy_rel_error": 1.106437354017524e-15,
+        "max_delta_remain_error": 6.661338147750939e-16
+      },
+      "name": "model.layers.22.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 22
+    },
+    {
+      "shape": [
+        896,
+        896
+      ],
+      "instruct_norm": 18.268528272476313,
+      "delta_norm": 1.001338567564374,
+      "delta_energy": 1.0026789268918723,
+      "twin_delta_norm": 0.8285025487202425,
+      "singular_values": [
+        0.1242597049975861,
+        0.09708192888183151,
+        0.08208535708493897,
+        0.08054440949883165,
+        0.07744727796295112,
+        0.07632580402893842,
+        0.0742518706565175,
+        0.07363539102505622
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.015440474286087124,
+          "removed_energy_fraction": 0.015399220899106624,
+          "delta_residual_norm_ratio": 0.9922705170974766,
+          "weight_norm_ratio": 1.0000148393432278,
+          "twin_left_capture": 6.9275310945237184e-06,
+          "twin_right_capture": 0.0004998473924595683,
+          "twin_left_overlap": 5.36496701365343e-06,
+          "twin_right_overlap": 0.0004991135939403196
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.024865375201504114,
+          "removed_energy_fraction": 0.024798940652500184,
+          "delta_residual_norm_ratio": 0.987522688016584,
+          "weight_norm_ratio": 1.0005286033450576,
+          "twin_left_capture": 0.00021234977409983496,
+          "twin_right_capture": 0.02684374409487186,
+          "twin_left_overlap": 0.16000861790317278,
+          "twin_right_overlap": 0.014604113456826303
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.03809078295078154,
+          "removed_energy_fraction": 0.03798901316182663,
+          "delta_residual_norm_ratio": 0.9808215876693241,
+          "weight_norm_ratio": 1.0010263352185118,
+          "twin_left_capture": 0.0033315703646934034,
+          "twin_right_capture": 0.07898522648326627,
+          "twin_left_overlap": 0.10930317742439749,
+          "twin_right_overlap": 0.02507224961719276
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.0608500032827212,
+          "removed_energy_fraction": 0.060687426104930185,
+          "delta_residual_norm_ratio": 0.9691813937004102,
+          "weight_norm_ratio": 1.0017153323248427,
+          "twin_left_capture": 0.009055852541959925,
+          "twin_right_capture": 0.09584763251234668,
+          "twin_left_overlap": 0.12401624119526242,
+          "twin_right_overlap": 0.022483178309181517
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 8.326672684688674e-17,
+        "max_removed_energy_rel_error": 2.1860072279028408e-15,
+        "max_delta_remain_error": 2.220446049250313e-16
+      },
+      "name": "model.layers.23.self_attn.o_proj.weight",
+      "kind": "attn",
+      "layer": 23
+    },
+    {
+      "shape": [
+        896,
+        4864
+      ],
+      "instruct_norm": 37.32808258230122,
+      "delta_norm": 2.7346157880859443,
+      "delta_energy": 7.478123508448911,
+      "twin_delta_norm": 1.3001962479768192,
+      "singular_values": [
+        0.2692028488586168,
+        0.2509079789269466,
+        0.23840524840656172,
+        0.18690378961337678,
+        0.17809185127975777,
+        0.16676328235135765,
+        0.1592644897758071,
+        0.14598656725952516
+      ],
+      "curves": {
+        "1": {
+          "k": 1,
+          "removed_energy": 0.07247017383359527,
+          "removed_energy_fraction": 0.00969095706318801,
+          "delta_residual_norm_ratio": 0.995142724907745,
+          "weight_norm_ratio": 1.0000738448137287,
+          "twin_left_capture": 0.0005823973462383895,
+          "twin_right_capture": 0.00041680028188256226,
+          "twin_left_overlap": 0.0005780859764126981,
+          "twin_right_overlap": 0.00041724469200944144
+        },
+        "2": {
+          "k": 2,
+          "removed_energy": 0.13542498772280037,
+          "removed_energy_fraction": 0.01810948797111935,
+          "delta_residual_norm_ratio": 0.9909038863728816,
+          "weight_norm_ratio": 1.000233855757737,
+          "twin_left_capture": 0.0014595255866631752,
+          "twin_right_capture": 0.011251364156068736,
+          "twin_left_overlap": 0.0022210113485980486,
+          "twin_right_overlap": 0.0057940485656953694
+        },
+        "4": {
+          "k": 4,
+          "removed_energy": 0.2271950767624362,
+          "removed_energy_fraction": 0.030381295054266937,
+          "delta_residual_norm_ratio": 0.9846921879174902,
+          "weight_norm_ratio": 1.0002904288511014,
+          "twin_left_capture": 0.008164586568174047,
+          "twin_right_capture": 0.015247736355599945,
+          "twin_left_overlap": 0.20613294809440708,
+          "twin_right_overlap": 0.004208928688793964
+        },
+        "8": {
+          "k": 8,
+          "removed_energy": 0.3333990321190542,
+          "removed_energy_fraction": 0.04458324762119458,
+          "delta_residual_norm_ratio": 0.9774542200936095,
+          "weight_norm_ratio": 1.0004528498000447,
+          "twin_left_capture": 0.008601098687266216,
+          "twin_right_capture": 0.01672864462783833,
+          "twin_left_overlap": 0.12202932979588244,
+          "twin_right_overlap": 0.0031296663718667784
+        }
+      },
+      "checks": {
+        "max_removed_energy_error": 2.498001805406602e-16,
+        "max_removed_energy_rel_error": 1.148979261980002e-15,
+        "max_delta_remain_error": 5.551115123125783e-16
+      },
+      "name": "model.layers.23.mlp.down_proj.weight",
+      "kind": "ffn",
+      "layer": 23
+    }
+  ],
+  "caveats": [
+    "removal_measured is false: nothing here observes what the model answers.",
+    "The alignment delta also carries instruction-following, so a capability cost is expected and is NOT measured by this experiment.",
+    "twin_capture reads a public abliterated checkpoint as a weight-space proxy for the refusal-consistent component; it is not a refusal measurement, and the twin delta also contains that checkpoint's own fine-tuning and quantization.",
+    "Singular directions are statistical (largest delta energy), not causal; a direction being removed first does not make it a refusal direction.",
+    "The curve is the result. Any k below is a displayed point on it, not a behaviourally validated winner."
+  ],
+  "seconds": 40.7
+}

@@ -1,0 +1,1571 @@
+{
+  "schema": "jdewitt-alignment-apply-v1",
+  "removal_measured": false,
+  "source": {
+    "path": "/home/dario/alignment-exp/downloads/iq3m/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+    "bytes": 342752576,
+    "tensors": 290,
+    "header_sha256": "5898b9ea71410518f507f22c148c689e150d03def7f3ceb901c69012667666a2"
+  },
+  "deltas": {
+    "dir": "/home/dario/alignment-exp/deltas",
+    "k": 8,
+    "tensors": 48,
+    "selection": {
+      "k": 8,
+      "feasible": true,
+      "residual_floor": 0.95,
+      "rule": "max twin_capture (left+right) subject to weight_norm_ratio >= floor",
+      "twin_capture": 0.032378123732463765,
+      "weight_norm_ratio": 1.0006000770939691,
+      "removed_energy_fraction": 0.0262042429947302,
+      "delta_residual_norm_ratio": 0.9868109023542807
+    },
+    "names": [
+      "blk.0.attn_output.weight",
+      "blk.0.ffn_down.weight",
+      "blk.1.attn_output.weight",
+      "blk.1.ffn_down.weight",
+      "blk.10.attn_output.weight",
+      "blk.10.ffn_down.weight",
+      "blk.11.attn_output.weight",
+      "blk.11.ffn_down.weight",
+      "blk.12.attn_output.weight",
+      "blk.12.ffn_down.weight",
+      "blk.13.attn_output.weight",
+      "blk.13.ffn_down.weight",
+      "blk.14.attn_output.weight",
+      "blk.14.ffn_down.weight",
+      "blk.15.attn_output.weight",
+      "blk.15.ffn_down.weight",
+      "blk.16.attn_output.weight",
+      "blk.16.ffn_down.weight",
+      "blk.17.attn_output.weight",
+      "blk.17.ffn_down.weight",
+      "blk.18.attn_output.weight",
+      "blk.18.ffn_down.weight",
+      "blk.19.attn_output.weight",
+      "blk.19.ffn_down.weight",
+      "blk.2.attn_output.weight",
+      "blk.2.ffn_down.weight",
+      "blk.20.attn_output.weight",
+      "blk.20.ffn_down.weight",
+      "blk.21.attn_output.weight",
+      "blk.21.ffn_down.weight",
+      "blk.22.attn_output.weight",
+      "blk.22.ffn_down.weight",
+      "blk.23.attn_output.weight",
+      "blk.23.ffn_down.weight",
+      "blk.3.attn_output.weight",
+      "blk.3.ffn_down.weight",
+      "blk.4.attn_output.weight",
+      "blk.4.ffn_down.weight",
+      "blk.5.attn_output.weight",
+      "blk.5.ffn_down.weight",
+      "blk.6.attn_output.weight",
+      "blk.6.ffn_down.weight",
+      "blk.7.attn_output.weight",
+      "blk.7.ffn_down.weight",
+      "blk.8.attn_output.weight",
+      "blk.8.ffn_down.weight",
+      "blk.9.attn_output.weight",
+      "blk.9.ffn_down.weight"
+    ]
+  },
+  "tokenizer": {
+    "digest": "494eeb7f31859e54f3a606e97bb99b823c5eafd631ffe42bec1802d362198ffb",
+    "field_counts": {
+      "tokenizer.ggml.add_bos_token": 1,
+      "tokenizer.ggml.bos_token_id": 1,
+      "tokenizer.ggml.eos_token_id": 1,
+      "tokenizer.ggml.merges": 151387,
+      "tokenizer.ggml.model": 1,
+      "tokenizer.ggml.padding_token_id": 1,
+      "tokenizer.ggml.pre": 1,
+      "tokenizer.ggml.token_type": 151936,
+      "tokenizer.ggml.tokens": 151936
+    }
+  },
+  "arms": {
+    "inplace_preserve_codec": {
+      "artifact_sha256": "ef7d2e67663bc36b06402807510d72d228030264312471e6db1da99e0e96bca3",
+      "header_sha256": "5898b9ea71410518f507f22c148c689e150d03def7f3ceb901c69012667666a2",
+      "metadata_bytes_identical": true,
+      "tokenizer_identical": true,
+      "patched_tensors": 27,
+      "skipped_tensors": [
+        {
+          "name": "blk.11.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.12.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.13.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.14.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.15.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.16.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.17.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.18.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.19.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.2.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.20.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.21.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.22.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.23.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.3.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.4.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.5.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.6.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.7.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.8.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        },
+        {
+          "name": "blk.9.ffn_down.weight",
+          "dtype": "IQ3_S",
+          "reason": "IQ3_S encoder is the slow path; covered by the re-encode arm"
+        }
+      ],
+      "skipped_count": 21,
+      "tensors_changed": 27,
+      "changed_blocks_total": 623846,
+      "revert_sidecar_bytes": 20452144,
+      "per_tensor": [
+        {
+          "tensor": "blk.0.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24785,
+          "rms_delta": 0.00047691564497877705,
+          "relative_rms_delta": 2.770175071704768
+        },
+        {
+          "tensor": "blk.0.ffn_down.weight",
+          "dtype": "Q4_K",
+          "blocks": 17024,
+          "changed_blocks": 16124,
+          "rms_delta": 0.0002235931528704616,
+          "relative_rms_delta": 0.6800426018452549
+        },
+        {
+          "tensor": "blk.1.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24264,
+          "rms_delta": 0.0002728434994394281,
+          "relative_rms_delta": 1.2402160320975035
+        },
+        {
+          "tensor": "blk.1.ffn_down.weight",
+          "dtype": "Q4_K",
+          "blocks": 17024,
+          "changed_blocks": 16284,
+          "rms_delta": 0.00019472389390623766,
+          "relative_rms_delta": 0.6752638967270755
+        },
+        {
+          "tensor": "blk.10.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23554,
+          "rms_delta": 0.00024174619897987558,
+          "relative_rms_delta": 0.7316179574648455
+        },
+        {
+          "tensor": "blk.10.ffn_down.weight",
+          "dtype": "Q4_K",
+          "blocks": 17024,
+          "changed_blocks": 16128,
+          "rms_delta": 0.00021106160049981336,
+          "relative_rms_delta": 0.6844098760297262
+        },
+        {
+          "tensor": "blk.11.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23926,
+          "rms_delta": 0.0005875481431392245,
+          "relative_rms_delta": 1.9371213952170319
+        },
+        {
+          "tensor": "blk.12.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23779,
+          "rms_delta": 0.0002456811707896202,
+          "relative_rms_delta": 0.7695517094881135
+        },
+        {
+          "tensor": "blk.13.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23902,
+          "rms_delta": 0.00023817924242091492,
+          "relative_rms_delta": 0.7867259088396084
+        },
+        {
+          "tensor": "blk.14.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23554,
+          "rms_delta": 0.00019162902659649008,
+          "relative_rms_delta": 0.5707148393067455
+        },
+        {
+          "tensor": "blk.15.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23769,
+          "rms_delta": 0.00029080568240485603,
+          "relative_rms_delta": 0.8951088907071255
+        },
+        {
+          "tensor": "blk.16.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23867,
+          "rms_delta": 0.00028012688721569323,
+          "relative_rms_delta": 0.7434596399053907
+        },
+        {
+          "tensor": "blk.17.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24058,
+          "rms_delta": 0.00028902468643429046,
+          "relative_rms_delta": 0.8038712126452872
+        },
+        {
+          "tensor": "blk.18.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24033,
+          "rms_delta": 0.00028764448567231463,
+          "relative_rms_delta": 0.7543268959308511
+        },
+        {
+          "tensor": "blk.19.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24131,
+          "rms_delta": 0.0002627709609202882,
+          "relative_rms_delta": 0.800331841884404
+        },
+        {
+          "tensor": "blk.2.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24059,
+          "rms_delta": 0.0002400186911579765,
+          "relative_rms_delta": 1.0510402176444014
+        },
+        {
+          "tensor": "blk.20.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24094,
+          "rms_delta": 0.00027379385974113824,
+          "relative_rms_delta": 0.6173225573912563
+        },
+        {
+          "tensor": "blk.21.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24076,
+          "rms_delta": 0.00029034568782838844,
+          "relative_rms_delta": 0.6058979035652738
+        },
+        {
+          "tensor": "blk.22.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23893,
+          "rms_delta": 0.00029384817424237057,
+          "relative_rms_delta": 0.6308181261565352
+        },
+        {
+          "tensor": "blk.23.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24006,
+          "rms_delta": 0.00027531019136658715,
+          "relative_rms_delta": 0.662277478983304
+        },
+        {
+          "tensor": "blk.3.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24100,
+          "rms_delta": 0.0002643763656663949,
+          "relative_rms_delta": 1.0092181005751832
+        },
+        {
+          "tensor": "blk.4.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23922,
+          "rms_delta": 0.00025734839752860527,
+          "relative_rms_delta": 0.8172786204083776
+        },
+        {
+          "tensor": "blk.5.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23927,
+          "rms_delta": 0.0002507089996568165,
+          "relative_rms_delta": 0.7764489099428641
+        },
+        {
+          "tensor": "blk.6.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24000,
+          "rms_delta": 0.0002552231385111713,
+          "relative_rms_delta": 0.836708721524761
+        },
+        {
+          "tensor": "blk.7.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 24052,
+          "rms_delta": 0.0002296067697887581,
+          "relative_rms_delta": 0.7207438078838491
+        },
+        {
+          "tensor": "blk.8.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23838,
+          "rms_delta": 0.00022519717571832732,
+          "relative_rms_delta": 0.7614244200818916
+        },
+        {
+          "tensor": "blk.9.attn_output.weight",
+          "dtype": "Q5_0",
+          "blocks": 25088,
+          "changed_blocks": 23721,
+          "rms_delta": 0.00032998143844667753,
+          "relative_rms_delta": 1.1708764083563539
+        }
+      ],
+      "untouched": {
+        "tensors_before": 290,
+        "tensors_after": 290,
+        "untouched_count": 263,
+        "bit_identical": 263,
+        "value_differs": 27,
+        "differing_count": 27,
+        "differing_outside_edit_set": [],
+        "only_in_before": [],
+        "only_in_after": [],
+        "untouched_all_bit_identical": true,
+        "rel_rms": {
+          "n": 27,
+          "min": 0.007987,
+          "median": 0.025135,
+          "max": 0.042745
+        },
+        "differing_tensors": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.042745,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.11.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.041615,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.9.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.030726,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.1.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.027091,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.15.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.026772,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.3.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.026634,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.2.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025925,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.6.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025705,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.16.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025447,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.18.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025387,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.10.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025336,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.17.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025281,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.4.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025237,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025135,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.5.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.025003,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.8.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024902,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.19.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024856,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.12.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024722,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.7.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024622,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.23.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024578,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.22.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024452,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.21.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024299,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.20.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.024099,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.14.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "Q5_0",
+            "rel_rms": 0.023545,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "Q4_K",
+            "rel_rms": 0.009244,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.10.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "Q4_K",
+            "rel_rms": 0.008766,
+            "same_dtype": true
+          },
+          {
+            "name": "blk.1.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "Q4_K",
+            "rel_rms": 0.007987,
+            "same_dtype": true
+          }
+        ]
+      },
+      "fidelity": {
+        "tensors": 27,
+        "cos_min": 0.0618,
+        "cos_mean": 0.2828,
+        "cos_median": 0.255,
+        "cos_max": 0.7628,
+        "snr_median": 0.57,
+        "norm_ratio_median": 1.7402,
+        "per_tensor": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "cos": 0.6498,
+            "norm_ratio": 1.176,
+            "snr": 1.082
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "cos": 0.0713,
+            "norm_ratio": 0.7497,
+            "snr": 0.829
+          },
+          {
+            "name": "blk.1.attn_output.weight",
+            "cos": 0.3554,
+            "norm_ratio": 1.4727,
+            "snr": 0.686
+          },
+          {
+            "name": "blk.1.ffn_down.weight",
+            "cos": 0.0618,
+            "norm_ratio": 0.6966,
+            "snr": 0.845
+          },
+          {
+            "name": "blk.10.attn_output.weight",
+            "cos": 0.286,
+            "norm_ratio": 1.9051,
+            "snr": 0.532
+          },
+          {
+            "name": "blk.10.ffn_down.weight",
+            "cos": 0.1015,
+            "norm_ratio": 0.7294,
+            "snr": 0.85
+          },
+          {
+            "name": "blk.11.attn_output.weight",
+            "cos": 0.7628,
+            "norm_ratio": 1.2335,
+            "snr": 1.25
+          },
+          {
+            "name": "blk.12.attn_output.weight",
+            "cos": 0.2517,
+            "norm_ratio": 1.798,
+            "snr": 0.548
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "cos": 0.2661,
+            "norm_ratio": 1.8361,
+            "snr": 0.543
+          },
+          {
+            "name": "blk.14.attn_output.weight",
+            "cos": 0.1729,
+            "norm_ratio": 2.2514,
+            "snr": 0.435
+          },
+          {
+            "name": "blk.15.attn_output.weight",
+            "cos": 0.3686,
+            "norm_ratio": 1.6593,
+            "snr": 0.629
+          },
+          {
+            "name": "blk.16.attn_output.weight",
+            "cos": 0.2914,
+            "norm_ratio": 1.7633,
+            "snr": 0.57
+          },
+          {
+            "name": "blk.17.attn_output.weight",
+            "cos": 0.2477,
+            "norm_ratio": 1.6586,
+            "snr": 0.584
+          },
+          {
+            "name": "blk.18.attn_output.weight",
+            "cos": 0.269,
+            "norm_ratio": 1.7234,
+            "snr": 0.573
+          },
+          {
+            "name": "blk.19.attn_output.weight",
+            "cos": 0.2529,
+            "norm_ratio": 1.714,
+            "snr": 0.571
+          },
+          {
+            "name": "blk.2.attn_output.weight",
+            "cos": 0.2893,
+            "norm_ratio": 1.6323,
+            "snr": 0.606
+          },
+          {
+            "name": "blk.20.attn_output.weight",
+            "cos": 0.2079,
+            "norm_ratio": 1.8537,
+            "snr": 0.522
+          },
+          {
+            "name": "blk.21.attn_output.weight",
+            "cos": 0.202,
+            "norm_ratio": 1.832,
+            "snr": 0.526
+          },
+          {
+            "name": "blk.22.attn_output.weight",
+            "cos": 0.2549,
+            "norm_ratio": 1.796,
+            "snr": 0.55
+          },
+          {
+            "name": "blk.23.attn_output.weight",
+            "cos": 0.255,
+            "norm_ratio": 1.8202,
+            "snr": 0.544
+          },
+          {
+            "name": "blk.3.attn_output.weight",
+            "cos": 0.29,
+            "norm_ratio": 1.6306,
+            "snr": 0.607
+          },
+          {
+            "name": "blk.4.attn_output.weight",
+            "cos": 0.2474,
+            "norm_ratio": 1.7402,
+            "snr": 0.562
+          },
+          {
+            "name": "blk.5.attn_output.weight",
+            "cos": 0.2369,
+            "norm_ratio": 1.792,
+            "snr": 0.545
+          },
+          {
+            "name": "blk.6.attn_output.weight",
+            "cos": 0.2647,
+            "norm_ratio": 1.759,
+            "snr": 0.562
+          },
+          {
+            "name": "blk.7.attn_output.weight",
+            "cos": 0.1861,
+            "norm_ratio": 1.914,
+            "snr": 0.503
+          },
+          {
+            "name": "blk.8.attn_output.weight",
+            "cos": 0.2612,
+            "norm_ratio": 1.9017,
+            "snr": 0.525
+          },
+          {
+            "name": "blk.9.attn_output.weight",
+            "cos": 0.5319,
+            "norm_ratio": 1.5632,
+            "snr": 0.749
+          }
+        ],
+        "note": "realized codec fidelity (dequant(edited) - dequant(source) against the intended delta); it is not a removal or capability measurement"
+      },
+      "revert": {
+        "artifact": "/home/dario/alignment-exp/work/inplace.gguf",
+        "sidecar": "/home/dario/alignment-exp/work/inplace.revert.npz",
+        "tiles_restored": 27,
+        "restored_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+        "patched_sha256": "ef7d2e67663bc36b06402807510d72d228030264312471e6db1da99e0e96bca3",
+        "source_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+        "byte_exact": true
+      }
+    },
+    "out_of_place_f16": {
+      "artifact_sha256": "2cfcdaf447728e45f728bbc9ea853b70dd640febb63cae742027cb414fcb11ee",
+      "header_sha256": "9fc0948b1b693e4888d850914f3326902a9949121429be60d464d69d158360c1",
+      "metadata_bytes_identical": false,
+      "tokenizer_identical": true,
+      "bytes_in": 342752576,
+      "bytes_out": 530554400,
+      "fingerprint": {
+        "edit_sha256": "e3b0c44298fc1c149afbf4c8996fb924",
+        "layers": [],
+        "axis_norm_by_layer": {},
+        "edited": 48,
+        "untouched": 242,
+        "scale": 1.0,
+        "axis_space": "output",
+        "edit_type": "F16",
+        "edit_type_per_tensor": {
+          "blk.0.ffn_down.weight": "F16",
+          "blk.0.attn_output.weight": "F16",
+          "blk.1.ffn_down.weight": "F16",
+          "blk.1.attn_output.weight": "F16",
+          "blk.10.ffn_down.weight": "F16",
+          "blk.10.attn_output.weight": "F16",
+          "blk.11.ffn_down.weight": "F16",
+          "blk.11.attn_output.weight": "F16",
+          "blk.12.ffn_down.weight": "F16",
+          "blk.12.attn_output.weight": "F16",
+          "blk.13.ffn_down.weight": "F16",
+          "blk.13.attn_output.weight": "F16",
+          "blk.14.ffn_down.weight": "F16",
+          "blk.14.attn_output.weight": "F16",
+          "blk.15.ffn_down.weight": "F16",
+          "blk.15.attn_output.weight": "F16",
+          "blk.16.ffn_down.weight": "F16",
+          "blk.16.attn_output.weight": "F16",
+          "blk.17.ffn_down.weight": "F16",
+          "blk.17.attn_output.weight": "F16",
+          "blk.18.ffn_down.weight": "F16",
+          "blk.18.attn_output.weight": "F16",
+          "blk.19.ffn_down.weight": "F16",
+          "blk.19.attn_output.weight": "F16",
+          "blk.2.ffn_down.weight": "F16",
+          "blk.2.attn_output.weight": "F16",
+          "blk.20.ffn_down.weight": "F16",
+          "blk.20.attn_output.weight": "F16",
+          "blk.21.ffn_down.weight": "F16",
+          "blk.21.attn_output.weight": "F16",
+          "blk.22.ffn_down.weight": "F16",
+          "blk.22.attn_output.weight": "F16",
+          "blk.23.ffn_down.weight": "F16",
+          "blk.23.attn_output.weight": "F16",
+          "blk.3.ffn_down.weight": "F16",
+          "blk.3.attn_output.weight": "F16",
+          "blk.4.ffn_down.weight": "F16",
+          "blk.4.attn_output.weight": "F16",
+          "blk.5.ffn_down.weight": "F16",
+          "blk.5.attn_output.weight": "F16",
+          "blk.6.ffn_down.weight": "F16",
+          "blk.6.attn_output.weight": "F16",
+          "blk.7.ffn_down.weight": "F16",
+          "blk.7.attn_output.weight": "F16",
+          "blk.8.ffn_down.weight": "F16",
+          "blk.8.attn_output.weight": "F16",
+          "blk.9.ffn_down.weight": "F16",
+          "blk.9.attn_output.weight": "F16"
+        },
+        "repair": {
+          "mode": "none",
+          "tensors": [],
+          "scale_min": null,
+          "scale_max": null,
+          "norms": [],
+          "clamp": null,
+          "clamp_hits": 0
+        }
+      },
+      "untouched_block": {
+        "verified": true,
+        "checked": 242,
+        "mismatched": [],
+        "missing": []
+      },
+      "untouched": {
+        "tensors_before": 290,
+        "tensors_after": 290,
+        "untouched_count": 242,
+        "bit_identical": 242,
+        "value_differs": 0,
+        "differing_count": 48,
+        "differing_outside_edit_set": [],
+        "only_in_before": [],
+        "only_in_after": [],
+        "untouched_all_bit_identical": true,
+        "rel_rms": {
+          "n": 0
+        },
+        "differing_tensors": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.1.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.1.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.10.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.10.ffn_down.weight",
+            "dtype_before": "Q4_K",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.11.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.11.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.12.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.12.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.13.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.14.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.14.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.15.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.15.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.16.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.16.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.17.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.17.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.18.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.18.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.19.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.19.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.2.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.2.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.20.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.20.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.21.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.21.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.22.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.22.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.23.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.23.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.3.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.3.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.4.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.4.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.5.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.5.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.6.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.6.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.7.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.7.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.8.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.8.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.9.attn_output.weight",
+            "dtype_before": "Q5_0",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (32x25088 vs 1x802816) or a tensor is not block-aligned"
+          },
+          {
+            "name": "blk.9.ffn_down.weight",
+            "dtype_before": "IQ3_S",
+            "dtype_after": "F16",
+            "rel_rms": null,
+            "note": "block grids differ (256x17024 vs 1x4358144) or a tensor is not block-aligned"
+          }
+        ]
+      },
+      "fidelity": {
+        "tensors": 48,
+        "cos_min": 0.9998,
+        "cos_mean": 0.9999,
+        "cos_median": 0.9999,
+        "cos_max": 1.0,
+        "snr_median": 62.1,
+        "norm_ratio_median": 1.0001,
+        "per_tensor": [
+          {
+            "name": "blk.0.attn_output.weight",
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "snr": 175.231
+          },
+          {
+            "name": "blk.0.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 59.457
+          },
+          {
+            "name": "blk.1.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 88.706
+          },
+          {
+            "name": "blk.1.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 55.211
+          },
+          {
+            "name": "blk.10.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 64.153
+          },
+          {
+            "name": "blk.10.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 58.004
+          },
+          {
+            "name": "blk.11.attn_output.weight",
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "snr": 163.129
+          },
+          {
+            "name": "blk.11.ffn_down.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 59.412
+          },
+          {
+            "name": "blk.12.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 66.361
+          },
+          {
+            "name": "blk.12.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0001,
+            "snr": 55.619
+          },
+          {
+            "name": "blk.13.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 66.047
+          },
+          {
+            "name": "blk.13.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 53.276
+          },
+          {
+            "name": "blk.14.attn_output.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 50.55
+          },
+          {
+            "name": "blk.14.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 53.049
+          },
+          {
+            "name": "blk.15.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 77.646
+          },
+          {
+            "name": "blk.15.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 51.156
+          },
+          {
+            "name": "blk.16.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 69.647
+          },
+          {
+            "name": "blk.16.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 50.6
+          },
+          {
+            "name": "blk.17.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 73.682
+          },
+          {
+            "name": "blk.17.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 51.293
+          },
+          {
+            "name": "blk.18.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 71.073
+          },
+          {
+            "name": "blk.18.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 51.14
+          },
+          {
+            "name": "blk.19.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 69.978
+          },
+          {
+            "name": "blk.19.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 48.042
+          },
+          {
+            "name": "blk.2.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 76.665
+          },
+          {
+            "name": "blk.2.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0003,
+            "snr": 47.15
+          },
+          {
+            "name": "blk.20.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 62.798
+          },
+          {
+            "name": "blk.20.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 46.223
+          },
+          {
+            "name": "blk.21.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 64.116
+          },
+          {
+            "name": "blk.21.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 47.227
+          },
+          {
+            "name": "blk.22.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 65.823
+          },
+          {
+            "name": "blk.22.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 50.411
+          },
+          {
+            "name": "blk.23.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0002,
+            "snr": 65.262
+          },
+          {
+            "name": "blk.23.ffn_down.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 73.114
+          },
+          {
+            "name": "blk.3.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 78.826
+          },
+          {
+            "name": "blk.3.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 49.434
+          },
+          {
+            "name": "blk.4.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 69.882
+          },
+          {
+            "name": "blk.4.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 48.971
+          },
+          {
+            "name": "blk.5.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 67.255
+          },
+          {
+            "name": "blk.5.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 49.141
+          },
+          {
+            "name": "blk.6.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 70.54
+          },
+          {
+            "name": "blk.6.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 48.365
+          },
+          {
+            "name": "blk.7.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 62.1
+          },
+          {
+            "name": "blk.7.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 50.252
+          },
+          {
+            "name": "blk.8.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0001,
+            "snr": 63.233
+          },
+          {
+            "name": "blk.8.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 52.017
+          },
+          {
+            "name": "blk.9.attn_output.weight",
+            "cos": 0.9999,
+            "norm_ratio": 1.0,
+            "snr": 94.999
+          },
+          {
+            "name": "blk.9.ffn_down.weight",
+            "cos": 0.9998,
+            "norm_ratio": 1.0002,
+            "snr": 54.763
+          }
+        ],
+        "note": "realized codec fidelity (dequant(edited) - dequant(source) against the intended delta); it is not a removal or capability measurement"
+      }
+    }
+  },
+  "checks": {
+    "inplace_untouched_all_bit_identical": true,
+    "inplace_metadata_identical": true,
+    "inplace_tokenizer_identical": true,
+    "inplace_revert_byte_exact": true,
+    "inplace_covers_all_deltas": false,
+    "reencode_untouched_all_bit_identical": true,
+    "reencode_tokenizer_identical": true,
+    "reencode_untouched_claimed": true
+  },
+  "caveats": [
+    "removal_measured is false: no serve, no capture, no wave, no benchmark.",
+    "Realized cos is codec fidelity (did the tile store the intended delta), not removal.",
+    "The alignment delta also carries instruction-following; a capability cost is expected and unmeasured."
+  ]
+}
