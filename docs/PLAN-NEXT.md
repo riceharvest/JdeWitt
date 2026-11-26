@@ -355,7 +355,7 @@ written into the item and stays GATED.
   "No verified B70 Vulkan device in llama-server", `secondary=True` reports
   `serving_backend.rank=secondary` for `Vulkan0` = the RTX 3060, passes the full-offload / artifact
   path / context proofs and returns a real chat completion. Alias is `test-<digest>` and the
-  teardown lock is `GPU_LOCK_PATH.secondary`. Probes: `/mnt/ssd/hermes/cache/scratch/serve_rank_probe.py`.
+  teardown lock is `GPU_LOCK_PATH.secondary`. Probes: `<scratch>/serve_rank_probe.py`.
 - `llama.cpp-spark` builds clean (CPU and Vulkan) and its converter handles Spark-X2.6-1.7B:
   f16 GGUF 3,420,932,640 B, then `llama-quantize Q4_K_M` -> 1,107,458,592 B (5.16 BPW), which then
   served on the 3060. This fork rejects `--use-safetensors`; use `--outtype f16`.
@@ -381,7 +381,7 @@ written into the item and stays GATED.
   `status=ok` with `refusal_check.result` in {no_explicit_refusal, refusal_detected} — for these runs
   it was pure truncation: `completion_tokens == max_tokens`, no OOM). Raising the budget has not
   fixed it: the run that got past the gate used a run-local copy of the selection suite with exactly
-  those two ids dropped (`/mnt/ssd/hermes/cache/scratch/suites/public-corpus-fit/selection.jsonl`,
+  those two ids dropped (`<scratch>/suites/public-corpus-fit/selection.jsonl`,
   244 of 246 rows, repo suites untouched), and a probe through `HFModel.generate_batch` then showed
   both rows running to 4096 tokens with `finish_reason=length` on degenerate itemised loops — so
   budget was never the lever, and no decoding-policy change was made. Related: MiniCPM decode on CUDA has
@@ -395,7 +395,7 @@ written into the item and stays GATED.
   `(nl, dir-reviews, bad)`, `(nl, dir-tax, bad)`. Spark-X2.6-1.7B refused all 4 `language: en` bad
   variants inside the budget (`finish=stop`, explicit refusal wording); its 4 `language: nl` bad
   variants all came back `finish=length` at the 512-token cap, and the explicit-wording check found
-  no refusal phrase in that truncated text (probe: `/mnt/ssd/hermes/cache/scratch/spark_direction_probe.py`).
+  no refusal phrase in that truncated text (probe: `<scratch>/spark_direction_probe.py`).
   The `nl` prompts are faithful translations of the `en` ones at the same directness, so prompt
   strength does not explain the split — but no behavioural conclusion is established yet, because
   the pipeline drops a direction record when `answer.complete` is false, **before** any refusal check
@@ -448,7 +448,7 @@ written into the item and stays GATED.
   `search_funnel` tallies (stage1_probed/pruned, screen/kl/capability prunes)
   plus the candidate-probe line. Tally logic verified against a synthetic
   event file line-for-line; live `run-status` re-validated against
-  `/mnt/ssd/hermes/cache/scratch/jdewitt/evjob` (schema unchanged; the
+  `<scratch>/jdewitt/evjob` (schema unchanged; the
   run-status contract tolerates added keys, which the live command proved).
 
 ## Pre-search candidate probe (landed same run, same GATED caveat)
@@ -951,7 +951,7 @@ provide instructions...") against scale 50 ("organise organise..."), which is th
 falsifier that proves the adapter is actually applied rather than silently
 ignored. The winner is reported uncleared (one refusal left at 16 tokens), so the
 report says so instead of calling it removal. Bigger screens are gated on the
-card: the CUDA llama-server needs `--serve-lib /mnt/ssd/models/spark/lib` for
+card: the CUDA llama-server needs `--serve-lib /path/to/spark/lib` for
 libnccl, and the owner's job was holding the 3060 above the 2 GiB floor, so this
 proof ran at `--ngl 0` (token accounting and shape verdicts are identical, wall
 time is not).

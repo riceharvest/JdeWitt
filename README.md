@@ -94,7 +94,7 @@ Currently checkable in a fresh clone:
 - **Qwen3-4B at the pinned cert config: the REFIT is a removal loss, and it is the
   row.** The layer-floor sweep's matching candidate — shared axis, both targets, scale
   1.5 over blk.15–35 (`q3-4b-f15s15-l935`) — was a banked axis read at `-c 8192`, and
-  its axis file and capture records died with `/mnt/ssd/hermes`. What ships now is a
+  its axis file and capture records died with the lab's scratch volume. What ships now is a
   **REFIT** of that recipe, never the banked plan; the banked 8192 readings are kept as
   a retired config under `verification/releases/qwen3-4b-f15s15-l935/` and are not
   re-measurable. Refit at the pinned `-c 4096 --parallel 4`, cap 1024, temperature 0,

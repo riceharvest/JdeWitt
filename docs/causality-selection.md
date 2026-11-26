@@ -65,7 +65,7 @@ mean drop on harmless rows.
 **Command** (P4d; the other two footprints differ only in `--footprints`/`--out`):
 
 ```sh
-python -m jdewitt.margin score --model /mnt/ssd/models/Spark-X2.6-1.7B \
+python -m jdewitt.margin score --model /path/to/Spark-X2.6-1.7B \
   --records runs/p4/records.pt --axis-file runs/p4/axes-contrast.pt \
   --footprints 0-27 --out runs/p4/margin_scores-full.json --trust-remote-code
 ```
@@ -256,7 +256,7 @@ Interpreters and paths as in `verification/p4f/README.md`. From the worktree roo
 python -m jdewitt.spanfit layers --records runs/p4/records.pt --out runs/p4/layer_scores.json
 python -m jdewitt.rdo fit --records runs/p4/records-rdo-none.pt --holdout none \
   --out runs/p4/axes-rdo.pt --report runs/p4/axes-rdo-report.json
-python -m jdewitt.margin score --model /mnt/ssd/models/Spark-X2.6-1.7B \
+python -m jdewitt.margin score --model /path/to/Spark-X2.6-1.7B \
   --records runs/p4/records.pt --axis-file runs/p4/axes-contrast.pt \
   --footprints 0-27 --out runs/p4/margin_scores-full.json --trust-remote-code
 python scripts/p4f_selection.py --root . --out runs/p4/selection.json

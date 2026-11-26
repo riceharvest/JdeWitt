@@ -47,9 +47,9 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - quant: Q4_K_M
 - artifact sha256: `de4d61b3552a99aecab9f90e8198d2d07f445f872f3f47d1e426761572ae27ef`
 - serve argv (pinned cert config):
-  - removal: `-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
-  - held_out: `-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
-  - retention: `-m /mnt/ssd/p7-minicpm/minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
+  - removal: `-m minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
+  - held_out: `-m minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
+  - retention: `-m minicpm-v47-refit-perlayer-s1.0-Q4_K_M.gguf -c 4096 --parallel 4 --device Vulkan0 --jinja --no-webui --host 127.0.0.1 --port 8134`
 - removal harmful-40 (shipped / wide): 38/38 / 38/38
 - removal held-out 120 (shipped / wide): 103/103 / 103/103
 - shape verdicts: declines_flatly 21, hedged_outline 2, other 48, pivot_with_procedure 7, procedural_no_decline 82
@@ -70,9 +70,9 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - quant: Q8_0
 - artifact sha256: `584ec48f9a05a9f3914213a420ee75e643b4e9b98dd7586fcb6ea566189b787b`
 - serve argv (head-to-head, same config on both sides):
-  - removal: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
-  - held_out: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
-  - retention: `-m /mnt/ssd/models/p7-q25-15b/artifacts/arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+  - removal: `-m arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+  - held_out: `-m arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
+  - retention: `-m arm-refit-q8.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8141`
 - removal harmful-40 (shipped / wide): 25/40 / 25/40
 - removal held-out 120 (shipped / wide): 87/120 / 84/120
 - shape verdicts: declines_flatly 29, hedged_outline 7, other 101, pivot_no_procedure 2, procedural_no_decline 5, refusal_with_opener 16
@@ -93,9 +93,9 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - quant: Q8_0
 - artifact sha256: `8615be642778f2d4cd47f3582b10b9f592ba445840fd3718c181ec9a5a5c0494`
 - serve argv (head-to-head, same config on both sides):
-  - removal: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
-  - held_out: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
-  - retention: `-m /mnt/ssd/hermes/models/q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+  - removal: `-m q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+  - held_out: `-m q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
+  - retention: `-m q3-4b-f15s15-l935-refit.gguf -c 4096 --parallel 4 --jinja --no-webui --host 127.0.0.1 --port 8134 -ngl 99 --max-tokens 1024`
 - removal harmful-40 (shipped / wide): 5/38 / 3/38
 - removal held-out 120 (shipped / wide): 46/112 / 30/112
 - shape verdicts: declines_flatly 16, hedged_outline 29, other 5, pivot_no_procedure 1, pivot_with_procedure 11, procedural_no_decline 4, refusal_with_opener 94
@@ -116,9 +116,9 @@ Rows are sorted by lineage. A cell with no packet is `-` here and named again un
 - quant: Q4_K_M
 - artifact sha256: `c8d34cb82cd2b6a6efb74c870706a9537cc14a3fed57e2572049257051bde15c`
 - serve argv (pinned cert config):
-  - removal: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
-  - held_out: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
-  - retention: `-m /mnt/ssd/models/Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024`
+  - removal: `-m Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
+  - held_out: `-m Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=4096`
+  - retention: `-m Spark-X2.6-1.7B-Q4_K_M.p7-arm.gguf --host 127.0.0.1 --port 8141 -c 4096 --parallel 4 -dev Vulkan1 -ngl 999 --split-mode none --jinja --no-webui --temp 0 max_tokens=1024`
 - removal harmful-40 (shipped / wide): 12/15 / 9/15
 - removal held-out 120 (shipped / wide): 29/40 / 18/40
 - shape verdicts: declines_flatly 28, hedged_outline 6, other 7, pivot_with_procedure 22, procedural_no_decline 63, refusal_with_opener 34

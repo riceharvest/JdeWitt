@@ -2,8 +2,9 @@
 
 Every number in the docs came from this loop, so here it is end to end with the
 exact invocations that produced the committed evidence. Paths assume
-`/mnt/ssd/hermes/cache/scratch/probes` holds the checkpoints, the capture scripts
-and the contrast/cert prompt files; `verification/` holds the committed evidence.
+`<scratch>` — a working tree outside this clone — holds the checkpoints, the
+capture scripts and the contrast/cert prompt files; `verification/` holds the
+committed evidence.
 No command here is hypothetical; anything I have not run is written as not run.
 
 ## 0. Pick the base and pin it
@@ -23,7 +24,7 @@ actually comply), and keep matched family pairs. A fit on labels the model does
 not exhibit produces a null edit, and it will still merge cleanly.
 
     systemd-run --user --unit=<name> -p MemoryMax=12G \
-      --setenv=LD_LIBRARY_PATH=/mnt/ssd/models/spark/lib \
+      --setenv=LD_LIBRARY_PATH=/path/to/spark/lib \
       bash -c '"/path/llama-server" -m <base>.gguf -c 4096 --parallel 4 --jinja \
                --no-webui --host 127.0.0.1 --port 8134 > /tmp/<name>.log 2>&1'
     python q3label.py          # reads :8134, writes <model>-accepted.json
