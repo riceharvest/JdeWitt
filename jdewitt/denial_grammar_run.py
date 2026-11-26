@@ -231,6 +231,7 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
 
     saved = report['saved_predictions']
     summary = {
+        'removal_measured': False,
         'surfaces_rejected': f"{report['surfaces_rejected']}/{len(report['surfaces'])}",
         'grammar': {'bytes': report['automaton']['grammar_bytes'],
                     'rules': report['automaton']['grammar_rules'],
@@ -242,6 +243,7 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
                               'refusal_detected': saved['refusal_detected'],
                               'refusal_rejected': saved['refusal_rejected'],
                               'non_wording_flags': saved['non_wording_flags'],
+                              'shorter_than_min_chars': saved['shorter_than_min_chars'],
                               'compliant_flagged': saved['compliant_flagged'],
                               'compliant_flagged_by_surface': saved['compliant_flagged_by_surface']},
         'openings': report['openings']['by_source'],
