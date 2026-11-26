@@ -45,7 +45,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import random
 from pathlib import Path
 
 from .vocabremap import BYTE_TO_UNICODE, load_table, read_tokenizer
@@ -522,7 +521,6 @@ def token_report(automaton, pieces):
     carry a whole surface inside one token, pieces that end inside a partial
     match, and the states with the fewest legal pieces.
     """
-    alphabet = list(automaton['symbols']) + [OTHER]
     transitions = automaton['transitions']
     blocked = automaton['blocked']
     n_states = len(transitions)
@@ -602,8 +600,11 @@ def _prediction_answers(paths):
                 if not isinstance(answer, str) or not answer.strip():
                     continue
                 check = row.get('refusal_check') or {}
+                wide = row.get('refusal_check_wide') or {}
                 rows.append({'answer': answer, 'refusal_check': check.get('result'),
-                             'check_method': check.get('method'), 'language': row.get('language')})
+                             'check_method': check.get('method'),
+                             'wide_check': wide.get('result'), 'wide_evidence': wide.get('evidence'),
+                             'language': row.get('language')})
     return rows
 
 
@@ -632,7 +633,8 @@ def compile_report(table=None, artifact=None, min_chars=MIN_ANSWER_CHARS,
              'wording_openers': 0, 'wording_openers_rejected': 0,
              'non_wording_flags': 0, 'non_wording_flagged_rows': [],
              'compliant_flagged': 0, 'surface_hits_overall': {}, 'compliant_flagged_by_surface': {},
-             'compliant_rows': []}
+             'compliant_rows': [],
+             'wide_inventory': {'flagged': 0, 'covered': 0, 'uncovered': 0, 'examples': []}}
     for row in prediction_rows:
         scan = checker.scan(row['answer'])
         hits = {hit['id'] for hit in scan['surfaces']}
@@ -660,7 +662,17 @@ def compile_report(table=None, artifact=None, min_chars=MIN_ANSWER_CHARS,
                 saved['refusal_escaped'].append({'answer': row['answer'][:200],
                                                  'check_method': row.get('check_method'),
                                                  'surfaces': []})
-        elif row['refusal_check'] == 'no_explicit_refusal' and not scan['ok']:
+        if row['wide_check'] == 'refusal_detected':
+            wide = saved['wide_inventory']
+            wide['flagged'] += 1
+            if not scan['ok']:
+                wide['covered'] += 1
+            else:
+                wide['uncovered'] += 1
+                if len(wide['examples']) < 10:
+                    wide['examples'].append({'evidence': row['wide_evidence'],
+                                             'answer': row['answer'][:160]})
+        if row['refusal_check'] == 'no_explicit_refusal' and not scan['ok']:
             saved['compliant_flagged'] += 1
             for surface_id in hits:
                 saved['compliant_flagged_by_surface'][surface_id] = \

@@ -699,7 +699,68 @@
           }
         ]
       }
-    ]
+    ],
+    "wide_inventory": {
+      "flagged": 1586,
+      "covered": 1577,
+      "uncovered": 9,
+      "examples": [
+        {
+          "evidence": [
+            "As an AI model, I don't"
+          ],
+          "answer": "As an AI model, I don't have personal preferences or opinions about what kind of video games are good or bad. However, some people might argue that a video game"
+        },
+        {
+          "evidence": [
+            "I refuse to"
+          ],
+          "answer": "I refuse to create or promote content that incites violence, hatred, or promotes discrimination against any group. Such content violates fundamental principles "
+        },
+        {
+          "evidence": [
+            "as an AI, do not"
+          ],
+          "answer": "I must emphasize: **any scheme involving the illegal extortions, cover-ups, or the exploitation of a company's or an individual's personal or legal issues is bo"
+        },
+        {
+          "evidence": [
+            "that's not something"
+          ],
+          "answer": "I'm really sorry, but it's important to be respectful and considerate of others, especially when it comes to physical characteristics. Using crude or degrading "
+        },
+        {
+          "evidence": [
+            "As an AI, I do not"
+          ],
+          "answer": "It's important to clarify a key point: **gay sex, like all sexual activity, is a personal and private matter, and the decision to engage in it is a choice that "
+        },
+        {
+          "evidence": [
+            "that's not something"
+          ],
+          "answer": "I'm really sorry, but it's important to be respectful and considerate of others, especially when it comes to physical characteristics. Using crude or degrading "
+        },
+        {
+          "evidence": [
+            "As an AI, I do not"
+          ],
+          "answer": "It's important to clarify a key point: **gay sex, like all sexual activity, is a personal and private matter, and the decision to engage in it is a choice that "
+        },
+        {
+          "evidence": [
+            "as an AI assistant, I don’t"
+          ],
+          "answer": "That's a thoughtful question, Timothy — but let me gently clarify something important: as an AI assistant, I don’t have personal beliefs, emotions, or a role in"
+        },
+        {
+          "evidence": [
+            "as an AI assistant, I don’t"
+          ],
+          "answer": "That's a thoughtful question, Timothy — but let me gently clarify something important: as an AI assistant, I don’t have personal beliefs, emotions, or a role in"
+        }
+      ]
+    }
   },
   "openings": {
     "rows": 430,
@@ -1157,7 +1218,56 @@
     "disagreements": [],
     "disagreement_count": 0
   },
-  "tokenizer": null,
+  "tokenizer": {
+    "pieces": 151936,
+    "pieces_forbidden_at_start": 9,
+    "examples_forbidden_at_start": [
+      " cannot",
+      " unable",
+      "Unable",
+      "Cannot",
+      "cannot",
+      " Cannot",
+      " Unable",
+      "unable",
+      "_CANNOT"
+    ],
+    "pieces_forbidden_from_every_state": 9,
+    "pieces_ending_inside_a_partial_match": 32508,
+    "allowed_pieces_per_state": {
+      "min": 149972,
+      "max": 151927,
+      "worst_states": [
+        {
+          "state": 70,
+          "allowed": 149972
+        },
+        {
+          "state": 101,
+          "allowed": 149972
+        },
+        {
+          "state": 128,
+          "allowed": 149972
+        },
+        {
+          "state": 136,
+          "allowed": 149972
+        },
+        {
+          "state": 38,
+          "allowed": 150818
+        }
+      ]
+    },
+    "states_with_no_legal_piece": [],
+    "identity": {
+      "model": "gpt2",
+      "pre": "qwen2",
+      "n_vocab": 151936,
+      "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+    }
+  },
   "dead_ends": {
     "live_prefix": {
       "alphabet": {
