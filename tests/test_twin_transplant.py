@@ -73,16 +73,17 @@ def test_fingerprint_separates_the_full_delta_from_its_rank_k_reduction(tmp_path
 
 def test_rank_k_is_a_rank_k_matrix_and_cos_rises_with_k():
     delta = np.random.default_rng(5).standard_normal((96, 256)).astype(np.float32)
-    cosines, ranks = [], []
+    cosines = []
     for k in (1, 4, 8, 16):
         reduced, cosine, energy = rank_k(delta, k)
         cosines.append(cosine)
-        ranks.append(int(np.linalg.matrix_rank(reduced.astype(np.float64), tol=1e-6)))
         assert 0.0 <= energy <= 1.0
         assert reduced.shape == delta.shape
         assert abs(cosine - cos64(delta, reduced)) < 1e-6
+        # a rank-k product is rank k: every singular value past k is float32 noise
+        singular = np.linalg.svd(reduced.astype(np.float64), compute_uv=False)
+        assert singular[k:].max() < singular[0] * 1e-5
     assert cosines == sorted(cosines)
-    assert all(rank <= k for rank, k in zip(ranks, (1, 4, 8, 16)))
 
 
 def test_revert_restores_a_grown_artifact_byte_exactly(tmp_path):
