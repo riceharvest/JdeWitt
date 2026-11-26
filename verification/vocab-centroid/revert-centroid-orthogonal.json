@@ -1,0 +1,10 @@
+{
+  "artifact": "/mnt/ssd/hermes/profiles/ab-run-2987/cache/scratch/t_751eb77a/out/Qwen2.5-0.5B-Instruct-IQ3_M.centroid-orthogonal.gguf.copy",
+  "sidecar": "/mnt/ssd/hermes/profiles/ab-run-2987/cache/scratch/t_751eb77a/out/Qwen2.5-0.5B-Instruct-IQ3_M.centroid-orthogonal.gguf.revert.npz",
+  "tiles_restored": 99,
+  "restored_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "truncated_to": null,
+  "patched_sha256": "b6cdbc7ebb397b2ccd93c87e57eca665e54c93dbaeccd22dfa5dbacd27665ce5",
+  "original_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "byte_exact": true
+}
