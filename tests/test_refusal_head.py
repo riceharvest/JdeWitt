@@ -173,7 +173,8 @@ def test_wide_delta_recovers_the_residual_side_factor_from_the_row_space():
     # down_proj is [896 out, 4864 in]; a [in, out] reading would give the wrong
     # width here, so the toy pins the orientation with out < in.
     rng = np.random.default_rng(5)
-    u = rng.normal(size=4); u /= np.linalg.norm(u)
+    u = rng.normal(size=4)
+    u /= np.linalg.norm(u)
     v = rng.normal(size=8)
     delta = -3.0 * np.outer(u, v)
     out = top_left_direction(delta)

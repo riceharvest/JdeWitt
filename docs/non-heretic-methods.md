@@ -119,7 +119,13 @@ without a second copy in VRAM.
   removal (0.78 vs 0.06 refusal rate on AdvBench); their follow-up found the
   behavioural part of the mean-difference direction is a harmfulness-
   perception feature, not the refusal narration. Verdict: strong
-  interpretability, weak remover — not on the bake-off shortlist.
+  interpretability, weak remover — not on the bake-off shortlist. A
+  forward-free variant of the same pullback was measured locally: the output
+  head's denial-minus-compliance mean direction is orthogonal to the twin's
+  abliteration axis (mean |cos| 1e-4 against the twin's own head axis, 0.116
+  against the aligned one) and to the alignment delta (0.03), so the head alone
+  does not substitute for the Jacobian
+  (`verification/refusal-head-axis/report.json`).
 - **Multi-token / answer-mean (rEF-style) directions**: ROADMAP Phase 2 item
   (capture at answer-position means, not the last token). The 2611.17846
   audit's own section 2.4 cites evidence that where a direction is estimated

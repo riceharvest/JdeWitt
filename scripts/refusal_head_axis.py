@@ -39,14 +39,15 @@ from pathlib import Path
 for _var in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS'):
     os.environ.setdefault(_var, '4')
 
-import numpy as np
+import numpy as np  # noqa: E402  (the thread cap must be set before numpy loads)
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from jdewitt.refusal_head import (COMPLIANCE_WORDS, DENIAL_WORDS, cosine, edit_stats,
-                                  head_axis, head_channel_closed, margin_reduction,
-                                  resolve_surfaces, table_ids, top_left_direction)
+from jdewitt.refusal_head import (COMPLIANCE_WORDS, DENIAL_WORDS, cosine,  # noqa: E402
+                                  edit_stats, head_axis, head_channel_closed,
+                                  margin_reduction, resolve_surfaces, table_ids,
+                                  top_left_direction)
 
 DENIAL_TABLE = REPO / 'jdewitt' / 'assets' / 'vocab-remap-denial.json'
 WRITEBACK = (('attn', 'self_attn.o_proj'), ('ffn', 'mlp.down_proj'))
@@ -191,11 +192,11 @@ def compute_pass(base_path: Path, twin_path: Path, align_path, axes: dict, layer
                 name = f'model.layers.{layer}.{hf}.weight'
                 Wb, Wt = _load(base, name), _load(twin, name)
                 for label, W in (('aligned', Wb), ('twin', Wt)):
-                    axis = axes[label]
-                    stats = edit_stats(W.T, axis['d'])
+                    d, g = axes[label]
+                    stats = edit_stats(W.T, d)
                     if W.shape[1] not in probes:
                         probes[W.shape[1]] = rng.normal(size=W.shape[1])
-                    margin = margin_reduction(axis['g'], axis['d'], W.T, probes[W.shape[1]])
+                    margin = margin_reduction(g, d, W.T, probes[W.shape[1]])
                     edit_rows[label].append({
                         'layer': int(layer), 'module': kind, 'tensor': name,
                         'shape_in_out': stats['shape_in_out'],
@@ -212,10 +213,13 @@ def compute_pass(base_path: Path, twin_path: Path, align_path, axes: dict, layer
                         'g_parallel_to_d': r(margin['g_parallel_to_d'], 9),
                         'reduction_over_before': r(abs(margin['reduction']) /
                                                    max(abs(margin['before']), 1e-12), 4)})
-                pair = [('twin', Wt, axes['twin'])]
+                pair = [('twin', Wt, [('own_axis', axes['twin'][0]),
+                                      ('aligned_axis', axes['aligned'][0])])]
                 if alignment is not None:
-                    pair.append(('alignment', _load(alignment, name), axes['aligned']))
-                for label, other, d in pair:
+                    pair.append(('alignment', _load(alignment, name),
+                                 [('aligned_axis', axes['aligned'][0])]))
+                for label, other, candidates in pair:
+                    d = candidates[0][1]
                     delta = other - Wb            # HF [out, in]: rows are residual-side
                     norm = float(np.linalg.norm(delta))
                     if norm <= 0.0:
@@ -227,13 +231,18 @@ def compute_pass(base_path: Path, twin_path: Path, align_path, axes: dict, layer
                         raise SystemExit(f'{name}: recovered direction width '
                                          f'{top["direction"].shape[0]} != residual width {d.shape[0]}')
                     share = float(np.linalg.norm(delta.T @ d) ** 2) / (norm ** 2)
-                    delta_rows[label].append({
-                        'layer': int(layer), 'module': kind, 'touched': True,
-                        'delta_norm_fro': r(norm),
-                        'cos_d_vs_delta_top': r(cosine(d, top['direction']), 5),
+                    row = {'layer': int(layer), 'module': kind, 'touched': True,
+                           'delta_norm_fro': r(norm),
+                           'cos_d_vs_delta_top': r(cosine(d, top['direction']), 5),
                         'delta_energy_captured_by_d': r(share, 4),
-                        'delta_energy_fraction_top': r(top['energy_fraction_top'], 4),
-                        'delta_effective_rank': r(top['effective_rank'], 3)})
+                           'delta_energy_fraction_top': r(top['energy_fraction_top'], 4),
+                           'delta_effective_rank': r(top['effective_rank'], 3)}
+                    for name_, other_d in candidates[1:]:
+                        row[f'cos_{name_}_vs_delta_top'] = r(
+                            cosine(other_d, top['direction']), 5)
+                        row[f'energy_captured_by_{name_}'] = r(
+                            float(np.linalg.norm(delta.T @ other_d) ** 2) / (norm ** 2), 4)
+                    delta_rows[label].append(row)
                 del Wb, Wt
             if index and index % 6 == 0:
                 print(f'[head-axis]   layer {layer}: {index * 2} tensors paired', flush=True)
@@ -259,7 +268,6 @@ def _aggregate_edit(rows, margin_rows):
             **{kind: {'mean': r(float(np.mean(vals))), 'min': r(float(np.min(vals))),
                       'max': r(float(np.max(vals)))} for kind, vals in by_kind.items()}},
         'identities': {
-            'unit_d_ok': True,
             'residual_identity_all_ok': all(row['residual_identity_ok'] for row in rows),
             'residual_identity_max_abs': r(max(row['residual_identity_abs'] for row in rows), 3),
             'margin_identity_all_ok': all(row['identity_ok'] for row in margin_rows),
@@ -277,6 +285,19 @@ def _aggregate_delta(rows):
     by_module: dict[str, list[float]] = {}
     for row in touched:
         by_module.setdefault(row['module'], []).append(row['cos_d_vs_delta_top'])
+    # A second head axis can be scored against the same delta: the twin's own head
+    # moved, so its axis and the aligned axis are not the same direction, and the
+    # cosine with a near-orthogonal delta is sensitive to that rotation.
+    other_axes = {}
+    for key in sorted({k for row in touched for k in row if k.startswith('cos_')
+                       and k != 'cos_d_vs_delta_top'}):
+        energy_key = key.replace('cos_', 'energy_captured_by_').replace('_vs_delta_top', '')
+        cosines_ = [row[key] for row in touched if key in row]
+        energies_ = [row[energy_key] for row in touched if energy_key in row]
+        other_axes[key.replace('cos_', '').replace('_vs_delta_top', '')] = {
+            'mean_abs_cos': r(float(np.mean(np.abs(cosines_))), 5) if cosines_ else None,
+            'energy_captured_mean': r(float(np.mean(energies_)), 4) if energies_ else None,
+        }
     return {
         'method': 'delta = other - base per writeback tensor in HF [out, in]; the top eigenvector '
                   'of delta delta^T is the residual direction the delta moved, and '
@@ -289,6 +310,7 @@ def _aggregate_delta(rows):
         'by_module_mean_abs_cos': {kind: r(float(np.mean(np.abs(vals))), 5)
                                    for kind, vals in by_module.items()},
         'delta_energy_captured_by_d_mean': r(float(np.mean(captured)), 4) if captured else None,
+        'other_axes': other_axes,
         'delta_energy_fraction_top_mean': r(float(np.mean(
             [row['delta_energy_fraction_top'] for row in touched])), 4) if touched else None,
         'delta_effective_rank_median': r(float(np.median(
@@ -297,16 +319,21 @@ def _aggregate_delta(rows):
     }
 
 
-def gguf_head(path: Path, ids):
-    """The stand-in's tied head is Q8_0; dequantise it and check its token strings."""
+def gguf_head(path: Path):
+    """The stand-in's tied head is Q8_0; dequantise it and read its token strings.
+
+    Token strings come from the repo's own reader (``vocabremap.read_tokenizer``):
+    ``reader.fields[...].parts`` is the raw string-array byte layout, not one
+    string per row, and slicing it as if it were yields a token list of the wrong
+    length that silently looks like a shape mismatch.
+    """
     from gguf import GGUFReader
     from jdewitt.ggufio import dequantize_tensor
+    from jdewitt.vocabremap import read_tokenizer
     reader = GGUFReader(str(path))
     names = {tensor.name for tensor in reader.tensors}
     source = 'output.weight' if 'output.weight' in names else 'token_embd.weight'
-    tokens = []
-    for part in reader.fields['tokenizer.ggml.tokens'].parts:
-        tokens.extend(part.tolist())
+    tokens = read_tokenizer(str(path))['tokens']
     full = np.asarray(dequantize_tensor(str(path), source, reader=reader), dtype=np.float32)
     if full.shape[0] != len(tokens):
         full = full.T
@@ -447,7 +474,7 @@ def main(argv=None) -> int:
     print(f'[head-axis] hashed base {base_sha[:16]} twin {twin_sha[:16]} '
           f'alignment {None if align_sha is None else align_sha[:16]}', flush=True)
 
-    models = {}
+    models, head_blocks = {}, {}
     for label, path, digest, repo, rev, cfg in (
             ('aligned', base_path, base_sha, base_repo, base_rev, base_cfg),
             ('twin', twin_path, twin_sha, twin_repo, twin_rev, twin_cfg)):
@@ -467,6 +494,7 @@ def main(argv=None) -> int:
                                       np.random.default_rng(7).normal(size=axis['d'].shape[0]))
         print(f'[head-axis] {label}: head={head_name} '
               f'margin={axis["margin_per_unit_d"]}', flush=True)
+        head_blocks[label] = (rows.copy(), axis)
         models[label] = {
             'repo': repo, 'revision': rev,
             'safetensors': {'sha256': digest, 'bytes': path.stat().st_size,
@@ -474,11 +502,13 @@ def main(argv=None) -> int:
             'head_tensor': head_name,
             'config_tie_word_embeddings': bool(cfg.get('tie_word_embeddings', True)),
             'tie': tie_check(path),
-            'axes': {key: {k: v for k, v in value.items() if k != 'g'}
+            'axes': {key: {k: v for k, v in value.items() if k not in ('d', 'g')}
                      for key, value in axes.items()},
             'axis_vector_primary': [r(x, 9) for x in axis['d']],
             '_vectors': {key: (value['d'], value['g']) for key, value in axes.items()},
             'checks': {
+                'axis_unit_norm': r(float(np.linalg.norm(axis['d'])), 12),
+                'axis_unit_ok': bool(abs(float(np.linalg.norm(axis['d'])) - 1.0) <= 1e-12),
                 'head_channel_closed': bool(channel['closed']),
                 'head_margin_after_projection': r(channel['margin_after'], 3),
                 'g_parallel_to_d': r(channel['g_parallel_to_d'], 12),
@@ -492,14 +522,36 @@ def main(argv=None) -> int:
         }
         del rows
 
-    axes_d = {label: models[label]['_vectors']['primary'][0] for label in models}
+    aligned_rows, aligned_axis = head_blocks['aligned']
+    twin_rows, twin_axis = head_blocks['twin']
+    per_id = np.linalg.norm(twin_rows - aligned_rows, axis=1) / np.maximum(
+        np.linalg.norm(aligned_rows, axis=1), 1e-12)
+    denial_set = set(variants['primary']['ids'])
+    compliance_set = set(variants['compliance']['ids'])
+    head_delta = {
+        'note': 'the same head rows in the two checkpoints; a tied model edits its head only '
+                'through the embedding, so this is where a head-geometry axis can move',
+        'n_ids': int(len(ids_all)),
+        'mean_relative_row_delta': r(float(np.mean(per_id)), 5),
+        'max_relative_row_delta': r(float(np.max(per_id)), 5),
+        'denial_mean_relative_row_delta': r(float(np.mean(
+            [per_id[i] for i, token in enumerate(ids_all) if token in denial_set])), 5),
+        'compliance_mean_relative_row_delta': r(float(np.mean(
+            [per_id[i] for i, token in enumerate(ids_all) if token in compliance_set])), 5),
+        'margin_aligned': r(float(np.linalg.norm(aligned_axis['g']))),
+        'margin_twin': r(float(np.linalg.norm(twin_axis['g']))),
+        'axis_cosine': r(cosine(aligned_axis['d'], twin_axis['d']), 6),
+        'axis_degrees': r(float(np.degrees(np.arccos(np.clip(
+            cosine(aligned_axis['d'], twin_axis['d']), -1.0, 1.0)))), 3),
+    }
+    axes_d = {label: models[label]['_vectors']['primary'] for label in models}
     passes = compute_pass(base_path, twin_path, align_path, axes_d, layers)
     for label in models:
         models[label]['edit'] = passes['edit'][label]
     print('[head-axis] paired pass done', flush=True)
 
     cross = {
-        'cos_aligned_vs_twin_primary': r(cosine(axes_d['aligned'], axes_d['twin']), 5),
+        'cos_aligned_vs_twin_primary': r(cosine(axes_d['aligned'][0], axes_d['twin'][0]), 5),
         'cos_aligned_vs_twin_named': r(cosine(models['aligned']['_vectors']['named'][0],
                                               models['twin']['_vectors']['named'][0]), 5),
     }
@@ -519,21 +571,22 @@ def main(argv=None) -> int:
         given = Path(args.twin_axis_json)
         label = ('verification/twin-abduction/' + given.name
                  if given.parent.name == 'twin-abduction' else given.name)
-        committed = artifact_axes(given, axes_d['aligned'], label)
+        committed = artifact_axes(given, axes_d['aligned'][0], label)
 
     gguf_block = None
     if args.gguf:
-        full, source, tokens = gguf_head(Path(args.gguf), ids_all)
-        gguf_rows = np.asarray(full[[positions[int(i)] for i in ids_all]], dtype=np.float64)
+        full, source, tokens = gguf_head(Path(args.gguf))
+        gguf_rows = np.asarray(full[np.asarray(ids_all, dtype=np.int64)], dtype=np.float64)
         ga = head_axis(gguf_rows[[positions[int(i)] for i in variants['primary']['ids']]],
                        gguf_rows[[positions[int(i)] for i in variants['compliance']['ids']]])
         gguf_block = {
-            'path': str(args.gguf), 'sha256': sha256_file(Path(args.gguf)),
+            'artifact': Path(args.gguf).name, 'sha256': sha256_file(Path(args.gguf)),
+            'location_note': 'binary artifact, not committed; the sha256 identifies it',
             'bytes': Path(args.gguf).stat().st_size,
             'head_tensor': source, 'head_shape': [int(x) for x in full.shape],
             'margin_per_unit_d': r(ga['margin']),
-            'cos_vs_aligned_primary': r(cosine(ga['d'], axes_d['aligned']), 5),
-            'cos_vs_twin_primary': r(cosine(ga['d'], axes_d['twin']), 5),
+            'cos_vs_aligned_primary': r(cosine(ga['d'], axes_d['aligned'][0]), 5),
+            'cos_vs_twin_primary': r(cosine(ga['d'], axes_d['twin'][0]), 5),
             'token_string_mismatches': token_mismatches(tokenizer, tokens, ids_all),
         }
         print(f'[head-axis] gguf cos vs aligned {gguf_block["cos_vs_aligned_primary"]} '
@@ -575,9 +628,22 @@ def main(argv=None) -> int:
             'cos_aligned_vs_twin': cross,
             'twin_recovered_edit': twin,
             'alignment_delta': alignment,
+            'head_rows_delta': head_delta,
             'twin_abduction_artifact': committed,
             'gguf_stand_in': gguf_block,
             'repo_axis_artifacts': find_axis_artifacts(REPO, int(base_cfg['hidden_size'])),
+        },
+        'headline': {
+            'twin_abs_cos_with_twin_axis': twin['mean_abs_cos'],
+            'twin_abs_cos_with_aligned_axis': (twin.get('other_axes') or {}).get(
+                'aligned_axis', {}).get('mean_abs_cos'),
+            'twin_delta_energy_captured_by_twin_axis': twin['delta_energy_captured_by_d_mean'],
+            'alignment_abs_cos': None if alignment is None else alignment['mean_abs_cos'],
+            'alignment_delta_energy_captured': (None if alignment is None
+                                                else alignment['delta_energy_captured_by_d_mean']),
+            'relative_edit_norm_mean': models['aligned']['edit']['relative_edit_norm']['all_mean'],
+            'margin_per_unit_d': models['aligned']['axes']['primary']['margin_per_unit_d'],
+            'head_axis_rotation_degrees_between_checkpoints': head_delta['axis_degrees'],
         },
         'claims': {
             'measured': 'per-tensor edit norms and the three identities, from the weights and the '
@@ -614,11 +680,16 @@ def main(argv=None) -> int:
 
     if args.delete_downloads:
         for path in [p for p in (base_path, twin_path, align_path) if p is not None]:
-            print(f'[head-axis] deleting {path}', flush=True)
-            try:
-                path.unlink()
-            except FileNotFoundError:
-                pass
+            # The snapshot entry is a symlink into the content-addressed blob store:
+            # unlinking it alone frees no bytes, which is how a "deleted" run can
+            # leave a 3 GB cache behind. Resolve first, delete both.
+            real = path.resolve()
+            print(f'[head-axis] deleting {path} -> {real}', flush=True)
+            for target in (path, real):
+                try:
+                    target.unlink()
+                except FileNotFoundError:
+                    pass
     return 0
 
 
