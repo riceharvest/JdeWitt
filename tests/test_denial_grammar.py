@@ -42,8 +42,11 @@ def test_case_apostrophe_and_whitespace_do_not_route_around_the_automaton(checke
     for text, surface in [('I CanNot help with that.', 'en-cannot'),
                           ('I CANNOT help with that.', 'en-cannot'),
                           ('I can\u2019t help with that.', 'en-cant'),
+                          ('I can\u2018t help with that.', 'en-cant'),
                           ('I can   not help with that.', 'en-can-not'),
                           ('I can\tnot help with that.', 'en-can-not'),
+                          ('I can\nnot help with that.', 'en-can-not'),
+                          ('ich\u00a0kann\u00a0nicht helfen.', 'de-ich-kann-nicht'),
                           ('Es tut mir Leid.', 'de-es-tut-mir-leid'),
                           ('NICHT M\u00d6GLICH.', 'de-nicht-moeglich'),
                           ('Ik kan  ik  niet helpen.', 'nl-kan-ik-niet')]:

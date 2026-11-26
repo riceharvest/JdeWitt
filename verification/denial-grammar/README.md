@@ -29,5 +29,5 @@ matches only: no model is loaded.
 Headline numbers are in `docs/DENIAL-GRAMMAR.md` and in
 `denial-free.json`. Read them as a text-level result: the grammar rejects all 20
 surfaces and every explicit-wording refusal opener in the saved predictions, and
-llama.cpp's matcher agrees with the Python automaton on 1,337 cases. Nothing here
+llama.cpp's matcher agrees with the Python automaton on 1,344 cases. Nothing here
 says what a model does when the constraint is active.

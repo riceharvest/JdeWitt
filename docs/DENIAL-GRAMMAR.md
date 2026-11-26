@@ -96,7 +96,7 @@ any of its characters would complete a surface from the current state:
 | minimal DFA vs full DFA, 4,023 strings | 0 disagreements |
 | independent substring oracle, 1,200 answers | 0 disagreements |
 | llama.cpp parser | `PARSE_OK rules=5048` |
-| llama.cpp matcher vs the Python automaton | 1,337 cases, 0 mismatches |
+| llama.cpp matcher vs the Python automaton | 1,344 cases, 0 mismatches |
 
 The three `refusal_detected` rows without a table surface are not openers: their
 `refusal_check.method` is `degenerate-repetitive_filler` and their evidence list

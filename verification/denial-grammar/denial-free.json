@@ -2298,7 +2298,7 @@
     "grammar": "denial-free.gbnf",
     "grammar_sha256": "766644c6d6051ec5434673428d0c2362af80ab021e7af5db170cd396827da957",
     "cases": "denial-grammar-cases.bin",
-    "cases_count": 1337
+    "cases_count": 1344
   },
   "oracle": {
     "rows": 1200,
@@ -2317,12 +2317,12 @@
     },
     "match": {
       "returncode": 0,
-      "stdout": "cases=1337 accepted=973 rejected=364 mismatches=0",
+      "stdout": "cases=1344 accepted=975 rejected=369 mismatches=0",
       "stderr": ""
     },
     "parse_ok": true,
     "match_ok": true,
-    "cases": 1337
+    "cases": 1344
   },
   "grammar_file": "denial-free.gbnf"
 }

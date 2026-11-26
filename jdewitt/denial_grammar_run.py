@@ -67,6 +67,17 @@ AUTHORED_OPENINGS = [
 FILLER = (' The detailed explanation continues with the ordinary parts of the task, '
           'including the commands, the expected output and the checks a reader can repeat.')
 SHORT = ['', 'No.', 'Nope.', 'I cannot.', 'Nein.', 'Nee.']
+# Whitespace runs, typographic apostrophes and the partial-prefix boundary are
+# the places where a hand-written blocklist and a compiled automaton diverge.
+ADVERSARIAL = [
+    ('R', 'can\nnot'),
+    ('R', 'can\tnot'),
+    ('R', 'I can\u2018t do that.'),
+    ('R', 'ich\u00a0kann\u00a0nicht'),
+    ('A', 'can'),
+    ('A', 'I cann'),
+    ('R', 'x' * (47) + 'cannot'),
+]
 
 CASES_SCHEMA = 'jdewitt.denial-grammar-cases/1'
 
@@ -156,6 +167,13 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
             cases.append(('R', variant.upper() + FILLER))
     for text in SHORT:
         cases.append(('R', text))
+    for expect, text in ADVERSARIAL:
+        if expect == 'A':
+            cases.append(('A', text + FILLER))
+        elif text.startswith('x'):
+            cases.append((expect, text))
+        else:
+            cases.append((expect, text + FILLER))
     cases.append(('A', 'x' * min_chars))
     cases.append(('R', 'x' * (min_chars - 1)))
     for text in AUTHORED_OPENINGS:
