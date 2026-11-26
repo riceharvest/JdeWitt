@@ -783,14 +783,14 @@ def measure(checker, rows, authored, opening_chars=OPENING_CHARS):
         window_scan = checker.scan(window)
         whole_scan = checker.scan(row['answer'])
         if window_scan['ok']:
-            if len(opener_misses) < 80:
+            if len(opener_misses) < 400:
                 opener_misses.append({'row_id': row['row_id'], 'file': row['file'],
                                       'narrow': row['refusal_check'], 'wide': row['wide_check'],
                                       'text': window})
         else:
             opener_rejected += 1
         if whole_scan['ok']:
-            if len(whole_misses) < 80:
+            if len(whole_misses) < 400:
                 whole_misses.append({'row_id': row['row_id'], 'file': row['file'],
                                      'narrow': row['refusal_check'], 'wide': row['wide_check'],
                                      'text': row['answer'][:opening_chars]})
