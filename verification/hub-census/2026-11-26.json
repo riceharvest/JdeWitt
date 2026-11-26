@@ -1,0 +1,173 @@
+{
+  "scope": "Live Hub text-generation census; adapter labels come from config.json model_type, downloads are a demand proxy, nothing here is a support claim.",
+  "window": {
+    "since": "2026-08-01",
+    "authors": [
+      "Qwen",
+      "zai-org",
+      "meta-models",
+      "LiquidAI",
+      "nvidia",
+      "deepseek-ai",
+      "mistralai",
+      "google",
+      "moonshotai",
+      "stepfun-ai",
+      "MiniMaxAI",
+      "allenai",
+      "HuggingFaceTB",
+      "openai",
+      "EssentialAI",
+      "XiaomiMiMo",
+      "tencent",
+      "inclusionAI",
+      "baidu",
+      "LG-AI-EXAONE",
+      "OpenBMB"
+    ],
+    "per_author_cap": 40
+  },
+  "census_at": "2026-11-26T17:28:06Z",
+  "quarter": "2026-Q4",
+  "repositories_checked": 137,
+  "derived_artifact_repositories": 13,
+  "model_types_seen": {
+    "glm_moe_dsa": 1349959,
+    "qwen3_5": 365517,
+    "lfm3": 226041,
+    "no-model-type": 205077,
+    "mimo_v2": 130428,
+    "dory": 60494,
+    "lfm2_moe": 49719,
+    "deepseek_v4": 44548,
+    "bailing_hybrid": 43808,
+    "qwen3_5_moe_text": 41677,
+    "gemma4": 35061,
+    "qwen3": 31451,
+    "hy_v4": 21820,
+    "ernie5_5_moe": 10201,
+    "nemotron_labs_sigma": 8945,
+    "lfm2": 6642,
+    "hy_v3": 5293,
+    "bolmo": 4403,
+    "qwen3_5_text": 3139,
+    "nemotron_h": 2521,
+    "llada2_moe": 1568,
+    "llama": 709
+  },
+  "adapter_worklist": [
+    {
+      "model_type": "lfm3",
+      "downloads": 226041,
+      "example_models": [
+        "LiquidAI/LFM3-1.7B-MLX-5bit",
+        "LiquidAI/LFM3-1.7B-MLX-4bit",
+        "LiquidAI/LFM3-1.7B-MLX-6bit"
+      ]
+    },
+    {
+      "model_type": "mimo_v2",
+      "downloads": 130428,
+      "example_models": [
+        "XiaomiMiMo/MiMo-V2.6-Flash-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Pro-MOPD",
+        "XiaomiMiMo/MiMo-V2.6-Flash-RL"
+      ]
+    },
+    {
+      "model_type": "dory",
+      "downloads": 60494,
+      "example_models": [
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4",
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-MXFP8",
+        "nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-BF16"
+      ]
+    },
+    {
+      "model_type": "ernie5_5_moe",
+      "downloads": 10201,
+      "example_models": [
+        "baidu/ERNIE-5.5-Flash-Preview-BF16",
+        "baidu/ERNIE-5.5-Flash-Preview-FP8",
+        "baidu/ERNIE-5.5-Flash-Preview"
+      ]
+    },
+    {
+      "model_type": "nemotron_labs_sigma",
+      "downloads": 8945,
+      "example_models": [
+        "nvidia/Nemotron-Labs-Sigma-distill-spec-3B",
+        "nvidia/Nemotron-Labs-Sigma-distill-8B-nfe16",
+        "nvidia/Nemotron-Labs-Sigma-distill-8B-nfe8"
+      ]
+    },
+    {
+      "model_type": "bolmo",
+      "downloads": 4403,
+      "example_models": [
+        "allenai/Llama-3-Blama-8B",
+        "allenai/Llama-3-Blama-8B-Stage1",
+        "allenai/Bwen-8B"
+      ]
+    },
+    {
+      "model_type": "llada2_moe",
+      "downloads": 1568,
+      "example_models": [
+        "inclusionAI/LLaDA2.2-mini"
+      ]
+    }
+  ],
+  "untyped_repositories": [
+    {
+      "label": "no-model-type",
+      "downloads": 205077,
+      "example_models": [
+        "nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB-DFlash",
+        "nvidia/NVIDIA-Nemotron-3.5-Bolt-E4B-4GB",
+        "nvidia/NVIDIA-Nemotron-Labs-3-Competitive-Coding-550B-A55B-NVFP4"
+      ]
+    }
+  ],
+  "supported_model_types": [
+    "bailing_hybrid",
+    "deepseek_v4",
+    "gemma4",
+    "glm_moe_dsa",
+    "hy_v3",
+    "hy_v4",
+    "lfm2",
+    "lfm2_moe",
+    "llama",
+    "nemotron_h",
+    "qwen3",
+    "qwen3_5",
+    "qwen3_5_moe_text",
+    "qwen3_5_text"
+  ],
+  "unresolved_gaps": [
+    "DeepSeek V4.1 loaders",
+    "Kimi K3 loaders",
+    "MiMo V2.6 / Bolmo / Youtu wrappers",
+    "custom Ling VL",
+    "draft-only Muse assistant",
+    "Qwen Drive planning models"
+  ],
+  "author_errors": [],
+  "next": [
+    "uv run jdewitt capture --model LiquidAI/LFM3-1.7B-MLX-5bit --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-lfm3.pt --gguf \"<lfm3-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<lfm3-artifact.gguf>\" --records records-lfm3.pt",
+    "uv run jdewitt capture --model XiaomiMiMo/MiMo-V2.6-Flash-MOPD --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-mimo_v2.pt --gguf \"<mimo_v2-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<mimo_v2-artifact.gguf>\" --records records-mimo_v2.pt",
+    "uv run jdewitt capture --model nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B-NVFP4 --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-dory.pt --gguf \"<dory-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<dory-artifact.gguf>\" --records records-dory.pt",
+    "uv run jdewitt capture --model baidu/ERNIE-5.5-Flash-Preview-BF16 --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-ernie5_5_moe.pt --gguf \"<ernie5_5_moe-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<ernie5_5_moe-artifact.gguf>\" --records records-ernie5_5_moe.pt",
+    "uv run jdewitt capture --model nvidia/Nemotron-Labs-Sigma-distill-spec-3B --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-nemotron_labs_sigma.pt --gguf \"<nemotron_labs_sigma-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<nemotron_labs_sigma-artifact.gguf>\" --records records-nemotron_labs_sigma.pt",
+    "uv run jdewitt capture --model allenai/Llama-3-Blama-8B --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-bolmo.pt --gguf \"<bolmo-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<bolmo-artifact.gguf>\" --records records-bolmo.pt",
+    "uv run jdewitt capture --model inclusionAI/LLaDA2.2-mini --suite \"<suite.jsonl>\" --ctx-size 4096 --out records-llada2_moe.pt --gguf \"<llada2_moe-artifact.gguf>\"",
+    "uv run jdewitt tune --gguf \"<llada2_moe-artifact.gguf>\" --records records-llada2_moe.pt"
+  ]
+}

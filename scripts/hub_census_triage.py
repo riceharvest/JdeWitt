@@ -132,6 +132,29 @@ def cell_models(examples):
     return ', '.join(f'`{repo}`' for repo in examples) if examples else '—'
 
 
+def next_section(artifact):
+    """The artifact's own `next` list, rendered rather than retyped.
+
+    A census written before the next block existed has no list; in that case the
+    section is omitted instead of inventing commands.
+    """
+    steps = artifact.get('next') or []
+    if not steps:
+        return []
+    return [
+        f'## Next — {len(steps)} commands, a capture/tune pair per worklist row',
+        '',
+        "Copied from the artifact's `next` list (one pair per architecture, in the same "
+        'download order). Each capture reads the checkpoint its row actually saw; angle-bracket '
+        'paths are placeholders this census never built, and every line parses as a CLI command.',
+        '',
+        '```',
+        *steps,
+        '```',
+        '',
+    ]
+
+
 def render(artifact_path, artifact, evidence):
     rows = []
     for row in artifact['adapter_worklist']:
@@ -195,6 +218,7 @@ def render(artifact_path, artifact, evidence):
               'type nor an `auto_map`. The decision names the floor that unblocks it, or says that no '
               'published loader registers the type.',
               '',
+              *next_section(artifact),
               '## Human gap list',
               '',
               f"The curated `unresolved_gaps` list stays in the same artifact ({len(artifact['unresolved_gaps'])} "

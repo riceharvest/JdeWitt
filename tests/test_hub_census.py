@@ -4,12 +4,15 @@ These exercise `hub_census` against a fake Hub inventory, so the shape and the
 refusal behaviour are pinned without a network call.
 """
 import json
+import re
+import shlex
 from types import SimpleNamespace
 
 import huggingface_hub
 import pytest
 
-from jdewitt.hubcensus import hub_census, quarter_of
+from jdewitt.cli import build_parser
+from jdewitt.hubcensus import census_next_steps, hub_census, quarter_of
 from jdewitt.schemas import enforce, validate_artifact
 
 
@@ -92,3 +95,41 @@ def test_a_failing_author_is_an_error_row_not_a_lost_census(monkeypatch):
     payload = hub_census(authors=['ghost'], since='2026-08-01')
     assert payload['author_errors'] == [{'author': 'ghost', 'error': 'hub said no'}]
     assert payload['adapter_worklist'] == [] and payload['untyped_repositories'] == []
+
+
+def test_next_is_a_capture_tune_pair_per_worklist_row_in_download_order(hub):
+    payload = hub_census(authors=list(hub), since='2026-08-01', per_author=10)
+    steps = payload['next']
+    assert len(steps) == 2 * len(payload['adapter_worklist']) == 6
+    assert steps[0].startswith('uv run jdewitt capture --model LiquidAI/LFM3-1.7B')
+    assert 'records-lfm3.pt' in steps[0] and 'records-lfm3.pt' in steps[1]
+    assert steps[1].startswith('uv run jdewitt tune')
+    # Two architectures never share a records file, and the untyped row is not an
+    # architecture, so it earns no adapter work at all.
+    records = {re.search(r'records-(\S+)\.pt', step).group(1) for step in steps}
+    assert records == {'lfm3', 'dory', 'ernie5_5_moe'}
+    assert not any('no-model-type' in step for step in steps)
+
+
+def test_next_follows_the_artifact_order():
+
+    worklist = [{'model_type': 'lfm3', 'downloads': 10, 'example_models': ['a/LFM3']},
+                {'model_type': 'dory', 'downloads': 5, 'example_models': ['b/Dory']}]
+    steps = census_next_steps(worklist)
+    assert [step.startswith('uv run jdewitt capture') for step in steps] == [True, False, True, False]
+    assert 'records-dory.pt' in steps[3]
+
+
+def test_every_next_line_is_a_command_the_cli_parses(hub):
+    parser = build_parser()
+    payload = hub_census(authors=list(hub), since='2026-08-01', per_author=10)
+    for step in payload['next']:
+        tokens = shlex.split(step)
+        assert tokens[:3] == ['uv', 'run', 'jdewitt']
+        parsed = parser.parse_args(tokens[3:])
+        assert parsed.command in ('capture', 'tune')
+        # Required arguments the worklist must name for the line to be runnable.
+        if parsed.command == 'capture':
+            assert parsed.model and parsed.suite and parsed.ctx_size and parsed.out
+        else:
+            assert parsed.gguf and parsed.records
