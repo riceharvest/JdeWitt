@@ -458,6 +458,7 @@ def vocab_centroid(weights, table=None, mode='centroid', out=None, apply=False, 
         'differing_ranges_inside_edited_tensors': len(runs),
         'bytes_changed': {'differing_ranges': len(runs),
                           'differing_bytes': int(sum(end - start for start, end in runs)),
+                          'ranges': [[int(start), int(end)] for start, end in runs],
                           'fraction_of_file': round(sum(end - start for start, end in runs)
                                                     / weights.stat().st_size, 8),
                           'attribution': 'the runs, wholly inside the edited tensors; per-row counts are '

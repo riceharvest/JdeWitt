@@ -170,7 +170,10 @@ member outside it, and no compliance row moved. Per-row changed bytes are the `b
 column of the per-id tables above, and sum to the differing-byte totals (948+947+… =
 7,562 for `centroid`, etc.); every differing byte lies inside `token_embd.weight`'s
 144,643,072 bytes, so the other 289 tensors, the header and the metadata are
-byte-identical by measurement, not by assumption.
+byte-identical by measurement, not by assumption. The exact ranges are listed in
+`apply-<mode>.json` (`apply.bytes_changed.ranges`, absolute file offsets): 61 / 99 / 468
+half-open ranges, the first at byte 5,986,560 and the last ending at 38,940,992, all
+inside the tensor's `[5,948,480, 150,591,552)` span.
 
 The dry-run sample touches 224 Q8_0 blocks (8 rows × 28) = 15,232 of the tensor's
 144,643,072 bytes (0.0105 %). The codec is the tensor's own stored type, so every tensor
