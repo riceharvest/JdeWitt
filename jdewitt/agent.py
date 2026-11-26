@@ -751,6 +751,41 @@ def gguf_meta(path, out, assignments, unsets):
     return edit_metadata(path, out, sets, list(unsets))
 
 
+def tensor_data_digests(path):
+    """sha256 of every tensor's stored bytes, read straight from the file.
+
+    Bytes are hashed as stored: quantized blocks are never decoded, so a
+    digest covers exactly what the file ships. Used by gguf-inspect's diff so
+    "metadata-only" is checked per tensor instead of asserted.
+    """
+    import hashlib
+    import mmap
+    from gguf import GGUFReader
+    path = Path(path)
+    reader = GGUFReader(str(path))
+    digests = {}
+    chunk = 1 << 26
+    with open(path, 'rb') as f:
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        try:
+            for tensor in reader.tensors:
+                offset, size = int(tensor.data_offset), int(tensor.n_bytes)
+                digest = hashlib.sha256()
+                for start in range(0, size, chunk):
+                    digest.update(mm[offset + start:offset + start + min(chunk, size - start)])
+                digests[tensor.name] = digest.hexdigest()
+        finally:
+            mm.close()
+    return digests
+
+
+def _combined_tensor_digest(digests):
+    """One digest over sorted ``name:digest`` rows, so a whole tensor blob compares in one string."""
+    import hashlib
+    return hashlib.sha256(''.join(f'{name}:{digest}\n'
+                                  for name, digest in sorted(digests.items())).encode()).hexdigest()
+
+
 def gguf_inspect(path,other=None):
     """GGUF metadata and tensor inventory read from the file header; tensor data is never loaded."""
     from gguf import GGUFReader
@@ -794,9 +829,15 @@ def gguf_inspect(path,other=None):
     if other is None:
         single['metadata_digests']=metadata_digests(path)
         single['metadata_note']='metadata_digests covers every header key; values are never printed.'
+        single['tensor_data_sha256']=_combined_tensor_digest(tensor_data_digests(path))
+        single['tensor_data_digests_note']=('tensor_data_sha256 covers every tensor\'s stored bytes '
+                                            '(sourced from sorted name:digest rows); no tensor was decoded.')
         return single
     compared,second_schema=report(other)
     before_digests,after_digests=metadata_digests(path),metadata_digests(other)
+    before_tensors,after_tensors=tensor_data_digests(path),tensor_data_digests(other)
+    single['tensor_data_sha256']=_combined_tensor_digest(before_tensors)
+    compared['tensor_data_sha256']=_combined_tensor_digest(after_tensors)
     shared_keys=set(before_digests)&set(after_digests)
     metadata_changed=[{'key':key,'before_sha256':before_digests[key],'after_sha256':after_digests[key]}
                       for key in sorted(shared_keys) if before_digests[key]!=after_digests[key]]
@@ -805,6 +846,10 @@ def gguf_inspect(path,other=None):
                    for name in sorted(shared) if schema[name][0]!=second_schema[name][0]]
     shape_changed=[{'name':name,'before':schema[name][1],'after':second_schema[name][1]}
                    for name in shared if schema[name][1]!=second_schema[name][1]]
+    tensor_shared=set(before_tensors)&set(after_tensors)
+    tensor_identical=sorted(name for name in tensor_shared if before_tensors[name]==after_tensors[name])
+    tensor_changed=[{'name':name,'before_sha256':before_tensors[name],'after_sha256':after_tensors[name]}
+                    for name in sorted(tensor_shared) if before_tensors[name]!=after_tensors[name]]
     return {'before':single,'after':compared,
             'diff':{'only_in_before':sorted(set(schema)-shared)[:200],
                     'only_in_after':sorted(set(second_schema)-shared)[:200],
@@ -812,10 +857,16 @@ def gguf_inspect(path,other=None):
                     'metadata_changed':metadata_changed[:200],
                     'metadata_only_in_before':sorted(set(before_digests)-set(after_digests))[:50],
                     'metadata_only_in_after':sorted(set(after_digests)-set(before_digests))[:50],
+                    'tensor_digests':{'identical':tensor_identical,
+                                      'changed':tensor_changed,
+                                      'only_in_before':sorted(set(before_tensors)-set(after_tensors))[:50],
+                                      'only_in_after':sorted(set(after_tensors)-set(before_tensors))[:50]},
                     'counts':{'shared_tensors':len(shared),'dtype_changed':len(dtype_changed),
-                              'shape_changed':len(shape_changed),'metadata_changed':len(metadata_changed)}},
-            'note':'Header inventory only; tensor contents were not compared and no inference was run. '
-                   'Metadata is compared by digest for every header key; values are never printed.'}
+                              'shape_changed':len(shape_changed),'metadata_changed':len(metadata_changed),
+                              'tensor_digests_identical':len(tensor_identical),
+                              'tensor_digests_changed':len(tensor_changed)}},
+            'note':'Header inventory plus per-tensor data digests (stored bytes, never decoded); no inference '
+                   'was run. Metadata is compared by digest for every header key; values are never printed.'}
 
 
 def about():
