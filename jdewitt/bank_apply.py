@@ -115,6 +115,15 @@ def _ladder(edit, key):
     return sorted(allowed, key=lambda name: order.get(name.casefold(), len(AUTO_LADDER))), skipped
 
 
+def _edited_row_widths(gguf, names):
+    """Row width of every edited tensor, read from the artifact's own tensor table."""
+    from gguf import GGUFReader
+
+    wanted = set(names)
+    return {tensor.name: int(np.asarray(tensor.shape).ravel()[-1])
+            for tensor in GGUFReader(str(gguf)).tensors if tensor.name in wanted}
+
+
 def _select_edit_type(gguf, groups, probes, ladder, edit_type, min_cos, space, skipped=()):
     """Pick the storage type: the first the entry allows whose probe clears the floor.
 
@@ -122,6 +131,11 @@ def _select_edit_type(gguf, groups, probes, ladder, edit_type, min_cos, space, s
     ``target_type``) over the worst edited tensors of each kind, at that kind's own
     strength. The floor only picks the type; the numbers in the report are measured
     afterwards on the written file, per tensor.
+
+    A type whose block does not divide every edited tensor's row is dropped from the
+    walk and named in ``row_incompatible``: ggml requires a row to be a whole number of
+    blocks, so such a tensor cannot be written at that type at all — probing it would
+    pick a type the writer has to refuse (found on a 0.5B, 896-wide rows vs Q6_K).
     """
     from .ggufio import preview_edit
 
@@ -139,8 +153,19 @@ def _select_edit_type(gguf, groups, probes, ladder, edit_type, min_cos, space, s
                 'note': 'the caller named the type; the delivered numbers below still say '
                         'what it stored'}
 
+    from .quants import CODECS
+
+    widths = _edited_row_widths(gguf, [name for group in groups.values() for name in group['names']])
+    row_incompatible = []
     readings = []
     for kind in ladder:
+        codec = CODECS.get(str(kind).upper())
+        block_els = int(codec[1]) if codec is not None else 1
+        bad = sorted(name for name, width in widths.items() if width % block_els)
+        if bad:
+            row_incompatible.append({'edit_type': kind, 'block_elements': block_els,
+                                     'tensors': bad[:8], 'tensor_count': len(bad)})
+            continue
         rows = []
         for group in groups.values():
             names = [name for name in probes if name in set(group['names'])]
@@ -159,6 +184,7 @@ def _select_edit_type(gguf, groups, probes, ladder, edit_type, min_cos, space, s
         if worst['cos'] >= min_cos:
             return {'mode': 'auto', 'floor': min_cos, 'chosen': kind, 'candidates': ladder,
                     'not_candidates': list(skipped), 'readings': readings, 'floor_cleared': True,
+                    'row_incompatible': row_incompatible,
                     'note': 'candidates are probed smallest-first and probing stops at the '
                             'first clear; the delivered numbers below are measured on the '
                             'written file'}
@@ -173,7 +199,9 @@ def _select_edit_type(gguf, groups, probes, ladder, edit_type, min_cos, space, s
         f'entry allows {", ".join(ladder)}; none stores the edit at cos >= {min_cos}: '
         f'worst probed tensor {best["worst_tensor"]} reaches cos {best["min_cos"]} at '
         f'{best["edit_type"]}. Nothing written. The strength is not raised to hide this — '
-        f'a write that only survives at a higher strength is an edit nobody measured')
+        f'a write that only survives at a higher strength is an edit nobody measured. '
+        f'Types whose block does not divide every edited row: '
+        f'{", ".join(row["edit_type"] for row in row_incompatible) or "none"}')
 
 
 def _row_by_layer(resolved):
@@ -469,7 +497,7 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
             if temp_path.exists():
                 temp_path.unlink()
 
-    renorm = repair != 'none'
+    renorm = repair in ('renorm', 'norms')
     rows, delivered_by_kind = [], {}
     for kind, names in resolved['targets'].items():
         if not names:

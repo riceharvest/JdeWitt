@@ -46,6 +46,48 @@ byte cost. Then `gguf-revert` restores the source byte-exactly and
 Boundary: what the model answers after the solved edit is GATED (needs a
 serve); the numbers here are realized fidelity, not removal.
 
+Landed 2026-11-26, and measured against the expectation above. `repair='solve'`
+exists in `jdewitt/rewrite.py` (`REPAIR_MODES`), wired to `gguf-edit` with
+`--edit-type`, `--repair`, `--min-cos` and `--solve-passes`. Per tensor it keeps
+the best pass, never inflates the requested delta (a `max_delta_scale` ceiling of
+1.0x), floors blocks whose realized change points away from the requested one only
+when that does not cost cos, and reports passes, cos, `cos_floored` and
+`blocks_floored` per tensor plus a `delivered` block measured by `compare_edit` on
+the written file. The check itself found a writer bug worth more than the solve: a
+quantized tensor's ROW must be a whole number of codec blocks (ggml asserts it,
+gguf-py refuses to read the file), and this writer was padding the last block and
+emitting unloadable files. `rewrite_with_edits` now refuses those tensors by name.
+
+Measured on this artifact (0.5B IQ3_M -> Q4_K_M, one deterministic rank-1 delta at
+strength 1.0: one `default_rng(20261126)` standard-normal draw per tensor, normalized,
+tensors in the order listed, `delta = axis_delta(axis, W, 1.0, 'output')`;
+per-tensor delivered cos from `compare_edit`):
+
+| arm | tensors | min cos | mean cos | edited bytes | below 0.9 |
+|-----|---------|---------|----------|--------------|-----------|
+| `--edit-type q8_0 --repair none` | blk.0 attn_q/attn_output/ffn_up/ffn_down | 0.9336 | 0.9692 | 10,967,040 | 0 |
+| `--edit-type q8_0 --repair solve` | same | 0.9336 | 0.9692 | 10,967,040 | 0 |
+| `--edit-type q6_k --repair none` | 24x ffn_down | 0.8659 | 0.8911 | 85,800,960 | 12 |
+| `--edit-type q6_k --repair solve` | 24x ffn_down | 0.8659 | 0.8911 | 85,800,960 | 12 |
+
+Reading: at the same type and byte cost the solve bought <= 1e-5 cos. It stops on
+pass 1 everywhere, because the nearest-grid encode is already the best cos that
+grid can deliver: on a full-tensor sweep (6 amplitudes x Q5_0/Q4_K -> Q6_K, 4
+strategies) no later pass and no block floor ever beat pass 1, and the residual
+feedback lost 0.03-0.10 cos by inflating the delta norm 1.3-1.6x. The same sweep
+on `verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf` (a real Q4_K_M from bf16,
+attention at Q4_K, `blk.3.attn_q` 4096x1024) reproduces the recorded regime —
+plain 0.19/0.38/0.64/0.86/0.93/0.96 at 0.25/0.5/1/2/3/4x, and again no pass beats
+pass 1 — so the 0.454 arm is below the grid, not below a solver. Cos is set by
+|delta| against the target's block step (`cos ~ 1/sqrt(1 + (step/|d|)^2/12)`), so
+the lever that clears a floor is the STORAGE TYPE — q8_0 clears all four at
+0.9336 — not a strength and not a pass. `--edit-type q6_k` cannot be run on this
+artifact's attention/ffn_up matrices at all: 896-wide rows are not a whole number
+of 256-element blocks. The q6_k arms above therefore use the 24 ffn_down matrices,
+the only 256-aligned matrices in the file, and 12 of them still miss 0.9 — which
+is the CODEC event the ladder exists to answer, reported in the edit report's
+`next` block rather than papered over with strength.
+
 ## 2. Land the pending tree (small; do first)
 
 The tree already carries a coherent change, uncommitted: `plan-apply` removed

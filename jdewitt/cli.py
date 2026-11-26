@@ -114,6 +114,12 @@ def command_manifest(parser):
             'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
 
 
+def _repair_modes():
+    """The repair ladder lives in jdewitt/rewrite.py; the CLI choices derive from it."""
+    from .rewrite import REPAIR_MODES
+    return REPAIR_MODES
+
+
 def build_parser():
     """Construct the full argparse tree without importing any command's runtime.
 
@@ -192,6 +198,18 @@ def build_parser():
     editg.add_argument('--delta-gguf',type=Path,default=None,
                        help='GGUF delta file (gguf-delta-pack); float tensors named like target tensors')
     editg.add_argument('--strength',type=float,default=1.0,help='multiplier applied to --delta-gguf tensors')
+    editg.add_argument('--edit-type',default=None,
+                       help='codec the edited tensors are re-encoded at (q6_k, q8_0, f16, ... or preserve); '
+                            'unset = the in-place writer keeps every source type')
+    editg.add_argument('--repair',choices=_repair_modes(),default='none',
+                       help="post-edit repair (needs --edit-type): renorm restores each edited row's pre-edit "
+                            "norm; norms also scales the edited layers' F32 norm weights; solve re-solves each "
+                            "delta against the codec it is stored in, up to --solve-passes passes, and floors "
+                            "divergent blocks to the unedited value")
+    editg.add_argument('--min-cos',type=float,default=0.9,
+                       help='realized cos(edit delivered, edit asked) floor the solve stops at')
+    editg.add_argument('--solve-passes',type=int,default=3,
+                       help='max re-solve passes per edited tensor (solve stops early once --min-cos is met)')
     editm=sub.add_parser('gguf-meta',help='Edit GGUF metadata (chat templates, tokenizer fields); tensor data is copied verbatim, no model')
     dpack=sub.add_parser('gguf-delta-pack',help='Pack float32 delta npys into a GGUF delta file consumable by gguf-edit --delta-gguf; inspectable, signable')
     dpack.add_argument('output',type=Path)
@@ -718,7 +736,8 @@ def main():
             from .agent import gguf_edit
             if not args.tensor and args.delta_gguf is None:
                 raise ValueError('provide at least one --tensor NAME=DELTA.NPY or a --delta-gguf')
-            result=gguf_edit(args.input,args.output,args.tensor,args.delta_gguf,args.strength)
+            result=gguf_edit(args.input,args.output,args.tensor,args.delta_gguf,args.strength,
+                             args.edit_type,args.repair,args.min_cos,args.solve_passes)
         elif args.command=='gguf-meta':
             from .agent import gguf_meta
             result=gguf_meta(args.input,args.output,args.set,args.unset)
@@ -1049,7 +1068,7 @@ def main():
                                            renormalize=args.renormalize,repair=args.repair,
                                            verify_untouched=not args.no_verify)
                 delivered=compare_edit(str(args.gguf),str(candidate),probe,
-                                       renormalize=args.renormalize or args.repair!='none')
+                                       renormalize=args.renormalize or args.repair in ('renorm','norms'))
                 attempt['delivered_edit']=delivered
                 attempt['path']=str(candidate)
                 if result is not None and candidate != args.out:

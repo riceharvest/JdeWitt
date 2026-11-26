@@ -675,7 +675,8 @@ def score_sensitivity(directory,min_confidences=(0.5,0.7,0.9)):
             'note':'Offline recount of saved verdicts under alternative decision floors; no rejudging happened.'}
 
 
-def gguf_edit(path, out, specs, delta_gguf=None, strength=1.0):
+def gguf_edit(path, out, specs, delta_gguf=None, strength=1.0, edit_type=None,
+              repair='none', min_cos=0.9, solve_passes=3):
     """Edit quantized GGUF tensors: dequantize -> add delta -> requantize in place.
 
     ``specs`` are ``NAME=DELTA.NPY`` pairs holding float32 deltas with the
@@ -684,6 +685,15 @@ def gguf_edit(path, out, specs, delta_gguf=None, strength=1.0):
     ``strength``. Everything outside the edited tensors (header, metadata,
     tensor info, all other tensor bytes) is copied byte for byte; offsets do
     not move because each edited tensor keeps its exact block count.
+
+    ``edit_type`` moves the edited tensors to another codec (``preserve`` keeps
+    the source type): the file is then written by ``rewrite_with_edits``, which
+    copies every other tensor verbatim. That is the path ``repair='solve'``
+    needs — the delta is re-solved against the codec it will be STORED in, so
+    the repair and the storage step are the same decision. Without
+    ``edit_type`` the in-place writer keeps each source type, where a solve has
+    no codec to solve against; asking for it is refused rather than silently
+    ignored.
     """
     import numpy as np
     from .ggufio import edit_tensors
@@ -729,10 +739,25 @@ def gguf_edit(path, out, specs, delta_gguf=None, strength=1.0):
         delta_gguf_names = names
     else:
         delta_gguf_names = []
-    result = edit_tensors(path, out, deltas)
+    if edit_type is None:
+        if repair != 'none':
+            raise ValueError(f'repair={repair!r} needs --edit-type: a repair re-solves the '
+                             f'delta against a WRITTEN codec, and the in-place writer keeps '
+                             f'every source type (pass --edit-type preserve to name that '
+                             f'explicitly, or the serving type you want)')
+        result = edit_tensors(path, out, deltas)
+    else:
+        from .rewrite import rewrite_with_edits
+        result = rewrite_with_edits(path, out, deltas, edit_type=edit_type, repair=repair,
+                                    min_cos=min_cos, solve_passes=solve_passes,
+                                    verify_untouched=True)
+        result['tensors_edited'] = result.get('tensors_edited', len(deltas))
+        result['source'] = str(path)
     result['delta_gguf'] = str(delta_gguf) if delta_gguf else None
     result['delta_gguf_tensors'] = delta_gguf_names
     result['strength'] = strength
+    result['repair'] = repair
+    result['edit_type'] = edit_type
     return result
 
 
