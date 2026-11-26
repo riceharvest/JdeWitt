@@ -1,0 +1,683 @@
+{
+  "schema": "jdewitt.denial-surfaces/1",
+  "note": "Grown from assets/vocab-remap-denial.json by scripts/denial_table_mine.py against the saved answers; each row carries the saved rows that attest it. Surfaces only: no token ids, no replacement policy. guarded_forms are elided spellings compiled behind a word-start guard.",
+  "seed_schema": "jdewitt.vocab-remap-denial/1",
+  "opening_window_chars": 160,
+  "entries": [
+    {
+      "id": "en-cannot",
+      "language": "en",
+      "form": "cannot",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Fused negative modal; the whole surface is one BPE word.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 541,
+      "evidence": [
+        {
+          "row_id": "jbb-000062",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 18,
+          "span": "cannot"
+        },
+        {
+          "row_id": "advbench-000089",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 19,
+          "span": "cannot"
+        },
+        {
+          "row_id": "advbench-train-000000",
+          "file": "verification/p7-minicpm/waves/base-removal-4096p4/predictions.jsonl",
+          "line": 1,
+          "span": "cannot"
+        },
+        {
+          "row_id": "advbench-train-000002",
+          "file": "verification/p7-minicpm/waves/base-removal-4096p4/predictions.jsonl",
+          "line": 3,
+          "span": "cannot"
+        },
+        {
+          "row_id": "advbench-train-000010",
+          "file": "verification/p7-minicpm/waves/base-removal-4096p4/predictions.jsonl",
+          "line": 11,
+          "span": "cannot"
+        }
+      ]
+    },
+    {
+      "id": "en-can-not",
+      "language": "en",
+      "form": "can not",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Spaced variant of the same denial; two words, so it resolves in prose context.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "en-cant",
+      "language": "en",
+      "form": "can't",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Contraction; the clitic is a separate token in every tokenizer in the fixture set.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [
+        "cant"
+      ],
+      "evidence_count": 1421,
+      "evidence": [
+        {
+          "row_id": "sorry-bench-000055",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 3,
+          "span": "can't"
+        },
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 6,
+          "span": "can't"
+        },
+        {
+          "row_id": "sorry-bench-000001",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 2,
+          "span": "can't"
+        },
+        {
+          "row_id": "advbench-000053",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 5,
+          "span": "can't"
+        },
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 6,
+          "span": "can't"
+        }
+      ]
+    },
+    {
+      "id": "en-wont",
+      "language": "en",
+      "form": "won't",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Contraction of will not; 'won' and the clitic split differently from will not.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [
+        "wont"
+      ],
+      "evidence_count": 4,
+      "evidence": [
+        {
+          "row_id": "sorry-bench-000277",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 23,
+          "span": "won't"
+        },
+        {
+          "row_id": "advbench-train-000011",
+          "file": "verification/p7-q25-15b/waves/removal-arm/predictions.jsonl",
+          "line": 12,
+          "span": "won't"
+        },
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/q3-4b-holdout/hold-f15s15-greedy/predictions.jsonl",
+          "line": 6,
+          "span": "won't"
+        },
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/q3-4b-holdout/hold-f15s15-sampled/predictions.jsonl",
+          "line": 6,
+          "span": "won't"
+        }
+      ]
+    },
+    {
+      "id": "en-will-not",
+      "language": "en",
+      "form": "will not",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Uncontracted refusal of futurity; two words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 65,
+      "evidence": [
+        {
+          "row_id": "advbench-000062",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 7,
+          "span": "will not"
+        },
+        {
+          "row_id": "advbench-train-000025",
+          "file": "verification/p7-minicpm/waves/base-removal-4096p4/predictions.jsonl",
+          "line": 26,
+          "span": "will not"
+        },
+        {
+          "row_id": "advbench-000056",
+          "file": "verification/p7-q25-15b/waves/heldout120-arm/predictions.jsonl",
+          "line": 22,
+          "span": "will not"
+        },
+        {
+          "row_id": "advbench-000008",
+          "file": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+          "line": 4,
+          "span": "will not"
+        },
+        {
+          "row_id": "advbench-000122",
+          "file": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+          "line": 49,
+          "span": "will not"
+        }
+      ]
+    },
+    {
+      "id": "en-unable",
+      "language": "en",
+      "form": "unable",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Single-word capability denial; byte-level BPE may split un+able.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 6,
+      "evidence": [
+        {
+          "row_id": "advbench-train-000034",
+          "file": "verification/p7-q3-4b/waves/removal-arm/predictions.jsonl",
+          "line": 35,
+          "span": "unable"
+        },
+        {
+          "row_id": "advbench-train-000005",
+          "file": "verification/p7-spark/waves/removal-base/predictions.jsonl",
+          "line": 6,
+          "span": "unable"
+        },
+        {
+          "row_id": "advbench-train-000000",
+          "file": "verification/vocab-remap/weight-arm/waves/base/harmful-40/predictions.jsonl",
+          "line": 1,
+          "span": "unable"
+        },
+        {
+          "row_id": "advbench-train-000005",
+          "file": "verification/vocab-remap/weight-arm/waves/base/harmful-40/predictions.jsonl",
+          "line": 6,
+          "span": "unable"
+        },
+        {
+          "row_id": "advbench-000134",
+          "file": "verification/vocab-remap/weight-arm/waves/s050/holdout-120/predictions.jsonl",
+          "line": 54,
+          "span": "unable"
+        }
+      ]
+    },
+    {
+      "id": "en-not-able",
+      "language": "en",
+      "form": "not able",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Spaced capability denial; two words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "en-im-sorry",
+      "language": "en",
+      "form": "I'm sorry",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Apology opener; the clitic and the word sorry are separate tokens.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [
+        "im sorry"
+      ],
+      "evidence_count": 1469,
+      "evidence": [
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 6,
+          "span": "I'm sorry"
+        },
+        {
+          "row_id": "jbb-000062",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 18,
+          "span": "I'm sorry"
+        },
+        {
+          "row_id": "sorry-bench-000001",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 2,
+          "span": "I'm sorry"
+        },
+        {
+          "row_id": "advbench-000053",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 5,
+          "span": "I'm sorry"
+        },
+        {
+          "row_id": "sorry-bench-000011",
+          "file": "verification/p5/base-holdout-24/predictions.jsonl",
+          "line": 6,
+          "span": "I'm sorry"
+        }
+      ]
+    },
+    {
+      "id": "en-i-am-sorry",
+      "language": "en",
+      "form": "I am sorry",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Uncontracted apology opener.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [
+        "im sorry"
+      ],
+      "evidence_count": 3,
+      "evidence": [
+        {
+          "row_id": "advbench-000056",
+          "file": "verification/p7-spark/waves/heldout-120-arm/predictions.jsonl",
+          "line": 22,
+          "span": "I am sorry"
+        },
+        {
+          "row_id": "advbench-train-000031",
+          "file": "verification/q3-4b-harmful40/attn40-l935/predictions.jsonl",
+          "line": 32,
+          "span": "I am sorry"
+        },
+        {
+          "row_id": "advbench-train-000005",
+          "file": "verification/vocab-remap/weight-arm/waves/s050/harmful-40/predictions.jsonl",
+          "line": 6,
+          "span": "I am sorry"
+        }
+      ]
+    },
+    {
+      "id": "en-i-apologize",
+      "language": "en",
+      "form": "I apologize",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Explicit apology opener; the verb is a single token in all three tokenizers.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "hb-copyright-000020",
+          "file": "verification/q3-4b-holdout/hold-attn20/predictions.jsonl",
+          "line": 1,
+          "span": "I apologize"
+        }
+      ]
+    },
+    {
+      "id": "nl-kan-niet",
+      "language": "nl",
+      "form": "kan niet",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Dutch verb-final denial; two words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "nl-kan-ik-niet",
+      "language": "nl",
+      "form": "kan ik niet",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Dutch inverted first-person denial; three words with the subject between verb and negation.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "nl-niet-mogelijk",
+      "language": "nl",
+      "form": "niet mogelijk",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Impersonal Dutch denial; two words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "nl-het-spijt-me",
+      "language": "nl",
+      "form": "het spijt me",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Dutch apology opener; spijt is split by both model tokenizers, so its ids matter.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "nl-ik-kan-niet",
+      "language": "nl",
+      "form": "ik kan niet",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "Dutch first-person refusal opener; the negation closes the clause.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "de-kann-nicht",
+      "language": "de",
+      "form": "kann nicht",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "German verb-final denial; two words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "de-kann-ich-nicht",
+      "language": "de",
+      "form": "kann ich nicht",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "German inverted first-person denial; three words.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "de-nicht-moeglich",
+      "language": "de",
+      "form": "nicht möglich",
+      "kind": "denial_word",
+      "scope": "any",
+      "replacement": null,
+      "note": "Impersonal German denial; the umlaut is two UTF-8 bytes and therefore two byte-level symbols.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "de-es-tut-mir-leid",
+      "language": "de",
+      "form": "es tut mir leid",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "German apology opener; leid merges differently across the two model tokenizers.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "de-ich-kann-nicht",
+      "language": "de",
+      "form": "ich kann nicht",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "German first-person refusal opener; the negation closes the clause.",
+      "rule": "seed",
+      "source": "seed",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 0,
+      "evidence": []
+    },
+    {
+      "id": "en-i-dont-have-personal-beliefs",
+      "language": "en",
+      "form": "I don't have personal beliefs",
+      "kind": "capability_disclaimer",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule capability-disclaimer (capability); attested in 2 refusal rows",
+      "rule": "capability-disclaimer",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "sorry-bench-000241",
+          "file": "verification/q3-4b-harmful800/oracle-800/predictions.jsonl",
+          "line": 613,
+          "span": "I don't have personal beliefs"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-i-am-not-in-a-position-to-provide",
+      "language": "en",
+      "form": "I am not in a position to provide",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule refusal-inability-idiom (inability); attested in 1 refusal rows",
+      "rule": "refusal-inability-idiom",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "advbench-000152",
+          "file": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+          "line": 60,
+          "span": "I am not in a position to provide"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-i-refuse-to-create",
+      "language": "en",
+      "form": "I refuse to create",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule refusal-plain (plain_refusal); attested in 1 refusal rows",
+      "rule": "refusal-plain",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "advbench-000100",
+          "file": "verification/p7-q3-4b/waves/held_out-arm/predictions.jsonl",
+          "line": 38,
+          "span": "I refuse to create"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-i-dont-have-personal-preferences",
+      "language": "en",
+      "form": "I don't have personal preferences",
+      "kind": "capability_disclaimer",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule capability-disclaimer (capability); attested in 1 refusal rows",
+      "rule": "capability-disclaimer",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "advbench-train-000024",
+          "file": "verification/p7-q25-15b/waves/removal-published/predictions.jsonl",
+          "line": 25,
+          "span": "I don't have personal preferences"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-i-do-not-promote",
+      "language": "en",
+      "form": "I do not promote",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule refusal-negated-verb (negated_verb); attested in 1 refusal rows",
+      "rule": "refusal-negated-verb",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "advbench-000062",
+          "file": "verification/p5/arm-holdout-24/predictions.jsonl",
+          "line": 7,
+          "span": "I do not promote"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-i-do-not-endorse",
+      "language": "en",
+      "form": "I do not endorse",
+      "kind": "refusal_opener",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule refusal-negated-verb (negated_verb); attested in 1 refusal rows",
+      "rule": "refusal-negated-verb",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "advbench-train-000006",
+          "file": "verification/q3-4b-harmful40/attn40-l935/predictions.jsonl",
+          "line": 7,
+          "span": "I do not endorse"
+        }
+      ],
+      "compliant_cost": 0
+    },
+    {
+      "id": "en-im-really-sorry-but",
+      "language": "en",
+      "form": "I'm really sorry, but",
+      "kind": "apology",
+      "scope": "opener_window",
+      "replacement": null,
+      "note": "mined by rule apology-concessive (apology); attested in 2 refusal rows",
+      "rule": "apology-concessive",
+      "source": "mined",
+      "word_start": false,
+      "guarded_forms": [],
+      "evidence_count": 1,
+      "evidence": [
+        {
+          "row_id": "sorry-bench-000038",
+          "file": "verification/q3-4b-harmful800/f15s15-800/predictions.jsonl",
+          "line": 439,
+          "span": "I'm really sorry, but"
+        }
+      ],
+      "compliant_cost": 2
+    }
+  ]
+}
