@@ -58,6 +58,10 @@ def test_table_ids_first_token_variant_is_the_first_id_of_each_surface():
     assert table_ids(tokenizer, ('cannot', 'can not'), first_token_only=False) == [20, 22, 23]
 
 
+def _axis(head, denial=(), compliance=(), seed=0):
+    return head_axis(head[np.asarray(denial)], head[np.asarray(compliance)])
+
+
 def _toy(head=None, seed=0):
     rng = np.random.default_rng(seed)
     if head is None:
@@ -67,7 +71,7 @@ def _toy(head=None, seed=0):
 
 def test_axis_is_unit_and_points_from_compliance_to_denial():
     head, _ = _toy()
-    out = head_axis(head, [0, 1], [2, 3])
+    out = _axis(head, [0, 1], [2, 3])
     d = out['d']
     assert abs(float(np.linalg.norm(d)) - 1.0) < 1e-12
     raw = head[[0, 1]].mean(axis=0) - head[[2, 3]].mean(axis=0)
@@ -78,16 +82,18 @@ def test_axis_is_unit_and_points_from_compliance_to_denial():
 def test_axis_needs_both_sides():
     head, _ = _toy()
     with pytest.raises(ValueError):
-        head_axis(head, [], [2])
+        head_axis(head[np.asarray([0, 1])], head[np.asarray([], dtype=np.int64)])
     flat = np.ones((6, 4))
     with pytest.raises(ValueError):
-        head_axis(flat, [0], [1])
+        head_axis(flat[[0]], flat[[1]])
+    with pytest.raises(ValueError):
+        head_axis(head[[0, 1]], head[[2, 3]][:, :2])
 
 
 def test_projection_residual_equals_projected_energy():
     head, rng = _toy()
     W = rng.normal(size=(5, 4))
-    d = head_axis(head, [0, 1], [2, 3])['d']
+    d = _axis(head, [0, 1], [2, 3])['d']
     stats = edit_stats(W, d)
     assert stats['unit_ok']
     assert stats['residual_identity_ok']
@@ -111,23 +117,45 @@ def test_projected_energy_is_not_the_frobenius_norm():
 
 def test_margin_reduction_is_exactly_the_projection_for_any_block_input():
     head, rng = _toy()
-    axis = head_axis(head, [0, 1], [2, 3])
+    axis = _axis(head, [0, 1], [2, 3])
     d, g = axis['d'], axis['g']
     W = rng.normal(size=(5, 4))
     for _ in range(5):
         a = rng.normal(size=5)
         out = margin_reduction(g, d, W, a)
         assert out['identity_ok'], out
+        assert out['g_parallel_to_d'] == pytest.approx(1.0, abs=1e-12)
         assert out['reduction'] == pytest.approx(out['predicted'], rel=1e-10, abs=1e-12)
+
+
+def test_margin_identity_holds_for_an_unrelated_g_with_the_general_coefficient():
+    head, rng = _toy()
+    d = _axis(head, [0, 1], [2, 3])['d']
+    g = rng.normal(size=4)          # deliberately NOT parallel to d
+    W = rng.normal(size=(5, 4))
+    out = margin_reduction(g, d, W, rng.normal(size=5))
+    assert out['identity_ok'], out
+    assert out['g_parallel_to_d'] < 0.999
 
 
 def test_head_channel_closes_exactly_when_d_is_projected_out():
     head, _ = _toy()
-    out = head_axis(head, [0, 1], [2, 3])
-    closed = head_channel_closed(out['g'], out['d'])
+    out = _axis(head, [0, 1], [2, 3])
+    x = np.random.default_rng(9).normal(size=4)
+    closed = head_channel_closed(out['g'], out['d'], x)
     assert closed['closed']
+    assert closed['g_parallel_to_d'] == pytest.approx(1.0, abs=1e-12)
     assert closed['margin_per_unit_d'] == pytest.approx(out['margin'])
     assert closed['margin_after'] == pytest.approx(0.0, abs=1e-12)
+
+
+def test_head_channel_does_not_close_for_a_g_that_is_not_the_axis():
+    head, _ = _toy()
+    axis = _axis(head, [0, 1], [2, 3])
+    other = np.random.default_rng(11).normal(size=4)
+    closed = head_channel_closed(other, axis['d'], np.ones(4))
+    assert closed['closed'] is False
+    assert closed['g_parallel_to_d'] < 0.999
 
 
 def test_rank_one_delta_recovers_its_own_left_factor():
@@ -139,6 +167,19 @@ def test_rank_one_delta_recovers_its_own_left_factor():
     out = top_left_direction(delta)
     assert abs(cosine(out['direction'], u)) == pytest.approx(1.0, abs=1e-10)
     assert out['effective_rank'] == pytest.approx(1.0, rel=1e-10)
+
+
+def test_wide_delta_recovers_the_residual_side_factor_from_the_row_space():
+    # down_proj is [896 out, 4864 in]; a [in, out] reading would give the wrong
+    # width here, so the toy pins the orientation with out < in.
+    rng = np.random.default_rng(5)
+    u = rng.normal(size=4); u /= np.linalg.norm(u)
+    v = rng.normal(size=8)
+    delta = -3.0 * np.outer(u, v)
+    out = top_left_direction(delta)
+    assert out['direction'].shape == (4,)
+    assert abs(cosine(out['direction'], u)) == pytest.approx(1.0, abs=1e-10)
+    assert abs(cosine(out['direction'], v[:4] / np.linalg.norm(v[:4]))) < 0.99
 
 
 def test_rank_two_delta_reports_energy_below_one():

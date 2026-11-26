@@ -112,18 +112,23 @@ def table_ids(tokenizer, surfaces, *, first_token_only: bool = True):
     return ids
 
 
-def head_axis(head: np.ndarray, denial_ids, compliance_ids):
-    """d = normalize(mean(E_denial) - mean(E_compliance)) for head rows E.
+def head_axis(denial_rows, compliance_rows):
+    """d = normalize(mean(E_denial) - mean(E_compliance)) from the head's rows.
 
-    `head` is [vocab, hidden] in HF order. The denial/compliance margin of a
-    residual vector h is h . g with g = W_out^T u, so ||g|| is the margin per
-    unit step along d and is reported beside it: a direction with a tiny margin
-    is arithmetic, not a usable axis.
+    Takes the row blocks themselves, not the whole 151936-row table: the head is
+    only ever needed at the resolved ids, and a caller that already sliced it
+    should not have to hold the rest. The denial/compliance margin of a residual
+    h is h . g with g = W_out^T u, so ||g|| is the margin per unit step along d
+    and is reported beside it: a tiny margin is arithmetic, not a usable axis.
     """
-    if not len(denial_ids) or not len(compliance_ids):
+    rows_d = np.asarray(denial_rows, dtype=np.float64)
+    rows_c = np.asarray(compliance_rows, dtype=np.float64)
+    if rows_d.ndim != 2 or rows_c.ndim != 2:
+        raise ValueError(f'axis needs [n, hidden] row blocks, got {rows_d.shape} and {rows_c.shape}')
+    if not len(rows_d) or not len(rows_c):
         raise ValueError('both vocabularies must resolve to at least one head row')
-    rows_d = np.asarray(head[np.asarray(denial_ids, dtype=np.int64)], dtype=np.float64)
-    rows_c = np.asarray(head[np.asarray(compliance_ids, dtype=np.int64)], dtype=np.float64)
+    if rows_d.shape[1] != rows_c.shape[1]:
+        raise ValueError(f'denial/compliance rows disagree on width: {rows_d.shape[1]} vs {rows_c.shape[1]}')
     g = rows_d.mean(axis=0) - rows_c.mean(axis=0)
     norm = float(np.linalg.norm(g))
     if not np.isfinite(norm) or norm <= 0.0:
@@ -139,7 +144,7 @@ def head_axis(head: np.ndarray, denial_ids, compliance_ids):
             'denial_rows_mean_l2': float(np.linalg.norm(rows_d, axis=1).mean()),
             'compliance_rows_mean_l2': float(np.linalg.norm(rows_c, axis=1).mean()),
         },
-        'n_denial': len(denial_ids), 'n_compliance': len(compliance_ids),
+        'n_denial': int(rows_d.shape[0]), 'n_compliance': int(rows_c.shape[0]),
     }
 
 
@@ -190,10 +195,12 @@ def margin_reduction(g: np.ndarray, d: np.ndarray, W: np.ndarray, a: np.ndarray,
 
     m(a)  = u^T W_out W^T a        (denial-minus-compliance margin, this tensor)
     m'(a) = u^T W_out W'^T a       (after W' = W(I - dd^T))
-    m - m' = (u^T W_out d)(d^T W^T a) = ||W_out^T u|| (W d) . a
+    m - m' = (g . d) ((W d) . a)   with g = W_out^T u
 
-    Checked against the independent right-hand side, so the 'exactly the
-    projection' claim is a measurement of two matrix products, not a restatement.
+    The coefficient is g.d, not ||g||: the two agree only when g is parallel to d,
+    which is true for an axis built from the head but must not be assumed by the
+    identity itself. `g_parallel_to_d` reports the ratio, so a caller that hands
+    in an unrelated g sees it immediately instead of getting a false pass.
     """
     W64 = np.asarray(W, dtype=np.float64)
     d64 = np.asarray(d, dtype=np.float64)
@@ -201,30 +208,41 @@ def margin_reduction(g: np.ndarray, d: np.ndarray, W: np.ndarray, a: np.ndarray,
     edited, _ = project_out(W64, d64)
     before = float(g @ (W64.T @ a))
     after = float(g @ (edited.T @ a))
-    predicted = float(np.linalg.norm(g)) * float((W64 @ d64) @ a)
+    coefficient = float(g @ d64)
+    predicted = coefficient * float((W64 @ d64) @ a)
     observed = before - after
     headroom = max(abs(before), abs(observed), abs(predicted), 1e-6)
+    gn = float(np.linalg.norm(g))
     return {
         'before': before, 'after': after, 'reduction': observed,
         'predicted': predicted,
+        'coefficient_g_dot_d': coefficient,
+        'g_parallel_to_d': (abs(coefficient) / gn) if gn else None,
         'identity_abs': abs(observed - predicted) / headroom,
         'identity_ok': abs(observed - predicted) <= identity_tol * headroom,
     }
 
 
-def head_channel_closed(g: np.ndarray, d: np.ndarray, *, identity_tol: float = 1e-9):
-    """Does projecting d out of the head's input close the d-margin channel exactly?
+def head_channel_closed(g: np.ndarray, d: np.ndarray, x: np.ndarray,
+                        *, identity_tol: float = 1e-9):
+    """Does projecting d out of the head's input close the margin channel exactly?
 
-    M = u^T W_out d = ||W_out^T u||; with W_out (I - dd^T) the same reading is
-    zero by construction. Reported because it is the cleanest statement of what
-    the writeback edit buys: the head can no longer score any d-component.
+    For any residual read x the head margin is g . x. After W_out (I - dd^T) it
+    is g . x - (g . d)(d . x): exactly zero for every x when g is parallel to d,
+    which is what an axis built from that head guarantees. The parallelism is
+    returned rather than assumed, so a mismatched g cannot pass quietly.
     """
     g = np.asarray(g, dtype=np.float64)
     d = np.asarray(d, dtype=np.float64)
-    closed = float(g @ (np.eye(d.shape[0]) - np.outer(d, d)) @ d)
-    return {'margin_per_unit_d': float(np.linalg.norm(g)),
-            'margin_after': closed,
-            'closed': abs(closed) <= identity_tol * max(float(np.linalg.norm(g)), 1.0)}
+    x = np.asarray(x, dtype=np.float64)
+    before, after = float(g @ x), float(g @ (x - d * (d @ x)))
+    gn, dn = float(np.linalg.norm(g)), float(np.linalg.norm(d))
+    parallel = abs(float(g @ d)) / (gn * dn) if gn and dn else None
+    scale = max(abs(before), gn, 1.0)
+    return {'margin_before': before, 'margin_after': after,
+            'margin_per_unit_d': gn,
+            'g_parallel_to_d': parallel,
+            'closed': abs(after) <= identity_tol * scale and bool(parallel and parallel > 1 - 1e-9)}
 
 
 def cosine(a, b) -> float:
@@ -241,10 +259,13 @@ def cosine(a, b) -> float:
 def top_left_direction(delta: np.ndarray):
     """Dominant residual-space direction of a weight delta, and its rank-1 share.
 
-    delta is [in, out] in GGUF order; a rank-1 abliteration delta is -s u v^T,
-    so the left factor (the direction removed from the residual stream) is the
-    top eigenvector of delta delta^T. Fraction of energy in it says how far the
-    delta is from rank-1; it is reported, never assumed.
+    delta is in HF [out, in] order. A rank-1 abliteration delta is -s u v^T with
+    u the residual-side vector, so the top eigenvector of delta delta^T is u.
+    Getting this order wrong is invisible on o_proj (square) and catastrophic on
+    down_proj (896 x 4864): the eigenvector then lives in the hidden-to-
+    intermediate input space and has the wrong width, which is exactly why the
+    caller asserts the width. Fraction of energy in u says how far the delta is
+    from rank-1; it is reported, never assumed.
     """
     delta = np.asarray(delta, dtype=np.float64)
     gram = delta @ delta.T
