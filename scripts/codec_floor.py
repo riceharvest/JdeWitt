@@ -259,7 +259,7 @@ def main():
             row = {**base, 'to_dtype': type_name.upper(),
                    'codec': quantization_error(weight, quantized)}
             for space_name, block in spaces.items():
-                row[space_name] = aligned_row(prepared[space_name], quantized, block['rank'])
+                row[space_name] = aligned_row(prepared[space_name], quantized, block['rank'], ks=KS)
             reports[type_name]['tensors'].append(row)
             writeback_by_type[type_name]['payloads'][spec['name']] = payload
             writeback_by_type[type_name]['qtypes'][spec['name']] = type_id_for_name(type_name)
@@ -368,6 +368,21 @@ def main():
         block = {'tensors_measured': len(rows), 'skipped': reports[type_name]['skipped'],
                  'skip_count': len(reports[type_name]['skipped']),
                  'per_tensor': rows, 'aggregate': summarise(rows) if rows else {}}
+        if rows:
+            # Attention output and FFN down are different tensors with different source
+            # codecs (Q5_0 vs Q4_K/IQ3_S here) and different widths, so one aggregate
+            # over both can hide that they behave differently under the same grid.
+            block['by_kind'] = {}
+            for kind in sorted({row['kind'] for row in rows}):
+                subset = [row for row in rows if row['kind'] == kind]
+                summary = summarise(subset)['surface_span']
+                block['by_kind'][kind] = {
+                    'tensors': len(subset),
+                    'edit': summary['edit'],
+                    'relative_noise_energy_median': summary['relative_noise_energy_median'],
+                    'rms_ratio_median': summary['rms_ratio_median'],
+                    'snr_db_median': summary['snr_db_median'],
+                }
         if not rows:
             block['note'] = 'no tensor of this artifact is representable in this grid'
         report['types'][type_name] = block
@@ -394,7 +409,10 @@ def main():
             checks['bytes_delta'] = checks['bytes_out'] - checks['bytes_in']
             checks['write_seconds'] = round(write_seconds, 2)
             checks['sha256'] = sha256(out_path)
-            checks['artifact'] = display(out_path)
+            # Basename only: the artifact is a run product under --work-dir, and a
+            # committed report must not carry a lab path nobody else can follow.
+            checks['artifact'] = out_path.name
+            checks['work_dir_note'] = 'written under the run\'s --work-dir, not committed'
             checks['tensors_written'] = len(payloads)
             checks['tensor_infos_differ_only_in_type_and_offset'] = (
                 [t['name'] for t in parse_container(out_path)['tensors']] ==
@@ -403,7 +421,8 @@ def main():
             sidecar.unlink(missing_ok=True)
             save_whole_file_revert(artifact, out_path, sidecar)
             revert = revert_inplace(out_path, sidecar)
-            checks['revert'] = {**revert, 'source_sha256': source_sha,
+            checks['revert'] = {**revert, 'artifact': out_path.name, 'sidecar': sidecar.name,
+                                'source_sha256': source_sha,
                                 'byte_exact': revert.get('restored_sha256') == source_sha}
             checks['loads'] = bool(checks['loads'])
             report['types'][type_name]['artifact'] = checks
@@ -442,6 +461,11 @@ def main():
             'random_cos': edit['random_cos'],
             'selectivity_median': edit['selectivity'],
             'aligned_kept': edit['cos_median'] >= 0.99,
+            # If the re-encode's error were isotropic and independent of the component,
+            # cos would be exactly 1/sqrt(1 + noise_energy/||W||^2). Reporting the
+            # prediction beside the measurement is what makes "the codec is blind to
+            # direction" a number instead of a claim.
+            'cos_predicted_for_isotropic_noise': 1.0 / float(np.sqrt(1.0 + floor)),
             'mean_axis_cos': block['mean_axis']['edit']['cos_median'],
             'mean_axis_edit_size': block['mean_axis']['edit']['aligned_energy_fraction_median'],
             'mean_axis_floor_over_edit': (floor / block['mean_axis']['edit']['aligned_energy_fraction_median']

@@ -458,7 +458,12 @@ def roundtrip(weight, type_name):
     flat = np.ascontiguousarray(np.asarray(weight, dtype=np.float32).reshape(-1))
     if flat.size % block_els:
         raise ValueError(f'{type_name} needs a multiple of {block_els} values, got {flat.size}')
-    packed = np.asarray(quantize(flat), dtype=np.uint8).reshape(-1)
+    # A flat (constant) block makes the K-quant fit divide by a zero span before the
+    # codec overwrites that group with zeros — the mirror of C's behaviour, and a
+    # transient non-finite intermediate, not a bad value. Silence it rather than let a
+    # 24-tensor run print a warning that looks like a defect.
+    with np.errstate(divide='ignore', invalid='ignore'):
+        packed = np.asarray(quantize(flat), dtype=np.uint8).reshape(-1)
     values = np.asarray(dequantize(packed, flat.size), dtype=np.float32).reshape(np.shape(weight))
     return values, packed
 
