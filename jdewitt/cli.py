@@ -173,6 +173,17 @@ def build_parser():
     conj.add_argument('--out',type=Path,help='New GGUF to write with --apply (plus <out>.revert.npz); refused if it exists')
     conj.add_argument('--apply',action='store_true',help='Write --out instead of only printing the dry run; never edits the input in place')
     conj.add_argument('--json',type=Path,help='Also write the same JSON to this path')
+    vdel=sub.add_parser('vocab-delete',help='Delete denial-opener ids from the vocabulary: drop the token entries, renumber every surviving id and the scalar *_token_id fields, delete the matching token_embd rows; every other KV entry and tensor stays byte-identical and a sidecar reverts byte-exactly. No model loads')
+    vdel.add_argument('--weights',type=Path,help='GGUF whose vocabulary loses the ids (read for tokenizer, KV and header; never edited in place)')
+    vdel.add_argument('--table',type=Path,help='Opener-pair JSON override; default is the packaged assets/vocab-conjugate-openers.json')
+    vdel.add_argument('--out',type=Path,help='New GGUF to write with --apply (plus <out>.revert.npz); refused if it exists')
+    vdel.add_argument('--apply',action='store_true',help='Write --out instead of only printing the dry run; never edits the input in place')
+    vdel.add_argument('--include-byte-alphabet',dest='include_byte_alphabet',action='store_true',help='Also delete single-raw-byte ids the table attests (e.g. "I"): the arm that makes the string unrepresentable because it breaks the byte alphabet')
+    vdel.add_argument('--json',type=Path,help='Also write the same JSON to this path')
+    vdel.add_argument('--map',type=Path,help='Write the full old_id/new_id/piece table here (default: next to --json or --out)')
+    vdel.add_argument('--revert',type=Path,metavar='PRUNED',help='Re-insert the deleted entries and rows recorded in --sidecar and write the reconstructed source to --revert-out')
+    vdel.add_argument('--sidecar',type=Path,help='--revert: the .revert.npz the deletion wrote')
+    vdel.add_argument('--revert-out',type=Path,help='--revert: where the reconstructed source goes')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -941,6 +952,20 @@ def main():
             result=vocab_conjugate(weights=args.weights,table=args.table,out=args.out,
                                    apply=args.apply,json_out=args.json)
             exit_code=0 if result['verdict']['ok'] else 1
+        elif args.command=='vocab-delete':
+            from .vocabdelete import revert_delete,vocab_delete
+            if args.revert is not None:
+                if args.sidecar is None or args.revert_out is None:
+                    raise ValueError('--revert needs --sidecar and --revert-out')
+                result=revert_delete(args.revert,args.sidecar,args.revert_out)
+                exit_code=0 if result['byte_exact'] else 1
+            else:
+                if args.weights is None:
+                    raise ValueError('vocab-delete needs --weights (or --revert with --sidecar/--revert-out)')
+                result=vocab_delete(weights=args.weights,table=args.table,out=args.out,apply=args.apply,
+                                    include_byte_alphabet=args.include_byte_alphabet,json_out=args.json,
+                                    mapping_out=args.map)
+                exit_code=0 if result['verdict']['ok'] else 1
         elif args.command=='grammar':
             if not args.compile:
                 raise ValueError('grammar implements --compile only')

@@ -169,6 +169,23 @@ Currently checkable in a fresh clone:
   plan `verification/vocab-remap/{list,dryrun}.json`, and the multilingual
   falsifier `verification/vocab-remap/multilingual.json`.
 
+- **Deleting a denial token removes the id, not the string.** `jdewitt
+  vocab-delete` drops the seven merged ids the opener table's denial surfaces
+  resolve to on the Qwen2.5-0.5B IQ3_M, renumbers the vocabulary from 151,936 to
+  151,929 and removes the matching `token_embd` rows in one write; every other
+  tensor stays bit-identical under `gguf-tensor-diff`, every surviving row keeps its
+  stored bytes, and a sidecar of a few kilobytes reconstructs the pristine file
+  byte for byte (sha256 `0b2e1747…`). The deleted string survives as byte tokens —
+  `Sorry` encodes as 50, 78, 81, 81, 88 — and llama.cpp's byte fallback silently
+  drops the leading-space marker of `ĠSorry`, so prompt-side ` Sorry` loses its
+  space; the byte `I` is refused by default, and the arm that deletes it anyway
+  (`--include-byte-alphabet`) measures text containing `I` becoming unrepresentable,
+  which breaks the tokenizer rather than the denial. Static only: no forward pass,
+  no serve, `removal_measured` false, and the string-level result is a negative one
+  for removal. Evidence: `verification/vocab-delete/README.md`,
+  `verification/vocab-delete/apply-A.json`, `verification/vocab-delete/apply-B.json`,
+  the `llama-tokenize` cross-checks there, and `docs/VOCAB-DELETE.md`.
+
 Held for honesty, not as evidence: the **Qwen2.5-1.5B 40/40 + 24/24
 held-out**, the **MiniCPM-V 4.7 36/40**, and the **Spark-X2.6-1.7B /
 LFM3-1.7B** rows were taken before the 2026-11-17 row-kind scoring fix, and

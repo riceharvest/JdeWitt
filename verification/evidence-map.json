@@ -673,6 +673,30 @@
           "command": ".venv/bin/python -c \"import json; a=json.load(open('verification/p6-runtime-equivalence/spark-1.7b-q4km.json'))['agreement']; print(f\\\"{a['rows_agreeing']}/{a['rows']} agree, {a['rows_disagreeing']}/{a['rows']} disagree, merged refusals {a['verdict_counts']['merged']['refusal']}/{a['rows']}\\\")\""
         }
       ]
+    },
+    {
+      "claim": "vocab deletion: the denial-opener ids leave the tokenizer arrays, the scalar id fields and the embedding rows in one write, every other tensor stays bit-identical, and the revert is byte-exact",
+      "status": "in-clone",
+      "commands": [
+        "jdewitt vocab-delete --weights verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf --out runs/vocab-delete/pruned-A.gguf --apply --json verification/vocab-delete/apply-A.json"
+      ],
+      "artifacts": [
+        "verification/vocab-delete/README.md",
+        "verification/vocab-delete/dryrun-A.json",
+        "verification/vocab-delete/dryrun-B.json",
+        "verification/vocab-delete/apply-A.json",
+        "verification/vocab-delete/apply-B.json",
+        "verification/vocab-delete/id-map-A.tsv.gz",
+        "verification/vocab-delete/inspect-A.json",
+        "verification/vocab-delete/inspect-B.json",
+        "verification/vocab-delete/tensor-diff-A.json",
+        "verification/vocab-delete/tensor-diff-B.json",
+        "verification/vocab-delete/llama-tokenize-A.json",
+        "verification/vocab-delete/llama-tokenize-B.json",
+        "docs/VOCAB-DELETE.md"
+      ],
+      "notes": "Static only, removal_measured false: the artifact is read for tokenizer, KV and header; the write deletes the token entries, renumbers every surviving id and the bos/eos/padding scalars, and copies the surviving token_embd rows (Q8_0, 952 bytes per row); no model, no logits, no serve, no device. Arm A deletes seven merged ids (151,936 -> 151,929 tokens); arm B also deletes id 40 'I', a byte-alphabet entry, and is the arm that makes I-bearing text unrepresentable. Both arms: 289 of 290 tensors bit-identical under gguf-tensor-diff, every surviving row byte-identical, five of 38 KV entries changed and the other 33 byte-identical, revert byte-exact to the pristine sha256. All 13 tokenizer probes match llama-tokenize on the pristine and the pruned files. The deleted string remains spellable as byte tokens (Sorry -> five byte tokens); llama.cpp's byte fallback drops the leading-space marker, and the report records that divergence. The artifact (343 MB) is not committed; it is identified by sha256 in the JSON and the measurements are all committed.",
+      "numbers": []
     }
   ]
 }
