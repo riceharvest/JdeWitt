@@ -3,19 +3,15 @@
 
 Everything is public and ungated. The revision is pinned to the commit the sha256
 came from, and the local file is rehashed rather than trusting the Hub metadata.
+``--keep`` keeps the downloads for the experiment run; without it the bytes are
+deleted after the hashes are written (disk is tight).
 """
+import argparse
 import hashlib
 import json
-import sys
 from pathlib import Path
 
 from huggingface_hub import hf_hub_download
-
-KEEP = '--keep' in sys.argv
-sys.argv = [arg for arg in sys.argv if arg != '--keep']
-
-DEST = Path('/home/dario/alignment-exp/downloads')
-OUT = Path(sys.argv[1])
 
 SPECS = [
     ('base', 'Qwen/Qwen2.5-0.5B', '060db6499f32faf8b98477b0a26969ef7d8b9987', 'model.safetensors'),
@@ -36,24 +32,32 @@ def sha256(path, chunk=1 << 24):
 
 
 def main():
-    DEST.mkdir(parents=True, exist_ok=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('out', type=Path, help='provenance JSON to write')
+    parser.add_argument('--dest', type=Path, default=Path('downloads'),
+                        help='download directory (default: ./downloads)')
+    parser.add_argument('--keep', action='store_true',
+                        help='keep the downloaded bytes; the default deletes them after hashing')
+    args = parser.parse_args()
+
+    args.dest.mkdir(parents=True, exist_ok=True)
     records = {}
     for key, repo, revision, filename in SPECS:
         local = hf_hub_download(repo_id=repo, filename=filename, revision=revision,
-                                local_dir=DEST / key)
+                                local_dir=args.dest / key)
         digest = sha256(local)
         size = Path(local).stat().st_size
         records[key] = {'repo': repo, 'revision': revision, 'filename': filename,
                         'bytes': size, 'sha256': digest}
         print(key, size, digest, flush=True)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps(records, indent=2))
-    if not KEEP:
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(records, indent=2))
+    if not args.keep:
         for key in records:
-            for path in sorted((DEST / key).rglob('*')):
+            for path in sorted((args.dest / key).rglob('*')):
                 if path.is_file():
                     path.unlink()
-    print('wrote', OUT)
+    print('wrote', args.out)
 
 
 if __name__ == '__main__':

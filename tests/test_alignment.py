@@ -1,5 +1,7 @@
 """Static checks for the alignment-matrix experiment: algebra and byte identity."""
 import hashlib
+import json
+from pathlib import Path
 
 import numpy as np
 
@@ -133,3 +135,42 @@ def test_inplace_edit_leaves_untouched_tensors_bit_identical_and_reverts(tmp_pat
     restored = revert_inplace(work, sidecar)
     assert restored['restored_sha256'] == original
     assert _sha(work) == original
+
+
+REPORT = Path(__file__).resolve().parents[1] / 'verification/alignment-matrix/report.json'
+APPLY = Path(__file__).resolve().parents[1] / 'verification/alignment-matrix/apply.json'
+
+
+def test_committed_report_energy_identity_and_flag():
+    report = json.loads(REPORT.read_text())
+    assert report['removal_measured'] is False
+    assert report['checks']['energy_identity_holds'] is True
+    assert report['checks']['remain_identity_holds'] is True
+    assert report['checks']['singular_values_descending'] is True
+    for row in report['per_tensor']:
+        singular = row['singular_values']
+        for k, curve in row['curves'].items():
+            expected = sum(value ** 2 for value in singular[:int(k)])
+            assert np.isclose(curve['removed_energy'], expected, rtol=1e-12, atol=0.0)
+            assert 0.0 <= curve['removed_energy_fraction'] <= 1.0
+            assert 0.0 <= curve['delta_residual_norm_ratio'] <= 1.0
+
+
+def test_committed_apply_report_byte_checks():
+    report = json.loads(APPLY.read_text())
+    assert report['removal_measured'] is False
+    inplace = report['arms']['inplace_preserve_codec']
+    assert inplace['revert']['byte_exact'] is True
+    assert inplace['revert']['restored_sha256'] == inplace['revert']['source_sha256']
+    assert inplace['metadata_bytes_identical'] is True
+    assert inplace['tokenizer_identical'] is True
+    assert inplace['untouched']['untouched_all_bit_identical'] is True
+    assert inplace['untouched']['differing_outside_edit_set'] == []
+    reencode = report['arms']['out_of_place_f16']
+    assert reencode['tokenizer_identical'] is True
+    assert reencode['untouched']['untouched_all_bit_identical'] is True
+    assert reencode['untouched']['differing_outside_edit_set'] == []
+    assert reencode['fidelity']['cos_min'] >= 0.999
+    # the in-place 3-bit arm must record that it did not cover every delta
+    assert report['checks']['inplace_covers_all_deltas'] is False
+    assert inplace['skipped_count'] > 0

@@ -29,8 +29,8 @@ from jdewitt.alignment import (CAVEATS, DEFAULT_KS, SCHEMA, aggregate, choose_k,
                                load_matrix, tensor_curve, writeback_tensors)
 
 GGUF_NAMES = {
-    'self_attn.o_proj.weight': 'attn_output',
-    'mlp.down_proj.weight': 'ffn_down',
+    'self_attn.o_proj.weight': 'attn_output.weight',
+    'mlp.down_proj.weight': 'ffn_down.weight',
 }
 
 
