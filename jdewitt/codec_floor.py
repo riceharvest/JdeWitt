@@ -258,37 +258,76 @@ def alignment_curve(weight, basis, quantized, ks=None):
     computed once; a rank-k curve is a prefix sum over their rows because the basis
     columns are ordered by singular value.
     """
+    prepared = prepare_alignment(weight, basis)
+    return prepared_curve(prepared, quantized, ks=ks)[0]
+
+
+def prepare_alignment(weight, basis, random_basis=None):
+    """The parts of an alignment measurement that do not depend on the re-encoded type.
+
+    ``Z = VᵀW`` is one BLAS call per tensor, and a codec is measured at three types;
+    recomputing it per type would triple the dominant cost for no information. The two
+    bases are stacked into one ``[out, r + r_rand]`` block so the quantized projection
+    is also a single call, and the split is kept so the random control cannot be mixed
+    up with the measurement.
+    """
     weight = np.asarray(weight, dtype=np.float32)
-    quantized = np.asarray(quantized, dtype=np.float32)
-    if weight.shape != quantized.shape:
-        raise ValueError(f'weight {weight.shape} vs re-encoded {quantized.shape}')
     basis = np.asarray(basis, dtype=np.float32)
     rank = basis.shape[1]
-    ks = sorted({int(k) for k in (ks or (1, 2, 4, 8, 16, rank)) if 0 < int(k) <= rank})
-    z = basis.T.astype(np.float64) @ weight.astype(np.float64)
-    zq = basis.T.astype(np.float64) @ quantized.astype(np.float64)
+    stack = basis if random_basis is None else np.concatenate(
+        [basis, np.asarray(random_basis, dtype=np.float32)], axis=1)
+    stack = np.ascontiguousarray(stack, dtype=np.float64)
+    z = stack.T @ weight.astype(np.float64)
     total = float(np.sum(weight.astype(np.float64) ** 2))
-    row_energy = np.sum(z ** 2, axis=1)
-    row_energy_q = np.sum(zq ** 2, axis=1)
-    row_diff = np.sum((zq - z) ** 2, axis=1)
-    row_dot = np.sum(zq * z, axis=1)
-    curves = {}
-    for k in ks:
-        aligned = float(row_energy[:k].sum())
-        kept = float(row_energy_q[:k].sum())
-        gone = float(row_diff[:k].sum())
-        dot = float(row_dot[:k].sum())
-        denominator = float(np.sqrt(kept * aligned))
-        curves[str(k)] = {
-            'aligned_energy': aligned,
-            'aligned_energy_fraction': aligned / total if total else 0.0,
-            'isotropic_fraction': k / weight.shape[0],
-            'surviving_energy_fraction': kept / aligned if aligned else 0.0,
-            'removed_energy_fraction': gone / aligned if aligned else 0.0,
-            'cos': dot / denominator if denominator else 0.0,
-        }
-    return {'weight_energy': total, 'out_features': int(weight.shape[0]),
-            'in_features': int(weight.shape[1]), 'rank': rank, 'curves': curves}
+    return {'stack': stack, 'z': z, 'rank': rank,
+            'random_rank': stack.shape[1] - rank,
+            'total': total, 'out_features': int(weight.shape[0]),
+            'in_features': int(weight.shape[1])}
+
+
+def prepared_curve(prepared, quantized, ks=None):
+    """(measured curves, random-control curves) for one re-encoded tensor.
+
+    ``ks`` are ranks *within each basis*; the full rank of each block is always added,
+    because that is the number the table quotes. A rank-k curve is a prefix sum over
+    the block's rows, so the whole curve costs one projection.
+    """
+    stack, z = prepared['stack'], prepared['z']
+    rank, random_rank = prepared['rank'], prepared['random_rank']
+    quantized = np.asarray(quantized, dtype=np.float32)
+    zq = stack.T @ quantized.astype(np.float64)
+    blocks = [(slice(0, rank), rank)]
+    if random_rank:
+        blocks.append((slice(rank, rank + random_rank), random_rank))
+    results = []
+    for rows, block_rank in blocks:
+        wanted = sorted({int(k) for k in (ks or (1, 2, 4, 8, 16)) if 0 < int(k) <= block_rank}
+                        | {block_rank})
+        zb, zqb = z[rows], zq[rows]
+        row_energy = np.sum(zb ** 2, axis=1)
+        row_energy_q = np.sum(zqb ** 2, axis=1)
+        row_diff = np.sum((zqb - zb) ** 2, axis=1)
+        row_dot = np.sum(zqb * zb, axis=1)
+        curves = {}
+        for k in wanted:
+            aligned = float(row_energy[:k].sum())
+            kept = float(row_energy_q[:k].sum())
+            gone = float(row_diff[:k].sum())
+            dot = float(row_dot[:k].sum())
+            denominator = float(np.sqrt(kept * aligned))
+            curves[str(k)] = {
+                'aligned_energy': aligned,
+                'aligned_energy_fraction': aligned / prepared['total'] if prepared['total'] else 0.0,
+                'isotropic_fraction': k / prepared['out_features'],
+                'surviving_energy_fraction': kept / aligned if aligned else 0.0,
+                'removed_energy_fraction': gone / aligned if aligned else 0.0,
+                'cos': dot / denominator if denominator else 0.0,
+            }
+        results.append({'weight_energy': prepared['total'],
+                        'out_features': prepared['out_features'],
+                        'in_features': prepared['in_features'],
+                        'rank': block_rank, 'curves': curves})
+    return results[0], (results[1] if len(results) > 1 else None)
 
 
 def quantization_error(weight, quantized):
@@ -301,6 +340,92 @@ def quantization_error(weight, quantized):
     snr = 10.0 * np.log10(total / noise) if noise > 0 else float('inf')
     return {'noise_energy': noise, 'relative_noise_energy': fraction,
             'rms_ratio': float(np.sqrt(fraction)), 'snr_db': float(snr)}
+
+
+def verify_written(source, out_path, payloads, qtypes, source_header):
+    """Every static check the card asks of a written file, read back off the disk.
+
+    Names, order and dims must be unchanged; the KV section must be byte-identical
+    (``write_container`` copies it verbatim); every tensor not in ``payloads`` must be
+    byte-identical to its source slice; every written tensor must carry the target type
+    and the exact bytes that were measured; and every tensor must decode to its declared
+    element count with finite values. ``gguf_py_note`` records the packaging gap rather
+    than letting it look like a broken file: the published gguf enum has no Q2_0 (raw
+    type 42), so its reader refuses those files while this build's reader does not.
+    """
+    from .ggufio import decode_values
+    from .ggufwrite import parse_container, tensor_nbytes, type_size
+    from .quants import type_name_for_id
+
+    header = parse_container(out_path)
+    names_same = [tensor['name'] for tensor in header['tensors']] == \
+                 [tensor['name'] for tensor in source_header['tensors']]
+    dims_same = [tensor['dims'] for tensor in header['tensors']] == \
+                [tensor['dims'] for tensor in source_header['tensors']]
+    kv_identical = header['kv_bytes'] == source_header['kv_bytes']
+    untouched, untouched_mismatch, edited_qtype_ok = 0, [], 0
+    with open(source, 'rb') as old, open(out_path, 'rb') as new:
+        for tensor, source_tensor in zip(header['tensors'], source_header['tensors']):
+            name = tensor['name']
+            size = tensor_nbytes(tensor['dims'], tensor['qtype'])
+            new.seek(header['data_base'] + tensor['offset'])
+            payload = new.read(size)
+            if name in payloads:
+                if tensor['qtype'] == int(qtypes[name]):
+                    edited_qtype_ok += 1
+                if payload != np.asarray(payloads[name], dtype=np.uint8).tobytes():
+                    untouched_mismatch.append({'name': name,
+                                               'reason': 'written payload differs from the measured payload'})
+                continue
+            old.seek(source_header['data_base'] + source_tensor['offset'])
+            expected = old.read(tensor_nbytes(source_tensor['dims'], source_tensor['qtype']))
+            if expected == payload:
+                untouched += 1
+            else:
+                untouched_mismatch.append({'name': name,
+                                           'reason': 'untouched tensor is not byte-identical'})
+    decoded, bad, unknown = 0, [], []
+    with open(out_path, 'rb') as handle:
+        for tensor in header['tensors']:
+            count = int(np.prod([int(dim) for dim in tensor['dims']]))
+            block_els, _block_bytes = type_size(tensor['qtype'])
+            if int(tensor['dims'][0]) % block_els:
+                bad.append({'name': tensor['name'],
+                            'reason': f'row width {int(tensor["dims"][0])} is not a whole '
+                                      f'number of {block_els}-value blocks'})
+            handle.seek(header['data_base'] + tensor['offset'])
+            raw = np.frombuffer(handle.read(tensor_nbytes(tensor['dims'], tensor['qtype'])),
+                                dtype=np.uint8)
+            values = decode_values(raw, type_name_for_id(tensor['qtype']), n_values=count)
+            if values.size != count or not np.isfinite(values).all():
+                bad.append({'name': tensor['name'], 'values': int(values.size), 'expected': count})
+            decoded += 1
+    try:
+        from gguf import GGMLQuantizationType, GGUFReader
+
+        gguf_py_tensors = len(GGUFReader(str(out_path)).tensors)
+        gguf_py_note = None
+    except Exception as error:  # noqa: BLE001 - the failure is the datum here
+        from gguf import GGMLQuantizationType
+
+        gguf_py_tensors, gguf_py_note = None, f'{type(error).__name__}: {error}'
+        known = {int(member.value) for member in GGMLQuantizationType}
+        unknown = sorted({int(tensor['qtype']) for tensor in header['tensors']} - known)
+    return {
+        'tensor_names_order_identical': names_same,
+        'tensor_dims_identical': dims_same,
+        'kv_section_byte_identical': kv_identical,
+        'metadata_bytes_identical': kv_identical,
+        'untouched_tensors_byte_identical': untouched,
+        'edited_tensors_with_target_type': edited_qtype_ok,
+        'problems': untouched_mismatch + bad,
+        'untouched_all_bit_identical': not untouched_mismatch and names_same and dims_same,
+        'tensors_decoded': decoded,
+        'loads': not bad,
+        'gguf_py_tensors': gguf_py_tensors,
+        'gguf_py_note': gguf_py_note,
+        'type_ids_unknown_to_gguf_py': unknown,
+    }
 
 
 def _codec(type_name):

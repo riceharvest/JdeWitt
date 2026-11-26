@@ -30,6 +30,7 @@ import argparse
 import hashlib
 import json
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -40,16 +41,15 @@ for _var in ('OPENBLAS_NUM_THREADS', 'OMP_NUM_THREADS', 'MKL_NUM_THREADS'):
 
 import numpy as np  # noqa: E402  (the thread cap must be set before numpy loads)
 
-import sys
-
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from jdewitt.codec_floor import (SCHEMA, TYPES, GgufBpe, aggregate, alignment_curve,  # noqa: E402
-                                 denial_id_sets, quantization_error, random_subspace,
-                                 row_block_ok, roundtrip, subspace, token_rows)
+from jdewitt.codec_floor import (SCHEMA, TYPES, GgufBpe, aggregate, denial_id_sets,  # noqa: E402
+                                 prepare_alignment, prepared_curve, quantization_error,
+                                 random_subspace, row_block_ok, roundtrip, subspace,
+                                 token_rows, verify_written)
 from jdewitt.ggufio import decode_values, revert_inplace, save_whole_file_revert  # noqa: E402
-from jdewitt.ggufwrite import parse_container, tensor_nbytes, type_size, write_container  # noqa: E402
+from jdewitt.ggufwrite import parse_container, tensor_nbytes, write_container  # noqa: E402
 from jdewitt.quants import type_id_for_name, type_name_for_id  # noqa: E402
 
 WRITEBACK = (('attn_output.weight', 'attn'), ('ffn_down.weight', 'ffn'))
@@ -123,14 +123,13 @@ def load_tensor(path, header, name, reader_index):
     return values.reshape(tuple(int(x) for x in tensor.shape)[::-1]), raw
 
 
-def aligned_row(weight, basis, quantized, rank, random_basis, ks=(1,)):
+def aligned_row(prepared, quantized, rank, ks=(1,)):
     """One table row: aligned fraction, delivered cos, removed energy, random control."""
-    curve = alignment_curve(weight, basis, quantized, ks=tuple(sorted(set(ks) | {rank})))
-    control = alignment_curve(weight, random_basis, quantized, ks=tuple(sorted(set(ks) | {rank})))
+    curve, control = prepared_curve(prepared, quantized, ks=tuple(ks) + (rank,))
     full = curve['curves'][str(rank)]
-    full_control = control['curves'][str(rank)]
+    full_control = control['curves'][str(control['rank'])]
     keep = {key: curve['curves'][key] for key in curve['curves'] if int(key) != rank}
-    keep_control = {key: control['curves'][key] for key in control['curves'] if int(key) != rank}
+    keep_control = {key: control['curves'][key] for key in control['curves'] if int(key) != control['rank']}
     aligned = full['aligned_energy_fraction']
     return {
         'rank': rank,
@@ -151,83 +150,6 @@ def aligned_row(weight, basis, quantized, rank, random_basis, ks=(1,)):
         },
         'selectivity': (full['removed_energy_fraction'] / full_control['removed_energy_fraction']
                         if full_control['removed_energy_fraction'] else None),
-    }
-
-
-def verify_artifact(source, out_path, payloads, qtypes, source_header):
-    """Every static check the card asks of the written file, read back from disk."""
-    header = parse_container(out_path)
-    names_same = [tensor['name'] for tensor in header['tensors']] == \
-                 [tensor['name'] for tensor in source_header['tensors']]
-    dims_same = [tensor['dims'] for tensor in header['tensors']] == \
-                [tensor['dims'] for tensor in source_header['tensors']]
-    kv_identical = header['kv_bytes'] == source_header['kv_bytes']
-    # The KV section is copied verbatim, so it is byte-identical; the tensor-info block
-    # must differ (a new type id and the offsets that follow it), which is the edit.
-    metadata_same = kv_identical
-    untouched, untouched_mismatch, edited_qtype_ok = 0, [], 0
-    with open(source, 'rb') as old, open(out_path, 'rb') as new:
-        for tensor, source_tensor in zip(header['tensors'], source_header['tensors']):
-            name = tensor['name']
-            size = tensor_nbytes(tensor['dims'], tensor['qtype'])
-            new.seek(header['data_base'] + tensor['offset'])
-            payload = new.read(size)
-            if name in payloads:
-                if tensor['qtype'] == int(qtypes[name]):
-                    edited_qtype_ok += 1
-                if payload != payloads[name].tobytes():
-                    untouched_mismatch.append({'name': name, 'reason': 'written payload differs from measured payload'})
-                continue
-            old.seek(source_header['data_base'] + source_tensor['offset'])
-            if old.read(tensor_nbytes(source_tensor['dims'], source_tensor['qtype'])) == payload:
-                untouched += 1
-            else:
-                untouched_mismatch.append({'name': name, 'reason': 'untouched tensor is not byte-identical'})
-    # "the written file loads": decode every tensor back through this build's reader
-    # (which knows Q2_0's raw type 42) and check the element count and finiteness. The
-    # published gguf-py enum cannot name 42, so its reader is reported separately
-    # rather than letting a packaging gap look like a broken file.
-    decoded, bad = 0, []
-    unknown = []
-    with open(out_path, 'rb') as handle:
-        for tensor in header['tensors']:
-            count = int(np.prod([int(dim) for dim in tensor['dims']]))
-            block_els, _block_bytes = type_size(tensor['qtype'])
-            if int(tensor['dims'][0]) % block_els:
-                bad.append({'name': tensor['name'],
-                            'reason': f'row width {int(tensor["dims"][0])} is not a whole number '
-                                      f'of {block_els}-value blocks'})
-            handle.seek(header['data_base'] + tensor['offset'])
-            raw = np.frombuffer(handle.read(tensor_nbytes(tensor['dims'], tensor['qtype'])),
-                                dtype=np.uint8)
-            values = decode_values(raw, type_name_for_id(tensor['qtype']), n_values=count)
-            if values.size != count or not np.isfinite(values).all():
-                bad.append({'name': tensor['name'], 'values': int(values.size), 'expected': count})
-            decoded += 1
-    try:
-        from gguf import GGUFReader
-
-        gguf_py = GGUFReader(str(out_path))
-        gguf_py_tensors = len(gguf_py.tensors)
-        gguf_py_note = None
-    except Exception as error:  # noqa: BLE001 - the failure is the datum here
-        gguf_py_tensors, gguf_py_note = None, f'{type(error).__name__}: {error}'
-        unknown = sorted({int(tensor['qtype']) for tensor in header['tensors']}
-                         - {int(getattr(member, 'value', -1)) for member in __import__('gguf').GGMLQuantizationType})
-    return {
-        'tensor_names_order_identical': names_same,
-        'tensor_dims_identical': dims_same,
-        'kv_section_byte_identical': kv_identical,
-        'metadata_bytes_identical': metadata_same,
-        'untouched_tensors_byte_identical': untouched,
-        'edited_tensors_with_target_type': edited_qtype_ok,
-        'problems': untouched_mismatch + bad,
-        'untouched_all_bit_identical': not untouched_mismatch and names_same and dims_same,
-        'tensors_decoded': decoded,
-        'loads': not bad,
-        'gguf_py_tensors': gguf_py_tensors,
-        'gguf_py_note': gguf_py_note,
-        'type_ids_unknown_to_gguf_py': unknown,
     }
 
 
@@ -321,6 +243,10 @@ def main():
         base = {'name': spec['name'], 'kind': spec['kind'], 'layer': spec['layer'],
                 'from_dtype': spec['qtype'], 'rows': out_features, 'cols': in_features,
                 'weight_energy': float(np.sum(weight.astype(np.float64) ** 2))}
+        # Z = VᵀW does not depend on the storage type, so it is computed once per
+        # tensor and reused for every grid; only VᵀW_q is per type.
+        prepared = {space_name: prepare_alignment(weight, block['V'], controls[space_name])
+                    for space_name, block in spaces.items()}
         for type_name in types:
             ok, block_els = row_block_ok(in_features, type_name)
             if not ok:
@@ -333,8 +259,7 @@ def main():
             row = {**base, 'to_dtype': type_name.upper(),
                    'codec': quantization_error(weight, quantized)}
             for space_name, block in spaces.items():
-                row[space_name] = aligned_row(weight, block['V'], quantized, block['rank'],
-                                              controls[space_name])
+                row[space_name] = aligned_row(prepared[space_name], quantized, block['rank'])
             reports[type_name]['tensors'].append(row)
             writeback_by_type[type_name]['payloads'][spec['name']] = payload
             writeback_by_type[type_name]['qtypes'][spec['name']] = type_id_for_name(type_name)
@@ -461,9 +386,9 @@ def main():
             header['source'] = str(artifact)
             qtypes = writeback_by_type[type_name]['qtypes']
             started_write = time.monotonic()
-            written = write_container(out_path, header, payloads, qtypes)
+            write_container(out_path, header, payloads, qtypes)
             write_seconds = time.monotonic() - started_write
-            checks = verify_artifact(artifact, out_path, payloads, qtypes, source_header)
+            checks = verify_written(artifact, out_path, payloads, qtypes, source_header)
             checks['bytes_in'] = artifact.stat().st_size
             checks['bytes_out'] = out_path.stat().st_size
             checks['bytes_delta'] = checks['bytes_out'] - checks['bytes_in']
