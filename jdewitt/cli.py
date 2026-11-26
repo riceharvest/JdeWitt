@@ -157,6 +157,7 @@ def build_parser():
     grammar.add_argument('--min-chars',type=int,default=48,help='Code points required before end-of-sequence (default 48)')
     grammar.add_argument('--out',type=Path,default=Path('verification/denial-grammar'),help='Directory for denial-free.gbnf and denial-free.json')
     grammar.add_argument('--skip-probe',action='store_true',help='Skip the llama.cpp parser/matcher check even if a source tree and libllama.so are present')
+    grammar.add_argument('--mine',action='store_true',help='Grow the table from the saved answers first (string rules, evidence ids) and emit it as denial-surfaces.json')
     vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap/--embed prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
     vremap.add_argument('--no-think',action='store_true',help='--remap chat template: render with enable_thinking=false (artifacts whose template names it; keeps the answer opener inside the cap)')
     vremap.add_argument('--ctx',type=int,default=4096,help='--embed: serve context (-c) of the started server; the pinned cert default is 4096')
@@ -946,9 +947,9 @@ def main():
             from .denial_grammar_run import compile_run
             _report,result=compile_run(args.out,args.predictions,args.artifact,
                                        skip_probe=args.skip_probe,min_chars=args.min_chars,
-                                       table=args.table)
+                                       table=args.table,mine=args.mine)
             checks=[result['surfaces_rejected'].split('/')[0]==result['surfaces_rejected'].split('/')[1],
-                    result['saved_predictions']['wording_openers_rejected']==result['saved_predictions']['wording_openers'],
+                    result['refusal']['wording_openers_rejected']==result['refusal']['wording_openers'],
                     result['openings']['authored']['accepted']==result['openings']['authored']['rows'],
                     result['minimal_agrees']==0,result['oracle_disagreements']==0]
             if result['llama_cpp']['available']:

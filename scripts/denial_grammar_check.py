@@ -31,10 +31,12 @@ def main():
     parser.add_argument('--table', default=None)
     parser.add_argument('--min-chars', type=int, default=MIN_ANSWER_CHARS)
     parser.add_argument('--skip-probe', action='store_true')
+    parser.add_argument('--mine', action='store_true',
+                        help='grow the table from the saved answers first and emit it')
     args = parser.parse_args()
     _report, summary = compile_run(args.out, args.predictions, args.artifact,
                                    skip_probe=args.skip_probe, min_chars=args.min_chars,
-                                   table=args.table)
+                                   table=args.table, mine=args.mine)
     print(json.dumps(summary, indent=2, default=str, ensure_ascii=False))
     return 0
 
