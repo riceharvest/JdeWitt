@@ -1,0 +1,9 @@
+{
+  "artifact": "runs/conjugate/revert-probe.gguf",
+  "sidecar": "runs/conjugate/revert-probe.gguf.revert.npz",
+  "tiles_restored": 226,
+  "restored_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "patched_sha256": "bfabcc5f5944576843f6dd996549d1fa24e7e8619764f88c98ebb27828846d02",
+  "original_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+  "byte_exact": true
+}

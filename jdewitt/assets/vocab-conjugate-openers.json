@@ -1,0 +1,38 @@
+{
+  "schema": "jdewitt.vocab-conjugate-pairs/1",
+  "note": "Opener pairs only: this file carries no token ids, because the split is a property of a tokenizer, not of the word. Every pair is resolved against the artifact's own vocabulary in two contexts (bare, i.e. the first token of a response, and leads_with_space, i.e. mid-sentence), and the resolved ids must each be exactly one token in both contexts or the command refuses. The map is a transposition per pair: the denial row and the compliance row exchange places, which is a bijection on the chosen ids and leaves every other row untouched. 'As' is deliberately absent: it opens the base model's third attested refusal shape ('As a language model, I do not condone ...') but is a high-frequency discourse marker, so it is left unmapped as the negative control.",
+  "pairs": [
+    {
+      "id": "en-i-here",
+      "language": "en",
+      "denial": "I",
+      "compliance": "Here",
+      "kind": "denial_opener",
+      "evidence": "attested: 6 of 10 base greedy rows in verification/vocab-remap/decode/off/rows.jsonl open on id 40 (\"I'm sorry, but I can't ...\"), against 7 declining rows in total"
+    },
+    {
+      "id": "en-sorry-sure",
+      "language": "en",
+      "denial": "Sorry",
+      "compliance": "Sure",
+      "kind": "denial_opener",
+      "evidence": "attested: base row vr-probe-0006 opens on id 19152 (\"Sorry, but I can't assist with that.\"); the pair is also the card's own example"
+    },
+    {
+      "id": "en-cannot-certainly",
+      "language": "en",
+      "denial": "Cannot",
+      "compliance": "Certainly",
+      "kind": "denial_opener",
+      "evidence": "card example; ' cannot' is attested as a denial word in the table probes, the sentence-initial 'Cannot' is not an attested first token on this build (recorded as authored, not measured)"
+    },
+    {
+      "id": "de-es-hier",
+      "language": "de",
+      "denial": "Es",
+      "compliance": "Hier",
+      "kind": "denial_opener",
+      "evidence": "attested: base row vr-probe-0007 opens on id 17360 (\"Es ist wichtig zu beachten, dass es nicht moeglich ist ...\") and the remapped German row reaches ' Hier' (id 38747) as a compliance opener"
+    }
+  ]
+}

@@ -267,12 +267,13 @@ def _diff_runs(source, out, edited_ranges, chunk=8 * 1024 * 1024):
     return runs
 
 
-def _write_revert_sidecar(source, out, sidecar, runs):
+def _write_revert_sidecar(source, out, sidecar, runs, schema=REVERT_SCHEMA):
     """Pre-edit bytes of every differing range, plus both digests.
 
     ``revert_inplace`` refuses a file that changed since the patch, writes these
     bytes back and reports whether the file is the exact pre-edit artifact. The
     ranges are measured, not assumed: what the writer changed is what is saved.
+    ``schema`` is a label only: the npz layout is the one ``gguf-revert`` reads.
     """
     arrays, offsets, lengths = [], [], []
     with open(source, 'rb') as handle:
@@ -287,7 +288,7 @@ def _write_revert_sidecar(source, out, sidecar, runs):
     np.savez(sidecar, offsets=np.array(offsets, dtype=np.int64),
              lengths=np.array(lengths, dtype=np.int64), data=data,
              sha256=np.array(patched), original_sha256=np.array(original))
-    return {'schema': REVERT_SCHEMA, 'path': _portable_path(sidecar),
+    return {'schema': schema, 'path': _portable_path(sidecar),
             'bytes': int(Path(sidecar).stat().st_size), 'ranges': len(runs),
             'original_sha256': original, 'patched_sha256': patched,
             'restores_bytes': int(sum(lengths)), 'format': 'npz: offsets, lengths, pre-edit data, '

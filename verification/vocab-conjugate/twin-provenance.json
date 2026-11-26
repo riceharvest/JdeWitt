@@ -1,0 +1,45 @@
+{
+  "schema": "jdewitt.vocab-conjugate-twin-provenance/1",
+  "what": "The public base/twin pair the paired-method card names, recorded by repository, revision and content hash. Provenance only: no checkpoint was loaded, no weight was edited, no token was generated. The downloads were deleted after hashing because the disk is tight; the hashes below are sha256 over the downloaded bytes and each equals the LFS oid the Hub declares for that revision.",
+  "method": "GET https://huggingface.co/api/models/<repo> for the resolved revision sha, then GET /resolve/<revision>/model.safetensors, sha256sum the file, GET /api/models/<repo>/tree/<revision>?recursive=true and compare the declared lfs.oid with the local digest. Both matched. The files were removed afterwards.",
+  "checkpoints": [
+    {
+      "role": "base",
+      "repo": "Qwen/Qwen2.5-0.5B-Instruct",
+      "revision": "7ae557604adf67be50417f59c2c2f167def9a775",
+      "url": "https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct/resolve/7ae557604adf67be50417f59c2c2f167def9a775/model.safetensors",
+      "file": "model.safetensors",
+      "bytes": 988097824,
+      "sha256": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "hub_lfs_oid": "fdf756fa7fcbe7404d5c60e26bff1a0c8b8aa1f72ced49e7dd0210fe288fb7fe",
+      "hub_oid_matches_local_sha256": true,
+      "gated": false,
+      "private": false,
+      "single_safetensors": true,
+      "deleted_after_hashing": true
+    },
+    {
+      "role": "twin",
+      "repo": "Goekdeniz-Guelmez/Josiefied-Qwen2.5-0.5B-Instruct-abliterated-v1",
+      "revision": "a42fe88f75b3ab545466ca5692fef0b4d7bc8009",
+      "url": "https://huggingface.co/Goekdeniz-Guelmez/Josiefied-Qwen2.5-0.5B-Instruct-abliterated-v1/resolve/a42fe88f75b3ab545466ca5692fef0b4d7bc8009/model.safetensors",
+      "file": "model.safetensors",
+      "bytes": 1260367448,
+      "sha256": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406",
+      "hub_lfs_oid": "dff81834dbf3fe0bc476eb144f68173eac4feeece41e1337b29e88019b8e2406",
+      "hub_oid_matches_local_sha256": true,
+      "gated": false,
+      "private": false,
+      "single_safetensors": true,
+      "deleted_after_hashing": true,
+      "header_read": {
+        "tensors": 291,
+        "dtype": "BF16",
+        "lm_head.weight": [151936, 896],
+        "model.embed_tokens.weight": [151936, 896],
+        "note": "the twin carries an untied lm_head alongside the embedding; the IQ3_M artifact this card edits carries no output.weight and is tied, so a paired run must decide the head question per artifact rather than assuming the twin's layout"
+      }
+    }
+  ],
+  "not_measured": "Whether the twin refuses, complies, or differs from the base on any prompt. That needs a serve; this card is zero-forward and every behavioural reading stays GATED."
+}

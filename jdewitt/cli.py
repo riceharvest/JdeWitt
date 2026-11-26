@@ -157,6 +157,12 @@ def build_parser():
     vremap.add_argument('--limit',type=int,default=0,help='--embed: decode only the first N rows (timing probe)')
     vremap.add_argument('--plain-check',type=int,default=0,help='--embed: also run a plain text-prompt greedy wave on the first N rows and record whether the id arm reproduces it token-for-token')
     vremap.add_argument('--resume',action='store_true',help='--embed: continue an interrupted arm in --out instead of refusing the existing rows.jsonl')
+    conj=sub.add_parser('vocab-conjugate',help='Bijection on the output vocabulary: exchange each denial-opener row of the head (and the tied embedding row when tied) with a compliance-opener row, so the hidden state that would decode a denial decodes a compliant opening. CPU-only weight algebra plus a byte-exact revert; no model loads')
+    conj.add_argument('--weights',type=Path,required=True,help='GGUF whose token-row matrix is conjugated (read for tokenizer and header; never edited in place)')
+    conj.add_argument('--table',type=Path,help='Opener-pair JSON override; default is the packaged assets/vocab-conjugate-openers.json')
+    conj.add_argument('--out',type=Path,help='New GGUF to write with --apply (plus <out>.revert.npz); refused if it exists')
+    conj.add_argument('--apply',action='store_true',help='Write --out instead of only printing the dry run; never edits the input in place')
+    conj.add_argument('--json',type=Path,help='Also write the same JSON to this path')
     hub=sub.add_parser('hub-census',help='Live Hub text-generation census joined to the adapter table; adapter worklist ordered by downloads, no model loads')
     hub.add_argument('--since',default='2026-08-01',help='Only repositories created on or after this UTC date')
     hub.add_argument('--author',action='append',help='Repeat for publishers to scan; default is the architecture inventory authors')
@@ -920,6 +926,11 @@ def main():
             else:
                 from .vocabremap import vocab_remap_list
                 result=vocab_remap_list(table=args.table,artifacts=args.artifact,list_mode=args.list,json_out=args.json)
+        elif args.command=='vocab-conjugate':
+            from .vocabconjugate import vocab_conjugate
+            result=vocab_conjugate(weights=args.weights,table=args.table,out=args.out,
+                                   apply=args.apply,json_out=args.json)
+            exit_code=0 if result['verdict']['ok'] else 1
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)

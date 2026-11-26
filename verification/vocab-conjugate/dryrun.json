@@ -1,0 +1,1260 @@
+{
+  "schema": "jdewitt.vocab-conjugate/1",
+  "scope": "Bijection on the output vocabulary of a quantized artifact: storage fidelity, the pair table, and the pre/post cosine of every mapped row. No model is loaded, no logits or generations are read, and no behavioural claim is made.",
+  "method": "Each pair names a denial opener and a compliance opener. Both surfaces are resolved against the artifact tokenizer in two contexts (bare and with the leading space running text carries) and must be exactly one token in both; the resolved ids are then transposed in the token-row matrix. For a head tied to the token embedding (no output.weight) the transposed matrix is both the embedding and the output head, so the edit also conjugates the input side; the report names it as tied. The write reuses ggufio.edit_tensors: every untouched tensor is copied byte for byte and the edited tensor is requantized at its own stored type, so every tensor offset and byte length stays put and the pre-edit bytes restore the file. Storage fidelity only: no model, no logits, no generation, no behavioral claim, removal_measured false.",
+  "gated": "A behavioural claim is out of scope: the rest of the refusal sentence is planned upstream, so an opener-only conjugation is expected to glue a compliant opening to a refusal body. Measuring that needs a serve, which this card forbids.",
+  "removal_measured": false,
+  "dry_run": true,
+  "artifact": {
+    "path": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+    "bytes": 342752576,
+    "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099"
+  },
+  "table": {
+    "schema": "jdewitt.vocab-conjugate-pairs/1",
+    "sha256": "d5f8a6256a089bdc7ab3b04895946cbcc51fd8561b4cdb6f7d5c97632537c0ec",
+    "pairs": 4,
+    "path": "packaged asset"
+  },
+  "tokenizer": {
+    "model": "gpt2",
+    "pre": "qwen2",
+    "n_vocab": 151936,
+    "tokens_sha256": "a760a3ca31924ce6276ec014d9106f94561bc70676936dd78e6aa7dca12e1000"
+  },
+  "discovery": {
+    "n_vocab": 151936,
+    "roles": {
+      "embedding": "token_embd.weight",
+      "output_head": null,
+      "output_head_tied_to_embedding": true
+    },
+    "tied": true,
+    "vocab_wide_tensors": [
+      "token_embd.weight"
+    ],
+    "unmapped_vocab_wide": [],
+    "how": "2-D tensors whose logical row count is the tokenizer vocabulary size; the artifact name decides the role, no per-model table"
+  },
+  "pairs": [
+    {
+      "id": "en-i-here",
+      "language": "en",
+      "kind": "denial_opener",
+      "denial": "I",
+      "compliance": "Here",
+      "evidence": "attested: 6 of 10 base greedy rows in verification/vocab-remap/decode/off/rows.jsonl open on id 40 (\"I'm sorry, but I can't ...\"), against 7 declining rows in total",
+      "contexts": {
+        "bare": {
+          "denial": {
+            "text": "I",
+            "ids": [
+              40
+            ],
+            "pieces": [
+              "I"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": "Here",
+            "ids": [
+              8420
+            ],
+            "pieces": [
+              "Here"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the first token of a response; no leading space",
+          "single_token": true
+        },
+        "leads_with_space": {
+          "denial": {
+            "text": " I",
+            "ids": [
+              358
+            ],
+            "pieces": [
+              "\u0120I"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": " Here",
+            "ids": [
+              5692
+            ],
+            "pieces": [
+              "\u0120Here"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the same surface mid-sentence; byte-level BPE spells the space into the token",
+          "single_token": true
+        }
+      },
+      "rows": [
+        {
+          "context": "bare",
+          "denial_id": 40,
+          "compliance_id": 8420,
+          "denial_piece": "I",
+          "compliance_piece": "Here"
+        },
+        {
+          "context": "leads_with_space",
+          "denial_id": 358,
+          "compliance_id": 5692,
+          "denial_piece": "\u0120I",
+          "compliance_piece": "\u0120Here"
+        }
+      ]
+    },
+    {
+      "id": "en-sorry-sure",
+      "language": "en",
+      "kind": "denial_opener",
+      "denial": "Sorry",
+      "compliance": "Sure",
+      "evidence": "attested: base row vr-probe-0006 opens on id 19152 (\"Sorry, but I can't assist with that.\"); the pair is also the card's own example",
+      "contexts": {
+        "bare": {
+          "denial": {
+            "text": "Sorry",
+            "ids": [
+              19152
+            ],
+            "pieces": [
+              "Sorry"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": "Sure",
+            "ids": [
+              39814
+            ],
+            "pieces": [
+              "Sure"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the first token of a response; no leading space",
+          "single_token": true
+        },
+        "leads_with_space": {
+          "denial": {
+            "text": " Sorry",
+            "ids": [
+              32286
+            ],
+            "pieces": [
+              "\u0120Sorry"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": " Sure",
+            "ids": [
+              22555
+            ],
+            "pieces": [
+              "\u0120Sure"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the same surface mid-sentence; byte-level BPE spells the space into the token",
+          "single_token": true
+        }
+      },
+      "rows": [
+        {
+          "context": "bare",
+          "denial_id": 19152,
+          "compliance_id": 39814,
+          "denial_piece": "Sorry",
+          "compliance_piece": "Sure"
+        },
+        {
+          "context": "leads_with_space",
+          "denial_id": 32286,
+          "compliance_id": 22555,
+          "denial_piece": "\u0120Sorry",
+          "compliance_piece": "\u0120Sure"
+        }
+      ]
+    },
+    {
+      "id": "en-cannot-certainly",
+      "language": "en",
+      "kind": "denial_opener",
+      "denial": "Cannot",
+      "compliance": "Certainly",
+      "evidence": "card example; ' cannot' is attested as a denial word in the table probes, the sentence-initial 'Cannot' is not an attested first token on this build (recorded as authored, not measured)",
+      "contexts": {
+        "bare": {
+          "denial": {
+            "text": "Cannot",
+            "ids": [
+              17444
+            ],
+            "pieces": [
+              "Cannot"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": "Certainly",
+            "ids": [
+              95456
+            ],
+            "pieces": [
+              "Certainly"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the first token of a response; no leading space",
+          "single_token": true
+        },
+        "leads_with_space": {
+          "denial": {
+            "text": " Cannot",
+            "ids": [
+              34655
+            ],
+            "pieces": [
+              "\u0120Cannot"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": " Certainly",
+            "ids": [
+              52366
+            ],
+            "pieces": [
+              "\u0120Certainly"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the same surface mid-sentence; byte-level BPE spells the space into the token",
+          "single_token": true
+        }
+      },
+      "rows": [
+        {
+          "context": "bare",
+          "denial_id": 17444,
+          "compliance_id": 95456,
+          "denial_piece": "Cannot",
+          "compliance_piece": "Certainly"
+        },
+        {
+          "context": "leads_with_space",
+          "denial_id": 34655,
+          "compliance_id": 52366,
+          "denial_piece": "\u0120Cannot",
+          "compliance_piece": "\u0120Certainly"
+        }
+      ]
+    },
+    {
+      "id": "de-es-hier",
+      "language": "de",
+      "kind": "denial_opener",
+      "denial": "Es",
+      "compliance": "Hier",
+      "evidence": "attested: base row vr-probe-0007 opens on id 17360 (\"Es ist wichtig zu beachten, dass es nicht moeglich ist ...\") and the remapped German row reaches ' Hier' (id 38747) as a compliance opener",
+      "contexts": {
+        "bare": {
+          "denial": {
+            "text": "Es",
+            "ids": [
+              17360
+            ],
+            "pieces": [
+              "Es"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": "Hier",
+            "ids": [
+              74909
+            ],
+            "pieces": [
+              "Hier"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the first token of a response; no leading space",
+          "single_token": true
+        },
+        "leads_with_space": {
+          "denial": {
+            "text": " Es",
+            "ids": [
+              9236
+            ],
+            "pieces": [
+              "\u0120Es"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "compliance": {
+            "text": " Hier",
+            "ids": [
+              38747
+            ],
+            "pieces": [
+              "\u0120Hier"
+            ],
+            "representable": true,
+            "single_token": true
+          },
+          "note": "the same surface mid-sentence; byte-level BPE spells the space into the token",
+          "single_token": true
+        }
+      },
+      "rows": [
+        {
+          "context": "bare",
+          "denial_id": 17360,
+          "compliance_id": 74909,
+          "denial_piece": "Es",
+          "compliance_piece": "Hier"
+        },
+        {
+          "context": "leads_with_space",
+          "denial_id": 9236,
+          "compliance_id": 38747,
+          "denial_piece": "\u0120Es",
+          "compliance_piece": "\u0120Hier"
+        }
+      ]
+    }
+  ],
+  "permutation": {
+    "ids": [
+      40,
+      358,
+      5692,
+      8420,
+      9236,
+      17360,
+      17444,
+      19152,
+      22555,
+      32286,
+      34655,
+      38747,
+      39814,
+      52366,
+      74909,
+      95456
+    ],
+    "n_ids": 16,
+    "map": [
+      {
+        "from": 40,
+        "to": 8420,
+        "denial_piece": "I",
+        "compliance_piece": "Here",
+        "context": "bare",
+        "pair": "en-i-here"
+      },
+      {
+        "from": 358,
+        "to": 5692,
+        "denial_piece": "\u0120I",
+        "compliance_piece": "\u0120Here",
+        "context": "leads_with_space",
+        "pair": "en-i-here"
+      },
+      {
+        "from": 5692,
+        "to": 358,
+        "denial_piece": "\u0120Here",
+        "compliance_piece": "\u0120I",
+        "context": "leads_with_space",
+        "pair": "en-i-here"
+      },
+      {
+        "from": 8420,
+        "to": 40,
+        "denial_piece": "Here",
+        "compliance_piece": "I",
+        "context": "bare",
+        "pair": "en-i-here"
+      },
+      {
+        "from": 9236,
+        "to": 38747,
+        "denial_piece": "\u0120Es",
+        "compliance_piece": "\u0120Hier",
+        "context": "leads_with_space",
+        "pair": "de-es-hier"
+      },
+      {
+        "from": 17360,
+        "to": 74909,
+        "denial_piece": "Es",
+        "compliance_piece": "Hier",
+        "context": "bare",
+        "pair": "de-es-hier"
+      },
+      {
+        "from": 17444,
+        "to": 95456,
+        "denial_piece": "Cannot",
+        "compliance_piece": "Certainly",
+        "context": "bare",
+        "pair": "en-cannot-certainly"
+      },
+      {
+        "from": 19152,
+        "to": 39814,
+        "denial_piece": "Sorry",
+        "compliance_piece": "Sure",
+        "context": "bare",
+        "pair": "en-sorry-sure"
+      },
+      {
+        "from": 22555,
+        "to": 32286,
+        "denial_piece": "\u0120Sure",
+        "compliance_piece": "\u0120Sorry",
+        "context": "leads_with_space",
+        "pair": "en-sorry-sure"
+      },
+      {
+        "from": 32286,
+        "to": 22555,
+        "denial_piece": "\u0120Sorry",
+        "compliance_piece": "\u0120Sure",
+        "context": "leads_with_space",
+        "pair": "en-sorry-sure"
+      },
+      {
+        "from": 34655,
+        "to": 52366,
+        "denial_piece": "\u0120Cannot",
+        "compliance_piece": "\u0120Certainly",
+        "context": "leads_with_space",
+        "pair": "en-cannot-certainly"
+      },
+      {
+        "from": 38747,
+        "to": 9236,
+        "denial_piece": "\u0120Hier",
+        "compliance_piece": "\u0120Es",
+        "context": "leads_with_space",
+        "pair": "de-es-hier"
+      },
+      {
+        "from": 39814,
+        "to": 19152,
+        "denial_piece": "Sure",
+        "compliance_piece": "Sorry",
+        "context": "bare",
+        "pair": "en-sorry-sure"
+      },
+      {
+        "from": 52366,
+        "to": 34655,
+        "denial_piece": "\u0120Certainly",
+        "compliance_piece": "\u0120Cannot",
+        "context": "leads_with_space",
+        "pair": "en-cannot-certainly"
+      },
+      {
+        "from": 74909,
+        "to": 17360,
+        "denial_piece": "Hier",
+        "compliance_piece": "Es",
+        "context": "bare",
+        "pair": "de-es-hier"
+      },
+      {
+        "from": 95456,
+        "to": 17444,
+        "denial_piece": "Certainly",
+        "compliance_piece": "Cannot",
+        "context": "bare",
+        "pair": "en-cannot-certainly"
+      }
+    ],
+    "checks": {
+      "chosen_ids": 16,
+      "distinct_ids": 16,
+      "injective": true,
+      "every_chosen_id_has_one_target": true,
+      "involution": true,
+      "fixed_points": 0,
+      "unmapped_ids": 151920,
+      "definition": "a product of disjoint transpositions on the resolved ids: a bijection whose inverse is itself, so every unmapped id keeps its own row"
+    }
+  },
+  "edit": {
+    "algebra": "W_d <- W_c and W_c <- W_d per resolved pair; every other row is untouched",
+    "tensors_targeted": 1,
+    "rows_edited_per_tensor": {
+      "token_embd.weight": 16
+    },
+    "rows": {
+      "token_embd.weight": [
+        {
+          "id": 40,
+          "token": "I",
+          "from": 40,
+          "to": 8420,
+          "context": "bare",
+          "pair": "en-i-here",
+          "partner_token": "Here",
+          "cos_before_after": 0.052209,
+          "norm_before": 0.466851,
+          "norm_after": 0.408523,
+          "norm_ratio": 0.875061,
+          "delta_norm": 0.604091
+        },
+        {
+          "id": 358,
+          "token": "\u0120I",
+          "from": 358,
+          "to": 5692,
+          "context": "leads_with_space",
+          "pair": "en-i-here",
+          "partner_token": "\u0120Here",
+          "cos_before_after": 0.071066,
+          "norm_before": 0.452987,
+          "norm_after": 0.405508,
+          "norm_ratio": 0.895187,
+          "delta_norm": 0.586111
+        },
+        {
+          "id": 5692,
+          "token": "\u0120Here",
+          "from": 5692,
+          "to": 358,
+          "context": "leads_with_space",
+          "pair": "en-i-here",
+          "partner_token": "\u0120I",
+          "cos_before_after": 0.071066,
+          "norm_before": 0.405508,
+          "norm_after": 0.452987,
+          "norm_ratio": 1.117085,
+          "delta_norm": 0.586111
+        },
+        {
+          "id": 8420,
+          "token": "Here",
+          "from": 8420,
+          "to": 40,
+          "context": "bare",
+          "pair": "en-i-here",
+          "partner_token": "I",
+          "cos_before_after": 0.052209,
+          "norm_before": 0.408523,
+          "norm_after": 0.466851,
+          "norm_ratio": 1.142777,
+          "delta_norm": 0.604091
+        },
+        {
+          "id": 9236,
+          "token": "\u0120Es",
+          "from": 9236,
+          "to": 38747,
+          "context": "leads_with_space",
+          "pair": "de-es-hier",
+          "partner_token": "\u0120Hier",
+          "cos_before_after": 0.089518,
+          "norm_before": 0.41093,
+          "norm_after": 0.423497,
+          "norm_ratio": 1.030582,
+          "delta_norm": 0.563077
+        },
+        {
+          "id": 17360,
+          "token": "Es",
+          "from": 17360,
+          "to": 74909,
+          "context": "bare",
+          "pair": "de-es-hier",
+          "partner_token": "Hier",
+          "cos_before_after": 0.139469,
+          "norm_before": 0.435811,
+          "norm_after": 0.450795,
+          "norm_ratio": 1.03438,
+          "delta_norm": 0.581676
+        },
+        {
+          "id": 17444,
+          "token": "Cannot",
+          "from": 17444,
+          "to": 95456,
+          "context": "bare",
+          "pair": "en-cannot-certainly",
+          "partner_token": "Certainly",
+          "cos_before_after": 0.195181,
+          "norm_before": 0.371156,
+          "norm_after": 0.40102,
+          "norm_ratio": 1.080463,
+          "delta_norm": 0.49038
+        },
+        {
+          "id": 19152,
+          "token": "Sorry",
+          "from": 19152,
+          "to": 39814,
+          "context": "bare",
+          "pair": "en-sorry-sure",
+          "partner_token": "Sure",
+          "cos_before_after": 0.245144,
+          "norm_before": 0.406514,
+          "norm_after": 0.410061,
+          "norm_ratio": 1.008725,
+          "delta_norm": 0.501672
+        },
+        {
+          "id": 22555,
+          "token": "\u0120Sure",
+          "from": 22555,
+          "to": 32286,
+          "context": "leads_with_space",
+          "pair": "en-sorry-sure",
+          "partner_token": "\u0120Sorry",
+          "cos_before_after": 0.24945,
+          "norm_before": 0.403342,
+          "norm_after": 0.385225,
+          "norm_ratio": 0.955083,
+          "delta_norm": 0.483286
+        },
+        {
+          "id": 32286,
+          "token": "\u0120Sorry",
+          "from": 32286,
+          "to": 22555,
+          "context": "leads_with_space",
+          "pair": "en-sorry-sure",
+          "partner_token": "\u0120Sure",
+          "cos_before_after": 0.24945,
+          "norm_before": 0.385225,
+          "norm_after": 0.403342,
+          "norm_ratio": 1.04703,
+          "delta_norm": 0.483286
+        },
+        {
+          "id": 34655,
+          "token": "\u0120Cannot",
+          "from": 34655,
+          "to": 52366,
+          "context": "leads_with_space",
+          "pair": "en-cannot-certainly",
+          "partner_token": "\u0120Certainly",
+          "cos_before_after": 0.107221,
+          "norm_before": 0.379668,
+          "norm_after": 0.375775,
+          "norm_ratio": 0.989746,
+          "delta_norm": 0.504737
+        },
+        {
+          "id": 38747,
+          "token": "\u0120Hier",
+          "from": 38747,
+          "to": 9236,
+          "context": "leads_with_space",
+          "pair": "de-es-hier",
+          "partner_token": "\u0120Es",
+          "cos_before_after": 0.089518,
+          "norm_before": 0.423497,
+          "norm_after": 0.41093,
+          "norm_ratio": 0.970325,
+          "delta_norm": 0.563077
+        },
+        {
+          "id": 39814,
+          "token": "Sure",
+          "from": 39814,
+          "to": 19152,
+          "context": "bare",
+          "pair": "en-sorry-sure",
+          "partner_token": "Sorry",
+          "cos_before_after": 0.245144,
+          "norm_before": 0.410061,
+          "norm_after": 0.406514,
+          "norm_ratio": 0.99135,
+          "delta_norm": 0.501672
+        },
+        {
+          "id": 52366,
+          "token": "\u0120Certainly",
+          "from": 52366,
+          "to": 34655,
+          "context": "leads_with_space",
+          "pair": "en-cannot-certainly",
+          "partner_token": "\u0120Cannot",
+          "cos_before_after": 0.107221,
+          "norm_before": 0.375775,
+          "norm_after": 0.379668,
+          "norm_ratio": 1.01036,
+          "delta_norm": 0.504737
+        },
+        {
+          "id": 74909,
+          "token": "Hier",
+          "from": 74909,
+          "to": 17360,
+          "context": "bare",
+          "pair": "de-es-hier",
+          "partner_token": "Es",
+          "cos_before_after": 0.139469,
+          "norm_before": 0.450795,
+          "norm_after": 0.435811,
+          "norm_ratio": 0.966763,
+          "delta_norm": 0.581676
+        },
+        {
+          "id": 95456,
+          "token": "Certainly",
+          "from": 95456,
+          "to": 17444,
+          "context": "bare",
+          "pair": "en-cannot-certainly",
+          "partner_token": "Cannot",
+          "cos_before_after": 0.195181,
+          "norm_before": 0.40102,
+          "norm_after": 0.371156,
+          "norm_ratio": 0.925529,
+          "delta_norm": 0.49038
+        }
+      ]
+    },
+    "cos_definition": "cos_before_after = cos(row values at this id before the edit, values the edit stores at the same id). It is the same number for both ends of a transposition and equals cos(W_denial, W_compliance); 1.0 would mean the row did not move."
+  },
+  "tensors": [
+    {
+      "name": "token_embd.weight",
+      "roles": [
+        "embedding"
+      ],
+      "qtype": "Q8_0",
+      "codec_chosen": "Q8_0",
+      "codec_reason": "the tensor requantizes at its own stored type, so every tensor offset and byte length stays put and the pre-edit bytes restore the file exactly",
+      "shape": [
+        151936,
+        896
+      ],
+      "tied": true,
+      "bytes": {
+        "source": 144643072,
+        "reencoded": 144643072,
+        "blocks_total": 4254208,
+        "touched_blocks": 448,
+        "touched_bytes": 15232,
+        "touched_fraction": 0.000105,
+        "bytes_read_to_measure": 15232
+      },
+      "storage": {
+        "cos": 1.0,
+        "cos_touched_rows": 1.0,
+        "norm_ratio": 1.0,
+        "snr": 2165329694747.925,
+        "rows_touched": 16,
+        "blocks_touched": 448,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.875061
+          },
+          {
+            "row": 358,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.895187
+          },
+          {
+            "row": 5692,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.117085
+          },
+          {
+            "row": 8420,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.142777
+          },
+          {
+            "row": 9236,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.030582
+          },
+          {
+            "row": 17360,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.03438
+          },
+          {
+            "row": 17444,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.080463
+          },
+          {
+            "row": 19152,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.008725
+          },
+          {
+            "row": 22555,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.955083
+          },
+          {
+            "row": 32286,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.04703
+          },
+          {
+            "row": 34655,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.989746
+          },
+          {
+            "row": 38747,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.970325
+          },
+          {
+            "row": 39814,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.99135
+          },
+          {
+            "row": 52366,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.01036
+          },
+          {
+            "row": 74909,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.966763
+          },
+          {
+            "row": 95456,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.925529
+          }
+        ]
+      },
+      "rows": [
+        {
+          "id": 40,
+          "token": "I",
+          "from": 40,
+          "to": 8420,
+          "context": "bare",
+          "pair": "en-i-here",
+          "partner_token": "Here",
+          "cos_before_after": 0.052209,
+          "norm_before": 0.466851,
+          "norm_after": 0.408523,
+          "norm_ratio": 0.875061,
+          "delta_norm": 0.604091
+        },
+        {
+          "id": 358,
+          "token": "\u0120I",
+          "from": 358,
+          "to": 5692,
+          "context": "leads_with_space",
+          "pair": "en-i-here",
+          "partner_token": "\u0120Here",
+          "cos_before_after": 0.071066,
+          "norm_before": 0.452987,
+          "norm_after": 0.405508,
+          "norm_ratio": 0.895187,
+          "delta_norm": 0.586111
+        },
+        {
+          "id": 5692,
+          "token": "\u0120Here",
+          "from": 5692,
+          "to": 358,
+          "context": "leads_with_space",
+          "pair": "en-i-here",
+          "partner_token": "\u0120I",
+          "cos_before_after": 0.071066,
+          "norm_before": 0.405508,
+          "norm_after": 0.452987,
+          "norm_ratio": 1.117085,
+          "delta_norm": 0.586111
+        },
+        {
+          "id": 8420,
+          "token": "Here",
+          "from": 8420,
+          "to": 40,
+          "context": "bare",
+          "pair": "en-i-here",
+          "partner_token": "I",
+          "cos_before_after": 0.052209,
+          "norm_before": 0.408523,
+          "norm_after": 0.466851,
+          "norm_ratio": 1.142777,
+          "delta_norm": 0.604091
+        },
+        {
+          "id": 9236,
+          "token": "\u0120Es",
+          "from": 9236,
+          "to": 38747,
+          "context": "leads_with_space",
+          "pair": "de-es-hier",
+          "partner_token": "\u0120Hier",
+          "cos_before_after": 0.089518,
+          "norm_before": 0.41093,
+          "norm_after": 0.423497,
+          "norm_ratio": 1.030582,
+          "delta_norm": 0.563077
+        },
+        {
+          "id": 17360,
+          "token": "Es",
+          "from": 17360,
+          "to": 74909,
+          "context": "bare",
+          "pair": "de-es-hier",
+          "partner_token": "Hier",
+          "cos_before_after": 0.139469,
+          "norm_before": 0.435811,
+          "norm_after": 0.450795,
+          "norm_ratio": 1.03438,
+          "delta_norm": 0.581676
+        },
+        {
+          "id": 17444,
+          "token": "Cannot",
+          "from": 17444,
+          "to": 95456,
+          "context": "bare",
+          "pair": "en-cannot-certainly",
+          "partner_token": "Certainly",
+          "cos_before_after": 0.195181,
+          "norm_before": 0.371156,
+          "norm_after": 0.40102,
+          "norm_ratio": 1.080463,
+          "delta_norm": 0.49038
+        },
+        {
+          "id": 19152,
+          "token": "Sorry",
+          "from": 19152,
+          "to": 39814,
+          "context": "bare",
+          "pair": "en-sorry-sure",
+          "partner_token": "Sure",
+          "cos_before_after": 0.245144,
+          "norm_before": 0.406514,
+          "norm_after": 0.410061,
+          "norm_ratio": 1.008725,
+          "delta_norm": 0.501672
+        },
+        {
+          "id": 22555,
+          "token": "\u0120Sure",
+          "from": 22555,
+          "to": 32286,
+          "context": "leads_with_space",
+          "pair": "en-sorry-sure",
+          "partner_token": "\u0120Sorry",
+          "cos_before_after": 0.24945,
+          "norm_before": 0.403342,
+          "norm_after": 0.385225,
+          "norm_ratio": 0.955083,
+          "delta_norm": 0.483286
+        },
+        {
+          "id": 32286,
+          "token": "\u0120Sorry",
+          "from": 32286,
+          "to": 22555,
+          "context": "leads_with_space",
+          "pair": "en-sorry-sure",
+          "partner_token": "\u0120Sure",
+          "cos_before_after": 0.24945,
+          "norm_before": 0.385225,
+          "norm_after": 0.403342,
+          "norm_ratio": 1.04703,
+          "delta_norm": 0.483286
+        },
+        {
+          "id": 34655,
+          "token": "\u0120Cannot",
+          "from": 34655,
+          "to": 52366,
+          "context": "leads_with_space",
+          "pair": "en-cannot-certainly",
+          "partner_token": "\u0120Certainly",
+          "cos_before_after": 0.107221,
+          "norm_before": 0.379668,
+          "norm_after": 0.375775,
+          "norm_ratio": 0.989746,
+          "delta_norm": 0.504737
+        },
+        {
+          "id": 38747,
+          "token": "\u0120Hier",
+          "from": 38747,
+          "to": 9236,
+          "context": "leads_with_space",
+          "pair": "de-es-hier",
+          "partner_token": "\u0120Es",
+          "cos_before_after": 0.089518,
+          "norm_before": 0.423497,
+          "norm_after": 0.41093,
+          "norm_ratio": 0.970325,
+          "delta_norm": 0.563077
+        },
+        {
+          "id": 39814,
+          "token": "Sure",
+          "from": 39814,
+          "to": 19152,
+          "context": "bare",
+          "pair": "en-sorry-sure",
+          "partner_token": "Sorry",
+          "cos_before_after": 0.245144,
+          "norm_before": 0.410061,
+          "norm_after": 0.406514,
+          "norm_ratio": 0.99135,
+          "delta_norm": 0.501672
+        },
+        {
+          "id": 52366,
+          "token": "\u0120Certainly",
+          "from": 52366,
+          "to": 34655,
+          "context": "leads_with_space",
+          "pair": "en-cannot-certainly",
+          "partner_token": "\u0120Cannot",
+          "cos_before_after": 0.107221,
+          "norm_before": 0.375775,
+          "norm_after": 0.379668,
+          "norm_ratio": 1.01036,
+          "delta_norm": 0.504737
+        },
+        {
+          "id": 74909,
+          "token": "Hier",
+          "from": 74909,
+          "to": 17360,
+          "context": "bare",
+          "pair": "de-es-hier",
+          "partner_token": "Es",
+          "cos_before_after": 0.139469,
+          "norm_before": 0.450795,
+          "norm_after": 0.435811,
+          "norm_ratio": 0.966763,
+          "delta_norm": 0.581676
+        },
+        {
+          "id": 95456,
+          "token": "Certainly",
+          "from": 95456,
+          "to": 17444,
+          "context": "bare",
+          "pair": "en-cannot-certainly",
+          "partner_token": "Cannot",
+          "cos_before_after": 0.195181,
+          "norm_before": 0.40102,
+          "norm_after": 0.371156,
+          "norm_ratio": 0.925529,
+          "delta_norm": 0.49038
+        }
+      ]
+    }
+  ],
+  "untouched": {
+    "tensors": 289,
+    "tensor_data_bytes": 192161024,
+    "guarantee": "edit_tensors copies the input and rewrites only the edited tensors; --apply measures it (no differing byte outside the edited ranges), gguf-tensor-diff on the two files is the independent check, and a row-level check names exactly the mapped rows"
+  },
+  "dry_run_measurement": {
+    "sample": "the block-aligned spans holding the mapped rows only",
+    "tensors": [
+      {
+        "name": "token_embd.weight",
+        "qtype": "Q8_0",
+        "shape": [
+          151936,
+          896
+        ],
+        "cos": 1.0,
+        "norm_ratio": 1.0,
+        "snr": 2165329694747.925,
+        "delta_norm": 2.1653,
+        "noise_norm": 0.0,
+        "windows": 16,
+        "blocks_per_window": 32,
+        "row_scoped": true,
+        "rows_touched": 16,
+        "blocks_touched": 448,
+        "cos_touched_rows": 1.0,
+        "row_detail": [
+          {
+            "row": 40,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.875061
+          },
+          {
+            "row": 358,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.895187
+          },
+          {
+            "row": 5692,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.117085
+          },
+          {
+            "row": 8420,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.142777
+          },
+          {
+            "row": 9236,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.030582
+          },
+          {
+            "row": 17360,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.03438
+          },
+          {
+            "row": 17444,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.080463
+          },
+          {
+            "row": 19152,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.008725
+          },
+          {
+            "row": 22555,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.955083
+          },
+          {
+            "row": 32286,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.04703
+          },
+          {
+            "row": 34655,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.989746
+          },
+          {
+            "row": 38747,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.970325
+          },
+          {
+            "row": 39814,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.99135
+          },
+          {
+            "row": 52366,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 1.01036
+          },
+          {
+            "row": 74909,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.966763
+          },
+          {
+            "row": 95456,
+            "cos": 1.0,
+            "norm_ratio": 1.0,
+            "retained_scale": 0.925529
+          }
+        ]
+      }
+    ],
+    "min_cos": 1.0
+  },
+  "plan": {
+    "writer": "jdewitt.ggufio.edit_tensors (copy + requantize the edited tensors at their own type; every other byte verbatim)",
+    "out": null,
+    "apply": false,
+    "revert_sidecar": null
+  },
+  "verdict": {
+    "ok": true,
+    "cos_floor": 0.95,
+    "problems": [],
+    "notes": [
+      "a product of disjoint transpositions on the resolved ids: a bijection whose inverse is itself, so every unmapped id keeps its own row",
+      "a row edit is not a sentence: the rest of a refusal is planned upstream, so an opener conjugation is expected to produce a compliant opener followed by a refusal body",
+      "the same tensor is both embedding and head when tied, so the transposition also changes what the model reads for those ids in a prompt",
+      "tied head: there is no separate output.weight, so the row is the head row and the embedding row at once (reported as tied=true)"
+    ]
+  },
+  "next": {
+    "commands": [
+      "jdewitt gguf-inspect verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "jdewitt gguf-tensor-diff <source> <out>",
+      "jdewitt gguf-revert <out>"
+    ],
+    "note": "the diff names the edited tensor; the row-level check in apply.row_identity names the mapped rows. A behavioural reading needs a serve and stays gated."
+  }
+}
