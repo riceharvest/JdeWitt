@@ -148,6 +148,15 @@ def build_parser():
     vremap.add_argument('--out',type=Path,help='Output directory for --remap on|off (rows.jsonl, run.json, server.log); the new GGUF for --weights --apply')
     vremap.add_argument('--max-tokens',type=int,default=40,help='Decode steps per probe for --remap (default 40)')
     vremap.add_argument('--serve',type=Path,help='llama-server binary to start on the artifact for --remap; omit to use an already-running --port')
+
+    grammar=sub.add_parser('grammar',help='Denial-free decoder grammar: --compile turns assets/vocab-remap-denial.json plus a GGUF tokenizer into a GBNF automaton and runs the static checks (text, automata; no model, no server)')
+    grammar.add_argument('--compile',action='store_true',help='Compile and check; required (there is no other grammar mode)')
+    grammar.add_argument('--table',type=Path,help='Table JSON override; default is the packaged assets/vocab-remap-denial.json')
+    grammar.add_argument('--artifact',type=Path,help='GGUF whose tokenizer header is read for the token-level view (no weights are decoded)')
+    grammar.add_argument('--predictions',default='verification/**/predictions.jsonl',help='Glob of saved prediction JSONL files whose refusal openers must be rejected')
+    grammar.add_argument('--min-chars',type=int,default=48,help='Code points required before end-of-sequence (default 48)')
+    grammar.add_argument('--out',type=Path,default=Path('verification/denial-grammar'),help='Directory for denial-free.gbnf and denial-free.json')
+    grammar.add_argument('--skip-probe',action='store_true',help='Skip the llama.cpp parser/matcher check even if a source tree and libllama.so are present')
     vremap.add_argument('--template',choices=['chat','raw'],default='chat',help='--remap/--embed prompt form: render the artifact chat template via /apply-template (chat, default) or decode the probe text verbatim (raw)')
     vremap.add_argument('--no-think',action='store_true',help='--remap chat template: render with enable_thinking=false (artifacts whose template names it; keeps the answer opener inside the cap)')
     vremap.add_argument('--ctx',type=int,default=4096,help='--embed: serve context (-c) of the started server; the pinned cert default is 4096')
@@ -931,6 +940,20 @@ def main():
             result=vocab_conjugate(weights=args.weights,table=args.table,out=args.out,
                                    apply=args.apply,json_out=args.json)
             exit_code=0 if result['verdict']['ok'] else 1
+        elif args.command=='grammar':
+            if not args.compile:
+                raise ValueError('grammar implements --compile only')
+            from .denial_grammar_run import compile_run
+            _report,result=compile_run(args.out,args.predictions,args.artifact,
+                                       skip_probe=args.skip_probe,min_chars=args.min_chars,
+                                       table=args.table)
+            checks=[result['surfaces_rejected'].split('/')[0]==result['surfaces_rejected'].split('/')[1],
+                    result['saved_predictions']['wording_openers_rejected']==result['saved_predictions']['wording_openers'],
+                    result['openings']['authored']['accepted']==result['openings']['authored']['rows'],
+                    result['minimal_agrees']==0,result['oracle_disagreements']==0]
+            if result['llama_cpp']['available']:
+                checks += [bool(result['llama_cpp']['parse_ok']),bool(result['llama_cpp']['match_ok'])]
+            exit_code=0 if all(checks) else 1
         elif args.command=='hub-census':
             from .hubcensus import hub_census
             result=hub_census(authors=args.author or None,since=args.since,per_author=args.per_author,out=args.out)
