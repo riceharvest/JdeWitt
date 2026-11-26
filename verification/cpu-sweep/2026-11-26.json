@@ -1,0 +1,343 @@
+{
+  "schema_version": 1,
+  "kind": "cpu-sweep",
+  "date": "2026-11-26",
+  "scope": "CPU only, no model forward and no serve: the standing audit checkers run once, with exit codes and a sha256 for every artifact they printed. The loss-ledger gate is falsified in the same pass, because a green matrix render alone proves nothing.",
+  "manifest_sha256": "63b5e87db13a4968a3c13fa703aec10a0e1a69f922d35e3238dacd06e07e5015",
+  "loss_ledger_sha256": "87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249",
+  "fixtures": [
+    {
+      "name": "Qwen2.5-0.5B-Instruct-IQ3_M",
+      "path": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+      "bytes": 342752576,
+      "git_tracked": false,
+      "note": "*.gguf is gitignored: the file is present in the working checkout (and in the lab model tree) under this digest, not in git history. A fresh clone reproduces the report from any file with the same sha256."
+    },
+    {
+      "name": "Qwen2.5-0.5B-Instruct-IQ4_XS",
+      "path": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+      "sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1",
+      "bytes": 349402688,
+      "git_tracked": false,
+      "note": "*.gguf is gitignored: the file is present in the working checkout (and in the lab model tree) under this digest, not in git history. A fresh clone reproduces the report from any file with the same sha256."
+    },
+    {
+      "name": "minicpm-v47-Q4_K_M",
+      "path": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+      "sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+      "bytes": 672004000,
+      "git_tracked": false,
+      "note": "*.gguf is gitignored: the file is present in the working checkout (and in the lab model tree) under this digest, not in git history. A fresh clone reproduces the report from any file with the same sha256."
+    }
+  ],
+  "checks": [
+    {
+      "check": "evidence_map --check",
+      "command": "uv run python scripts/evidence_map.py --check",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/evidence-map-check.md",
+      "sha256": "edc6b2957d19f7b5787e4ff01dc7a94733369f6463d5303e5a2e07b687402d85",
+      "detail": "49 numbers in README section IV, 49 in the map, 49 checked; every artifact the map names is present, every number recomputes.",
+      "expected_exit": 0
+    },
+    {
+      "check": "release-matrix render 1",
+      "command": "uv run jdewitt release-matrix --manifest verification/releases/matrix.manifest.json --out <dir>/matrix.json --table <dir>/matrix.md --doc <dir>/EVIDENCE-TABLE.md",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/matrix/",
+      "sha256": {
+        "matrix.json": "7718b0e89974ad7977a209411e91daa9bb552698f692f6a1154927110724ee84",
+        "matrix.md": "1ac696aa56f1a46848810aad8ef975fadd5350b7383a7c5c716b9a44e8929f44",
+        "EVIDENCE-TABLE.md": "b78024524ed75792938a2ee359ac386f64ead9a9fc8f3358d45171ffdfdf7d9d"
+      },
+      "detail": "Render 2 to a second directory was byte-identical on all three outputs, and all three equal the committed verification/releases/matrix.json, verification/releases/matrix.md and docs/EVIDENCE-TABLE.md. The command is deterministic: no timestamp reaches the document.",
+      "expected_exit": 0
+    },
+    {
+      "check": "release-matrix ledger falsifier",
+      "command": "uv run jdewitt release-matrix --manifest <manifest with loss_ledger pointed at the one-byte edit>",
+      "exit": 1,
+      "evidence": "verification/cpu-sweep/2026-11-26/ledger-tamper.json",
+      "sha256": "30db33e200798239185f44aaa24ceb0d4e1e00f34ca4dba3420890072d54061c",
+      "detail": "See falsified[0]: one byte changed in a copied loss-ledger value is refused with MATRIX_LEDGER_INVALID and exit 1.",
+      "expected_exit": 1
+    },
+    {
+      "check": "quants-audit Qwen2.5-0.5B-Instruct-IQ3_M",
+      "command": "uv run jdewitt quants-audit verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/quants-audit/Qwen2.5-0.5B-Instruct-IQ3_M.json",
+      "sha256": "aba8d55bb77b752f387d85cfe129cd4c74eeb3911b14f1f7ea69aab4aaefccad",
+      "detail": {
+        "fixture_sha256": "0b2e17471ccc784dfd7b042a81e34289a3accb75ccda7347598a329e0a932099",
+        "fixture_bytes": 342752576,
+        "dtypes_audited": [
+          "F32",
+          "IQ3_S",
+          "IQ4_NL",
+          "Q4_K",
+          "Q5_0",
+          "Q8_0"
+        ],
+        "per_dtype": {
+          "F32": {
+            "tensors": 121,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          },
+          "IQ3_S": {
+            "tensors": 21,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.0,
+            "max_abs_change": 0.01352548599243164,
+            "max_change_over_std": 0.6895768749332581
+          },
+          "IQ4_NL": {
+            "tensors": 96,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.945068359375,
+            "max_abs_change": 0.008713722229003906,
+            "max_change_over_std": 0.24941526768983846
+          },
+          "Q4_K": {
+            "tensors": 3,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.882080078125,
+            "max_abs_change": 0.004026889801025391,
+            "max_change_over_std": 0.1672509728472467
+          },
+          "Q5_0": {
+            "tensors": 48,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.696533203125,
+            "max_abs_change": 0.006195068359375,
+            "max_change_over_std": 0.17357324327330562
+          },
+          "Q8_0": {
+            "tensors": 1,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          }
+        },
+        "decode_only_dtypes": [],
+        "port_decode_only_dtypes": [],
+        "unsupported_dtypes": []
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "quants-audit Qwen2.5-0.5B-Instruct-IQ4_XS",
+      "command": "uv run jdewitt quants-audit verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/quants-audit/Qwen2.5-0.5B-Instruct-IQ4_XS.json",
+      "sha256": "ac62ad4902808bf70eb8a996e5d58a125d0ace8fc45e790437327a1dc13e7344",
+      "detail": {
+        "fixture_sha256": "df178ccd68e24ce0c74f957765c00e8f5eec5c51216a1acd4444202e58df6cc1",
+        "fixture_bytes": 349402688,
+        "dtypes_audited": [
+          "F32",
+          "IQ4_NL",
+          "IQ4_XS",
+          "Q5_1",
+          "Q8_0"
+        ],
+        "per_dtype": {
+          "F32": {
+            "tensors": 121,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          },
+          "IQ4_NL": {
+            "tensors": 120,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.945068359375,
+            "max_abs_change": 0.008713722229003906,
+            "max_change_over_std": 0.24941526768983846
+          },
+          "IQ4_XS": {
+            "tensors": 24,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.733642578125,
+            "max_abs_change": 0.006195545196533203,
+            "max_change_over_std": 0.26686716144596095
+          },
+          "Q5_1": {
+            "tensors": 24,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.65673828125,
+            "max_abs_change": 0.002033233642578125,
+            "max_change_over_std": 0.1000065816152133
+          },
+          "Q8_0": {
+            "tensors": 1,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          }
+        },
+        "decode_only_dtypes": [],
+        "port_decode_only_dtypes": [],
+        "unsupported_dtypes": []
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "quants-audit minicpm-v47-Q4_K_M",
+      "command": "uv run jdewitt quants-audit verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/quants-audit/minicpm-v47-Q4_K_M.json",
+      "sha256": "e3bb82536e24af170cce9739f1301b34f6a86445d48704a1e55dd0c5e4363796",
+      "detail": {
+        "fixture_sha256": "67dd31f57b31184fc34ec8bf09ee648671a2b9bcdbda9e3ecaee394ef1a040be",
+        "fixture_bytes": 672004000,
+        "dtypes_audited": [
+          "F32",
+          "Q4_K",
+          "Q6_K"
+        ],
+        "per_dtype": {
+          "F32": {
+            "tensors": 133,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          },
+          "Q4_K": {
+            "tensors": 163,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 1.0,
+            "max_abs_change": 0.0,
+            "max_change_over_std": 0.0
+          },
+          "Q6_K": {
+            "tensors": 25,
+            "blocks_sampled": 4096,
+            "byte_identity_rate": 0.8603515625,
+            "max_abs_change": 0.0003457069396972656,
+            "max_change_over_std": 0.022131087822857814
+          }
+        },
+        "decode_only_dtypes": [],
+        "port_decode_only_dtypes": [],
+        "unsupported_dtypes": []
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "gguf-tensor-diff self Qwen2.5-0.5B-Instruct-IQ3_M",
+      "command": "uv run jdewitt gguf-tensor-diff verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/tensor-diff/Qwen2.5-0.5B-Instruct-IQ3_M.self.json",
+      "sha256": "ab0a629837d5f7f592bddb176333a2ef12866490032e72120be49938925d8c7c",
+      "detail": {
+        "shared": 290,
+        "bit_identical": 290,
+        "value_differs": 0,
+        "shape_changed": 0,
+        "codec_unsupported": 0,
+        "packed_size_changed": 0,
+        "port_decoded": 0
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "gguf-tensor-diff self Qwen2.5-0.5B-Instruct-IQ4_XS",
+      "command": "uv run jdewitt gguf-tensor-diff verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/tensor-diff/Qwen2.5-0.5B-Instruct-IQ4_XS.self.json",
+      "sha256": "7a724a95e93b63c72dc7cb90c080e99a79c10105066ada46dff7cffc616ed7a1",
+      "detail": {
+        "shared": 290,
+        "bit_identical": 290,
+        "value_differs": 0,
+        "shape_changed": 0,
+        "codec_unsupported": 0,
+        "packed_size_changed": 0,
+        "port_decoded": 0
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "gguf-tensor-diff self minicpm-v47-Q4_K_M",
+      "command": "uv run jdewitt gguf-tensor-diff verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/tensor-diff/minicpm-v47-Q4_K_M.self.json",
+      "sha256": "b192b8276cf28d72bf013ec42b780e2e991ad3e1c1de7ac9035498bd21059b1e",
+      "detail": {
+        "shared": 321,
+        "bit_identical": 321,
+        "value_differs": 0,
+        "shape_changed": 0,
+        "codec_unsupported": 0,
+        "packed_size_changed": 0,
+        "port_decoded": 0
+      },
+      "expected_exit": 0
+    },
+    {
+      "check": "help_audit",
+      "command": "uv run python scripts/help_audit.py",
+      "exit": 0,
+      "evidence": "verification/cpu-sweep/2026-11-26/help-audit.json",
+      "sha256": "bbe1efb37fbebe3c203e837460ff5b2f03e90f79ad0a96496f21120a2a5faf34",
+      "detail": {
+        "subparsers": 94,
+        "help_ok": 94,
+        "help_failed": [],
+        "model_import_attempts": [],
+        "commands_covered": 94,
+        "commands_missing": [],
+        "commands_extra": [],
+        "next_documented": [
+          "capture",
+          "tune",
+          "edit-quantized",
+          "hub-census",
+          "export-smoke"
+        ],
+        "next_missing": []
+      },
+      "expected_exit": 0
+    }
+  ],
+  "falsified": [
+    {
+      "gate": "release-matrix refuses a loss-ledger value that no longer recomputes",
+      "why": "a green matrix render alone proves nothing: the gate must go red on a one-byte change, or the ledger is decoration",
+      "edit": {
+        "file": "verification/releases/loss-ledger.json",
+        "offset": 901,
+        "from": "6",
+        "to": "7",
+        "field": "entries[0].numbers[0].value (q25-removal-retraction 6/40)",
+        "base_sha256": "87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249",
+        "tampered_sha256": "3f0c443267c79133dafe32b409ac0096c4aa7717f7a62050fbcd367e468d4919"
+      },
+      "expected": "exit 1 with error.code MATRIX_LEDGER_INVALID",
+      "observed": {
+        "exit": 1,
+        "code": "MATRIX_LEDGER_INVALID",
+        "message": "MATRIX_LEDGER_INVALID: q25-removal-retraction: '6/40' no longer recomputes from verification/q3-4b-harmful40/yxboth10-l935/predictions.jsonl (got 6/40)"
+      },
+      "reproduce": "cp verification/releases/loss-ledger.json /tmp/tampered.json && python3 -c \"import pathlib; p=pathlib.Path('/tmp/tampered.json'); b=bytearray(p.read_bytes()); i=b.find(b'\\\"value\\\": \\\"6/40\\\"'); b[i+len(b'\\\"value\\\": \\\"6/40\\\"')-2]=ord('7'); p.write_bytes(bytes(b))\" && sed \"s#verification/releases/loss-ledger.json#/tmp/tampered.json#\" verification/releases/matrix.manifest.json > /tmp/tamper.manifest.json && uv run jdewitt release-matrix --manifest /tmp/tamper.manifest.json; echo \"exit=$?\""
+    }
+  ],
+  "reds_fixed": [
+    "scripts/help_audit.py reported next_missing [edit-quantized, hub-census, export-smoke]: the three reports named no next command. Ported the reports' next blocks from commit 13c5ff8 (rewrite.py edit_next_steps, hubcensus.census_next_steps, export_smoke.smoke_next_steps) and threaded --records into the edit report; next_missing is now [].",
+    "docs/CPU-QUEUE.md quoted 43 of 43 evidence-map numbers; the map checks 49 of 49 today. The doc was fixed, not the number.",
+    "quants_audit's printed note claimed byte identity is expected except at rounding-tie edges; the sweep falsifies that for the search-based IQ3_S encoder (0/4096 identity on the 0.5B IQ3_M fixture). The docstring and note now say identity is a drift report, not a gate, and that byte-exactness vs the compiled C reference is the proof.",
+    "docs/RESULTS-INDEX.md was generated before the last ~350 evidence files landed (503 rows against 856 on disk). Nothing else reads it, so it was regenerated rather than hand-edited; the sweep now has its own row."
+  ],
+  "open_findings": [
+    "IQ3_S requant on the IQ3_M fixture: 0 of 4096 sampled blocks re-encode to the same bytes, max |change| 1.35e-2, max change/std 0.690. IQ3_S's encoder is a neighbour search, and PLAN-NEXT records it as byte-exact against the compiled C on 8 distributions; a re-pick on requant is therefore expected encoder behaviour, not a port regression. No committed claim quotes an IQ3_S identity rate, so nothing recomputes wrong. Recorded here so the next sweep reads it as a number, not as a surprise."
+  ]
+}

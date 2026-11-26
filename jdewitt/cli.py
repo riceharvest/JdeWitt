@@ -1047,7 +1047,8 @@ def main():
                 attempt=rewrite_with_edits(args.gguf,candidate,edits,scale=args.scale,
                                            axis_space=args.axis_space,edit_type=kind,
                                            renormalize=args.renormalize,repair=args.repair,
-                                           verify_untouched=not args.no_verify)
+                                           verify_untouched=not args.no_verify,
+                                           records=args.records)
                 delivered=compare_edit(str(args.gguf),str(candidate),probe,
                                        renormalize=args.renormalize or args.repair!='none')
                 attempt['delivered_edit']=delivered

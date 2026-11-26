@@ -9,7 +9,7 @@ boundary is.
 
 Baseline, checked today (a fresh clone should reproduce it):
 
-- `uv run python scripts/evidence_map.py --check` -> 43 of 43 numbers in README
+- `uv run python scripts/evidence_map.py --check` -> 49 of 49 numbers in README
   section IV recompute; every artifact the map names is present.
 - `uv run python scripts/help_audit.py` -> `next_missing: []`.
 - `uv run jdewitt commands` -> still lists `plan-apply` on master. The dev
@@ -74,20 +74,32 @@ after the edit, because the commands in the map are the ones being scrubbed.
 ## 4. Standing audit sweep, recorded
 
 One pass over the CPU checkers, recorded in the commit message (date, exit
-codes, digests):
+codes, digests) and as `verification/cpu-sweep/<date>.json`:
 
 - `uv run python scripts/evidence_map.py --check`
 - `release-matrix` rendered twice from the same manifest -> two byte-identical
   outputs plus the table and doc
 - a one-byte edit of a loss-ledger value -> the command refuses
   `MATRIX_LEDGER_INVALID` (falsify the gate; a green run alone proves nothing)
-- `quants-audit` on the in-clone fixtures (iq05b IQ3_M and IQ4_XS; a sampled
-  Q4_K_M from the minicpm-v47 directory)
+- `quants-audit` on the three GGUF fixtures in the working checkout: iq05b
+  IQ3_M and IQ4_XS, and the MiniCPM-V 4.7 Q4_K_M (`*.gguf` is gitignored, so a
+  fixture is named by sha256 in the record, not by git)
 - `gguf-tensor-diff` self-diff on each fixture -> 100% bit-identical
 - `uv run python scripts/help_audit.py`
 
-Check: every command exits 0, the tampered ledger is refused, and the two
-matrix renders share a sha256.
+Check: every command exits with the code the record names (the ledger falsifier
+exits 1 by design), the tampered ledger is refused, and the two matrix renders
+share a sha256.
+
+Recorded 2026-11-26: 10 checks, every exit as expected; matrix.json
+`7718b0e8...`, matrix.md `1ac696aa...`, EVIDENCE-TABLE.md `b7802452...` on both
+renders and equal to the committed files; the one-byte ledger edit (offset 901,
+`6`->`7`) is refused with `MATRIX_LEDGER_INVALID`; self-diff 290/290, 290/290
+and 321/321 bit-identical. The reds this pass found were fixed in the same
+commit: `help_audit` `next_missing` was three steps, the baseline above quoted
+43 map numbers (49 today), and `quants-audit` claimed byte identity is expected
+where the search-based IQ3_S encoder re-picks codes. `docs/RESULTS-INDEX.md` is
+regenerated and carries the sweep as a dated row, so the pass has an address.
 
 ## 5. Hub-census refresh -> adapter worklist
 

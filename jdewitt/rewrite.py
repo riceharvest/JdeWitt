@@ -113,9 +113,25 @@ def axis_fingerprint(edits, names=None):
             'layers': sorted(layer_norms), 'axis_norm_by_layer': layer_norms}
 
 
+def edit_next_steps(source, output, records=None):
+    """The commands that re-derive and use this edit, built from the run's own paths.
+
+    `verify` recomputes the fingerprint from the two files, `gguf-tensor-diff`
+    names every tensor the edit did not touch, and `board` reads behaviour only
+    with capture records — without a records path the flag keeps a placeholder
+    instead of inventing a file the run never saw.
+    """
+    hint = records if records is not None else '"<records.pt from capture>"'
+    return [
+        f'uv run jdewitt verify --pristine {source} --edited {output}',
+        f'uv run jdewitt board --artifact {output} --records {hint} --base {source}',
+        f'uv run jdewitt gguf-tensor-diff {source} {output}',
+    ]
+
+
 def rewrite_with_edits(src, out, edits, *, scale=1.0, scales=None, axis_space='output',
                        edit_type='q6_k', renormalize=False, verify_untouched=True,
-                       repair='none', norm_clamp=(0.9, 1.1), claims=None):
+                       repair='none', norm_clamp=(0.9, 1.1), claims=None, records=None):
     """Write `out`: the user's artifact, with the edited tensors re-encoded.
 
     ``edits`` maps a tensor name to ``(axis, space)`` (a fitted direction) or to an
@@ -299,4 +315,7 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, scales=None, axis_space='o
         report['untouched'] = {'verified': not mismatched and not missing,
                                'checked': len(header['tensors']) - len(payloads),
                                'mismatched': mismatched[:12], 'missing': missing[:12]}
+    # One JSON, then the exact commands that re-derive the edit and read it: an
+    # agent should not have to know the pipeline out of band to check our claim.
+    report['next'] = edit_next_steps(src, out, records)
     return report

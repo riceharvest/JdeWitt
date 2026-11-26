@@ -1,0 +1,22 @@
+{
+  "kind": "cpu-sweep-ledger-falsifier",
+  "date": "2026-11-26",
+  "gate": "release-matrix refuses a loss-ledger value that no longer recomputes",
+  "why": "a green matrix render alone proves nothing: the gate must go red on a one-byte change, or the ledger is decoration",
+  "edit": {
+    "file": "verification/releases/loss-ledger.json",
+    "offset": 901,
+    "from": "6",
+    "to": "7",
+    "field": "entries[0].numbers[0].value (q25-removal-retraction 6/40)",
+    "base_sha256": "87f9b049238554a1b28e0b9a8f00f948cf8892910b1c200bffcd39e25d817249",
+    "tampered_sha256": "3f0c443267c79133dafe32b409ac0096c4aa7717f7a62050fbcd367e468d4919"
+  },
+  "expected": "exit 1 with error.code MATRIX_LEDGER_INVALID",
+  "observed": {
+    "exit": 1,
+    "code": "MATRIX_LEDGER_INVALID",
+    "message": "MATRIX_LEDGER_INVALID: q25-removal-retraction: '6/40' no longer recomputes from verification/q3-4b-harmful40/yxboth10-l935/predictions.jsonl (got 6/40)"
+  },
+  "reproduce": "cp verification/releases/loss-ledger.json /tmp/tampered.json && python3 -c \"import pathlib; p=pathlib.Path('/tmp/tampered.json'); b=bytearray(p.read_bytes()); i=b.find(b'\\\"value\\\": \\\"6/40\\\"'); b[i+len(b'\\\"value\\\": \\\"6/40\\\"')-2]=ord('7'); p.write_bytes(bytes(b))\" && sed \"s#verification/releases/loss-ledger.json#/tmp/tampered.json#\" verification/releases/matrix.manifest.json > /tmp/tamper.manifest.json && uv run jdewitt release-matrix --manifest /tmp/tamper.manifest.json; echo \"exit=$?\""
+}

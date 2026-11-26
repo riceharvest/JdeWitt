@@ -1,0 +1,83 @@
+{
+  "file": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+  "dtypes_audited": [
+    "F32",
+    "IQ3_S",
+    "IQ4_NL",
+    "Q4_K",
+    "Q5_0",
+    "Q8_0"
+  ],
+  "per_dtype": {
+    "F32": {
+      "tensors": 121,
+      "blocks_total": 71552,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 4,
+      "elements_per_block": 1,
+      "byte_identical_blocks": 4096,
+      "max_abs_change": 0.0,
+      "max_change_over_std": 0.0,
+      "byte_identity_rate": 1.0
+    },
+    "IQ3_S": {
+      "tensors": 21,
+      "blocks_total": 357504,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 110,
+      "elements_per_block": 256,
+      "byte_identical_blocks": 0,
+      "max_abs_change": 0.01352548599243164,
+      "max_change_over_std": 0.6895768749332581,
+      "byte_identity_rate": 0.0
+    },
+    "IQ4_NL": {
+      "tensors": 96,
+      "blocks_total": 7225344,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 18,
+      "elements_per_block": 32,
+      "byte_identical_blocks": 3871,
+      "max_abs_change": 0.008713722229003906,
+      "max_change_over_std": 0.24941526768983846,
+      "byte_identity_rate": 0.945068359375
+    },
+    "Q4_K": {
+      "tensors": 3,
+      "blocks_total": 51072,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 144,
+      "elements_per_block": 256,
+      "byte_identical_blocks": 3613,
+      "max_abs_change": 0.004026889801025391,
+      "max_change_over_std": 0.1672509728472467,
+      "byte_identity_rate": 0.882080078125
+    },
+    "Q5_0": {
+      "tensors": 48,
+      "blocks_total": 688128,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 22,
+      "elements_per_block": 32,
+      "byte_identical_blocks": 2853,
+      "max_abs_change": 0.006195068359375,
+      "max_change_over_std": 0.17357324327330562,
+      "byte_identity_rate": 0.696533203125
+    },
+    "Q8_0": {
+      "tensors": 1,
+      "blocks_total": 4254208,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 34,
+      "elements_per_block": 32,
+      "byte_identical_blocks": 4096,
+      "max_abs_change": 0.0,
+      "max_change_over_std": 0.0,
+      "byte_identity_rate": 1.0
+    }
+  },
+  "decode_only_dtypes": {},
+  "port_decode_only_dtypes": {},
+  "unsupported_dtypes": {},
+  "note": "Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec. Byte identity is the norm for a closed-form encoder and partial for a K-quant scale on a tie edge; a search-based codebook encoder re-picks codes on requant, so a low identity rate is drift, not a broken port. Byte-exactness against the compiled C reference (scripts/ggml_ref) is what proves a codec, and this report is not a pass/fail gate."
+}

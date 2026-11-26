@@ -1,0 +1,47 @@
+{
+  "file": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+  "dtypes_audited": [
+    "F32",
+    "Q4_K",
+    "Q6_K"
+  ],
+  "per_dtype": {
+    "F32": {
+      "tensors": 133,
+      "blocks_total": 498496,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 4,
+      "elements_per_block": 1,
+      "byte_identical_blocks": 4096,
+      "max_abs_change": 0.0,
+      "max_change_over_std": 0.0,
+      "byte_identity_rate": 1.0
+    },
+    "Q4_K": {
+      "tensors": 163,
+      "blocks_total": 2514296,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 144,
+      "elements_per_block": 256,
+      "byte_identical_blocks": 4096,
+      "max_abs_change": 0.0,
+      "max_change_over_std": 0.0,
+      "byte_identity_rate": 1.0
+    },
+    "Q6_K": {
+      "tensors": 25,
+      "blocks_total": 1414264,
+      "blocks_sampled": 4096,
+      "bytes_per_block": 210,
+      "elements_per_block": 256,
+      "byte_identical_blocks": 3524,
+      "max_abs_change": 0.0003457069396972656,
+      "max_change_over_std": 0.022131087822857814,
+      "byte_identity_rate": 0.8603515625
+    }
+  },
+  "decode_only_dtypes": {},
+  "port_decode_only_dtypes": {},
+  "unsupported_dtypes": {},
+  "note": "Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec. Byte identity is the norm for a closed-form encoder and partial for a K-quant scale on a tie edge; a search-based codebook encoder re-picks codes on requant, so a low identity rate is drift, not a broken port. Byte-exactness against the compiled C reference (scripts/ggml_ref) is what proves a codec, and this report is not a pass/fail gate."
+}

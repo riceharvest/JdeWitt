@@ -56,6 +56,26 @@ def quarter_of(stamp):
     return f'{at.year}-Q{(at.month - 1) // 3 + 1}'
 
 
+def census_next_steps(worklist):
+    """Per-architecture capture/tune worklist in the census's own download order.
+
+    One capture reads the checkpoint the census actually saw (the row's first
+    example model) and one tune ranks edit arms on the artifact exported from
+    it. Records and artifact names come from the model_type, so two rows never
+    write to the same file; the artifact path stays a placeholder because this
+    census never built one.
+    """
+    steps = []
+    for row in worklist:
+        model = row['example_models'][0] if row.get('example_models') else '<checkpoint>'
+        slug = row['model_type'].replace('/', '-')
+        artifact = f'"<{slug} artifact.gguf>"'
+        steps.append(f'uv run jdewitt capture --model {model} --suite <suite.jsonl> '
+                     f'--out records-{slug}.pt --gguf {artifact}')
+        steps.append(f'uv run jdewitt tune --gguf {artifact} --records records-{slug}.pt')
+    return steps
+
+
 def hub_census(authors=None, since='2026-08-01', per_author=40, out=None):
     from huggingface_hub import HfApi
     api = HfApi()
@@ -106,7 +126,8 @@ def hub_census(authors=None, since='2026-08-01', per_author=40, out=None):
               'untyped_repositories': untyped,
               'supported_model_types': sorted(t for t in by_type if t in ARCHITECTURES),
               'unresolved_gaps': UNRESOLVED_GAPS,
-              'author_errors': errors}
+              'author_errors': errors,
+              'next': census_next_steps(worklist)}
     if out is not None:
         from .schemas import enforce
         # Refuse to persist a census that its own published contract rejects.

@@ -1,0 +1,22 @@
+{
+  "before": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+  "after": "verification/minicpm-v47/minicpm-v47-Q4_K_M.gguf",
+  "tensor_count_before": 321,
+  "tensor_count_after": 321,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 321,
+    "bit_identical": 321,
+    "value_differs": 0,
+    "shape_changed": 0,
+    "codec_unsupported": 0,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 0
+  },
+  "differing_tensors": [],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}

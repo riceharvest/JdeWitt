@@ -75,6 +75,23 @@ def main(argv=None) -> int:
             kept = [line for line in path.read_text(errors='ignore').splitlines() if line.strip()]
             line = f'rows={len(kept)}'
         print(f'| `{relative}` | {size} | `{sha16(path)}` | {line or "—"} |')
+    sweeps = sorted((VERIFIED / 'cpu-sweep').glob('*.json'))
+    if sweeps:
+        print('\n## Standing audit sweeps\n')
+        print('One row per recorded pass over the CPU checkers. The record holds each '
+              'command, the exit code it must produce and a sha256 of the artifact it printed; '
+              'a pass that only went green is not listed, because the sweep must also name the '
+              'gate it falsified.\n')
+        print('| date | checks | exits as expected | falsified | record |')
+        print('|---|---:|---:|---|---|')
+        for path in sweeps:
+            record = json.loads(path.read_text())
+            checks = record.get('checks') or []
+            expected = all(check.get('exit') == check.get('expected_exit', 0) for check in checks)
+            falsified = '; '.join(entry.get('gate', '') for entry in record.get('falsified') or [])
+            print(f"| {record.get('date', '—')} | {len(checks)} | "
+                  f"{'yes' if checks and expected else 'no'} | {falsified or '—'} | "
+                  f'`{path.relative_to(REPO)}` |')
     return 0
 
 

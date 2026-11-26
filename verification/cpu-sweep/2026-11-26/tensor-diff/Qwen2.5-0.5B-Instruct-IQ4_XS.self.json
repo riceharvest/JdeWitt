@@ -1,0 +1,22 @@
+{
+  "before": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+  "after": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ4_XS.gguf",
+  "tensor_count_before": 290,
+  "tensor_count_after": 290,
+  "only_in_before": [],
+  "only_in_after": [],
+  "summary": {
+    "shared": 290,
+    "bit_identical": 290,
+    "value_differs": 0,
+    "shape_changed": 0,
+    "codec_unsupported": 0,
+    "packed_size_changed": 0,
+    "port_decoded": 0
+  },
+  "rel_rms": {
+    "n": 0
+  },
+  "differing_tensors": [],
+  "note": "Header and dequant measurement only, no inference: bit_identical tensors match byte-for-byte; value_differs reports RMS difference after full dequant, relative to the first file, using the pinned GGML block codecs. Cross-dtype tensors (packed_size_changed) are decoded per side with their own block size and compared by value; rows carry packed_bytes when the stored widths differ."
+}

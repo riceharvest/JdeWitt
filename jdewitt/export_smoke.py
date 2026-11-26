@@ -231,6 +231,30 @@ def measure(path, server, ctx, max_tokens, server_args, log_path):
                 process.wait(timeout=10)
 
 
+def smoke_next_steps(artifact, out, verdict):
+    """What a smoke verdict licenses, built from this run's artifact and report.
+
+    Only a served artifact earns a claim and a release check: an unmeasured
+    header is followed by the serve it still needs, and a failure earns nothing.
+    """
+    servable = verdict.get('servable')
+    if servable is True:
+        kind = artifact.get('architecture') or 'unknown'
+        digest = str(artifact.get('sha256') or '')[:12]
+        identity = f'{kind} {digest}'.strip()
+        return [
+            f'uv run jdewitt claim-add <release-dir> --claim '
+            f'"export-smoke: {identity} serves on llama.cpp" --evidence {out} '
+            f'--verified-by "export-smoke {identity}"',
+            'uv run jdewitt verify-release <release-dir>',
+        ]
+    if servable == 'unmeasured':
+        path = artifact.get('path')
+        return [f'uv run jdewitt export-smoke --gguf "{path}" '
+                f'--server <llama-server> --out {out}']
+    return []
+
+
 def export_smoke(gguf, server=None, ctx=4096, max_tokens=16, out=None,
                  server_args=(), run_server=True):
     start = time.monotonic()
@@ -266,7 +290,8 @@ def export_smoke(gguf, server=None, ctx=4096, max_tokens=16, out=None,
 
     result = {'artifact': artifact, 'argv': argv, 'props_identity': props_identity,
               'completion': completion, 'verdict': verdict,
-              'cost_seconds': round(time.monotonic() - start, 3)}
+              'cost_seconds': round(time.monotonic() - start, 3),
+              'next': smoke_next_steps(artifact, out, verdict)}
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
     return result

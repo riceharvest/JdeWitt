@@ -1809,9 +1809,13 @@ def studies_compare(paths):
 def quants_audit(path, blocks_per_dtype=4096):
     """Standing falsifier for the GGML codec ports: for every tensor of a
     supported dtype in a real file, dequantize a bounded, evenly spaced block
-    sample and requantize it with the same codec. Byte identity is expected
-    except at rounding-tie edges, so any drift here means a codec broke.
-    Decode-only dtypes are reported honestly as un-auditable for requant.
+    sample and requantize it with the same codec. Byte identity is the norm for
+    a closed-form encoder and only partial for a K-quant whose scale sits on a
+    tie edge; a search-based codebook encoder can legitimately re-pick codes, so
+    the identity rate is a drift report, not a pass/fail gate. The port's
+    correctness is its byte-exactness against the compiled C reference in
+    scripts/ggml_ref. Decode-only dtypes are reported honestly as un-auditable
+    for requant.
     """
     import numpy as np
     from .ggufio import CODECS
@@ -1904,4 +1908,8 @@ def quants_audit(path, blocks_per_dtype=4096):
             'port_decode_only_dtypes': {dtype: dict(rep, note='dequantizable only via the pinned gguf.quants port (not ours); no quantizer in reach, requant not auditable')
                                         for dtype, rep in sorted(port_only.items())},
             'unsupported_dtypes': dict(sorted(unsupported.items())),
-            'note': 'Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec; byte identity expected except at rounding-tie edges.'}
+            'note': 'Bounded evenly spaced block sample per dtype: dequantize then requantize with the same codec. '
+                    'Byte identity is the norm for a closed-form encoder and partial for a K-quant scale on a tie '
+                    'edge; a search-based codebook encoder re-picks codes on requant, so a low identity rate is '
+                    'drift, not a broken port. Byte-exactness against the compiled C reference (scripts/ggml_ref) '
+                    'is what proves a codec, and this report is not a pass/fail gate.'}
