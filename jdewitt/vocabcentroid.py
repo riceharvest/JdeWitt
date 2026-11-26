@@ -129,7 +129,7 @@ def _groups(vectors, groups):
     denial_mean = denial.mean(axis=0, dtype=np.float32)
     axis, axis_norm = _unit(denial_mean - centroid)
     readings = {name: {'ids': list(groups[f'{name}_ids']),
-                       'mean_norm': round(float(np.linalg.norm(matrix.mean(axis=0))), 6),
+                       'norm_of_group_mean': round(float(np.linalg.norm(matrix.mean(axis=0))), 6),
                        'cos_to_axis': [round(_cos(row, axis), 6) for row in matrix],
                        'mean_cos_to_axis': round(float(np.mean([_cos(row, axis) for row in matrix])), 6),
                        'min_cos_to_axis': round(float(np.min([_cos(row, axis) for row in matrix])), 6),
@@ -195,7 +195,7 @@ def _edit_rows(record, vectors, groups, mode):
                                'file\'s realized values are measured separately.')}
 
 
-def _row_identity(source, out, tensor, groups, targets, delta=None, chunk_rows=8192):
+def _row_identity(source, out, tensor, groups, targets, chunk_rows=8192):
     """Row-level byte identity plus what the shipped rows actually hold.
 
     `gguf-tensor-diff` is per tensor; this is the granularity the edit is expressed
@@ -254,10 +254,15 @@ def _row_identity(source, out, tensor, groups, targets, delta=None, chunk_rows=8
     }
 
 
-def _stored_cosines(out, tensor, groups, rows_edited, mode):
-    """cos(shipped denial row, compliance centroid) and cos(shipped row, axis)."""
-    derived = _groups(_row_vectors(out, tensor, sorted(set(groups['denial_ids']) |
-                                                     set(groups['compliance_ids'])))['vectors'], groups)
+def _stored_cosines(out, tensor, derived, rows_edited):
+    """cos(shipped denial row, the pristine compliance centroid) and cos against the pristine axis.
+
+    The reference geometry is the artifact's BEFORE the edit. Recomputing the axis
+    from the shipped file would be circular: in mode ``centroid`` the denial side of
+    the contrast has just been set equal to the compliance side, so the shipped
+    axis is numerical noise. The compliance rows are proven byte-identical by the
+    row check, so the centroid taken over them is the same vector either way.
+    """
     ids = sorted({row['id'] for row in rows_edited})
     stored = _row_vectors(out, tensor, ids)['vectors']
     centroid, axis = derived['centroid'], derived['axis']
@@ -265,9 +270,8 @@ def _stored_cosines(out, tensor, groups, rows_edited, mode):
             'axis': {token_id: round(_cos(stored[token_id], axis), 6) for token_id in ids},
             'max_abs_axis': round(max(abs(_cos(stored[token_id], axis)) for token_id in ids), 6),
             'min_centroid': round(min(_cos(stored[token_id], centroid) for token_id in ids), 6),
-            'note': ('the centroid and axis are recomputed from the shipped file\'s own compliance rows, '
-                     'which the row check above proves did not move; so these are the file\'s numbers, '
-                     'not the plan\'s')}
+            'reference': ('centroid and axis are the pristine artifact\'s, taken over rows the row check '
+                          'proves did not move; the shipped rows are decoded from the output file')}
 
 
 def vocab_centroid(weights, table=None, mode='centroid', out=None, apply=False, json_out=None):
@@ -444,8 +448,8 @@ def vocab_centroid(weights, table=None, mode='centroid', out=None, apply=False, 
     identity = {plan['record']['name']: _row_identity(str(weights), str(out_path), plan['record'],
                                                       groups, plan['edited']['targets'])
                 for plan in plans}
-    stored = {plan['record']['name']: _stored_cosines(str(out_path), plan['record'], groups,
-                                                      plan['edited']['rows'], mode)
+    stored = {plan['record']['name']: _stored_cosines(str(out_path), plan['record'],
+                                                      plan['edited']['derived'], plan['edited']['rows'])
               for plan in plans}
     report['apply'] = {
         'out': {'path': _portable_path(out_path), 'bytes': out_path.stat().st_size,
