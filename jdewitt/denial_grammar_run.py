@@ -10,6 +10,10 @@ ways with no model, no server and no GPU:
 4. llama.cpp's own grammar parser parses the file and its matcher agrees with
    the Python automaton on the accept/reject cases.
 
+With ``mine=True`` the table is first grown from the saved answers (see
+``denial_mine``), the extended table is emitted as ``denial-surfaces.json``, and
+the run reports the before/after delta plus the trade-off curve over the tiers.
+
 ``compile_run`` is the one implementation: ``scripts/denial_grammar_check.py``
 and ``jdewitt grammar --compile`` both call it.
 """
@@ -20,13 +24,17 @@ import glob
 import hashlib
 import json
 import os
+import re
 import shutil
 import struct
 import subprocess
 from pathlib import Path
 
-from .denial_grammar import (MIN_ANSWER_CHARS, DenialChecker, compile_report, surface_catalogue,
+from .denial_grammar import (MIN_ANSWER_CHARS, DenialChecker, _prediction_answers,
+                             compare_runs, compile_report, measure, surface_catalogue,
                              write_artifacts)
+from .denial_mine import mine_table
+from .vocabremap import load_table
 
 AUTHORED_OPENINGS = [
     # English: answers that accept the task and start doing it.
@@ -123,11 +131,27 @@ def _run_probe(probe, mode, grammar_path, cases_path=None):
             'stderr': result.stderr.strip()[:2000]}
 
 
-def surface_oracle(text):
-    """Independent substring search: case fold, unify apostrophes, collapse whitespace."""
+def surface_oracle(text, catalogue=None):
+    """Independent regex search over the compiled spellings.
+
+    Deliberately a different implementation from the automaton: variants are
+    plain substrings of the folded, whitespace-collapsed text, and the guarded
+    spellings are regexes with a lookbehind that refuses a letter before them.
+    Agreements between this and the DFA are evidence, not a tautology.
+    """
+    import re as _re
+    rows = (catalogue or surface_catalogue())['rows']
     normalized = ' '.join(text.casefold().replace('\u2019', "'").replace('\u2018', "'").split())
-    forms = [(' '.join(row['form'].split()).casefold(), row['id']) for row in surface_catalogue()['rows']]
-    return [surface_id for form, surface_id in forms if form in normalized]
+    hits = set()
+    for row in rows:
+        for form in row['variants']:
+            if ' '.join(form.split()).casefold() in normalized:
+                hits.add(row['id'])
+        for form in row['guarded_forms']:
+            pattern = r'(?<![a-z])' + _re.escape(' '.join(form.split()).casefold())
+            if _re.search(pattern, normalized):
+                hits.add(row['id'])
+    return sorted(hits)
 
 
 def _sha256(path):
@@ -143,18 +167,140 @@ def _predictions(pattern):
     return files
 
 
+def _tier_documents(document, mining=None):
+    """The trade-off curve: cumulative table tiers, each a compilable document.
+
+    Tier 0 is the seed table exactly as the previous card compiled it (no elided
+    spellings).  Each later tier adds one shape class from the mined rows; the
+    last tier adds the frames the adoption rule rejects, so the curve shows what
+    buying that coverage would cost.
+    """
+    seed_document, _raw = load_table()
+    mined = [entry for entry in document['entries'] if entry.get('source') == 'mined']
+    seed = [entry for entry in document['entries'] if entry.get('source') == 'seed']
+    order = [('apology', 'apology'), ('capability_disclaimer', 'capability'),
+             ('refusal_opener', 'refusal opener')]
+    tiers = [{'name': 'seed', 'label': 'seed table, as shipped by t_4d944c4e',
+              'document': seed_document}]
+    current = list(seed)
+    tiers.append({'name': 'seed+elisions',
+                  'label': 'seed rows plus elided apostrophe spellings (word-start guarded)',
+                  'document': _document_like(document, current)})
+    for kind, label in order:
+        extra = [entry for entry in mined if entry['kind'] == kind]
+        if not extra:
+            continue
+        current = current + extra
+        tiers.append({'name': f'+{kind}', 'label': f'plus {label} rows',
+                      'document': _document_like(document, current)})
+    frames = _frame_entries(mining)
+    if frames:
+        tiers.append({'name': '+frames',
+                      'label': 'plus the lecture/disclaimer frames the adoption rule rejects '
+                               '(measured, not shipped)',
+                      'document': _document_like(document, current + frames)})
+    return tiers
+
+
+def _frame_entries(mining):
+    """Table entries for the frame shapes the adoption rule excluded, for the curve."""
+    if not mining:
+        return []
+    entries = []
+    for record in mining['candidates']['excluded_rows']:
+        if record['kind'] != 'refusal_frame' or record['marginal_gain'] <= 0:
+            continue
+        slug = re.sub(r'[^a-z0-9]+', '-', record['form'].lower().replace("'", '')).strip('-')
+        entries.append({'id': f'measured-{slug}', 'language': 'en', 'form': record['form'],
+                        'kind': 'refusal_frame', 'scope': 'opener_window', 'replacement': None,
+                        'note': 'measured frame, not shipped', 'rule': record['rule'],
+                        'source': 'measured_frame', 'word_start': False, 'guarded_forms': [],
+                        'evidence_count': record['marginal_gain'], 'evidence': []})
+    return entries
+
+
+def _document_like(document, entries):
+    payload = {key: value for key, value in document.items() if key != 'entries'}
+    payload['entries'] = entries
+    return payload
+
+
+def _curve(tiers, rows, authored, min_chars):
+    curve = []
+    for tier in tiers:
+        checker = DenialChecker(table=tier['document'], min_chars=min_chars)
+        measured = measure(checker, rows, authored)
+        grammar = checker.grammar()
+        curve.append({
+            'tier': tier['name'], 'label': tier['label'],
+            'surfaces': len(checker.catalogue['rows']),
+            'guarded_spellings': sum(len(row['guarded_forms']) for row in checker.catalogue['rows']),
+            'minimal_states': len(checker.minimal['transitions']),
+            'grammar_rules': len(checker.minimal['transitions']) * (min_chars + 1) + 1,
+            'grammar_bytes': len(grammar.encode()),
+            'refusal_opener_rejected': measured['refusal']['opener_rejected'],
+            'refusal_opener_rows': measured['refusal']['rows'],
+            'refusal_whole_rejected': measured['refusal']['whole_answer_rejected'],
+            'compliant_accepted': measured['compliant']['accepted'],
+            'compliant_rows': measured['compliant']['rows'],
+            'compliant_accept_rate': measured['compliant']['accept_rate'],
+            'authored_openings_accepted': measured['openings']['by_source'].get(
+                'authored', {}).get('accepted', 0),
+            'saved_openings_accepted': measured['openings']['by_source'].get(
+                'saved_compliant', {}).get('accepted', 0),
+            'saved_openings_rows': measured['openings']['by_source'].get(
+                'saved_compliant', {}).get('rows', 0),
+        })
+    return curve
+
+
 def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
-                min_chars=MIN_ANSWER_CHARS, table=None, emit=True):
-    checker = DenialChecker(table=table, min_chars=min_chars)
+                min_chars=MIN_ANSWER_CHARS, table=None, emit=True, mine=False):
     predictions = _predictions(predictions_pattern)
+    rows = _prediction_answers(predictions)
+    seed_document, _seed_raw = load_table()
+
+    mining = None
+    if mine:
+        table, mining = mine_table(predictions, seed_document=seed_document)
+    checker = DenialChecker(table=table, min_chars=min_chars)
+    baseline = DenialChecker(table=None, min_chars=min_chars)
+
     report = compile_report(table=table, artifact=artifact, min_chars=min_chars,
-                            predictions=predictions, authored=AUTHORED_OPENINGS)
+                            predictions=predictions, authored=AUTHORED_OPENINGS, rows=rows)
+    report['delta'] = compare_runs(baseline, checker, rows, AUTHORED_OPENINGS)
+    if artifact is not None and report.get('tokenizer'):
+        from .denial_grammar import read_tokenizer, token_report
+        tokenizer = read_tokenizer(artifact)
+        before_token = token_report(baseline.automaton, tokenizer['tokens'])
+        report['delta']['tokenizer'] = {
+            key: {'before': before_token[key], 'after': report['tokenizer'][key]}
+            for key in ('pieces', 'pieces_forbidden_at_start', 'pieces_forbidden_from_every_state',
+                        'pieces_ending_inside_a_partial_match')}
+        report['delta']['tokenizer']['allowed_pieces_min'] = {
+            'before': before_token['allowed_pieces_per_state']['min'],
+            'after': report['tokenizer']['allowed_pieces_per_state']['min']}
+    tiers = _tier_documents(checker.catalogue['document'], mining)
+    report['tradeoff'] = {'tiers': _curve(tiers, rows, AUTHORED_OPENINGS, min_chars),
+                          'rule': ('a candidate surface is adopted when it closes at least one '
+                                   'additional refusal opener and blocks no more genuinely '
+                                   'compliant answers than it closes; the last tier shows the '
+                                   'frames that the rule excludes')}
+    if mining is not None:
+        report['mining'] = mining
+        report['table_document'] = checker.catalogue['document']
+
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     grammar_path = Path(out) / 'denial-free.gbnf'
     if emit:
         grammar_path = write_artifacts(report, out, predictions=predictions,
                                        authored=AUTHORED_OPENINGS, checker=checker)
+        if mining is not None:
+            (out / 'denial-surfaces.json').write_text(
+                json.dumps(checker.catalogue['document'], indent=2, ensure_ascii=False) + '\n')
+            (out / 'denial-surfaces-mining.json').write_text(
+                json.dumps(mining, indent=2, ensure_ascii=False) + '\n')
 
     # The end-to-end cases: complete answers, not bare openings.
     cases = []
@@ -165,6 +311,9 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
             cases.append(('R', variant))
             cases.append(('R', 'Here is the answer. ' + variant + ' ' + FILLER))
             cases.append(('R', variant.upper() + FILLER))
+        for form in row['guarded_forms']:
+            cases.append(('R', form))
+            cases.append(('R', 'So, ' + form + ' with that.' + FILLER))
     for text in SHORT:
         cases.append(('R', text))
     for expect, text in ADVERSARIAL:
@@ -180,21 +329,11 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
         cases.append(('A' if len(text) >= min_chars else 'R', text))
     # saved answers: the checker decides the expectation, and we assert the
     # expectation is the language property (surface / length), not the checker
-    saved_rows = []
-    for file in predictions:
-        for line in Path(file).read_text().splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            row = json.loads(line)
-            answer = row.get('answer') or ''
-            if not answer.strip():
-                continue
-            saved_rows.append({'answer': answer, 'refusal_check': (row.get('refusal_check') or {}).get('result')})
+    saved_rows = [row for row in rows]
     oracle_rows = 0
     oracle_disagreements = []
     for row in saved_rows[:1200]:
-        surface = surface_oracle(row['answer'])
+        surface = surface_oracle(row['answer'], checker.catalogue)
         expect = 'A' if (not surface and len(row['answer']) >= min_chars) else 'R'
         oracle_rows += 1
         if expect != ('A' if checker.complete(row['answer'])['ok'] else 'R'):
@@ -225,11 +364,16 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
     report['artifacts'] = {'grammar': str(grammar_path.name),
                            'grammar_sha256': _sha256(grammar_path),
                            'cases': str(cases_path.name), 'cases_count': count}
-    payload = {key: value for key, value in report.items() if key != 'grammar'}
+    # the mining report and the table document are written to their own files;
+    # embedding them here would triple the size of this one
+    payload = {key: value for key, value in report.items()
+               if key not in ('grammar', 'table_document', 'mining')}
     payload['grammar_file'] = grammar_path.name
     (out / 'denial-free.json').write_text(json.dumps(payload, indent=2, ensure_ascii=False) + '\n')
 
     saved = report['saved_predictions']
+    refusal, compliant = saved['refusal'], saved['compliant']
+    delta = report['delta']
     summary = {
         'removal_measured': False,
         'surfaces_rejected': f"{report['surfaces_rejected']}/{len(report['surfaces'])}",
@@ -237,17 +381,30 @@ def compile_run(out_dir, predictions_pattern, artifact=None, skip_probe=False,
                     'rules': report['automaton']['grammar_rules'],
                     'minimal_states': report['automaton']['minimal_states'],
                     'min_chars': report['min_chars']},
-        'saved_predictions': {'rows': saved['rows'],
-                              'wording_openers': saved['wording_openers'],
-                              'wording_openers_rejected': saved['wording_openers_rejected'],
-                              'refusal_detected': saved['refusal_detected'],
-                              'refusal_rejected': saved['refusal_rejected'],
-                              'non_wording_flags': saved['non_wording_flags'],
-                              'shorter_than_min_chars': saved['shorter_than_min_chars'],
-                              'compliant_flagged': saved['compliant_flagged'],
-                              'compliant_flagged_by_surface': saved['compliant_flagged_by_surface']},
+        'refusal': {'rows': refusal['rows'],
+                    'opener_rejected': refusal['opener_rejected'],
+                    'opener_missed': refusal['opener_missed'],
+                    'whole_rejected': refusal['whole_answer_rejected'],
+                    'whole_missed': refusal['whole_answer_missed'],
+                    'wide_flagged': refusal['wide_flagged'],
+                    'wide_rejected': refusal['wide_whole_rejected'],
+                    'wording_openers': refusal['wording_openers'],
+                    'wording_openers_rejected': refusal['wording_openers_rejected']},
+        'compliant': {'rows': compliant['rows'], 'accepted': compliant['accepted'],
+                      'rate': compliant['accept_rate']},
         'openings': report['openings']['by_source'],
-        'openings_rejected': report['openings']['rejected_count'],
+        'delta': {'surfaces': delta['surfaces'],
+                  'refusal': {side: delta['refusal'][side] for side in ('before', 'after')},
+                  'compliant': {side: delta['compliant'][side] for side in ('before', 'after')},
+                  'openings': {side: delta['openings'][side] for side in ('before', 'after')},
+                  'grammar': delta['grammar'],
+                  'added': [{'id': row['id'], 'form': row['form'],
+                             'evidence_count': row['evidence_count']}
+                            for row in delta['table']['added']]},
+        'tradeoff': [{key: tier[key] for key in
+                      ('tier', 'surfaces', 'refusal_opener_rejected', 'compliant_accepted',
+                       'compliant_accept_rate', 'saved_openings_accepted')}
+                     for tier in report['tradeoff']['tiers']],
         'minimal_agrees': report['minimal_agrees']['disagreement_count'],
         'oracle_disagreements': report['oracle']['disagreement_count'],
         'live_prefix_accepted': report['dead_ends']['live_prefix']['authored_openings_accepted'],
