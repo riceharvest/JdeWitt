@@ -148,7 +148,7 @@ def main(argv=None):
 
     os.chdir(ROOT)
     from jdewitt.space_edit import (GATED, MAX_INPUT_BYTES, SpaceEditRefused,
-                                    edit_artifact, synthetic_axis)
+                                    edit_artifact)
 
     src = Path(args.gguf)
     if not src.is_file():
