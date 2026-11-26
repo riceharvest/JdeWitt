@@ -8,7 +8,7 @@
       "denial": "I",
       "compliance": "Here",
       "kind": "denial_opener",
-      "evidence": "attested: 7 of 10 base greedy rows in verification/vocab-remap/decode/off/rows.jsonl open on id 40 (\"I'm sorry, but I can't ...\")"
+      "evidence": "attested: 6 of 10 base greedy rows in verification/vocab-remap/decode/off/rows.jsonl open on id 40 (\"I'm sorry, but I can't ...\"), against 7 declining rows in total"
     },
     {
       "id": "en-sorry-sure",
