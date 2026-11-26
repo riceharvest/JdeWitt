@@ -12,8 +12,9 @@ Baseline, checked today (a fresh clone should reproduce it):
 - `uv run python scripts/evidence_map.py --check` -> 43 of 43 numbers in README
   section IV recompute; every artifact the map names is present.
 - `uv run python scripts/help_audit.py` -> `next_missing: []`.
-- `uv run jdewitt commands` -> no `plan-apply`; the removal is in the tree
-  (item 2 below), not yet committed.
+- `uv run jdewitt commands` -> still lists `plan-apply` on master. The dev
+  checkout carries an uncommitted removal of it (item 2): master and that tree
+  do not describe the same tool until one of them lands.
 
 ## 1. Codec-aware delta: make a 4-bit grid store the edit
 
