@@ -134,6 +134,12 @@ energy: `x1` 0.00131 (0.08-0.20 %), `x3` 0.00856, `x4` 0.00116.
   work if served.
 - Singular-vector signs are arbitrary; the JSON carries signed cosines per
   comparison and |cos| in the matrix.
+- Spectra come from `eigh` of the 896x896 Gram matrix `dW dW^T` (measured ~0.7 s
+  vs ~10 s for a LAPACK `gesdd` on the 896x4864 delta, and ~18 s multithreaded
+  under host load). That is exact for the top directions and the traced energy,
+  but squaring the matrix costs relative precision on the smallest singular
+  values — only the leading values and the shares are reported, never a
+  condition number.
 - `x1`'s axis is the *published twin's* edit, and the twin is third-party. Its
   model card says abliterated; this audit verifies the edit's shape, not the
   recipe, its strength, or its intent.
@@ -161,6 +167,8 @@ OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 scripts/axis_audit.py \
 python3 -m pytest tests/test_axis_audit.py -q --noconftest -o addopts=""
 ```
 
-The run is deterministic apart from BLAS summation order: the same bytes give the
-same axes to float32 precision (`checks` in the JSON records unit norms, the
-per-layer table shape, and the matrix recomputed from the stored axes).
+The run is deterministic: a second run of the same command over the same bytes
+reproduced every field of `agreement.json` exactly (compared with
+`json.dumps(..., sort_keys=True)` after dropping `date_utc` and `elapsed_s`), and
+`checks` records unit norms, the per-layer table shape, and the matrix recomputed
+from the stored axes.
