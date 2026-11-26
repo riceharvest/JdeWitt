@@ -1,5 +1,5 @@
 {
-  "file": "/home/dario/.agentboard/worktrees/t_301ea985/runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-B.gguf",
+  "file": "runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-B.gguf",
   "size_bytes": 342744832,
   "tensor_count": 290,
   "data_bytes": 336796480,

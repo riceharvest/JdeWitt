@@ -1,6 +1,6 @@
 {
-  "before": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
-  "after": "/home/dario/.agentboard/worktrees/t_301ea985/runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-B.gguf",
+  "before": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+  "after": "runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-B.gguf",
   "tensor_count_before": 290,
   "tensor_count_after": 290,
   "only_in_before": [],

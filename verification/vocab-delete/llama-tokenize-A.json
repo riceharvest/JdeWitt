@@ -1,9 +1,9 @@
 {
   "schema": "jdewitt.vocab-delete-llama-tokenize/1",
   "purpose": "Cross-check the static byte-level BPE + byte fallback against llama.cpp's own tokenizer on both files. Tokenization only: llama-tokenize loads the vocabulary and tokenizes; no forward pass, no logits, no serve. CUDA_VISIBLE_DEVICES is empty so no device is visible.",
-  "binary": "/mnt/ssd/dev workspace/beellama-cpp/build/bin/llama-tokenize",
-  "pristine": "/mnt/ssd/dev workspace/JdeWitt/verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
-  "pruned": "/home/dario/.agentboard/worktrees/t_301ea985/runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-A.gguf",
+  "binary": "llama-tokenize (local llama.cpp build 0.0.10102)",
+  "pristine": "verification/iq05b/Qwen2.5-0.5B-Instruct-IQ3_M.gguf",
+  "pruned": "runs/vocab-delete/Qwen2.5-0.5B-Instruct-IQ3_M.vocab-delete-A.gguf",
   "records": [
     {
       "text": "Sorry",
@@ -486,5 +486,6 @@
     }
   ],
   "all_pristine_match": true,
-  "all_pruned_match": true
+  "all_pruned_match": true,
+  "binary_command": "/mnt/ssd/dev workspace/beellama-cpp/build/bin/llama-tokenize"
 }
