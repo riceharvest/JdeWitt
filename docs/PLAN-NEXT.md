@@ -1862,3 +1862,15 @@ fitted-axis certified its fitted type, both still `removal_measured: false`.
 - Verified on the fixture: plan table `q6_k 0.9911 (source: method preview)`,
   `q8_0 0.9999`, `f16 1.0`; gate still chooses `q6_k` at full-footprint
   `0.9573`; the one-shot `edit` plan is unchanged.
+
+## 2026-11-28 — the certificate is reproducible from its own fields
+
+`packet.json` now names every operand a third party needs to re-check it:
+`edit.candidate` (path, sha256, bytes), the direction file digest
+(`direction_source.axes_sha256` for an imported axis, `records_sha256` for a
+fit, `delta_sha256`, or the bank entry + `bank.json` digest), and
+`artifact.revert` — either the out-of-place note ("the source artifact was not
+modified") or the in-place sidecar, its recorded pristine sha256 and the exact
+`gguf-revert` restore command. Verified on an imported-axis chain and an
+in-place fitted chain; the measured/unmeasured split and
+`removal_measured: false` are unchanged.

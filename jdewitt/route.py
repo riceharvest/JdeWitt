@@ -1239,6 +1239,29 @@ def _certify(workdir, artifact, settings, args, state, started):
     winner = ((gate.get('evidence') or {}).get('winner'))
     attempt = next((row for row in (gate.get('evidence') or {}).get('attempts') or []
                     if row.get('edit_type') == winner), {})
+    inputs = state.get('inputs') or {}
+    direction = {'source': method.get('source'), 'kinds': method.get('kinds'),
+                 'broadcast': method.get('broadcast'), 'provenance': method.get('provenance')}
+    if inputs.get('axes') and Path(inputs['axes']).is_file():
+        direction['axes_sha256'] = _sha(inputs['axes'])
+    elif inputs.get('records') and Path(inputs['records']).is_file():
+        direction['records_sha256'] = _sha(inputs['records'])
+    elif inputs.get('delta_gguf') and Path(inputs['delta_gguf']).is_file():
+        direction['delta_sha256'] = _sha(inputs['delta_gguf'])
+    elif inputs.get('bank'):
+        bank_json = Path(inputs['bank']) / 'bank.json'
+        direction['bank_entry'] = inputs.get('entry')
+        direction['bank_json_sha256'] = _sha(bank_json) if bank_json.is_file() else None
+    if state['apply'].get('in_place'):
+        sidecar = state['apply'].get('revert_sidecar')
+        revert = {'available': bool(sidecar and Path(sidecar).is_file()),
+                  'sidecar': sidecar,
+                  'original_sha256': state['apply'].get('pre_apply_sha256'),
+                  'restore': cli_line('gguf-revert', artifact, sidecar) if sidecar else None}
+    else:
+        revert = {'available': True, 'sidecar': None,
+                  'note': 'the source artifact was not modified; it is the pristine copy'}
+    candidate = Path(state['gate'].get('candidate')) if state['gate'].get('candidate') else None
     packet = {
         'schema': 'jdewitt-route-cert-v1',
         'artifact': {'source': str(artifact), 'source_sha256': state.get('artifact_sha256'),
@@ -1246,15 +1269,17 @@ def _certify(workdir, artifact, settings, args, state, started):
                      'edited_sha256': state.get('apply', {}).get('output_sha256'),
                      'architecture': view.get('architecture'), 'hidden': view.get('hidden'),
                      'layers': view.get('layers'), 'tensors': view.get('tensors'),
-                     'source_types': view.get('source_types'), 'bytes': view.get('bytes')},
+                     'source_types': view.get('source_types'), 'bytes': view.get('bytes'),
+                     'revert': revert},
         'edit': {'method': state.get('plan', {}).get('method'),
                  'edit_type': state.get('gate', {}).get('edit_type'),
                  'floor': state.get('gate', {}).get('floor'),
                  'gate': state.get('gate', {}).get('summary'),
-                 'direction_source': {'source': method.get('source'),
-                                      'kinds': method.get('kinds'),
-                                      'broadcast': method.get('broadcast'),
-                                      'provenance': method.get('provenance')},
+                 'candidate': {'path': state['gate'].get('candidate'),
+                               'sha256': state['gate'].get('candidate_sha256'),
+                               'bytes': (candidate.stat().st_size
+                                         if candidate is not None and candidate.is_file() else None)},
+                 'direction_source': direction,
                  'settings': state.get('settings'),
                  'delivered': {'min_cos': attempt.get('min_cos'),
                                'mean_cos': attempt.get('mean_cos'),
