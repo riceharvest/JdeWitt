@@ -1848,3 +1848,17 @@ fitted-axis certified its fitted type, both still `removal_measured: false`.
   default is `./ablagent-axis-<manifest8>.pt`, keeping a pinned Ablagent run
   byte-identical. Verified from a clean cwd: the axis landed there, not under
   the run.
+
+## 2026-11-28 — the route stops paying for previews twice
+
+- The axis method can skip its sampled preview (`preview=False`): `route gate`
+  now uses it, because the gate writes every candidate and reads the full
+  footprint back anyway. That removes up to three codec probes from the mutation
+  step — on a 4B, seconds per probe that produced a number nobody read.
+- `route plan` reuses the readings the axis method already made (their per-tensor
+  rows now travel in the method's preview) and previews only the storage types
+  it has not seen. Previously every type was probed twice: once by the method,
+  once by the plan.
+- Verified on the fixture: plan table `q6_k 0.9911 (source: method preview)`,
+  `q8_0 0.9999`, `f16 1.0`; gate still chooses `q6_k` at full-footprint
+  `0.9573`; the one-shot `edit` plan is unchanged.

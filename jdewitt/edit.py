@@ -94,7 +94,7 @@ def _base_command(args, artifact):
     return cli_command('edit', '--gguf', artifact['path'])
 
 
-def _fitted_method(args, artifact, require_floor=True):
+def _fitted_method(args, artifact, require_floor=True, preview=True):
     """A fitted axis from capture records: the primary method when records exist.
 
     ``require_floor`` (default) is the one-shot contract: a method whose sampled
@@ -121,10 +121,10 @@ def _fitted_method(args, artifact, require_floor=True):
     return _axes_edits(args, artifact, axes, method=method,
                        source_flags=['--records', str(args.records), '--shape', args.shape,
                                      '--rank', str(args.rank)],
-                       require_floor=require_floor)
+                       require_floor=require_floor, preview=preview)
 
 
-def _axes_method(args, artifact, require_floor=True):
+def _axes_method(args, artifact, require_floor=True, preview=True):
     """An axis imported from a file: an externally recovered direction.
 
     The file is ``torch.save({'axes': tensor[, 'provenance': {...}]})`` with a
@@ -163,11 +163,11 @@ def _axes_method(args, artifact, require_floor=True):
         method['kinds'] = list(kinds)
     return _axes_edits(args, artifact, axes, method=method,
                        source_flags=['--axes', str(args.axes), '--axes-key', args.axes_key],
-                       kinds=kinds, require_floor=require_floor)
+                       kinds=kinds, require_floor=require_floor, preview=preview)
 
 
 def _axes_edits(args, artifact, axes, *, method, source_flags, kinds=None,
-                require_floor=True):
+                require_floor=True, preview=True):
     """Discovery, edit map, codec preview and the exact apply command for one axis tensor."""
     import torch
 
@@ -231,42 +231,53 @@ def _axes_edits(args, artifact, axes, *, method, source_flags, kinds=None,
     probes = _probe_names(edits)
     ladder = LADDER if args.edit_type == 'auto' else (args.edit_type,)
     readings = []
-    for kind in ladder:
-        reading = preview_edit(str(args.gguf), {name: edits[name] for name in probes},
-                               names=probes, scale=args.scale,
-                               renormalize=getattr(args, 'renormalize', False) or args.repair != 'none',
-                               target_type=kind)
-        rows = reading.get('tensors') or []
-        readings.append({'edit_type': kind, 'min_cos': reading.get('min_cos'),
-                         'mean_cos': reading.get('mean_cos'), 'probed': len(rows),
-                         'worst_tensor': min(rows, key=lambda row: row.get('cos') or 0.0)['name']
-                         if rows else None})
-        if reading.get('min_cos') is not None and float(reading['min_cos']) >= float(args.min_cos):
-            break
-    method['preview'] = {'floor': float(args.min_cos), 'probes': probes, 'readings': readings,
-                         'measured': 'real codec on sampled windows, before any write'}
-    cleared = next((row for row in readings
-                    if row['min_cos'] is not None and float(row['min_cos']) >= float(args.min_cos)), None)
-    if cleared is None:
-        worst = max(readings, key=lambda row: row.get('min_cos') or 0.0) if readings else None
-        method['reason'] = 'CODEC_FLOOR'
-        method['detail'] = (f'no probed type stores the edit at cos >= {args.min_cos}: '
-                            f'{worst["edit_type"]} reaches {worst["min_cos"]} on '
-                            f'{worst["worst_tensor"]}' if worst else 'no tensor could be probed')
-        if require_floor:
+    if preview:
+        for kind in ladder:
+            reading = preview_edit(str(args.gguf), {name: edits[name] for name in probes},
+                                   names=probes, scale=args.scale,
+                                   renormalize=getattr(args, 'renormalize', False) or args.repair != 'none',
+                                   target_type=kind)
+            rows = reading.get('tensors') or []
+            readings.append({'edit_type': kind, 'min_cos': reading.get('min_cos'),
+                             'mean_cos': reading.get('mean_cos'), 'probed': len(rows),
+                             'worst_tensor': min(rows, key=lambda row: row.get('cos') or 0.0)['name']
+                             if rows else None, 'rows': rows})
+            if reading.get('min_cos') is not None and float(reading['min_cos']) >= float(args.min_cos):
+                break
+        method['preview'] = {'floor': float(args.min_cos), 'probes': probes, 'readings': readings,
+                             'measured': 'real codec on sampled windows, before any write'}
+        cleared = next((row for row in readings
+                        if row['min_cos'] is not None
+                        and float(row['min_cos']) >= float(args.min_cos)), None)
+        if cleared is None:
+            worst = max(readings, key=lambda row: row.get('min_cos') or 0.0) if readings else None
+            method['reason'] = 'CODEC_FLOOR'
+            method['detail'] = (f'no probed type stores the edit at cos >= {args.min_cos}: '
+                                f'{worst["edit_type"]} reaches {worst["min_cos"]} on '
+                                f'{worst["worst_tensor"]}' if worst else 'no tensor could be probed')
+            if require_floor:
+                return method, None
+            cleared = worst
+        if cleared is None:
+            method['reason'] = 'NO_READINGS'
+            method['detail'] = 'no tensor could be probed on this artifact'
             return method, None
-        cleared = worst
-    if cleared is None:
-        method['reason'] = 'NO_READINGS'
-        method['detail'] = 'no tensor could be probed on this artifact'
-        return method, None
+    else:
+        # The gate is about to write every candidate and read the FULL footprint
+        # back; a sampled preview here would be paid for and then ignored. The
+        # route gate passes preview=False, which removes three codec probes from
+        # the mutation step (the plan already measured them on the same tensors).
+        method['preview'] = {'skipped': 'the gate measures the full footprint; no sampled '
+                                        'preview was run at this step'}
+        cleared = {'edit_type': ladder[0], 'min_cos': None, 'worst_tensor': None}
     method.update({
         'ready': True,
-        'floor_cleared': float(cleared.get('min_cos') or 0.0) >= float(args.min_cos),
+        'floor_cleared': (None if not preview
+                          else float(cleared.get('min_cos') or 0.0) >= float(args.min_cos)),
         'edit_type': cleared['edit_type'],
-        'expected_min_cos': cleared['min_cos'],
+        'expected_min_cos': cleared.get('min_cos'),
         'cost': {'edited_tensors': len(edits), 'edited_bytes': int(edited_bytes)},
-        'ladder': [row['edit_type'] for row in readings],
+        'ladder': [kind for kind in ladder],
     })
     command = _base_command(args, artifact) + source_flags + [
         '--scale', str(args.scale), '--axis-space', args.axis_space,

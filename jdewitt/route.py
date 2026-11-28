@@ -519,7 +519,7 @@ def _preview_table(gguf, edits, types, probes, scale, renormalize):
                        'probed': len(rows),
                        'worst_tensor': (min(rows, key=lambda row: row.get('cos') or 0.0)['name']
                                         if rows else None),
-                       'rows': rows}
+                       'rows': rows, 'source': 'route preview'}
     return table
 
 
@@ -593,9 +593,28 @@ def _plan(workdir, artifact, settings, args, state, started):
             types = (LADDER if settings['edit_type'] == 'auto' else (settings['edit_type'],))
             probes = (method.get('preview') or {}).get('probes') or probe_names(edits)
             probes = probes[:max(1, int(settings['probe_tensors']))]
-            evidence['preview'] = _preview_table(
-                artifact, edits, types, probes, settings['scale'],
-                settings['repair'] != 'none')
+            measured = {row['edit_type']: row
+                        for row in (method.get('preview') or {}).get('readings') or []
+                        if row.get('rows')}
+            preview = {}
+            for kind, reading in measured.items():
+                if kind not in types:
+                    continue
+                rows = reading.get('rows') or []
+                cosines = [row.get('cos') for row in rows if row.get('cos') is not None]
+                preview[kind] = {
+                    'min_cos': min(cosines) if cosines else None,
+                    'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None,
+                    'probed': len(rows),
+                    'worst_tensor': (min(rows, key=lambda row: row.get('cos') or 0.0)['name']
+                                     if rows else None),
+                    'rows': rows, 'source': 'method preview'}
+            missing = [kind for kind in types if kind not in preview]
+            if missing:
+                preview.update(_preview_table(
+                    artifact, edits, missing, probes, settings['scale'],
+                    settings['repair'] != 'none'))
+            evidence['preview'] = {kind: preview[kind] for kind in types if kind in preview}
             rows = []
             for name in sorted(edits):
                 info = meta[name]
@@ -762,11 +781,11 @@ def _gate(workdir, artifact, settings, args, state, started):
     edits = None
     if method_kind in ('fitted-axis', 'imported-axis'):
         if method_kind == 'fitted-axis':
-            method, edits = fitted_method(ns, view, require_floor=False)
+            method, edits = fitted_method(ns, view, require_floor=False, preview=False)
         else:
             from .edit import axes_method
 
-            method, edits = axes_method(ns, view, require_floor=False)
+            method, edits = axes_method(ns, view, require_floor=False, preview=False)
         if not method.get('ready'):
             raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'))
     elif method_kind == 'explicit-delta':
