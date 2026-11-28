@@ -1874,3 +1874,16 @@ modified") or the in-place sidecar, its recorded pristine sha256 and the exact
 `gguf-revert` restore command. Verified on an imported-axis chain and an
 in-place fitted chain; the measured/unmeasured split and
 `removal_measured: false` are unchanged.
+
+## 2026-11-28 — the command manifest carries the agent path
+
+`jdewitt commands` now has a `workflows` block beside the 101-command surface:
+the one-shot and stepped agent path with the exact stage commands, the
+first-contact call, the state file contract (`route.json`, default
+`<artifact>.route`), the four input kinds, the imported-direction chain
+(`ablagent-import` → `route --axes`), and the guarantees an agent may rely on
+(no model/tokenizer/server inside edit/route, replayable next commands, stale
+refusal, full-footprint fidelity, no removal claim). An agent that reads only
+the manifest — the repo's rule is "never grep the source for flags" — now sees
+the route without a doc read. `commands --completions` still runs, and the help
+audit remains at 101 model-free commands with zero missing handoffs.

@@ -107,8 +107,38 @@ def command_manifest(parser):
             commands.append({'command': name, 'help': helped.get(name) or child.description,
                              'arguments': arguments, 'schema_enforced': name in EMIT_SCHEMAS})
     commands.sort(key=lambda item: item['command'])
+    from .route import STEPS as ROUTE_STEPS
+
+    workflows = {
+        'agent_path': {
+            'note': 'The artifact the user already serves is the target. Every step emits one JSON; '
+                    'its next field is the command to run.',
+            'one_shot': ['jdewitt edit --gguf ART',
+                         'jdewitt edit --gguf ART --apply [--out EDITED]'],
+            'stepped': [f'jdewitt route --gguf ART {ROUTE_STEPS[0]}']
+                       + [f'jdewitt route --workdir DIR {step}' for step in ROUTE_STEPS[1:]],
+            'first_contact': 'jdewitt route --gguf ART (status: artifact view, six stages, exact commands)',
+            'state': '<workdir>/route.json (atomic); DIR defaults to <artifact>.route',
+            'inputs': {'records': 'capture .pt (fit on the model being edited)',
+                       'axes': 'imported [D] or [L,D] axis (external direction)',
+                       'bank': 'digest-pinned bank directory',
+                       'delta_gguf': 'explicit delta GGUF'},
+        },
+        'imported_direction': {
+            'note': 'An external direction (Ablagent DWMIP v0, twin abduction, a published diff) '
+                    'enters as an axis and is gated exactly like a fit.',
+            'commands': ['jdewitt ablagent-import RUN_OR_MANIFEST --gguf ART',
+                         'jdewitt route --gguf ART --axes AXIS.pt --scale ALPHA survey',
+                         'jdewitt edit --gguf ART --axes AXIS.pt --scale ALPHA [--apply]'],
+        },
+        'guarantees': ['no model load, tokenizer or server inside edit/route; capture and board are the only token steps',
+                       'next commands use the interpreter that produced the report',
+                       'a stale artifact, records/axes file or gated candidate refuses ROUTE_STALE before a write',
+                       'codec fidelity is measured over the FULL edited footprint; removal is never claimed'],
+    }
     return {'scope': 'Self-description of the installed CLI; anything marked schema_enforced fails its own command if the writer drifts.',
             'commands': commands,
+            'workflows': workflows,
             'exit_codes': {'success': 0, 'stable_failure': 1, 'argument_error': 2},
             'error_codes': [dict(row, code=code) for code, row in sorted(EXPLAINER.items())],
             'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
