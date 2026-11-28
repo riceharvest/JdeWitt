@@ -1831,3 +1831,20 @@ writer, space and the source run's skipped stages; a fitted axis carries its
 records path; the gate settings (shape/rank/scale/space/footprint/floor/repair)
 travel with it. Verified on both chains: imported-axis certified `q8_0`, and
 fitted-axis certified its fitted type, both still `removal_measured: false`.
+
+## 2026-11-28 — failure recovery is concrete; status is cheap
+
+- A `route gate` miss no longer prints `<s>` placeholders for recovery: it emits
+  a concrete retry at half the current strength (floored at 0.05), the next
+  untried storage type when one type was named, and a re-plan at that same
+  scale. Measured on a forced floor miss (floor 1.0001, one named type): the
+  options were `gate --scale 0.5`, `gate --edit-type q8_0`, and
+  `plan --scale 0.5`.
+- A fresh `route` status no longer hashes the whole artifact. It reports the
+  size and an explicit `artifact_sha256: null` with the reason; the survey
+  records the digest once. A 27B status stays instant instead of reading the
+  whole model.
+- `ablagent-import` no longer defaults its axis into the source run tree; the
+  default is `./ablagent-axis-<manifest8>.pt`, keeping a pinned Ablagent run
+  byte-identical. Verified from a clean cwd: the axis landed there, not under
+  the run.

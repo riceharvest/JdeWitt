@@ -252,9 +252,10 @@ def ablagent_import(manifest, gguf=None, out=None):
         'removal_measured': False,
         'imported_at': time.strftime('%Y-%m-%dT%H:%M:%S%z'),
     }
-    out_path = Path(out) if out is not None else path.parent / 'ablagent-axis.pt'
+    stamp = provenance['manifest_sha256'][:8]
+    out_path = Path(out) if out is not None else Path.cwd() / f'ablagent-axis-{stamp}.pt'
     if out_path.is_dir():
-        out_path = out_path / 'ablagent-axis.pt'
+        out_path = out_path / f'ablagent-axis-{stamp}.pt'
     out_path.parent.mkdir(parents=True, exist_ok=True)
     torch.save({'axes': axes, 'kinds': [kind], 'alpha': alpha,
                 'scale': alpha, 'provenance': provenance}, out_path)

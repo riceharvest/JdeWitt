@@ -679,7 +679,7 @@ def build_parser():
     ai=sub.add_parser('ablagent-import',help='Import a compiled Ablagent (DWMIP v0) dense rank-one direction as an axis for YOUR quantized GGUF: validates the manifest, maps the HF writer to the GGUF tensor, writes an axis file that edit/route apply through the same full-footprint codec gate; no model, no serve')
     ai.add_argument('manifest',type=Path,help='Ablagent run directory or candidate.manifest.json')
     ai.add_argument('--gguf',type=Path,default=None,help='target artifact: checks the writer, layer and width against its own tensor table')
-    ai.add_argument('--out',type=Path,default=None,help='axis .pt to write (default: beside the manifest)')
+    ai.add_argument('--out',type=Path,default=None,help='axis .pt to write (default: ./ablagent-axis-<manifest8>.pt, outside the source run)')
     editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)

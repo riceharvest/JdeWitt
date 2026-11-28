@@ -80,7 +80,9 @@ Mapped: `model.layers.N.self_attn.o_proj.weight → blk.N.attn_output.weight`,
 `model.layers.N.mlp.down_proj.weight → blk.N.ffn_down.weight`, plus direct
 `o_proj/out_proj/down_proj/w2/ssm_out/attn_output` suffixes. The direction is
 applied at `--scale alpha` with the same `W - scale d (d^T W)` formula; the axis
-file also records `scale: alpha` so the printed next commands carry it.
+file also records `scale: alpha` so the printed next commands carry it. The
+default output is `./ablagent-axis-<manifest8>.pt`; it is never written inside
+the source run tree.
 
 Refused, with a typed code (never repaired): unreadable manifest
 (`ABLAGENT_INPUT`), non-DWMIP or non-dense-rank-one document

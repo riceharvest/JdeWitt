@@ -882,13 +882,23 @@ def _gate(workdir, artifact, settings, args, state, started):
                                _cmd(workdir, 'plan', scale='<s>', layers='<a-b>'),
                                'a floor miss is a codec/grid fact; the honest levers are strength and footprint'))
     else:
+        retry_scale = round(max(float(settings['scale']) * 0.5, 0.05), 3)
         options.append(_option(
-            'gate-retry', 'retry the ladder at a lower strength',
-            _cmd(workdir, 'gate', scale='<s>'),
-            'a smaller edit costs less codec error; the gate re-measures every tensor'))
+            'gate-retry', f'retry the ladder at scale {retry_scale}',
+            _cmd(workdir, 'gate', scale=retry_scale),
+            'half the current strength costs less codec error; the gate re-measures every '
+            'tensor at the new strength',
+            expected={'scale': retry_scale, 'floor': settings['min_cos']}))
+        tried = {str(attempt.get('edit_type', '')).casefold() for attempt in attempts}
+        untried = [kind for kind in ('q6_k', 'q8_0', 'f16') if kind.casefold() not in tried]
+        if untried:
+            options.append(_option(
+                f'gate-{untried[0]}', f'gate the {untried[0]} candidate instead',
+                _cmd(workdir, 'gate', edit_type=untried[0]),
+                'the attempted type(s) missed; this is the next storage type in the ladder'))
         options.append(_option(
-            'replan', 'change the footprint or strength and re-plan',
-            _cmd(workdir, 'plan', scale='<s>', layers='<a-b>'),
+            'replan', f'change the footprint or strength and re-plan (scale {retry_scale})',
+            _cmd(workdir, 'plan', scale=retry_scale, layers='<a-b>'),
             'the plan is deterministic; the gate is the verdict'))
     from .edit import artifact_view as _view  # noqa: F401 - keep the lazy import contract
     from .nextsteps import cli_line
@@ -1314,7 +1324,10 @@ def _status_fresh(workdir, artifact, settings, started):
     decision = _classify(options, [], 'survey')
     report = _base_report('status', None, workdir, view,
                           {'steps_done': [], 'route_steps': list(STEPS),
-                           'artifact_sha256': _sha(artifact)},
+                           'artifact_bytes': artifact.stat().st_size,
+                           'artifact_sha256': None,
+                           'identity_note': 'status does not hash the artifact; survey '
+                                            'records the sha256 once'},
                           [], decision, started)
     report['step'] = 'status'
     return report
