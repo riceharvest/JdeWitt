@@ -1204,6 +1204,9 @@ def _certify(workdir, artifact, settings, args, state, started):
     view = artifact_view(output)
     gate_path = Path(workdir) / 'gate.json'
     gate = json.loads(gate_path.read_text()) if gate_path.is_file() else {}
+    plan_path = Path(workdir) / 'plan.json'
+    plan = json.loads(plan_path.read_text()) if plan_path.is_file() else {}
+    method = ((plan.get('evidence') or {}).get('method') or {})
     winner = ((gate.get('evidence') or {}).get('winner'))
     attempt = next((row for row in (gate.get('evidence') or {}).get('attempts') or []
                     if row.get('edit_type') == winner), {})
@@ -1219,6 +1222,11 @@ def _certify(workdir, artifact, settings, args, state, started):
                  'edit_type': state.get('gate', {}).get('edit_type'),
                  'floor': state.get('gate', {}).get('floor'),
                  'gate': state.get('gate', {}).get('summary'),
+                 'direction_source': {'source': method.get('source'),
+                                      'kinds': method.get('kinds'),
+                                      'broadcast': method.get('broadcast'),
+                                      'provenance': method.get('provenance')},
+                 'settings': state.get('settings'),
                  'delivered': {'min_cos': attempt.get('min_cos'),
                                'mean_cos': attempt.get('mean_cos'),
                                'tensors': attempt.get('delivered', {}).get('tensors')}},

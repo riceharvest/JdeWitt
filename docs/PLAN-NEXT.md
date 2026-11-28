@@ -1820,3 +1820,14 @@ help audit still has only the pre-existing `export-smoke` gap.
 - `route` with no step and no state is now a read-only first-contact map: the
   artifact view, the six stages, and the exact survey/one-shot commands, with
   no state file or workdir created. It used to be `ROUTE_ORDER`.
+
+## 2026-11-28 — the certificate names where the direction came from
+
+`route certify` now puts the direction's source in `packet.json`'s `edit`
+block: the method's source path, `kinds`/`broadcast` when the axis was pinned,
+and the full provenance when one exists. An imported Ablagent axis therefore
+arrives in the certificate with its manifest and direction digests, alpha,
+writer, space and the source run's skipped stages; a fitted axis carries its
+records path; the gate settings (shape/rank/scale/space/footprint/floor/repair)
+travel with it. Verified on both chains: imported-axis certified `q8_0`, and
+fitted-axis certified its fitted type, both still `removal_measured: false`.
