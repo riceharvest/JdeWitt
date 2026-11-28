@@ -20,7 +20,7 @@ import os
 import time
 from typing import TYPE_CHECKING, Any
 
-from .errors import NoVerifiedAdapter
+from .errors import EditRefused, NoVerifiedAdapter
 
 
 class _LazyModule:
@@ -758,10 +758,10 @@ def main(argv=None):
     """
     try:
         return _main(argv)
-    except NoVerifiedAdapter as error:
+    except (NoVerifiedAdapter, EditRefused) as error:
         import sys
         words = [a for a in (sys.argv[1:] if argv is None else argv) if not a.startswith('-')]
-        print(json.dumps({'error': {'code': 'NO_VERIFIED_ADAPTER',
+        print(json.dumps({'error': {'code': getattr(error, 'code', 'NO_VERIFIED_ADAPTER'),
                                     'type': type(error).__name__,
                                     'message': str(error),
                                     'command': words[0] if words else 'spanfit'}}),
