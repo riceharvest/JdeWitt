@@ -520,7 +520,7 @@ def mixed_axes(perlayer: torch.Tensor, shared: torch.Tensor, alpha: float) -> to
 def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
                  source_keys: list[str], *, name_map=None, scale: float = 1.0,
                  axis_space: str = "input", in_place: bool = False,
-                 renormalize: bool = False, dequant_cache=None) -> dict:
+                 renormalize: bool = False, dequant_cache=None, min_cos: float | None = None) -> dict:
     """Merge per-layer rank-1 removals into `gguf_in`, write `gguf_out` (R8 path).
 
     source_keys are HF-style names ('model.layers.<L>.<suffix>') or, through
@@ -528,9 +528,12 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
     tensor whose input dim matches axes.shape[1]. Layout follows the ggufio
     convention: file order = reversed logical dims, i.e. ggml [in,out].
 
-    in_place patches `gguf_in`'s own bytes (no copy) and leaves a revert sidecar
+    in_place patches `gguf_in`'s own bytes (no copy) and leaves a revert log
     beside it; that is the path an agent should use on a model it already serves,
     because the artifact is quantized in place and never re-quantized as a whole.
+    On a 4-bit artifact the codec may not be able to store the edit at all — the
+    delivered cos per tensor is now measured and `min_cos` rolls the whole patch
+    back and refuses when it is missed, instead of shipping a half-random edit.
 
     Both paths hand ``(axis, space)`` to the writer instead of precomputing a
     float32 delta, so each tensor is dequantized ONCE per arm. ``dequant_cache``
@@ -581,11 +584,14 @@ def build_merged(gguf_in: str, gguf_out: str, axes: torch.Tensor,
         projections[base] = (axis.detach().cpu().numpy().astype(np.float32), axis_space)
     if in_place:
         # One file, byte-level: the artifact keeps its quantization, its size and
-        # every offset it had; only the changed tiles move, and the sidecar keeps
-        # the pre-patch bytes so this is reversible.
+        # every offset it had; only the changed tiles move, and the pre-write log
+        # keeps every planned tensor whole so this is reversible even mid-patch.
+        # min_cos is a real gate here: the codec stores each tile, and a tensor
+        # whose realized cos misses the floor rolls the whole patch back.
         report = project_tensors_inplace(gguf_in, projections, scale=scale,
                                          revert_path=str(gguf_in) + '.revert.npz',
-                                         renormalize=renormalize, dequant_cache=cache)
+                                         renormalize=renormalize, dequant_cache=cache,
+                                         min_cos=min_cos)
     else:
         report = edit_tensors(gguf_in, gguf_out, projections=projections, scale=scale,
                               renormalize=renormalize, dequant_cache=cache)
@@ -774,8 +780,15 @@ def _main(argv=None):
     a.add_argument("--in-place", action="store_true",
                    help="patch --gguf-in's own bytes instead of writing a copy: the artifact you "
                         "already serve is the artifact that changes, no new file, no requantization "
-                        "of the model. A .revert.npz sidecar records the pre-patch bytes of every "
-                        "tile written, and `gguf-revert` restores them")
+                        "of the model. A pre-write revert log (.revert.npz, detected by magic) "
+                        "snapshots every planned tensor before the first byte moves, and "
+                        "`gguf-revert` restores them — even after an interrupted patch")
+    a.add_argument("--min-cos", type=float, default=0.95,
+                   help="in-place only: realized-edit floor. Every changed tile is requantized and "
+                        "decoded again; a tensor below this cos rolls the WHOLE patch back and "
+                        "refuses with CODEC_FLOOR. A 4-bit grid cannot store a rank-1 removal at "
+                        "useful strength, which is why this exists. 0 disables the gate (the "
+                        "delivered cos per tensor is still reported)")
     a.add_argument("--gguf-targets", choices=("auto",), default=None,
                    help="discover this artifact's residual-write projections from its own tensor "
                         "names and hidden width; replaces --source-key (no per-model table, no "
@@ -975,7 +988,8 @@ def _main(argv=None):
     cache = False if args.no_dequant_cache else args.dequant_cache
     rep = build_merged(args.gguf_in, out_path, axes, keys, name_map=name_map,
                        scale=args.scale, axis_space=args.axis_space, in_place=args.in_place,
-                       dequant_cache=cache)
+                       dequant_cache=cache,
+                       min_cos=(args.min_cos if args.in_place and args.min_cos else None))
     # `tensors_edited` counts tensors the merge visited, not tensors whose bytes moved:
     # a scale-0.0 run reports 36 tensors edited with changed_blocks 0 in every one of
     # them and exits 0. What a no-op actually looks like is zero changed blocks, so that

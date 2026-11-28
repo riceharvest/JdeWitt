@@ -67,11 +67,12 @@ model is work nobody asked for.
    artifact it will be merged into. *Landed.*
 2. **In-place merge + revert** — `spanfit build --in-place`,
    `--gguf-targets auto`, `gguf-revert`. *Landed.*
-3. **`abliterate` as the one verb** — chain capture → fit (shape × scale ×
-   layer floor) → screen → report, each stage writing its own JSON and ledger
-   line, so an agent runs one command and reads one directory. The current
-   `abliterate` builds an auto-search config for the older HF-trial pipeline;
-   it must drive the researched spanfit loop instead.
+3. **`edit` as the one verb** — *landed.* `jdewitt edit --gguf ART` resolves the
+   artifact, lists every method its operands allow (fitted axis from records,
+   banked axis, explicit delta, the static vocabulary fallbacks), measures the
+   codec fidelity before the write, and `--apply` performs the choice through the
+   shared full-footprint floor. `abliterate` stays the auto-search driver for the
+   older HF-trial pipeline; it is not the agent entry point.
 4. **Verification stays the agent's read** (R2): the tool produces evidence
    packets; it never prints a removal claim it did not measure. Ease of use is
    not permission to overclaim, and the honest refusal is a feature of the

@@ -1626,3 +1626,69 @@ supplied; the same surgery turns the twin's 1,165-byte prompt into the same
 118-byte one. Boundary: this is a prompt/metadata edit. No weights changed, no
 model ran, `removal_measured` is false, and no refusal-rate or capability claim
 is made. `verification/iq05b/README.md` carries the full record.
+
+## 2026-11-28 — one verb, one floor: `jdewitt edit`
+
+The audit's finding was not a missing method; it was that an agent holding one
+quantized GGUF had a dozen apply paths (`edit-quantized`, `bank-apply`,
+`plan-apply`, `gguf-edit`, `spanfit build --in-place`, four vocabulary commands,
+`grammar`) with no single entry and no shared rule for the only question that
+decides whether an in-place removal is honest: can the codec store the edit?
+A real Space run answered it by shipping Q6_K at whole-tensor cos 0.8808 under a
+0.95 floor, because the ladder admitted the type from a sampled probe.
+
+What landed, all CPU-only:
+
+- **`jdewitt edit --gguf ART`** is the entry verb. Plan mode (default) writes
+  nothing and emits one JSON: the artifact's own geometry, every method the
+  operands allow (fitted axis from `--records`, banked axis from `--bank`,
+  explicit `--delta-gguf`, then the static vocabulary fallbacks), each method's
+  readiness with a typed reason, the codec preview measured on the real codec,
+  the exact next command, and the output path. `--apply` runs the chosen path
+  through the shared gate. Published as `edit.command.json`, schema-enforced at
+  emit.
+- **One write gate.** `rewrite.write_with_floor` / `run_ladder` writes a
+  candidate per storage type, reads the FULL edited footprint back
+  (`compare_edit` over every edited tensor), keeps the smallest type that
+  clears the floor, and refuses `CODEC_FLOOR` when none does — nothing is left
+  at the output on a refusal. `edit-quantized` and `bank-apply --edit-type auto`
+  now use it, so auto type selection is decided on the shipped tensors, not on
+  two names. A named type stays a deliberate choice and is labelled with its
+  miss.
+- **In-place merge is gated and crash-safe.** `spanfit build --in-place` now
+  carries `--min-cos` (default 0.95): every changed tile is requantized and
+  decoded again, the delivered cos is reported per tensor, and a tensor below
+  the floor restores every planned tensor from the pre-write log and raises
+  `CODEC_FLOOR` with the artifact byte-identical. The revert sidecar is written
+  BEFORE the first byte moves (whole planned tensors, magic-detected
+  `JWREVERT2`), so an interrupted patch is still recoverable; `gguf-revert`
+  reads both the log and the legacy `.npz` and reports `complete: false` for a
+  patch that never finished.
+- **Plan honesty.** `edit` pre-installs a bank bundle in a throwaway registry,
+  so a bundle that hashes to its pin but does not load is `BUNDLE_REFUSED` in
+  the plan, not a surprise at apply.
+
+Proof run (fixture artifacts, no model, no token):
+
+    edit --gguf fixture-2layer-f16 --records records.pt --shape shared --apply
+      -> q6_k, delivered min cos 0.9571 / mean 0.9628 over 4 tensors,
+         untouched 2 verified, gate floor_met true
+    edit --gguf fixture-2layer-q8_0 --bank bank-apply --apply
+      -> preview Q8_0 0.9979, F16 1.0; full-footprint gate chose F16, min cos 1.0,
+         4 edited / 2 untouched, floor 0.999 met
+    edit --gguf fixq --delta-gguf delta.gguf --apply -> applied, next = verify
+    edit --gguf <copy> --records ... --in-place --apply
+      -> sidecar 1,051,138 B, gguf-revert restores the pristine sha exactly
+    _patch_inplace(q8, sub-grid delta, min_cos=0.9) -> CODEC_FLOOR, sha restored,
+      sidecar removed
+    run_ladder(q6_k -> q8_0 -> f16) -> steps and chooses f16; all-miss -> refusal,
+      no output file
+
+`scripts/help_audit.py`: 99 subparsers, 99 help paths model-free, `commands`
+covers all 99, `next_missing` is only the pre-existing `export-smoke`.
+`edit` is a documented agent step. Ruff green.
+
+Not claimed: behaviour. Nothing here measured an answer, a removal rate or a
+capability delta; those stay GATED behind a serve. `repair='solve'` (making a
+4-bit grid STORE the edit instead of refusing it) is the other half of the codec
+floor and is still open.

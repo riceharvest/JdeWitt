@@ -230,7 +230,12 @@ phase-timing ledger (`python -m jdewitt.timing summarize`) tells you, in
 percent, what you are paying for, and pivots fire from the ledger, not
 from vibes.
 
-Two commands make that true on a model this repo has never seen. `capture`
+Three commands make that true on a model this repo has never seen. `jdewitt edit
+--gguf ARTIFACT` is the one verb an agent calls: it names every removal the file
+plus its records, bank entry or delta can do, measures what the quantized grid
+will keep before any multi-minute write, and `--apply` ships the choice through
+one full-footprint floor (a candidate per storage type, read back per edited
+tensor, CODEC_FLOOR refusal rather than a below-floor file). `capture`
 finds the decoder stack and the residual-write projections from the model's own
 module tree, generates every row with the model being edited, and labels each
 answer by its shape — no architecture table, no per-model hook script, no

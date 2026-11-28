@@ -223,7 +223,8 @@ def main(argv=None):
         for g_mod in ('attn_output', 'ffn_down'):
             Mk = np.stack([lefts[(L, g_mod)] for L in layers if (L, g_mod) in lefts])
             U2, s2, V2 = np.linalg.svd(Mk, full_matrices=False)
-            a = canonical_sign(V2[0]); a = a / np.linalg.norm(a)
+            a = canonical_sign(V2[0])
+            a = a / np.linalg.norm(a)
             module_axis[g_mod] = {'axis': a, 'energy_share': float(s2[0] ** 2 / (s2 ** 2).sum()),
                                   'cos_to_shared': cos(a, axis)}
 
@@ -254,7 +255,6 @@ def main(argv=None):
                 # same fit with the per-layer left vector (its own rank-1 model)
                 u1 = lefts[(L, g_mod)]
                 v1 = np.array(r['v1'])
-                a_own = -float((dW * np.outer(u1, v1)).sum())
                 detail[L][g_mod] = {
                     'cos_u1_to_axis': cos(u1, axis),
                     'cos_v1_to_WT_axis': cos(v1, wtr),

@@ -46,6 +46,12 @@ byte cost. Then `gguf-revert` restores the source byte-exactly and
 Boundary: what the model answers after the solved edit is GATED (needs a
 serve); the numbers here are realized fidelity, not removal.
 
+2026-11-28 update: the full-footprint gate landed (`edit`, `edit-quantized`,
+`bank-apply` auto ladder, `spanfit --in-place --min-cos` with rollback). A
+below-floor write is now refused or rolled back instead of shipped. The `solve`
+half — making the 4-bit grid STORE the edit rather than refusing it — is still
+the open item.
+
 ## 2. Land the pending tree (small; do first)
 
 The tree already carries a coherent change, uncommitted: `plan-apply` removed

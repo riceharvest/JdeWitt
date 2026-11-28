@@ -385,7 +385,7 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
     leaves a partly-edited artifact under the requested name.
     """
     from .ggufio import compare_edit
-    from .rewrite import rewrite_with_edits
+    from .rewrite import rewrite_with_edits, run_ladder
 
     started = time.monotonic()
     bank_dir, gguf, out = Path(bank_dir), Path(gguf), Path(out)
@@ -454,23 +454,55 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
                             'axis': {name: axis[name] for name in names}}
         probes = _probe_names(resolved)
         ladder, skipped = _ladder(resolved['edit'], entry['key'])
-        selection = _select_edit_type(gguf, groups, probes, ladder, edit_type,
-                                      float(resolved['edit'].get('min_cos') or 0.95), space,
+        floor = float(resolved['edit'].get('min_cos') or 0.95)
+        selection = _select_edit_type(gguf, groups, probes, ladder, edit_type, floor, space,
                                       skipped)
         chosen = selection['chosen']
+        renorm = repair != 'none'
 
-        temp_path = out.with_name(f'{out.name}.partial-{os.getpid()}')
-        try:
-            rewrite = rewrite_with_edits(str(gguf), str(temp_path), edits, scales=scales,
-                                         axis_space=space, edit_type=chosen,
-                                         verify_untouched=True, repair=repair)
-            os.replace(temp_path, out)
-        finally:
-            if temp_path.exists():
-                temp_path.unlink()
+        def _write(kind, candidate):
+            return rewrite_with_edits(str(gguf), str(candidate), edits, scales=scales,
+                                      axis_space=space, edit_type=kind,
+                                      verify_untouched=True, repair=repair)
 
-    renorm = repair != 'none'
+        def _measure(candidate):
+            rows = []
+            for kind, names in resolved['targets'].items():
+                if not names:
+                    continue
+                measured = compare_edit(str(gguf), str(candidate),
+                                        {name: edits[name] for name in names}, names=names,
+                                        scale=strength[kind], renormalize=renorm)
+                rows.extend(measured['tensors'])
+            cosines = [row['cos'] for row in rows if row.get('cos') is not None]
+            return {'tensors': rows, 'min_cos': min(cosines) if cosines else None,
+                    'mean_cos': round(sum(cosines) / len(cosines), 4) if cosines else None}
+
+        if selection['mode'] == 'explicit':
+            # A named type is the caller's deliberate choice; the delivered numbers
+            # below still say what it stored, and a miss is labelled, never hidden.
+            temp_path = out.with_name(f'{out.name}.partial-{os.getpid()}')
+            try:
+                rewrite = _write(chosen, temp_path)
+                os.replace(temp_path, out)
+            finally:
+                if temp_path.exists():
+                    temp_path.unlink()
+        else:
+            # The sampled preview only ranks. The verdict is the FULL-footprint
+            # read-back: a real run shipped whole-tensor cos 0.8808 under a 0.95
+            # floor because the ladder stopped on its sample, so it now steps to
+            # the next type and refuses when none clears.
+            order = [chosen] + [kind for kind in ladder
+                                if kind.casefold() != chosen.casefold()]
+            gated = run_ladder(out, order, floor, _write, _measure,
+                               refuse=BankApplyRefused)
+            rewrite = gated['write']
+            selection['whole_footprint'] = {key: gated[key] for key in
+                                            ('floor', 'chosen', 'floor_met', 'attempts')}
+
     rows, delivered_by_kind = [], {}
+
     for kind, names in resolved['targets'].items():
         if not names:
             continue

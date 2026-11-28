@@ -632,6 +632,25 @@ def build_parser():
     requant.add_argument('--binary',default=None,help='llama-quantize binary (default: first known local build, or JDEWITT_QUANTIZE)')
     requant.add_argument('--threads',type=int,default=None)
     requant.add_argument('--imatrix',default=None,help='importance matrix for IQ-family targets (they refuse without one)')
+    ed=sub.add_parser('edit',help='ONE VERB for an artifact you already serve: names every removal this GGUF plus its records/bank/delta can do, measures what the quantized grid will keep, and prints the exact next command; --apply performs it through the shared FULL-footprint CODEC_FLOOR gate (no model, no tokenizer, no server, no generated token)')
+    ed.add_argument('--gguf',type=Path,required=True,help='the quantized artifact to edit; it is only ever read (unless --in-place)')
+    ed.add_argument('--records',type=Path,default=None,help='capture records .pt: fit the axis on the model being edited (primary method)')
+    ed.add_argument('--bank',type=Path,default=None,help='Space bank directory: apply a digest-pinned banked axis (zero-fit path)')
+    ed.add_argument('--entry',default=None,help='bank entry key (default: the entry that covers the artifact)')
+    ed.add_argument('--delta-gguf',type=Path,default=None,help='explicit delta GGUF from gguf-delta-pack')
+    ed.add_argument('--strength',type=float,default=1.0,help='--delta-gguf multiplier')
+    ed.add_argument('--strength-scale',type=float,default=1.0,help='bank: multiplies the entry per-kind strength')
+    ed.add_argument('--out',type=Path,default=None,help='edited artifact to write (default: <name>-edited.gguf; required with --apply unless --in-place)')
+    ed.add_argument('--in-place',action='store_true',help='replace the input artifact atomically; a whole-file .revert.npz is written before the rename')
+    ed.add_argument('--shape',choices=('perlayer','shared'),default='perlayer')
+    ed.add_argument('--rank',type=int,default=1)
+    ed.add_argument('--scale',type=float,default=1.0)
+    ed.add_argument('--axis-space',choices=('output','input'),default='output')
+    ed.add_argument('--layers',default=None,help="footprint 'a-b' (default: every discovered layer)")
+    ed.add_argument('--edit-type',default='auto',help='auto: q6_k -> q8_0 -> f16, stepping on a FULL-footprint miss; or name one')
+    ed.add_argument('--min-cos',type=float,default=0.95,help='realized-edit floor over the FULL edited footprint; nothing is written below it')
+    ed.add_argument('--repair',choices=('none','renorm','norms'),default='none')
+    ed.add_argument('--apply',action='store_true',help='perform the chosen method instead of only planning it')
     editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)
@@ -1067,12 +1086,14 @@ def main():
         elif args.command=='capture':
             from .capture import capture_command
             result=capture_command(args)
+        elif args.command=='edit':
+            from .edit import edit_command
+            result=edit_command(args)
         elif args.command=='edit-quantized':
             from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
             from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes,inferred_hidden_width
             from .errors import NoVerifiedAdapter
-            from .ggufio import compare_edit
-            from .rewrite import rewrite_with_edits
+            from .rewrite import write_with_floor
             records=load_records(args.records)
             if args.rank > 1:
                 axes=per_layer_subspace(records,args.rank)
@@ -1109,31 +1130,15 @@ def main():
                                         f'call it done',
                                         discovered_layers=sorted(discovered['targets']), width=width,
                                         artifact=str(args.gguf))
-            sample=list(edits)[:1]+list(edits)[-1:]
-            probe={name:edits[name] for name in sample}
-            attempts=['q6_k','q8_0','f16'] if args.edit_type=='auto' else [args.edit_type]
-            result,chosen=None,None
-            for index,kind in enumerate(attempts):
-                candidate=args.out if len(attempts)==1 else args.out.with_name(
-                    f'{args.out.stem}-{kind}{args.out.suffix}')
-                attempt=rewrite_with_edits(args.gguf,candidate,edits,scale=args.scale,
-                                           axis_space=args.axis_space,edit_type=kind,
-                                           renormalize=args.renormalize,repair=args.repair,
-                                           verify_untouched=not args.no_verify)
-                delivered=compare_edit(str(args.gguf),str(candidate),probe,
-                                       renormalize=args.renormalize or args.repair!='none')
-                attempt['delivered_edit']=delivered
-                attempt['path']=str(candidate)
-                if result is not None and candidate != args.out:
-                    candidate.unlink(missing_ok=True)
-                chosen=(attempt,candidate)
-                if (delivered.get('min_cos') or 0.0)>=args.min_cos or index==len(attempts)-1:
-                    break
-            result,chosen_path=chosen
-            if chosen_path != args.out:
-                chosen_path.replace(args.out)
-            result['path']=str(args.out)
-            result['edit_type_chosen']=result['edit_type']
+            ladder = ['q6_k', 'q8_0', 'f16'] if args.edit_type == 'auto' else [args.edit_type]
+            result = write_with_floor(args.gguf, args.out, edits, ladder=ladder,
+                                      floor=args.min_cos, scale=args.scale,
+                                      axis_space=args.axis_space,
+                                      renormalize=args.renormalize,
+                                      repair=args.repair,
+                                      verify_untouched=not args.no_verify,
+                                      records=args.records)
+            result['edit_type_chosen'] = result['edit_type']
         elif args.command=='requant':
             from .quantize import quantize_file
             result=quantize_file(args.gguf,args.out,args.type,binary=args.binary,

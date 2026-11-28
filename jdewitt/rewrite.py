@@ -311,4 +311,118 @@ def rewrite_with_edits(src, out, edits, *, scale=1.0, scales=None, axis_space='o
         report['untouched'] = {'verified': not mismatched and not missing,
                                'checked': len(header['tensors']) - len(payloads),
                                'mismatched': mismatched[:12], 'missing': missing[:12]}
+    report['next'] = edit_next_steps(src, out)
     return report
+
+
+DEFAULT_LADDER = ('q6_k', 'q8_0', 'f16')
+
+
+def edit_next_steps(source, output, records=None):
+    """The commands that re-derive and read this edit, built from its own paths.
+
+    One JSON is not a handoff until it says what to run next: `verify` recomputes
+    the edit fingerprint from the two files, `gguf-tensor-diff` names every tensor
+    the edit did not touch, and `board` reads behaviour only when capture records
+    are supplied (without them the flag keeps a placeholder rather than inventing
+    a file the run never saw).
+    """
+    hint = records if records is not None else '"<records.pt from capture>"'
+    return [
+        f'python -m jdewitt.cli verify --pristine {source} --edited {output}',
+        f'python -m jdewitt.cli gguf-tensor-diff {source} {output}',
+        f'python -m jdewitt.cli board --artifact {output} --records {hint} --base {source}',
+    ]
+
+
+def run_ladder(out, ladder, floor, write, measure, refuse=None):
+    """Write storage types smallest-first until the FULL footprint clears ``floor``.
+
+    ``write(kind, candidate)`` writes one candidate file and returns its report;
+    ``measure(candidate)`` reads back EVERY edited tensor and returns
+    ``{tensors, min_cos, mean_cos}``. The first candidate that clears is moved into
+    place at ``out``; every other candidate is deleted. When none clears, nothing
+    is left at ``out`` and a CODEC_FLOOR refusal carries each attempt's worst
+    number — the floor is never dropped and the strength is never raised to force
+    a write, because that ships an edit nobody measured.
+
+    ``refuse`` lets a caller keep its own typed refusal (bank-apply uses
+    BankApplyRefused); the default is EditRefused.
+    """
+    from .errors import EditRefused
+
+    out = Path(out)
+    attempts, best, written = [], None, None
+    for kind in ladder:
+        candidate = out.with_name(f'{out.name}.attempt-{kind}')
+        try:
+            written = write(kind, candidate)
+            delivered = measure(candidate)
+        except BaseException:
+            candidate.unlink(missing_ok=True)
+            raise
+        rows = delivered.get('tensors') or []
+        min_cos = delivered.get('min_cos')
+        attempts.append({'edit_type': kind, 'min_cos': min_cos,
+                         'mean_cos': delivered.get('mean_cos'),
+                         'tensors': len(rows),
+                         'below_floor': [row.get('name') for row in rows
+                                         if float(row.get('cos') if row.get('cos') is not None else 0.0)
+                                         < float(floor)]})
+        if min_cos is not None and float(min_cos) >= float(floor):
+            candidate.replace(out)
+            return {'mode': 'ladder', 'floor': float(floor), 'chosen': kind,
+                    'floor_met': True, 'attempts': attempts, 'delivered': delivered,
+                    'write': written}
+        if best is None or float(min_cos or 0.0) > float(best.get('min_cos') or 0.0):
+            best = attempts[-1]
+        candidate.unlink(missing_ok=True)
+    detail = '; '.join(f"{row['edit_type']} min cos {row['min_cos']} over {row['tensors']} tensors"
+                       for row in attempts) or 'no candidate could be written'
+    message = (f'no storage type in the ladder ({", ".join(ladder)}) stores this edit at '
+               f'cos >= {floor} over the FULL edited footprint ({detail}). Nothing was left at '
+               f'{out}. The floor is not dropped and the strength is not raised to force a write: '
+               f'that ships an edit nobody measured')
+    if refuse is not None:
+        raise refuse('CODEC_FLOOR', message)
+    raise EditRefused('CODEC_FLOOR', message)
+
+
+def write_with_floor(src, out, edits, *, ladder=DEFAULT_LADDER, floor=0.95, scale=1.0,
+                     axis_space='output', renormalize=False, verify_untouched=True,
+                     repair='none', claims=None, records=None):
+    """The one write gate: a candidate per storage type, judged on the shipped tensors.
+
+    The sampled preview only ranks; this is the verdict. Each candidate is written
+    whole, then every edited tensor is read back out of it (`compare_edit` with the
+    full name set) and the smallest type whose worst tensor clears ``floor`` wins.
+    A sampled probe is what let a Q6_K bank edit ship at whole-tensor cos 0.8808
+    under a 0.95 floor on a real run, so no caller decides the type from a sample
+    anymore.
+    """
+    from .ggufio import compare_edit
+
+    names = list(edits)
+    state = {}
+
+    def write(kind, candidate):
+        state['report'] = rewrite_with_edits(
+            src, candidate, edits, scale=scale, axis_space=axis_space, edit_type=kind,
+            renormalize=renormalize, repair=repair, verify_untouched=verify_untouched,
+            claims=claims)
+        return state['report']
+
+    def measure(candidate):
+        return compare_edit(str(src), str(candidate), edits, names=names, scale=scale,
+                            renormalize=renormalize or repair != 'none')
+
+    selection = run_ladder(out, ladder, floor, write, measure)
+    report = dict(selection['write'])
+    report['edit_type'] = selection['chosen']
+    report['delivered_edit'] = selection['delivered']
+    report['gate'] = {key: selection[key] for key in
+                      ('mode', 'floor', 'chosen', 'floor_met', 'attempts')}
+    report['path'] = str(out)
+    report['next'] = edit_next_steps(src, out, records)
+    return report
+

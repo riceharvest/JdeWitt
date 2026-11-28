@@ -737,8 +737,94 @@ def edit_tensors_inplace(path, deltas, revert_path=None, dequant_cache=None):
     return _patch_inplace(path, deltas, revert_path=revert_path, dequant_cache=dequant_cache)
 
 
+REVERT_LOG_MAGIC = b'JWREVERT2\n'
+REVERT_LOG_ENTRY = b'JWRE'
+REVERT_LOG_END = b'JWEN'
+
+
+def _revert_log_entries(sidecar):
+    """Stream a revert log: ('pristine', hex), ('entry', (offset, bytes)), ('patched', hex).
+
+    A log without its trailer was interrupted while the patch was being written;
+    the entries read so far are the tensors snapshotted BEFORE the first byte
+    moved, so restoring them is still a full rollback.
+    """
+    with open(sidecar, 'rb') as handle:
+        if handle.read(len(REVERT_LOG_MAGIC)) != REVERT_LOG_MAGIC:
+            raise ValueError(f'{sidecar} is not a jdewitt revert log')
+        pristine = handle.read(32)
+        yield 'pristine', pristine.hex() if len(pristine) == 32 else None
+        while True:
+            tag = handle.read(4)
+            if not tag:
+                return
+            if tag == REVERT_LOG_END:
+                patched = handle.read(32)
+                if len(patched) == 32:
+                    yield 'patched', patched.hex()
+                return
+            if tag != REVERT_LOG_ENTRY:
+                return
+            header = handle.read(12)
+            if len(header) != 12:
+                return
+            offset, length = struct.unpack('<QI', header)
+            blob = handle.read(length)
+            if len(blob) != length:
+                return
+            yield 'entry', (int(offset), blob)
+
+
+def _write_revert_log(path, plans, revert_path):
+    """Snapshot every planned tensor's stored bytes BEFORE the first write.
+
+    Whole planned tensors, not changed tiles: which tiles move is not known until
+    the requantizer runs, and a log written before the bytes is the only form that
+    survives a crash mid-patch. Returns the open handle and the file's pristine
+    digest; the caller appends the trailer once every write has landed.
+    """
+    pristine_sha256 = _sha256(path)
+    handle = open(revert_path, 'wb')
+    try:
+        handle.write(REVERT_LOG_MAGIC)
+        handle.write(bytes.fromhex(pristine_sha256))
+        with open(path, 'rb') as source:
+            for plan in plans:
+                offset, n_bytes = plan[7], plan[8]
+                source.seek(offset)
+                raw = source.read(n_bytes)
+                if len(raw) != n_bytes:
+                    raise ValueError(f'{plan[0]}: short read at byte {offset} (truncated artifact?)')
+                handle.write(REVERT_LOG_ENTRY)
+                handle.write(struct.pack('<QI', offset, len(raw)))
+                handle.write(raw)
+        handle.flush()
+        os.fsync(handle.fileno())
+    except BaseException:
+        handle.close()
+        Path(revert_path).unlink(missing_ok=True)
+        raise
+    return handle, pristine_sha256
+
+
+def _restore_revert_log(path, sidecar):
+    """Write a revert log's snapshotted regions back; returns the entry count."""
+    restored = 0
+    with open(path, 'r+b') as target:
+        for kind, payload in _revert_log_entries(sidecar):
+            if kind != 'entry':
+                continue
+            offset, blob = payload
+            target.seek(offset)
+            target.write(blob)
+            restored += 1
+        target.flush()
+        os.fsync(target.fileno())
+    return restored
+
+
 def project_tensors_inplace(path, projections, scale=1.0, revert_path=None,
-                            renormalize=False, dequant_cache=None):
+                            renormalize=False, dequant_cache=None, min_cos=None):
     """The same patch, but the delta is computed from the weights being edited.
 
     projections maps a tensor name to ``(axis, space)``: ``axis`` is the fitted
@@ -751,18 +837,31 @@ def project_tensors_inplace(path, projections, scale=1.0, revert_path=None,
 
     ``dequant_cache`` (a ``DequantBases``) serves a tensor's base from a previous
     pass; the patch then dequantizes nothing it has already unpacked.
+
+    ``min_cos`` (0..1) is the realized-edit floor: every edited tile is
+    requantized and decoded again so the report carries cos(realized, intended)
+    per tensor, and a tensor below the floor rolls the WHOLE patch back from the
+    pre-write revert log before raising. It needs ``revert_path`` because a gate
+    that cannot undo itself is a claim, not a gate.
     """
     return _patch_inplace(path, projections, revert_path=revert_path, scale=scale,
-                          renormalize=renormalize, dequant_cache=dequant_cache)
+                          renormalize=renormalize, dequant_cache=dequant_cache,
+                          min_cos=min_cos)
 
 
 def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
-                   dequant_cache=None):
+                   dequant_cache=None, min_cos=None):
     """One writer for both forms: {name: float32 delta} or {name: (axis, space)}."""
+    from .errors import EditRefused
     from gguf import GGUFReader
     path = Path(path)
     if not path.is_file():
         raise ValueError(f'{path} does not exist')
+    if min_cos is not None and revert_path is None:
+        raise EditRefused('INPUT_ERROR',
+                          'a fidelity gate needs a revert path: without the pre-write snapshot a '
+                          'tensor that misses the floor cannot be rolled back, and a patch nobody '
+                          'can undo is not a checked write')
     reader = GGUFReader(str(path))
     # Every operand is validated before the first byte is written: a shape or
     # width mismatch discovered halfway leaves a half-edited model.
@@ -790,7 +889,11 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
         plans.append((name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, kind))
     snap = dequant_cache.snapshot() if dequant_cache is not None else None
     size_before = path.stat().st_size
-    reports, originals, proofs = [], [], []
+    log_handle, log_pristine = (None, None)
+    if revert_path is not None:
+        log_handle, log_pristine = _write_revert_log(path, plans, revert_path)
+    reports, proofs = [], []
+    breach = None
     with open(path, 'r+b') as f:
         for name, dtype, bs, els, n, quantize, dequantize, offset, n_bytes, shape, kind in plans:
             nb = n // els
@@ -836,9 +939,32 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
             sum_sq = float((values ** 2).sum())
             rms = float(math.sqrt(float((moved ** 2).sum()) / n)) if n else 0.0
             mean_sq = float(sum_sq / n) if n else 0.0
-            del values, edited, moved
+            del moved
             changed = np.any(new_raw.reshape(nb, bs) != raw_u8.reshape(nb, bs), axis=-1)
             changed_blocks = int(changed.sum())
+            # The delivered number, not the wanted one: decode the bytes the
+            # requantizer just produced on every changed tile and take
+            # cos(realized delta, intended delta). A sampled probe cannot see this
+            # — the codec's error is per block, and the worst block is the point.
+            cos = None
+            if changed_blocks:
+                values_flat = values.reshape(-1)
+                dot = rnorm = inorm = 0.0
+                for start in range(0, nb, blocks_per_tile):
+                    tile = min(blocks_per_tile, nb - start)
+                    if not changed[start:start + tile].any():
+                        continue
+                    byte0, byte1 = start * bs, (start + tile) * bs
+                    realized = dequantize(np.frombuffer(new_raw[byte0:byte1].tobytes(),
+                                                        dtype=np.uint8), tile * els)
+                    base_tile = values_flat[start * els:(start + tile) * els]
+                    intended = flat[start * els:(start + tile) * els] - base_tile
+                    actual = realized - base_tile
+                    dot += float(np.dot(actual, intended))
+                    rnorm += float(np.dot(actual, actual))
+                    inorm += float(np.dot(intended, intended))
+                if inorm > 0:
+                    cos = dot / math.sqrt(rnorm * inorm) if rnorm > 0 else 0.0
             first = None
             if changed_blocks:
                 for start in range(0, nb, blocks_per_tile):
@@ -846,7 +972,6 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
                     if not changed[start:start + tile].any():
                         continue
                     byte0, byte1 = start * bs, (start + tile) * bs
-                    originals.append((offset + byte0, raw_u8[byte0:byte1].copy()))
                     f.seek(offset + byte0)
                     f.write(new_raw[byte0:byte1].tobytes())
                     if first is None:
@@ -854,10 +979,30 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
                 proofs.append((name, first))
             reports.append({'tensor': name, 'dtype': dtype, 'blocks': int(nb),
                             'changed_blocks': changed_blocks, 'rms_delta': rms,
-                            'relative_rms_delta': rms / mean_sq if mean_sq else 0.0})
-            del new_raw, raw, raw_u8
+                            'relative_rms_delta': rms / mean_sq if mean_sq else 0.0,
+                            'delivered_cos': None if cos is None else round(float(cos), 6)})
+            del new_raw, raw, raw_u8, values, edited, flat
+            if min_cos is not None and cos is not None and float(cos) < float(min_cos):
+                breach = {'tensor': name, 'cos': round(float(cos), 6), 'floor': float(min_cos),
+                          'dtype': dtype, 'changed_blocks': changed_blocks}
+                break
         f.flush()
         os.fsync(f.fileno())
+    if breach is not None:
+        if log_handle is not None:
+            log_handle.close()
+            restored = _restore_revert_log(path, revert_path)
+            Path(revert_path).unlink(missing_ok=True)
+        else:
+            restored = 0
+        raise EditRefused(
+            'CODEC_FLOOR',
+            f'{breach["tensor"]} stores only cos {breach["cos"]} of its intended edit at '
+            f'{breach["dtype"]}, below the {breach["floor"]} floor: {restored} planned tensors were '
+            f'restored from the pre-write log and the artifact is unchanged. The codec cannot hold '
+            f'this edit at this strength. Do not raise the strength to hide it — use '
+            f'`python -m jdewitt.cli edit` (re-encodes only the edited tensors at a type that can '
+            f'store the edit) or a higher-precision artifact.')
     if path.stat().st_size != size_before:
         raise RuntimeError(f'{path} changed size during an in-place patch ({size_before} -> '
                            f'{path.stat().st_size}); the edit is not value-preserving here')
@@ -869,22 +1014,30 @@ def _patch_inplace(path, edits, revert_path=None, scale=1.0, renormalize=False,
             if f.read(len(expected)) != expected:
                 raise RuntimeError(f'in-place patch for {name} did not land at byte {at}')
     patched_sha256 = _sha256(path)
+    if log_handle is not None:
+        log_handle.write(REVERT_LOG_END)
+        log_handle.write(bytes.fromhex(patched_sha256))
+        log_handle.flush()
+        os.fsync(log_handle.fileno())
+        log_handle.close()
+    cosines = [row['delivered_cos'] for row in reports if row['delivered_cos'] is not None]
     result = {'input': str(path), 'output': str(path), 'in_place': True,
               'tensors_edited': len(reports), 'tensors': reports,
               'tensors_changed': sum(1 for r in reports if r['changed_blocks']),
               'changed_blocks_total': int(sum(r['changed_blocks'] for r in reports)),
+              'delivered_cos': {'min': min(cosines) if cosines else None,
+                                'mean': round(sum(cosines) / len(cosines), 6) if cosines else None,
+                                'floor': min_cos,
+                                'floor_met': (min(cosines) >= float(min_cos)
+                                              if cosines and min_cos is not None else None)},
               'all_other_bytes_verbatim': True, 'bytes_added': 0,
               'patched_sha256': patched_sha256}
     if snap is not None:
         result.update(dequant_cache.since(snap))
-    if revert_path is not None and originals:
-        offsets = np.array([at for at, _ in originals], dtype=np.int64)
-        lengths = np.array([len(raw) for _, raw in originals], dtype=np.int64)
-        data = np.concatenate([raw for _, raw in originals]).astype(np.uint8)
-        np.savez_compressed(revert_path, offsets=offsets, lengths=lengths, data=data,
-                            sha256=np.array(patched_sha256))
+    if log_handle is not None:
         result['revert_sidecar'] = str(revert_path)
         result['revert_sidecar_bytes'] = int(Path(revert_path).stat().st_size)
+        result['original_sha256'] = log_pristine
     return result
 
 
@@ -925,18 +1078,22 @@ def save_whole_file_revert(pristine, edited, sidecar):
 def revert_inplace(path, sidecar):
     """Write an in-place patch's saved pre-patch bytes back, then drop the sidecar.
 
-    The restored file's digest is reported, and when the sidecar carries
-    ``original_sha256`` (an out-of-place ship that was reverted into place, or any
-    writer that recorded its input) the returned ``byte_exact`` says whether the
-    artifact is now the exact pre-edit file rather than asking the caller to trust
-    that the saved ranges were all that changed. ``truncate_to`` (written by
-    ``save_whole_file_revert``) cuts a grown artifact back to its pre-edit length;
-    without it the saved ranges are restored into a file that keeps its size.
+    Two sidecar formats are accepted, detected by magic: the current pre-write
+    revert log (``JWREVERT2``) and the legacy ``.npz`` tile list. The log is
+    written BEFORE the first byte moves and covers every planned tensor whole, so
+    a patch that was interrupted (no trailer) is still recoverable — such a revert
+    reports ``complete: false`` instead of pretending the patch finished. When the
+    log carries the file's pristine digest, the returned ``byte_exact`` says
+    whether the artifact is now the exact pre-edit file rather than asking the
+    caller to trust that the saved ranges were all that changed.
     """
     path, sidecar = Path(path), Path(sidecar)
     for candidate in (path, sidecar):
         if not candidate.is_file():
             raise ValueError(f'{candidate} does not exist')
+    with open(sidecar, 'rb') as probe:
+        if probe.read(len(REVERT_LOG_MAGIC)) == REVERT_LOG_MAGIC:
+            return _revert_log_inplace(path, sidecar)
     payload = np.load(sidecar)
     offsets, lengths, data = payload['offsets'], payload['lengths'], payload['data']
     recorded = str(payload['sha256']) if 'sha256' in payload else None
@@ -960,7 +1117,8 @@ def revert_inplace(path, sidecar):
     sidecar.unlink()
     restored_sha256 = _sha256(path)
     result = {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored,
-              'restored_sha256': restored_sha256, 'truncated_to': truncate_to}
+              'restored_sha256': restored_sha256, 'truncated_to': truncate_to,
+              'format': 'npz-tiles', 'complete': True}
     if recorded is not None:
         result['patched_sha256'] = recorded
     if 'original_sha256' in payload:
@@ -968,6 +1126,34 @@ def revert_inplace(path, sidecar):
         result['original_sha256'] = original
         result['byte_exact'] = restored_sha256 == original
     return result
+
+
+def _revert_log_inplace(path, sidecar):
+    """Revert a ``JWREVERT2`` log: verify, restore every snapshotted region, verify."""
+    pristine = patched = None
+    for kind, payload in _revert_log_entries(sidecar):
+        if kind == 'pristine':
+            pristine = payload
+        elif kind == 'patched':
+            patched = payload
+    if patched is not None:
+        current = _sha256(path)
+        if current != patched:
+            raise ValueError(f'{path} changed since the patch (sha256 {current[:16]} != recorded '
+                             f'{patched[:16]}); refusing to write pre-patch bytes over a different file')
+    restored = _restore_revert_log(path, sidecar)
+    sidecar.unlink()
+    restored_sha256 = _sha256(path)
+    result = {'artifact': str(path), 'sidecar': str(sidecar), 'tiles_restored': restored,
+              'restored_sha256': restored_sha256, 'truncated_to': None,
+              'format': 'jdewitt-revert-log-v1', 'complete': patched is not None}
+    if patched is not None:
+        result['patched_sha256'] = patched
+    if pristine is not None:
+        result['original_sha256'] = pristine
+        result['byte_exact'] = restored_sha256 == pristine
+    return result
+
 
 
 def dequantize_tensor(path, name, tile_blocks=1 << 22, reader=None, dequant_cache=None):

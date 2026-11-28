@@ -145,8 +145,8 @@ EXPLAINER = {
         'meaning': 'A bank entry\'s bundle is missing or does not hash to the digest the entry pins.',
         'agent_action': 'Restore the bundle from the bank release and re-verify its sha256; never apply an axis whose bytes are not the measured ones.'},
     'CODEC_FLOOR': {
-        'meaning': 'The edit does not survive any storage type the entry allows at its own edit.min_cos; nothing is written.',
-        'agent_action': 'Keep the artifact unedited or fit the entry for a higher-bit artifact class. Do not raise the strength or drop the floor to force a write: that ships an edit nobody measured.'},
+        'meaning': 'The edit does not survive any storage type it is allowed to use at the requested floor (bank entries, fitted axes and explicit deltas all share the same gate); nothing is written or the patched bytes are rolled back.',
+        'agent_action': 'Keep the artifact unedited or fit the edit for a higher-bit artifact class. Do not raise the strength or drop the floor to force a write: that ships an edit nobody measured.'},
     'EDIT_TYPE_NOT_ALLOWED': {
         'meaning': 'The requested --edit-type is outside the types the bank entry measured for this artifact class.',
         'agent_action': 'Pass auto (the ladder intersects the entry\'s types) or one of the entry\'s edit.types; do not widen the entry to the type you want.'},
@@ -272,10 +272,26 @@ class BankApplyRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class EditRefused(ValueError):
+    """A shared-gate write refusal from `jdewitt edit`, `edit-quantized` or an
+    in-place merge.
+
+    CODEC_FLOOR: every storage type the caller allowed was written, read back over
+    its FULL edited footprint and missed the floor; nothing is left at the output
+    (or the in-place bytes were rolled back). INPUT_ERROR: the requested operands
+    cannot produce a checked write (for example a fidelity gate without a revert
+    path to roll back to). The code is stable; callers branch on it, not on text.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
-                             MatrixRefused, ReleaseRefused, BankRefused, BankApplyRefused)):
+                             MatrixRefused, ReleaseRefused, BankRefused, BankApplyRefused,
+                             EditRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),
