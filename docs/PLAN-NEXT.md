@@ -1887,3 +1887,12 @@ refusal, full-footprint fidelity, no removal claim). An agent that reads only
 the manifest — the repo's rule is "never grep the source for flags" — now sees
 the route without a doc read. `commands --completions` still runs, and the help
 audit remains at 101 model-free commands with zero missing handoffs.
+
+## 2026-11-28 — refusals carry the recovery command
+
+A `RouteRefused` can now carry `next`; the CLI error envelope includes it when
+present. The route fills it for order, stale and input failures with the exact
+command under the running interpreter. Measured: `gate` on a fresh workdir
+returns the survey command, `apply` after only a survey returns `gate`, and a
+modified artifact before `apply` returns `survey --gguf ART`. The message still
+says why; the agent no longer has to translate prose into the next call.

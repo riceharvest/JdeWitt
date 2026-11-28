@@ -141,7 +141,7 @@ def command_manifest(parser):
             'workflows': workflows,
             'exit_codes': {'success': 0, 'stable_failure': 1, 'argument_error': 2},
             'error_codes': [dict(row, code=code) for code, row in sorted(EXPLAINER.items())],
-            'note': 'Failures print {"error":{"code","type","message","command"}}. explain-error CODE prints one row of the same table.'}
+            'note': 'Failures print {"error":{"code","type","message","command"}} and, when the refusal knows the recovery step, a "next" command.'}
 
 
 def build_parser():
@@ -1287,7 +1287,12 @@ def main():
             raise SystemExit(1)
     except (ValueError,RuntimeError,OSError,sqlite3.Error,subprocess.SubprocessError) as e:
         from .errors import error_code
-        print(json.dumps({'error':{'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}}),file=sys.stderr)
+        error={'code':error_code(e),'type':type(e).__name__,'message':str(e) or repr(e),'command':args.command}
+        # A refusal that knows the recovery step hands it back: the agent should not
+        # have to read the prose to find the next command.
+        if getattr(e,'next',None):
+            error['next']=e.next
+        print(json.dumps({'error':error}),file=sys.stderr)
         raise SystemExit(1) from e
 
 

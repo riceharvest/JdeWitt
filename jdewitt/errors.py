@@ -194,7 +194,7 @@ def explain_error(code):
     if code not in EXPLAINER:
         raise ValueError(f'Unknown error code {code!r}; known codes: {", ".join(sorted(EXPLAINER))}')
     return {'code': code, **EXPLAINER[code],
-            'envelope': 'Failures print {"error":{"code","type","message","command"}} and exit 1; argument errors exit 2.'}
+            'envelope': 'Failures print {"error":{"code","type","message","command"}} and, when the refusal knows the recovery step, a "next" command; argument errors exit 2.'}
 
 
 class BudgetExhausted(RuntimeError):
@@ -308,8 +308,9 @@ class RouteRefused(ValueError):
     (a stale gate is never promoted). ROUTE_INPUT: the step needs an operand the
     state does not hold. Every one is raised before a byte is written.
     """
-    def __init__(self, code, message):
+    def __init__(self, code, message, next_command=None):
         self.code = code
+        self.next = next_command
         super().__init__(f'{code}: {message}')
 
 

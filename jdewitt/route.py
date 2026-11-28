@@ -555,11 +555,15 @@ def _plan(workdir, artifact, settings, args, state, started):
     from .edit import (LADDER, artifact_view, axes_method, bank_method, delta_method,
                        fitted_method, probe_names)
     from .errors import RouteRefused
+    from .nextsteps import cli_line
 
     if not state or not state.get('survey'):
-        raise RouteRefused('ROUTE_ORDER', 'plan needs a survey of the same workdir first')
+        raise RouteRefused('ROUTE_ORDER', 'plan needs a survey of the same workdir first',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey'))
     if _sha(artifact) != state.get('artifact_sha256'):
-        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the survey; re-run survey')
+        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the survey; re-run survey',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey',
+                                                 '--gguf', artifact))
     inputs = _inputs(args, state)
     if inputs.get('records') and inputs.get('axes'):
         raise RouteRefused('ROUTE_INPUT', 'records and axes are alternatives: records fit an axis, '
@@ -683,10 +687,14 @@ def _plan(workdir, artifact, settings, args, state, started):
             evidence['candidate_types'] = list(types)
     else:
         raise RouteRefused('ROUTE_INPUT', 'plan needs --records, --axes, --bank or --delta-gguf '
-                                          '(survey without them to see every route)')
+                                          '(survey without them to see every route)',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey'))
     if method is None or not method.get('ready'):
-        raise RouteRefused(method.get('reason') or 'ROUTE_INPUT',
-                           method.get('detail') or 'the chosen method is not ready on this artifact')
+        reason = (method or {}).get('reason') or 'ROUTE_INPUT'
+        detail = ((method or {}).get('detail')
+                  or 'the chosen method is not ready on this artifact')
+        raise RouteRefused(reason, detail,
+                           next_command=cli_line('route', '--workdir', workdir, 'survey'))
     risks = []
     preview = evidence.get('preview') or {}
     if 'deferred' not in preview:
@@ -762,13 +770,22 @@ def _planned_types(evidence, settings):
 def _gate(workdir, artifact, settings, args, state, started):
     from .errors import RouteRefused
     from .ggufio import compare_edit
+    from .nextsteps import cli_line
 
-    if not state or not state.get('plan'):
-        raise RouteRefused('ROUTE_ORDER', 'gate needs a plan in the same workdir first')
+    if not state:
+        raise RouteRefused('ROUTE_ORDER', 'gate needs a survey before a plan',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey',
+                                                 '--gguf', artifact))
+    if not state.get('plan'):
+        raise RouteRefused('ROUTE_ORDER', 'gate needs a plan in the same workdir first',
+                           next_command=cli_line('route', '--workdir', workdir, 'plan'))
     if _sha(artifact) != state.get('artifact_sha256'):
-        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the plan; re-run survey/plan')
+        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the plan; re-run survey/plan',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey',
+                                                 '--gguf', artifact))
     if _input_shas(state.get('inputs') or {}) != (state.get('input_sha256') or {}):
-        raise RouteRefused('ROUTE_STALE', 'the records/bank/delta changed since the plan; re-run plan')
+        raise RouteRefused('ROUTE_STALE', 'the records/bank/delta changed since the plan; re-run plan',
+                           next_command=cli_line('route', '--workdir', workdir, 'plan'))
     from .edit import artifact_view, delta_method, fitted_method
 
     inputs = _inputs(args, state)
@@ -787,14 +804,16 @@ def _gate(workdir, artifact, settings, args, state, started):
 
             method, edits = axes_method(ns, view, require_floor=False, preview=False)
         if not method.get('ready'):
-            raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'))
+            raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'),
+                               next_command=cli_line('route', '--workdir', workdir, 'plan'))
     elif method_kind == 'explicit-delta':
         import numpy as np
         from gguf import GGUFReader
 
         method, _ = delta_method(ns, view)
         if not method.get('ready'):
-            raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'))
+            raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'),
+                               next_command=cli_line('route', '--workdir', workdir, 'plan'))
         reader = GGUFReader(str(inputs['delta_gguf']))
         edits = {}
         for tensor in reader.tensors:
@@ -982,13 +1001,17 @@ def _apply(workdir, artifact, settings, args, state, started):
     from .nextsteps import cli_line
 
     if not state or not state.get('gate') or not state['gate'].get('candidate'):
-        raise RouteRefused('ROUTE_ORDER', 'apply needs a gated candidate in the same workdir')
+        raise RouteRefused('ROUTE_ORDER', 'apply needs a gated candidate in the same workdir',
+                           next_command=cli_line('route', '--workdir', workdir, 'gate'))
     gate = state['gate']
     if _sha(artifact) != state.get('artifact_sha256'):
-        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the gate; re-run survey/plan/gate')
+        raise RouteRefused('ROUTE_STALE', 'the artifact changed since the gate; re-run survey/plan/gate',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey',
+                                                 '--gguf', artifact))
     candidate = Path(gate['candidate'])
     if not candidate.is_file() or _sha(candidate) != gate.get('candidate_sha256'):
-        raise RouteRefused('ROUTE_STALE', 'the gated candidate changed or disappeared; re-run gate')
+        raise RouteRefused('ROUTE_STALE', 'the gated candidate changed or disappeared; re-run gate',
+                           next_command=cli_line('route', '--workdir', workdir, 'gate'))
     if args.out is not None and args.in_place:
         raise ValueError('--out and --in-place are alternatives; pick one')
     if args.in_place:
@@ -1120,10 +1143,12 @@ def _verify(workdir, artifact, settings, args, state, started):
     from .verify import verify_pair
 
     if not state or not state.get('apply'):
-        raise RouteRefused('ROUTE_ORDER', 'verify needs an applied artifact in the same workdir')
+        raise RouteRefused('ROUTE_ORDER', 'verify needs an applied artifact in the same workdir',
+                           next_command=cli_line('route', '--workdir', workdir, 'apply'))
     output = Path(state['apply']['output'])
     if not output.is_file():
-        raise RouteRefused('ROUTE_STALE', f'{output} does not exist; re-run apply')
+        raise RouteRefused('ROUTE_STALE', f'{output} does not exist; re-run apply',
+                           next_command=cli_line('route', '--workdir', workdir, 'apply'))
     exclude = set(state.get('gate', {}).get('edited_names') or [])
     missing = ['behaviour (removal) on a served artifact',
                'capability/retention on the paired suites',
@@ -1228,7 +1253,8 @@ def _certify(workdir, artifact, settings, args, state, started):
     from .nextsteps import cli_line
 
     if not state or not state.get('verify'):
-        raise RouteRefused('ROUTE_ORDER', 'certify needs verify in the same workdir first')
+        raise RouteRefused('ROUTE_ORDER', 'certify needs verify in the same workdir first',
+                           next_command=cli_line('route', '--workdir', workdir, 'verify'))
     output = Path(state['apply']['output'])
     view = artifact_view(output)
     gate_path = Path(workdir) / 'gate.json'
@@ -1326,9 +1352,12 @@ def _status(workdir, artifact, settings, args, state, started):
 
     from .edit import artifact_view
     from .errors import RouteRefused
+    from .nextsteps import cli_line
 
     if not state:
-        raise RouteRefused('ROUTE_ORDER', 'no route state in this workdir; run survey first')
+        raise RouteRefused('ROUTE_ORDER', 'no route state in this workdir; run survey first',
+                           next_command=cli_line('route', '--workdir', workdir, 'survey',
+                                                 '--gguf', artifact))
     done = [row['step'] for row in state.get('history') or []]
     last = done[-1] if done else 'survey'
     last_report = Path(workdir) / f'{last}.json'
