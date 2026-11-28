@@ -53,6 +53,35 @@ longer the path an agent should take to edit a model it already has: a second
 copy of a 27B model is disk it may not have, and a full dequant-requant of the
 model is work nobody asked for.
 
+## The stepped route (for an agent that has to decide)
+
+`jdewitt edit` is the one-shot. When the decision itself matters — a 4-bit artifact,
+a bank entry that is not measured, a footprint that may cost maths — use the route,
+where each stage is its own command and its own JSON:
+
+    jdewitt route --gguf ART --records R.pt survey   # census, inputs, separability, options
+    jdewitt route --workdir DIR plan                 # per-tensor/per-type preview, cost, risks
+    jdewitt route --workdir DIR gate                 # trial write + FULL-footprint read-back
+    jdewitt route --workdir DIR apply --out OUT      # promote the gated candidate
+    jdewitt route --workdir DIR verify               # fingerprint + untouched identity
+    jdewitt route --workdir DIR certify              # packet: measured vs unmeasured
+
+- state: `DIR/route.json`, updated atomically; every step refuses a stale artifact,
+  records or candidate (`ROUTE_STALE`) instead of re-deriving it. `route` with no
+  step is `status`: where the route is and what is next.
+- evidence: `plan` carries every edited tensor's axis norm and per-type cos/snr,
+  every layer's separability table, and the byte cost per storage type; `gate`
+  carries every attempted type's full read-back rows and the untouched-byte
+  verification.
+- decision: each step prints `options`, each a command with expected effect, cost
+  and risk; `next` is the recommended one. Every option is a command, so a branch
+  is one invocation, not a script.
+- `gate` keeps the measured candidate and deletes the rejects; `apply` refuses a
+  candidate whose sha does not match the gate record (`ROUTE_STALE`).
+- No step measures behaviour. `certify` writes `packet.json`, labels every
+  measured field and every missing one, and prints the board command that would
+  measure removal.
+
 ## What this deprioritizes
 
 - Research axes that do not either cut tokens-to-certification (R1) or widen

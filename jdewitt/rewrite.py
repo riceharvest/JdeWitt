@@ -335,7 +335,7 @@ def edit_next_steps(source, output, records=None):
     ]
 
 
-def run_ladder(out, ladder, floor, write, measure, refuse=None):
+def run_ladder(out, ladder, floor, write, measure, refuse=None, strict=True):
     """Write storage types smallest-first until the FULL footprint clears ``floor``.
 
     ``write(kind, candidate)`` writes one candidate file and returns its report;
@@ -383,6 +383,10 @@ def run_ladder(out, ladder, floor, write, measure, refuse=None):
                f'cos >= {floor} over the FULL edited footprint ({detail}). Nothing was left at '
                f'{out}. The floor is not dropped and the strength is not raised to force a write: '
                f'that ships an edit nobody measured')
+    if not strict:
+        return {'mode': 'ladder', 'floor': float(floor), 'chosen': None,
+                'floor_met': False, 'attempts': attempts, 'delivered': None,
+                'write': None, 'detail': message}
     if refuse is not None:
         raise refuse('CODEC_FLOOR', message)
     raise EditRefused('CODEC_FLOOR', message)

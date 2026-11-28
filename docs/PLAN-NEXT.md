@@ -1692,3 +1692,56 @@ Not claimed: behaviour. Nothing here measured an answer, a removal rate or a
 capability delta; those stay GATED behind a serve. `repair='solve'` (making a
 4-bit grid STORE the edit instead of refusing it) is the other half of the codec
 floor and is still open.
+
+## 2026-11-28 — the stepped route: one stage per decision
+
+`jdewitt route` is the second interface over the same writers: survey -> plan ->
+gate -> apply -> verify -> certify. The one-shot is the right default and the
+wrong tool when the decision itself is the risk (4-bit grids, unmeasured bank
+entries, footprints that trade removal against maths).
+
+What each stage owes the agent, all CPU-only:
+
+- **survey**: artifact census by tensor type and bytes, discovered writeback
+  kinds with their layer ranges, codec encodability, records labels/geometry and
+  per-layer separability, bank readiness (including the bundle install
+  pre-flight), delta tensors, and the risks those facts imply.
+- **plan**: per-tensor axis norm and per-type preview cos/snr/norm_ratio,
+  per-layer axis table, byte cost per storage type, candidate list, and one
+  command per branch.
+- **gate**: a trial write per storage type into `<workdir>/candidates/`, the
+  FULL-footprint read-back, untouched-byte verification, the candidate sha, and
+  the rejected candidates deleted. No winner -> `ok: false` with retry/replan
+  options and never an apply option.
+- **apply**: promotes only the candidate whose sha matches the gate record and
+  whose source artifact has not moved; `--in-place` writes a whole-file revert
+  sidecar before the rename.
+- **verify**: fingerprint recompute plus untouched-byte identity out of place;
+  for in-place, the sidecar records the pre-apply bytes and the stored
+  fingerprint matches the gate, while untouched identity is named uncheckable
+  rather than reported as a pass.
+- **certify**: `packet.json` with measured vs unmeasured fields;
+  `removal_measured: false` and the board command that would measure it.
+
+State lives in `<workdir>/route.json`, written atomically; wrong-order, stale
+artifact/records/candidate and missing-operand cases are the typed refusals
+`ROUTE_ORDER`, `ROUTE_STALE`, `ROUTE_INPUT`. `route` with no step is `status`:
+the stage, the history, and the last decision's options.
+
+Measured runs on committed fixture artifacts (no model, no token):
+
+    fitted route: preview q6_k 0.9911 / q8_0 0.9999 / f16 1.0 over 4 tensors;
+      gate q6_k min 0.9573 over the full footprint; apply; verify recomputes and
+      2 untouched tensors are byte-identical; certify packet written.
+    ladder at floor 1.0001: q6_k 0.9573, q8_0 0.9959, f16 1.0 all below;
+      ok false, every candidate deleted, apply refused ROUTE_ORDER.
+    bank route: plan types q8_0/f16; gate q8_0 min 0.9985; apply + verify.
+    delta route: one tensor, Q8_0, cos 1.0.
+    in-place route: sidecar 1,051,138 B, verify checks pass, gguf-revert
+      restores the pristine sha exactly.
+    stale checks: a modified artifact and a tampered candidate both refuse
+      ROUTE_STALE before a write.
+
+`scripts/help_audit.py`: every subparser's help is model-free, `commands` covers
+the surface, and `next_missing` remains only the pre-existing `export-smoke`.
+Ruff green. Not claimed: behaviour, same as the one-shot.

@@ -486,6 +486,25 @@ SCHEMAS = {
                        'next': {},
                        'elapsed_s': {'type': 'number'},
                        'applied': {'type': 'object'}}},
+    'route.command.json': {
+        'description': 'jdewitt route step contract: the stage, the resumable state, the '
+                       'evidence for the decision, the risks, every option as a command, and '
+                       'the exact next command.',
+        'type': 'object',
+        'required': ['schema', 'command', 'step', 'ok', 'state', 'artifact', 'evidence',
+                     'risks', 'decision', 'next', 'history', 'elapsed_s'],
+        'properties': {'schema': {'const': 'jdewitt-route-step-v1'},
+                       'command': {'const': 'route'},
+                       'step': {'type': 'string'},
+                       'ok': {'type': 'boolean'},
+                       'state': {'type': 'object'},
+                       'artifact': {'type': 'object'},
+                       'evidence': {'type': 'object'},
+                       'risks': {'type': 'array'},
+                       'decision': {'type': 'object'},
+                       'next': {},
+                       'history': {'type': 'array'},
+                       'elapsed_s': {'type': 'number'}}},
     'gguf-tensor-diff.command.json': {
         'description': 'gguf-tensor-diff output contract.',
         'type': 'object',
@@ -602,6 +621,7 @@ EMIT_SCHEMAS = {
     'release-diff': 'release-diff.command.json',
     'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
     'edit': 'edit.command.json',
+    'route': 'route.command.json',
     'safetensors-diff': 'safetensors-diff.command.json',
     'pt-diff': 'pt-diff.command.json',
     'fp8-edit': 'fp8-edit.command.json',

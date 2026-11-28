@@ -235,7 +235,11 @@ Three commands make that true on a model this repo has never seen. `jdewitt edit
 plus its records, bank entry or delta can do, measures what the quantized grid
 will keep before any multi-minute write, and `--apply` ships the choice through
 one full-footprint floor (a candidate per storage type, read back per edited
-tensor, CODEC_FLOOR refusal rather than a below-floor file). `capture`
+tensor, CODEC_FLOOR refusal rather than a below-floor file). `jdewitt route` is
+the same chain as six inspectable stages (survey → plan → gate → apply → verify
+→ certify) for an agent that has to decide: one JSON per stage, per-tensor
+evidence, a resumable workdir, and every option printed as a command with its
+expected effect, cost and risk. `capture`
 finds the decoder stack and the residual-write projections from the model's own
 module tree, generates every row with the model being edited, and labels each
 answer by its shape — no architecture table, no per-model hook script, no

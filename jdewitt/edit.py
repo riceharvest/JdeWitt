@@ -92,8 +92,14 @@ def _base_command(args, artifact):
     return ['python', '-m', 'jdewitt.cli', 'edit', '--gguf', str(artifact['path'])]
 
 
-def _fitted_method(args, artifact):
-    """A fitted axis from capture records: the primary method when records exist."""
+def _fitted_method(args, artifact, require_floor=True):
+    """A fitted axis from capture records: the primary method when records exist.
+
+    ``require_floor`` (default) is the one-shot contract: a method whose sampled
+    preview cannot clear the floor is not offered, because `edit` would write
+    nothing. The stepped route passes False: the guess ranks, and the GATE is the
+    verdict, so the planner must still hand it a candidate to measure.
+    """
     from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes
     from .ggufio import preview_edit
     from .ggufwrite import parse_container, tensor_nbytes
@@ -169,9 +175,17 @@ def _fitted_method(args, artifact):
         method['detail'] = (f'no probed type stores the edit at cos >= {args.min_cos}: '
                             f'{worst["edit_type"]} reaches {worst["min_cos"]} on '
                             f'{worst["worst_tensor"]}' if worst else 'no tensor could be probed')
+        if require_floor:
+            return method, None
+        cleared = worst
+    if cleared is None:
+        method['reason'] = 'NO_READINGS'
+        method['detail'] = 'no tensor could be probed on this artifact'
         return method, None
     method.update({
         'ready': True,
+        'floor_cleared': cleared is not None
+        and float(cleared.get('min_cos') or 0.0) >= float(args.min_cos),
         'edit_type': cleared['edit_type'],
         'expected_min_cos': cleared['min_cos'],
         'cost': {'edited_tensors': len(edits), 'edited_bytes': int(edited_bytes)},
@@ -352,7 +366,7 @@ def plan_edit(args):
     return report, state
 
 
-def _finalize_in_place(gguf, temp, report):
+def apply_in_place(gguf, temp, report):
     """Ship a layout-moving edit to the artifact's own path, atomically and reversibly.
 
     The original bytes go to a whole-file revert sidecar BEFORE the rename, so a
@@ -385,7 +399,7 @@ def _apply_fitted(args, state):
                               floor=float(args.min_cos), scale=args.scale,
                               axis_space=args.axis_space, repair=args.repair,
                               records=str(args.records))
-    return _finalize_in_place(Path(args.gguf), target, report) if args.in_place else report
+    return apply_in_place(Path(args.gguf), target, report) if args.in_place else report
 
 
 def _apply_bank(args, state):
@@ -398,7 +412,7 @@ def _apply_bank(args, state):
     target = Path(str(args.gguf) + '.edit-tmp') if args.in_place else Path(args.out)
     report = bank_apply(args.bank, entry, args.gguf, target,
                         strength_scale=args.strength_scale)
-    return _finalize_in_place(Path(args.gguf), target, report) if args.in_place else report
+    return apply_in_place(Path(args.gguf), target, report) if args.in_place else report
 
 
 def _apply_delta(args, state):
@@ -406,7 +420,7 @@ def _apply_delta(args, state):
 
     target = Path(str(args.gguf) + '.edit-tmp') if args.in_place else Path(args.out)
     report = gguf_edit(args.gguf, target, [], args.delta_gguf, args.strength)
-    return _finalize_in_place(Path(args.gguf), target, report) if args.in_place else report
+    return apply_in_place(Path(args.gguf), target, report) if args.in_place else report
 
 
 def edit_command(args):
@@ -457,3 +471,15 @@ def edit_command(args):
     report['elapsed_s'] = round(float(report.get('elapsed_s') or 0.0)
                                 + float(applied.get('elapsed_s') or 0.0), 2)
     return report
+
+
+# Public seams for the stepped route: the route reuses the one-shot planner's
+# discovery, bank pre-flight and vocabulary fallbacks instead of growing a second
+# copy of them.
+artifact_view = _artifact_view
+fitted_method = _fitted_method
+bank_method = _bank_method
+delta_method = _delta_method
+probe_names = _probe_names
+vocabulary_method = _vocabulary_method
+

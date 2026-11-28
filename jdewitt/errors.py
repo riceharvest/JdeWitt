@@ -159,6 +159,15 @@ EXPLAINER = {
     'OUT_DIRECTORY_MISSING': {
         'meaning': 'The requested --out names a directory that does not exist.',
         'agent_action': 'Create the directory or write inside an existing one; nothing was written.'},
+    'ROUTE_ORDER': {
+        'meaning': 'A stepped-route stage ran before the stage it depends on (survey < plan < gate < apply < verify < certify); the message names the step to run.',
+        'agent_action': 'Run the named step in the same --workdir; each step reads the previous step’s state instead of guessing it.'},
+    'ROUTE_STALE': {
+        'meaning': 'The artifact, records or gated candidate changed since the state was recorded, so the state describes different bytes.',
+        'agent_action': 'Re-run the step that produced the stale record (survey/plan/gate) against the current files; a stale gate is never promoted by apply.'},
+    'ROUTE_INPUT': {
+        'meaning': 'The route step needs an operand the state does not hold (for example gate without a plan, or apply without a gated candidate).',
+        'agent_action': 'Run the missing step, or pass the operand (--records/--bank/--delta-gguf) to plan; the route never invents a fit.'},
 }
 
 
@@ -272,6 +281,20 @@ class BankApplyRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class RouteRefused(ValueError):
+    """The stepped route was asked for a step the state cannot support.
+
+    ROUTE_ORDER: a dependency step has not run (survey < plan < gate < apply <
+    verify < certify); the message names the step to run. ROUTE_STALE: the
+    artifact, records or candidate changed since the step that produced the state
+    (a stale gate is never promoted). ROUTE_INPUT: the step needs an operand the
+    state does not hold. Every one is raised before a byte is written.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 class EditRefused(ValueError):
     """A shared-gate write refusal from `jdewitt edit`, `edit-quantized` or an
     in-place merge.
@@ -291,7 +314,7 @@ def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
                              MatrixRefused, ReleaseRefused, BankRefused, BankApplyRefused,
-                             EditRefused)):
+                             EditRefused, RouteRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

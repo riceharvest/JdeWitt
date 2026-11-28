@@ -3,8 +3,11 @@
 For an artifact you already serve, start with `jdewitt edit --gguf <artifact>`
 (no `--apply`): one JSON names the methods its records/bank/delta make possible,
 measures the codec preview on the real grid, and prints the exact command that
-writes. The loop below is the HF-side provenance path that produced the committed
-numbers, and where a fitted axis comes from.
+writes. When the decision needs inspecting, `jdewitt route --gguf <artifact>
+survey` starts the same chain as six stages — survey, plan, gate, apply, verify,
+certify — with per-tensor evidence, a resumable `--workdir`, and every branch
+printed as a command. The loop below is the HF-side provenance path that produced
+the committed numbers, and where a fitted axis comes from.
 
 Every number in the docs came from this loop, so here it is end to end with the
 exact invocations that produced the committed evidence. Paths assume

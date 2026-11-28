@@ -651,6 +651,27 @@ def build_parser():
     ed.add_argument('--min-cos',type=float,default=0.95,help='realized-edit floor over the FULL edited footprint; nothing is written below it')
     ed.add_argument('--repair',choices=('none','renorm','norms'),default='none')
     ed.add_argument('--apply',action='store_true',help='perform the chosen method instead of only planning it')
+    from .route import STEPS as ROUTE_STEPS
+    rt=sub.add_parser('route',help='Stepped route for an AI agent: survey -> plan -> gate -> apply -> verify -> certify, one JSON per step with per-tensor/per-layer evidence, a resumable state file, and every option as a command with expected effect, cost and risk; no model, tokenizer, server or generated token')
+    rt.add_argument('step',nargs='?',choices=(*ROUTE_STEPS,'status'),default=None,help='which stage to run (omit = status: where the route is and what is next)')
+    rt.add_argument('--gguf',type=Path,help='artifact (first step; later steps read it from the state)')
+    rt.add_argument('--workdir',type=Path,help='resumable route directory (default: <artifact>.route)')
+    rt.add_argument('--records',type=Path)
+    rt.add_argument('--bank',type=Path)
+    rt.add_argument('--entry')
+    rt.add_argument('--delta-gguf',type=Path)
+    rt.add_argument('--out',type=Path,help='apply: edited artifact (default <artifact>-edited.gguf)')
+    rt.add_argument('--in-place',action='store_true',help='apply: replace the input via a whole-file revert sidecar')
+    rt.add_argument('--shape',choices=('perlayer','shared'),default=None)
+    rt.add_argument('--rank',type=int,default=None)
+    rt.add_argument('--scale',type=float,default=None)
+    rt.add_argument('--axis-space',choices=('output','input'),default=None)
+    rt.add_argument('--layers',default=None,help="footprint 'a-b'")
+    rt.add_argument('--edit-type',default=None,help='auto (ladder) or one storage type')
+    rt.add_argument('--min-cos',type=float,default=None,help='realized-edit floor (default 0.95)')
+    rt.add_argument('--repair',choices=('none','renorm','norms'),default=None)
+    rt.add_argument('--keep',type=float,default=None,help='layer-separability keep line (default 0.5)')
+    rt.add_argument('--probe-tensors',type=int,default=None,help='tensors previewed per type in plan (default 8)')
     editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)
@@ -1089,6 +1110,9 @@ def main():
         elif args.command=='edit':
             from .edit import edit_command
             result=edit_command(args)
+        elif args.command=='route':
+            from .route import route_command
+            result=route_command(args)
         elif args.command=='edit-quantized':
             from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
             from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes,inferred_hidden_width
