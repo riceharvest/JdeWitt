@@ -33,7 +33,7 @@ from pathlib import Path
 
 SCHEMA = 'jdewitt-edit-plan-v1'
 LADDER = ('q6_k', 'q8_0', 'f16')
-METHOD_ORDER = ('fitted-axis', 'banked-axis', 'explicit-delta')
+METHOD_ORDER = ('fitted-axis', 'imported-axis', 'banked-axis', 'explicit-delta')
 
 
 def _out_path(args, artifact_path):
@@ -100,10 +100,7 @@ def _fitted_method(args, artifact, require_floor=True):
     nothing. The stepped route passes False: the guess ranks, and the GATE is the
     verdict, so the planner must still hand it a candidate to measure.
     """
-    from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes
-    from .ggufio import preview_edit
-    from .ggufwrite import parse_container, tensor_nbytes
-    from .spanfit import load_records, parse_layer_ids, per_layer_axes, per_layer_subspace, shared_axis
+    from .spanfit import load_records, per_layer_axes, per_layer_subspace, shared_axis
 
     method = {'method': 'fitted-axis', 'ready': False, 'reason': None, 'detail': None,
               'source': str(args.records), 'command': None, 'preview': None}
@@ -119,6 +116,75 @@ def _fitted_method(args, artifact, require_floor=True):
         method['reason'] = 'RECORDS_UNREADABLE'
         method['detail'] = f'{type(error).__name__}: {error}'
         return method, None
+    return _axes_edits(args, artifact, axes, method=method,
+                       source_flags=['--records', str(args.records), '--shape', args.shape,
+                                     '--rank', str(args.rank)],
+                       require_floor=require_floor)
+
+
+def _axes_method(args, artifact, require_floor=True):
+    """An axis imported from a file: an externally recovered direction.
+
+    The file is ``torch.save({'axes': tensor[, 'provenance': {...}]})`` with a
+    ``[D]`` shared axis or a ``[L, D]`` per-layer matrix. The route and `edit`
+    treat it exactly like a fitted axis — same discovery, same full-footprint
+    gate — because the provenance of a direction changes how much you trust it,
+    never whether the codec can store it.
+    """
+    import torch
+
+    method = {'method': 'imported-axis', 'ready': False, 'reason': None, 'detail': None,
+              'source': str(args.axes), 'command': None, 'preview': None}
+    try:
+        payload = torch.load(str(args.axes), map_location='cpu', weights_only=False)
+        axes = payload.get(args.axes_key, payload.get('axes', payload)) if isinstance(payload, dict) else payload
+    except Exception as error:  # noqa: BLE001 - every axes-file failure is a plan state
+        method['reason'] = 'AXES_UNREADABLE'
+        method['detail'] = f'{type(error).__name__}: {error}'
+        return method, None
+    if not torch.is_tensor(axes) or axes.ndim not in (1, 2):
+        method['reason'] = 'AXES_UNREADABLE'
+        method['detail'] = (f'{args.axes} does not carry a [D] or [L, D] tensor under '
+                            f'{args.axes_key!r}; keys: '
+                            f'{sorted(payload) if isinstance(payload, dict) else type(payload).__name__}')
+        return method, None
+    axes = axes.detach().float()
+    if not bool(torch.isfinite(axes).all()):
+        method['reason'] = 'AXES_UNREADABLE'
+        method['detail'] = 'the imported axis contains NaN/Inf'
+        return method, None
+    provenance = payload.get('provenance') if isinstance(payload, dict) else None
+    if provenance is not None:
+        method['provenance'] = provenance
+    kinds = payload.get('kinds') if isinstance(payload, dict) else None
+    if kinds:
+        method['kinds'] = list(kinds)
+    return _axes_edits(args, artifact, axes, method=method,
+                       source_flags=['--axes', str(args.axes), '--axes-key', args.axes_key],
+                       kinds=kinds, require_floor=require_floor)
+
+
+def _axes_edits(args, artifact, axes, *, method, source_flags, kinds=None,
+                require_floor=True):
+    """Discovery, edit map, codec preview and the exact apply command for one axis tensor."""
+    import torch
+
+    from .gguf_adapters import discover_writeback_targets, gguf_weight_shapes
+    from .ggufio import preview_edit
+    from .ggufwrite import parse_container, tensor_nbytes
+    from .spanfit import parse_layer_ids
+
+    if axes.ndim == 1:
+        width = int(axes.shape[0])
+        shapes = gguf_weight_shapes(str(args.gguf))
+        discovered = discover_writeback_targets(shapes, width)
+        layers = sorted(discovered['targets'])
+        if layers:
+            expanded = torch.zeros((max(layers) + 1, width), dtype=torch.float32)
+            expanded[layers] = axes
+            axes = expanded
+            method['broadcast'] = {'from': '[D]', 'to': f'[{int(axes.shape[0])},{width}]',
+                                   'layers': layers[:8], 'layers_total': len(layers)}
     width = int(axes.shape[-1])
     shapes = gguf_weight_shapes(str(args.gguf))
     discovered = discover_writeback_targets(shapes, width)
@@ -126,20 +192,30 @@ def _fitted_method(args, artifact, require_floor=True):
     wanted = parse_layer_ids(args.layers) if args.layers else None
     if wanted is not None:
         layers = [layer for layer in layers if layer in set(wanted)]
-    method['footprint'] = {'first': layers[0], 'last': layers[-1], 'layers': len(layers)} if layers else None
+    method['footprint'] = ({'first': layers[0], 'last': layers[-1], 'layers': len(layers)}
+                           if layers else None)
     if not layers:
         method['reason'] = 'NO_VERIFIED_ADAPTER'
         method['detail'] = (f'the artifact carries no residual-write projection at width {width} '
                             f'(its own writeback names put hidden at {artifact["hidden"]}); the '
-                            f'records and the artifact have to belong to the same model')
+                            f'axis and the artifact have to belong to the same model')
         return method, None
     edits, edited_bytes = {}, 0
+    allowed_kinds = set(kinds) if kinds else None
     header = parse_container(str(args.gguf))
     by_name = {tensor['name']: tensor for tensor in header['tensors']}
     for layer in layers:
         if layer >= int(axes.shape[0]):
             continue
+        if float(axes[layer].norm()) == 0.0:
+            # An imported axis is usually sparse (one writer, one layer). A zero row
+            # means "do not touch this layer", exactly as spanfit's merge treats it;
+            # editing it with a zero projection would requantize the tensor for no edit
+            # and then grade the codec on an edit nobody asked for.
+            continue
         for name in discovered['targets'][layer]:
+            if allowed_kinds is not None and name.split('.')[-2] not in allowed_kinds:
+                continue
             edits[name] = (axes[layer].numpy(), args.axis_space)
             tensor = by_name.get(name)
             if tensor is not None:
@@ -147,7 +223,7 @@ def _fitted_method(args, artifact, require_floor=True):
     if not edits:
         method['reason'] = 'NO_VERIFIED_ADAPTER'
         method['detail'] = (f'the footprint selects no tensor this artifact carries: {len(layers)} '
-                            f'discovered layer(s) survive the filter, the axes have '
+                            f'discovered layer(s) survive the filter, the axis has '
                             f'{int(axes.shape[0])} rows')
         return method, None
     probes = _probe_names(edits)
@@ -156,7 +232,7 @@ def _fitted_method(args, artifact, require_floor=True):
     for kind in ladder:
         reading = preview_edit(str(args.gguf), {name: edits[name] for name in probes},
                                names=probes, scale=args.scale,
-                               renormalize=args.renormalize or args.repair != 'none',
+                               renormalize=getattr(args, 'renormalize', False) or args.repair != 'none',
                                target_type=kind)
         rows = reading.get('tensors') or []
         readings.append({'edit_type': kind, 'min_cos': reading.get('min_cos'),
@@ -184,15 +260,13 @@ def _fitted_method(args, artifact, require_floor=True):
         return method, None
     method.update({
         'ready': True,
-        'floor_cleared': cleared is not None
-        and float(cleared.get('min_cos') or 0.0) >= float(args.min_cos),
+        'floor_cleared': float(cleared.get('min_cos') or 0.0) >= float(args.min_cos),
         'edit_type': cleared['edit_type'],
         'expected_min_cos': cleared['min_cos'],
         'cost': {'edited_tensors': len(edits), 'edited_bytes': int(edited_bytes)},
         'ladder': [row['edit_type'] for row in readings],
     })
-    command = _base_command(args, artifact) + [
-        '--records', str(args.records), '--shape', args.shape, '--rank', str(args.rank),
+    command = _base_command(args, artifact) + source_flags + [
         '--scale', str(args.scale), '--axis-space', args.axis_space,
         '--min-cos', str(args.min_cos), '--edit-type', args.edit_type]
     if args.layers:
@@ -322,8 +396,14 @@ def plan_edit(args):
     started = time.monotonic()
     artifact = _artifact_view(args.gguf)
     methods, state = [], {'edits': None, 'resolved': None}
+    if args.records is not None and args.axes is not None:
+        raise ValueError('--records and --axes are alternatives: records fit an axis, axes import one')
     if args.records is not None:
         method, edits = _fitted_method(args, artifact)
+        methods.append(method)
+        state['edits'] = edits
+    if args.axes is not None:
+        method, edits = _axes_method(args, artifact)
         methods.append(method)
         state['edits'] = edits
     if args.bank is not None:
@@ -344,6 +424,7 @@ def plan_edit(args):
         'mode': 'apply' if args.apply else 'plan',
         'artifact': artifact,
         'inputs': {'records': None if args.records is None else str(args.records),
+                   'axes': None if args.axes is None else str(args.axes),
                    'bank': None if args.bank is None else str(args.bank),
                    'entry': args.entry,
                    'delta_gguf': None if args.delta_gguf is None else str(args.delta_gguf)},
@@ -435,7 +516,7 @@ def edit_command(args):
     report, state = plan_edit(args)
     if not args.apply:
         return report
-    if report['chosen'] == 'fitted-axis':
+    if report['chosen'] == 'fitted-axis' or report['chosen'] == 'imported-axis':
         applied = _apply_fitted(args, state)
     elif report['chosen'] == 'banked-axis':
         applied = _apply_bank(args, state)
@@ -478,6 +559,7 @@ def edit_command(args):
 # copy of them.
 artifact_view = _artifact_view
 fitted_method = _fitted_method
+axes_method = _axes_method
 bank_method = _bank_method
 delta_method = _delta_method
 probe_names = _probe_names

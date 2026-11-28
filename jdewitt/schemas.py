@@ -505,6 +505,23 @@ SCHEMAS = {
                        'next': {},
                        'history': {'type': 'array'},
                        'elapsed_s': {'type': 'number'}}},
+    'ablagent-import.command.json': {
+        'description': 'Ablagent compiled-direction import contract: the source manifest '
+                       'identity, the writer mapping, the axis file, the honesty labels and '
+                       'the next command.',
+        'type': 'object',
+        'required': ['schema', 'command', 'ok', 'ablagent', 'source_run', 'mapping', 'axes',
+                     'honesty', 'risks', 'next'],
+        'properties': {'schema': {'const': 'jdewitt-ablagent-import-v1'},
+                       'command': {'const': 'ablagent-import'},
+                       'ok': {'type': 'boolean'},
+                       'ablagent': {'type': 'object'},
+                       'source_run': {'type': 'object'},
+                       'mapping': {'type': 'object'},
+                       'axes': {'type': 'object'},
+                       'honesty': {'type': 'object'},
+                       'risks': {'type': 'array'},
+                       'next': {'type': 'object'}}},
     'gguf-tensor-diff.command.json': {
         'description': 'gguf-tensor-diff output contract.',
         'type': 'object',
@@ -622,6 +639,7 @@ EMIT_SCHEMAS = {
     'gguf-tensor-diff': 'gguf-tensor-diff.command.json',
     'edit': 'edit.command.json',
     'route': 'route.command.json',
+    'ablagent-import': 'ablagent-import.command.json',
     'safetensors-diff': 'safetensors-diff.command.json',
     'pt-diff': 'pt-diff.command.json',
     'fp8-edit': 'fp8-edit.command.json',

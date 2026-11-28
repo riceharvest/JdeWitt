@@ -81,6 +81,10 @@ where each stage is its own command and its own JSON:
 - No step measures behaviour. `certify` writes `packet.json`, labels every
   measured field and every missing one, and prints the board command that would
   measure removal.
+- External directions enter the same path: `jdewitt ablagent-import` turns a
+  compiled Ablagent (DWMIP v0) manifest into an axis file, and `edit --axes` /
+  `route --axes` gate it exactly like a fitted axis. The comparison and the
+  import contract are in `docs/ABLAGENT.md`.
 
 ## What this deprioritizes
 

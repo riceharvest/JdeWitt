@@ -635,6 +635,8 @@ def build_parser():
     ed=sub.add_parser('edit',help='ONE VERB for an artifact you already serve: names every removal this GGUF plus its records/bank/delta can do, measures what the quantized grid will keep, and prints the exact next command; --apply performs it through the shared FULL-footprint CODEC_FLOOR gate (no model, no tokenizer, no server, no generated token)')
     ed.add_argument('--gguf',type=Path,required=True,help='the quantized artifact to edit; it is only ever read (unless --in-place)')
     ed.add_argument('--records',type=Path,default=None,help='capture records .pt: fit the axis on the model being edited (primary method)')
+    ed.add_argument('--axes',type=Path,default=None,help='imported axis .pt ([D] or [L,D], torch.save {"axes": ...}) — an externally recovered direction (Ablagent import, twin abduction, published diff)')
+    ed.add_argument('--axes-key',default='axes',help='key inside the --axes file (default: axes)')
     ed.add_argument('--bank',type=Path,default=None,help='Space bank directory: apply a digest-pinned banked axis (zero-fit path)')
     ed.add_argument('--entry',default=None,help='bank entry key (default: the entry that covers the artifact)')
     ed.add_argument('--delta-gguf',type=Path,default=None,help='explicit delta GGUF from gguf-delta-pack')
@@ -657,6 +659,8 @@ def build_parser():
     rt.add_argument('--gguf',type=Path,help='artifact (first step; later steps read it from the state)')
     rt.add_argument('--workdir',type=Path,help='resumable route directory (default: <artifact>.route)')
     rt.add_argument('--records',type=Path)
+    rt.add_argument('--axes',type=Path,help='imported axis .pt ([D] or [L,D]) — an external direction (Ablagent import, twin abduction, published diff)')
+    rt.add_argument('--axes-key',default=None,help='key inside the --axes file (default axes)')
     rt.add_argument('--bank',type=Path)
     rt.add_argument('--entry')
     rt.add_argument('--delta-gguf',type=Path)
@@ -672,6 +676,10 @@ def build_parser():
     rt.add_argument('--repair',choices=('none','renorm','norms'),default=None)
     rt.add_argument('--keep',type=float,default=None,help='layer-separability keep line (default 0.5)')
     rt.add_argument('--probe-tensors',type=int,default=None,help='tensors previewed per type in plan (default 8)')
+    ai=sub.add_parser('ablagent-import',help='Import a compiled Ablagent (DWMIP v0) dense rank-one direction as an axis for YOUR quantized GGUF: validates the manifest, maps the HF writer to the GGUF tensor, writes an axis file that edit/route apply through the same full-footprint codec gate; no model, no serve')
+    ai.add_argument('manifest',type=Path,help='Ablagent run directory or candidate.manifest.json')
+    ai.add_argument('--gguf',type=Path,default=None,help='target artifact: checks the writer, layer and width against its own tensor table')
+    ai.add_argument('--out',type=Path,default=None,help='axis .pt to write (default: beside the manifest)')
     editq=sub.add_parser('edit-quantized',help="Apply a fitted axis to ANY quantized GGUF (any source quant type): only the edited tensors are re-encoded, every other tensor is copied byte for byte so your calibration survives")
     editq.add_argument('--gguf',type=Path,required=True)
     editq.add_argument('--out',type=Path,required=True)
@@ -1113,6 +1121,9 @@ def main():
         elif args.command=='route':
             from .route import route_command
             result=route_command(args)
+        elif args.command=='ablagent-import':
+            from .ablagent import ablagent_import_command
+            result=ablagent_import_command(args)
         elif args.command=='edit-quantized':
             from .spanfit import load_records,parse_layer_ids,per_layer_axes,per_layer_subspace,shared_axis
             from .gguf_adapters import discover_writeback_targets,gguf_weight_shapes,inferred_hidden_width

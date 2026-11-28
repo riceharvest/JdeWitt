@@ -147,6 +147,12 @@ treat all numbers as their claim):
   best capability preservation across all benchmarks (GSM8K avg **−0.28 pp**).
 - **FailSpy/abliterator** (`FailSpy/abliterator`): reference-implementation
   tier.
+- **Ablagent** (`Blackfrost-AI/Ablagent`): a DWMIP v0 research runtime with a
+  dense rank-one real executor on small full-precision HF checkpoints; its
+  quant/serve/behaviour stages are explicitly skipped and every run ends
+  `not_eligible`. It is not a quantized-artifact editor. We import its compiled
+  direction through `jdewitt ablagent-import` → `edit/route --axes`, and the
+  comparison + contract live in `docs/ABLAGENT.md`.
 - Heretic (Bayesian-optimised): KL after edit spanned **0.043–1.646**
   depending on model; GSM8K is the most sensitive capability axis overall
   (+1.51 to −18.81 pp across tools/models).

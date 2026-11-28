@@ -167,7 +167,25 @@ EXPLAINER = {
         'agent_action': 'Re-run the step that produced the stale record (survey/plan/gate) against the current files; a stale gate is never promoted by apply.'},
     'ROUTE_INPUT': {
         'meaning': 'The route step needs an operand the state does not hold (for example gate without a plan, or apply without a gated candidate).',
-        'agent_action': 'Run the missing step, or pass the operand (--records/--bank/--delta-gguf) to plan; the route never invents a fit.'},
+        'agent_action': 'Run the missing step, or pass the operand (--records/--axes/--bank/--delta-gguf) to plan; the route never invents a fit.'},
+    'ABLAGENT_INPUT': {
+        'meaning': 'The path is not a readable Ablagent compiled-artifact manifest (candidate.manifest.json), so no direction could be imported.',
+        'agent_action': 'Point ablagent-import at the run directory or the manifest file; a run that did not reach S3 has no compiled artifact to import.'},
+    'ABLAGENT_NOT_COMPILED': {
+        'meaning': 'The document is not a DWMIP v0 compiled artifact of the dense rank-one operation; nothing was written.',
+        'agent_action': 'Use the candidate.manifest.json the Ablagent real executor wrote; do not hand-edit a manifest into shape.'},
+    'UNMAPPED_WRITER': {
+        'meaning': 'The Ablagent writer tensor name has no GGUF residual-write counterpart in this tool (unknown suffix or non-decoder tensor).',
+        'agent_action': 'Import a direction for an o_proj/self_attn.o_proj or down_proj/mlp.down_proj writer, or map the architecture explicitly; the tool never guesses a tensor.'},
+    'DIRECTION_NOT_UNIT': {
+        'meaning': 'The Ablagent unit_vector is not unit length within its declared tolerance; importing it would change the intervention.',
+        'agent_action': 'Re-export the direction from Ablagent rather than normalizing it here; the declared unit vector is the measured object.'},
+    'DIRECTION_SPACE': {
+        'meaning': 'The direction length matches the writer input dimension, not the output space the dense rank-one operation removes along.',
+        'agent_action': 'Import the output-space direction (len(unit_vector) == shape[0]); this tool does not silently transpose a space.'},
+    'ALPHA_OUT_OF_RANGE': {
+        'meaning': 'The Ablagent intervention alpha is outside (0, 1].',
+        'agent_action': 'Re-run Ablagent with an alpha in range; do not clamp it here.'},
 }
 
 
@@ -295,6 +313,22 @@ class RouteRefused(ValueError):
         super().__init__(f'{code}: {message}')
 
 
+class AblagentRefused(ValueError):
+    """An Ablagent run artifact cannot be imported as an axis for this artifact.
+
+    ABLAGENT_INPUT: the path is not a readable Ablagent compiled-artifact
+    manifest. ABLAGENT_NOT_COMPILED: the document is not a DWMIP v0 compiled
+    artifact of the dense rank-one operation. DIRECTION_NOT_UNIT / DIRECTION_SPACE:
+    the vector is not unit length or is in the wrong space for the writer.
+    ALPHA_OUT_OF_RANGE: the intervention strength is outside (0, 1].
+    UNMAPPED_WRITER: the HF tensor name has no GGUF residual-write counterpart.
+    GEOMETRY_MISMATCH: the writer width/layer does not match the artifact.
+    """
+    def __init__(self, code, message):
+        self.code = code
+        super().__init__(f'{code}: {message}')
+
+
 class EditRefused(ValueError):
     """A shared-gate write refusal from `jdewitt edit`, `edit-quantized` or an
     in-place merge.
@@ -314,7 +348,7 @@ def error_code(exception):
     """Stable machine-readable code for expected CLI/API failures."""
     if isinstance(exception, (AdapterCardRefused, ForeignArtifactRefused, CertifyRefused,
                              MatrixRefused, ReleaseRefused, BankRefused, BankApplyRefused,
-                             EditRefused, RouteRefused)):
+                             EditRefused, RouteRefused, AblagentRefused)):
         return exception.code
     for cls, code in ((SearchRejected, 'SEARCH_REJECTED'),
                       (UnsupportedMethod, 'UNSUPPORTED_METHOD'),

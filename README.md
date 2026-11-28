@@ -239,7 +239,10 @@ tensor, CODEC_FLOOR refusal rather than a below-floor file). `jdewitt route` is
 the same chain as six inspectable stages (survey → plan → gate → apply → verify
 → certify) for an agent that has to decide: one JSON per stage, per-tensor
 evidence, a resumable workdir, and every option printed as a command with its
-expected effect, cost and risk. `capture`
+expected effect, cost and risk. External directions enter through `--axes`:
+`jdewitt ablagent-import` validates a compiled Ablagent (DWMIP v0) manifest,
+maps its writer to the GGUF tensor and writes an axis the same gate measures.
+`capture`
 finds the decoder stack and the residual-write projections from the model's own
 module tree, generates every row with the model being edited, and labels each
 answer by its shape — no architecture table, no per-model hook script, no

@@ -1745,3 +1745,55 @@ Measured runs on committed fixture artifacts (no model, no token):
 `scripts/help_audit.py`: every subparser's help is model-free, `commands` covers
 the surface, and `next_missing` remains only the pre-existing `export-smoke`.
 Ruff green. Not claimed: behaviour, same as the one-shot.
+
+## 2026-11-28 — Ablagent audit and the imported-axis seam
+
+Studied `Blackfrost-AI/Ablagent` @ `19a5987b34e53fa972352dc1c314548cf7ccec81`
+(v0.1.0, 2026-11-27). It is an evidence-first DWMIP v0 research runtime: a
+synthetic pipeline plus a real CPU executor for small dense full-precision HF
+checkpoints that captures a contrast direction, applies one dense rank-one
+update `W' = W - alpha d (d^T W)`, exports an HF copy, and records quant, serve,
+behaviour and capability as skipped. Every real run ends `not_eligible`; its own
+README says quantization, serving and behaviour verification are not implemented.
+
+The audit's conclusion is in `docs/ABLAGENT.md`: we beat it on the actual
+deliverable (the user's quantized GGUF, codec fidelity, untouched bytes, serving
+gates, reversal, the agent route), and we took the two things it does well — an
+explicit direction contract and retained negative/skipped states — into ours:
+
+- **`--axes` is a first-class input** for `edit` and `route`: a `[D]` axis
+  broadcasts over the artifact's writeback layers, `[L, D]` is per-layer, a zero
+  row means "do not touch this layer", and an optional `kinds` list pins a
+  sparse axis to one kind (Ablagent's single-writer site) so a one-writer
+  direction does not edit every writeback in its layer. It runs the same
+  discovery, preview and full-footprint `CODEC_FLOOR` gate as a fitted axis.
+- **`jdewitt ablagent-import RUN_OR_MANIFEST --gguf ART`** reads one compiled
+  DWMIP artifact, validates it fail-closed (schema, algorithm, unit norm,
+  output space, alpha range), maps the HF writer to `blk.N.<kind>.weight`,
+  checks width/layer/hidden against the artifact, and writes an axis `.pt` whose
+  payload carries the source manifest digest, direction digest, alpha, writer,
+  space and the source run's skipped stages. Refusals are typed:
+  `ABLAGENT_INPUT`, `ABLAGENT_NOT_COMPILED`, `DIRECTION_NOT_UNIT`,
+  `DIRECTION_SPACE`, `ALPHA_OUT_OF_RANGE`, `UNMAPPED_WRITER`,
+  `GEOMETRY_MISMATCH`.
+- **Honesty does not move.** The import carries a direction, not Ablagent's
+  evidence: skipped S4–S7 stay skipped, `release` stays `not_eligible`, the
+  report says `removal_measured: false`, and `BASE_IDENTITY_UNPROVEN` /
+  `BASIS_FOLDING` (ffn_down on Hadamard-folding converters) are named risks.
+
+Measured on the committed 2-layer F16 fixture with a synthetic DWMIP manifest
+(256-wide unit vector, writer `model.layers.0.self_attn.o_proj.weight`, alpha
+0.5):
+
+    ablagent-import -> blk.0.attn_output.weight, width 256 checked, kinds
+      ["attn_output"], axis [2,256] with one nonzero row, scale 0.5.
+    route survey -> plan: one edited tensor; preview q6_k 0.8825 / q8_0 0.9901 /
+      f16 1.0. gate: q6_k misses (0.8762), q8_0 clears (0.9865), one tensor
+      edited, 5 untouched byte-identical. verify: fingerprint recomputes.
+    edit --axes --scale 0.5 --apply: same gate, q8_0, min cos 0.9865,
+      untouched 5 verified.
+    refusal probes: doubled vector -> DIRECTION_NOT_UNIT; Inkling writer ->
+      UNMAPPED_WRITER; alpha 0 -> ALPHA_OUT_OF_RANGE.
+
+Published `ablagent-import.command.json` (schema-enforced). Ruff green; the
+help audit still has only the pre-existing `export-smoke` gap.

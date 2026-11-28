@@ -40,7 +40,8 @@ SCHEMA_STATE = 'jdewitt-route-state-v1'
 STEPS = ('survey', 'plan', 'gate', 'apply', 'verify', 'certify')
 DEFAULTS = {'shape': 'perlayer', 'rank': 1, 'scale': 1.0, 'axis_space': 'output',
             'layers': None, 'edit_type': 'auto', 'min_cos': 0.95, 'repair': 'none',
-            'keep': 0.5, 'probe_tensors': 8, 'strength': 1.0, 'strength_scale': 1.0}
+            'keep': 0.5, 'probe_tensors': 8, 'strength': 1.0, 'strength_scale': 1.0,
+            'axes_key': 'axes'}
 
 
 # ---------- shared helpers ----------
@@ -136,7 +137,7 @@ def _settings(args, state):
 
 def _inputs(args, state):
     out = dict((state or {}).get('inputs') or {})
-    for key in ('records', 'bank', 'entry', 'delta_gguf'):
+    for key in ('records', 'axes', 'bank', 'entry', 'delta_gguf'):
         value = getattr(args, key, None)
         if value is not None:
             out[key] = str(value) if key != 'entry' else value
@@ -145,7 +146,7 @@ def _inputs(args, state):
 
 def _input_shas(inputs):
     shas = {}
-    for key in ('records', 'delta_gguf'):
+    for key in ('records', 'axes', 'delta_gguf'):
         path = inputs.get(key)
         shas[key] = _sha(path) if path and Path(path).is_file() else None
     bank = inputs.get('bank')
@@ -158,6 +159,8 @@ def _ns(args, inputs, settings, artifact):
     return SimpleNamespace(
         gguf=Path(artifact), out=None, in_place=False,
         records=Path(inputs['records']) if inputs.get('records') else None,
+        axes=Path(inputs['axes']) if inputs.get('axes') else None,
+        axes_key=settings.get('axes_key') or 'axes',
         bank=Path(inputs['bank']) if inputs.get('bank') else None,
         entry=inputs.get('entry'),
         delta_gguf=Path(inputs['delta_gguf']) if inputs.get('delta_gguf') else None,
@@ -305,11 +308,47 @@ def _records_survey(records_path, view, keep):
             'layers': _layer_evidence(records_path, keep)}
 
 
+def _axes_survey(path, view, key):
+    """Cheap read of an imported axis: shape, width agreement, provenance."""
+    import torch
+
+    try:
+        payload = torch.load(str(path), map_location='cpu', weights_only=False)
+        axes = payload.get(key, payload.get('axes', payload)) if isinstance(payload, dict) else payload
+    except Exception as error:  # noqa: BLE001
+        return {'ready': False, 'reason': 'AXES_UNREADABLE',
+                'detail': f'{type(error).__name__}: {error}'}
+    if not torch.is_tensor(axes) or axes.ndim not in (1, 2):
+        return {'ready': False, 'reason': 'AXES_UNREADABLE',
+                'detail': f'{path} carries no [D] or [L, D] tensor under {key!r}'}
+    width = int(axes.shape[-1])
+    ready = view.get('hidden') == width
+    detail = None
+    if not ready:
+        detail = (f'the axis is {width}-wide; the artifact hidden width is '
+                  f'{view.get("hidden")}. A direction is only valid in the space it was '
+                  f'measured in')
+    return {'ready': ready,
+            'reason': None if ready else 'GEOMETRY_MISMATCH',
+            'detail': detail,
+            'shape': [int(size) for size in axes.shape],
+            'width': width,
+            'layers': int(axes.shape[0]) if axes.ndim == 2 else None,
+            'unit_norms': ([round(float(axes[row].norm()), 6)
+                            for row in range(min(4, int(axes.shape[0])))]
+                           if axes.ndim == 2 else round(float(axes.norm()), 6)),
+            'provenance': (payload.get('provenance') if isinstance(payload, dict) else None)}
+
+
 def _input_evidence(artifact, args, inputs, settings, view):
     evidence = {}
     if inputs.get('records'):
         evidence['records'] = {'path': inputs['records'],
                                **_records_survey(inputs['records'], view, settings['keep'])}
+    if inputs.get('axes'):
+        evidence['axes'] = {'path': inputs['axes'],
+                            **_axes_survey(inputs['axes'], view,
+                                           settings.get('axes_key') or 'axes')}
     if inputs.get('bank'):
         from .edit import bank_method
 
@@ -349,6 +388,16 @@ def _risks_from_inputs(view, census, evidence):
         if not layers.get('available'):
             risks.append({'code': 'SMALL_OR_FLAT_CAPTURE', 'severity': 'medium',
                           'detail': layers.get('reason')})
+    axes = evidence.get('axes')
+    if axes:
+        if not axes.get('ready'):
+            risks.append({'code': axes.get('reason') or 'AXES_NOT_READY',
+                          'severity': 'high', 'detail': axes.get('detail')})
+        else:
+            risks.append({'code': 'IMPORTED_AXIS_UNMEASURED', 'severity': 'medium',
+                          'detail': ('an imported axis carries its source provenance, not a '
+                                     'measurement on this artifact; the gate measures codec '
+                                     'fidelity and nothing else')})
     bank = evidence.get('bank')
     if bank:
         if not bank.get('ready'):
@@ -396,6 +445,7 @@ def _survey(workdir, artifact, settings, state, started):
     risks = _risks_from_inputs(view, census, evidence['inputs'])
     options = []
     records = evidence['inputs'].get('records')
+    axes = evidence['inputs'].get('axes')
     bank = evidence['inputs'].get('bank')
     delta = evidence['inputs'].get('delta_gguf')
     if records and records.get('ready'):
@@ -405,6 +455,13 @@ def _survey(workdir, artifact, settings, state, started):
             'records are present and their width matches the artifact',
             expected='per-layer separability, per-tensor preview fidelity, cost table',
             cost={'rows': records.get('rows'), 'layers': (records.get('shape') or [None])[0]}))
+    if axes and axes.get('ready'):
+        options.append(_option(
+            'plan', 'plan the imported axis against this artifact',
+            _cmd(workdir, 'plan', axes=inputs['axes']),
+            'an axis file is attached and its width matches the artifact hidden width',
+            expected='per-tensor preview fidelity, cost table, the axis provenance',
+            risk='IMPORTED_AXIS_UNMEASURED'))
     if bank and bank.get('ready'):
         options.append(_option(
             'plan', 'plan the banked axis against this artifact',
@@ -423,7 +480,7 @@ def _survey(workdir, artifact, settings, state, started):
             'capture', 'capture contrast records first (GATED: HF checkpoint + compute device)',
             'python -m jdewitt.cli capture --model <HF-CHECKPOINT> --suite <suite.jsonl> '
             f'--out {Path(workdir) / "records.pt"} --ctx-size 4096 --gguf {artifact}',
-            'no records, bank or delta is attached, so there is no axis to gate',
+            'no records, axes, bank or delta is attached, so there is no axis to gate',
             expected='a fit-usable capture with both labels, cross-checked against the artifact',
             gated='needs the 16-bit checkpoint and a compute device; the route never fits blind'))
     static = _vocab(artifact, view)
@@ -434,8 +491,9 @@ def _survey(workdir, artifact, settings, state, started):
         expected='row/value changes and a tokenizer audit, not answers',
         gated='removal is GATED behind a serve this command never starts'))
     decision = _classify(options, risks, options[0]['id'],
-                         blocked=[] if records or bank or delta else
-                         ['no axis source: pass --records/--bank/--delta-gguf to plan, or capture first'])
+                         blocked=[] if records or axes or bank or delta else
+                         ['no axis source: pass --records/--axes/--bank/--delta-gguf to plan, '
+                          'or capture first'])
     report = _base_report('survey', state, workdir, view, evidence, risks, decision, started)
     return report
 
@@ -489,8 +547,8 @@ def _cost_table(meta, edits, types):
 
 
 def _plan(workdir, artifact, settings, args, state, started):
-    from .edit import (LADDER, artifact_view, bank_method, delta_method, fitted_method,
-                       probe_names)
+    from .edit import (LADDER, artifact_view, axes_method, bank_method, delta_method,
+                       fitted_method, probe_names)
     from .errors import RouteRefused
 
     if not state or not state.get('survey'):
@@ -498,12 +556,18 @@ def _plan(workdir, artifact, settings, args, state, started):
     if _sha(artifact) != state.get('artifact_sha256'):
         raise RouteRefused('ROUTE_STALE', 'the artifact changed since the survey; re-run survey')
     inputs = _inputs(args, state)
+    if inputs.get('records') and inputs.get('axes'):
+        raise RouteRefused('ROUTE_INPUT', 'records and axes are alternatives: records fit an axis, '
+                                           'axes import one')
     ns = _ns(args, inputs, settings, artifact)
     view = artifact_view(artifact)
     meta = _tensor_meta(artifact)
     evidence, method, edits = {}, None, None
-    if inputs.get('records'):
-        method, edits = fitted_method(ns, view, require_floor=False)
+    if inputs.get('records') or inputs.get('axes'):
+        if inputs.get('records'):
+            method, edits = fitted_method(ns, view, require_floor=False)
+        else:
+            method, edits = axes_method(ns, view, require_floor=False)
         evidence['method'] = method
         if method.get('ready'):
             layers = {}
@@ -515,8 +579,12 @@ def _plan(workdir, artifact, settings, args, state, started):
                 row['axis_norm'] = round(float(float((axis ** 2).sum()) ** 0.5), 6)
                 if meta[name]['kind'] not in row['kinds']:
                     row['kinds'].append(meta[name]['kind'])
-            evidence['layers'] = {'axis': layers,
-                                  'separability': _layer_evidence(inputs['records'], settings['keep'])}
+            evidence['layers'] = {'axis': layers}
+            if inputs.get('records'):
+                evidence['layers']['separability'] = _layer_evidence(inputs['records'],
+                                                                     settings['keep'])
+            if method.get('broadcast'):
+                evidence['layers']['broadcast'] = method['broadcast']
             types = (LADDER if settings['edit_type'] == 'auto' else (settings['edit_type'],))
             probes = (method.get('preview') or {}).get('probes') or probe_names(edits)
             probes = probes[:max(1, int(settings['probe_tensors']))]
@@ -590,7 +658,7 @@ def _plan(workdir, artifact, settings, args, state, started):
             evidence['cost'] = {'edited_tensors': len(edits)}
             evidence['candidate_types'] = list(types)
     else:
-        raise RouteRefused('ROUTE_INPUT', 'plan needs --records, --bank or --delta-gguf '
+        raise RouteRefused('ROUTE_INPUT', 'plan needs --records, --axes, --bank or --delta-gguf '
                                           '(survey without them to see every route)')
     if method is None or not method.get('ready'):
         raise RouteRefused(method.get('reason') or 'ROUTE_INPUT',
@@ -687,8 +755,13 @@ def _gate(workdir, artifact, settings, args, state, started):
         kinds = (settings['edit_type'],)
     method_kind = state['plan']['method']
     edits = None
-    if method_kind == 'fitted-axis':
-        method, edits = fitted_method(ns, view, require_floor=False)
+    if method_kind in ('fitted-axis', 'imported-axis'):
+        if method_kind == 'fitted-axis':
+            method, edits = fitted_method(ns, view, require_floor=False)
+        else:
+            from .edit import axes_method
+
+            method, edits = axes_method(ns, view, require_floor=False)
         if not method.get('ready'):
             raise RouteRefused(method.get('reason') or 'ROUTE_INPUT', method.get('detail'))
     elif method_kind == 'explicit-delta':
@@ -714,7 +787,7 @@ def _gate(workdir, artifact, settings, args, state, started):
                    'discarded': True}
         attempt_started = time.monotonic()
         try:
-            if method_kind == 'fitted-axis':
+            if method_kind in ('fitted-axis', 'imported-axis'):
                 from .rewrite import rewrite_with_edits
                 write_report = rewrite_with_edits(
                     str(artifact), str(candidate), edits, scale=settings['scale'],

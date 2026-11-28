@@ -61,7 +61,8 @@ print(json.dumps({'paths': paths}))
 
 # Agent-facing entry points that must hand the next command back in their report.
 # export-smoke is audited automatically once its subparser exists.
-AGENT_STEPS = ('capture', 'tune', 'edit', 'route', 'edit-quantized', 'hub-census')
+AGENT_STEPS = ('capture', 'tune', 'edit', 'route', 'ablagent-import', 'edit-quantized',
+               'hub-census')
 FUTURE_STEPS = ('export-smoke',)
 
 
