@@ -186,6 +186,7 @@ def _state_view(state, workdir):
         'artifact_sha256': state.get('artifact_sha256'),
         'artifact_bytes': state.get('artifact_bytes'),
         'inputs': state.get('inputs') or {},
+        'input_sha256': state.get('input_sha256') or {},
         'settings': state.get('settings') or {},
         'gate': (state.get('gate') or {}).get('summary'),
         'apply': (state.get('apply') or {}).get('summary'),

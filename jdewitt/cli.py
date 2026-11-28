@@ -107,17 +107,20 @@ def command_manifest(parser):
             commands.append({'command': name, 'help': helped.get(name) or child.description,
                              'arguments': arguments, 'schema_enforced': name in EMIT_SCHEMAS})
     commands.sort(key=lambda item: item['command'])
+    from .nextsteps import cli_line
     from .route import STEPS as ROUTE_STEPS
 
     workflows = {
         'agent_path': {
             'note': 'The artifact the user already serves is the target. Every step emits one JSON; '
                     'its next field is the command to run.',
-            'one_shot': ['jdewitt edit --gguf ART',
-                         'jdewitt edit --gguf ART --apply [--out EDITED]'],
-            'stepped': [f'jdewitt route --gguf ART {ROUTE_STEPS[0]}']
-                       + [f'jdewitt route --workdir DIR {step}' for step in ROUTE_STEPS[1:]],
-            'first_contact': 'jdewitt route --gguf ART (status: artifact view, six stages, exact commands)',
+            'one_shot': [cli_line('edit', '--gguf', 'ART'),
+                         cli_line('edit', '--gguf', 'ART', '--apply', '--out', 'EDITED')],
+            'stepped': [cli_line('route', '--gguf', 'ART', ROUTE_STEPS[0])]
+                       + [cli_line('route', '--workdir', 'DIR', step)
+                          for step in ROUTE_STEPS[1:]],
+            'first_contact': cli_line('route', '--gguf', 'ART')
+                             + '   # no step = status: artifact view, six stages, exact commands',
             'state': '<workdir>/route.json (atomic); DIR defaults to <artifact>.route',
             'inputs': {'records': 'capture .pt (fit on the model being edited)',
                        'axes': 'imported [D] or [L,D] axis (external direction)',
@@ -127,9 +130,10 @@ def command_manifest(parser):
         'imported_direction': {
             'note': 'An external direction (Ablagent DWMIP v0, twin abduction, a published diff) '
                     'enters as an axis and is gated exactly like a fit.',
-            'commands': ['jdewitt ablagent-import RUN_OR_MANIFEST --gguf ART',
-                         'jdewitt route --gguf ART --axes AXIS.pt --scale ALPHA survey',
-                         'jdewitt edit --gguf ART --axes AXIS.pt --scale ALPHA [--apply]'],
+            'commands': [cli_line('ablagent-import', 'RUN_OR_MANIFEST', '--gguf', 'ART'),
+                         cli_line('route', '--gguf', 'ART', '--axes', 'AXIS.pt',
+                                  '--scale', 'ALPHA', 'survey'),
+                         cli_line('edit', '--gguf', 'ART', '--axes', 'AXIS.pt', '--scale', 'ALPHA')],
         },
         'guarantees': ['no model load, tokenizer or server inside edit/route; capture and board are the only token steps',
                        'next commands use the interpreter that produced the report',

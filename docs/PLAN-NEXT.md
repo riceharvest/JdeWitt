@@ -1896,3 +1896,14 @@ command under the running interpreter. Measured: `gate` on a fresh workdir
 returns the survey command, `apply` after only a survey returns `gate`, and a
 modified artifact before `apply` returns `survey --gguf ART`. The message still
 says why; the agent no longer has to translate prose into the next call.
+
+## 2026-11-28 — the manifest's own commands are runnable
+
+The `commands` workflows block printed bare `jdewitt …`, which is not on PATH in
+a checkout and was not on this host at all; an agent copying the manifest's own
+path hit a missing command. It now goes through the same `nextsteps.cli_line`
+as every report field (`sys.executable -m jdewitt.cli …`), so the manifest and
+the handoffs name the same interpreter. `route status` also exposes
+`input_sha256` beside `inputs`, so a `ROUTE_STALE` can be diagnosed without
+opening `route.json`. Verified via `commands`, the help audit (101 model-free
+commands, zero missing handoffs) and the evidence map.
