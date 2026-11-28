@@ -1797,3 +1797,14 @@ Measured on the committed 2-layer F16 fixture with a synthetic DWMIP manifest
 
 Published `ablagent-import.command.json` (schema-enforced). Ruff green; the
 help audit still has only the pre-existing `export-smoke` gap.
+
+## 2026-11-28 — agent handoffs close the loop
+
+- `export-smoke` now emits `next` per verdict: a servable artifact points at
+  `board` + `gguf-tensor-diff`; an unmeasured header-only run points at the
+  exact server command; a failed load points at `gguf-inspect` +
+  `gguf-tensor-diff`. `scripts/help_audit.py` now reports **zero**
+  `next_missing` across all 101 commands.
+- `route gate`'s recommended `apply` option is the concrete default output path
+  (`<artifact>-edited.gguf`), not an `<OUT.gguf>` placeholder, so the printed
+  handoff is runnable as-is.

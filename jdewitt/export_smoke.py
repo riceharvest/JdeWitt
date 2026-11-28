@@ -231,6 +231,31 @@ def measure(path, server, ctx, max_tokens, server_args, log_path):
                 process.wait(timeout=10)
 
 
+def _next_steps(gguf, verdict, out, server_args):
+    """The exact next command for each verdict: pass, unmeasured, not servable."""
+    import shlex
+
+    gguf = str(gguf)
+    if verdict.get('servable') is True:
+        return [
+            shlex.join(['python', '-m', 'jdewitt.cli', 'board', '--artifact', gguf,
+                        '--records', '<records.pt from capture>', '--base',
+                        '<pristine.gguf>']),
+            shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-tensor-diff',
+                        '<pristine.gguf>', gguf]),
+        ]
+    if verdict.get('servable') == 'unmeasured':
+        command = ['python', '-m', 'jdewitt.cli', 'export-smoke', '--gguf', gguf,
+                   '--server', '<llama-server>', '--out', str(out)]
+        command += list(server_args)
+        return [shlex.join(command)]
+    return [
+        shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-inspect', gguf]),
+        shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-tensor-diff',
+                    '<pristine.gguf>', gguf]),
+    ]
+
+
 def export_smoke(gguf, server=None, ctx=4096, max_tokens=16, out=None,
                  server_args=(), run_server=True):
     start = time.monotonic()
@@ -266,7 +291,8 @@ def export_smoke(gguf, server=None, ctx=4096, max_tokens=16, out=None,
 
     result = {'artifact': artifact, 'argv': argv, 'props_identity': props_identity,
               'completion': completion, 'verdict': verdict,
-              'cost_seconds': round(time.monotonic() - start, 3)}
+              'cost_seconds': round(time.monotonic() - start, 3),
+              'next': _next_steps(gguf, verdict, out, list(server_args))}
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
     return result

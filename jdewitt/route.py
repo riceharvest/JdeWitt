@@ -865,9 +865,11 @@ def _gate(workdir, artifact, settings, args, state, started):
                                      f"below the floor, worst {attempt['below_floor'][0]}")})
     options = []
     if winner is not None:
+        default_out = Path(artifact).with_name(
+            Path(artifact).stem + '-edited' + Path(artifact).suffix)
         options.append(_option(
             'apply', 'promote the gated candidate to the artifact path',
-            _cmd(workdir, 'apply', out='<OUT.gguf>'),
+            _cmd(workdir, 'apply', out=default_out),
             'this candidate cleared the floor over every edited tensor and its untouched bytes were verified',
             expected={'edit_type': winner['edit_type'], 'min_cos': winner['min_cos'],
                       'bytes': winner.get('bytes')}))
