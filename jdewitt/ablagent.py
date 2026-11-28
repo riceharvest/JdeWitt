@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import json
 import re
-import shlex
 import time
 from pathlib import Path
 
@@ -128,6 +127,7 @@ def ablagent_import(manifest, gguf=None, out=None):
     from .edit import artifact_view
     from .errors import AblagentRefused
     from .ggufwrite import parse_container
+    from .nextsteps import cli_line
 
     path = _manifest_path(manifest)
     try:
@@ -282,13 +282,10 @@ def ablagent_import(manifest, gguf=None, out=None):
     target = Path(gguf) if gguf is not None else Path('<artifact.gguf>')
     workdir = target.with_name(target.stem + '.route') if gguf is not None else Path('<workdir>')
     next_commands = {
-        'route': shlex.join(['python', '-m', 'jdewitt.cli', 'route', '--gguf', str(target),
-                             '--workdir', str(workdir), '--axes', str(out_path),
-                             '--scale', str(alpha), 'survey']),
-        'plan': shlex.join(['python', '-m', 'jdewitt.cli', 'route', '--workdir', str(workdir),
-                            'plan']),
-        'edit': shlex.join(['python', '-m', 'jdewitt.cli', 'edit', '--gguf', str(target),
-                            '--axes', str(out_path), '--scale', str(alpha)]),
+        'route': cli_line('route', '--gguf', target, '--workdir', workdir,
+                          '--axes', out_path, '--scale', alpha, 'survey'),
+        'plan': cli_line('route', '--workdir', workdir, 'plan'),
+        'edit': cli_line('edit', '--gguf', target, '--axes', out_path, '--scale', alpha),
     }
     return {
         'schema': SCHEMA,

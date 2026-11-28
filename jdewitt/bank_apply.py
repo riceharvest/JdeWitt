@@ -54,6 +54,7 @@ import numpy as np
 
 from . import bank as bank_module
 from .errors import BankApplyRefused
+from .nextsteps import cli_line
 from .registry import RegistryError, _verify_meta, load_plan, unbundle_plan
 from .storage import file_digest
 
@@ -345,7 +346,7 @@ def _already_applied(resolved, entry, gguf, out, stored, plan_key, meta, install
                        'config and a judge wave, and this command has no model',
             'no_op': 'the file already carries this entry; use the pristine base to '
                      're-measure the delivered edit'},
-        'next': [f'jdewitt gguf-inspect {out}',
+        'next': [cli_line('gguf-inspect', out),
                  '# re-run on the PRISTINE artifact to measure the delivered edit again'],
     }
 
@@ -597,8 +598,9 @@ def bank_apply(bank_dir, entry_key, gguf, out, edit_type='auto', strength_scale=
             'untouched_bytes': 'verified by re-reading both files, not asserted',
             'determinism': 'same bank + same input bytes + same flags rewrite to the same '
                            'output sha256; the writer emits no timestamps or paths'},
-        'next': [f'jdewitt gguf-inspect {out}',
-                 f'jdewitt gguf-tensor-diff {gguf} {out}  # only the named tensors may differ',
+        'next': [cli_line('gguf-inspect', out),
+                 cli_line('gguf-tensor-diff', gguf, out)
+                 + '  # only the named tensors may differ',
                  '# certify removal on the EDITED artifact with a real serve config; '
                  'this run measured codec fidelity only'],
     }

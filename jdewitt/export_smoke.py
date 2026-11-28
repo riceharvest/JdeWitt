@@ -233,26 +233,26 @@ def measure(path, server, ctx, max_tokens, server_args, log_path):
 
 def _next_steps(gguf, verdict, out, server_args):
     """The exact next command for each verdict: pass, unmeasured, not servable."""
-    import shlex
+    from .nextsteps import cli_line
 
     gguf = str(gguf)
     if verdict.get('servable') is True:
         return [
-            shlex.join(['python', '-m', 'jdewitt.cli', 'board', '--artifact', gguf,
-                        '--records', '<records.pt from capture>', '--base',
-                        '<pristine.gguf>']),
-            shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-tensor-diff',
-                        '<pristine.gguf>', gguf]),
+            cli_line('board', '--artifact', gguf, '--records',
+                     '<records.pt from capture>', '--base', '<pristine.gguf>'),
+            cli_line('gguf-tensor-diff', '<pristine.gguf>', gguf),
         ]
     if verdict.get('servable') == 'unmeasured':
-        command = ['python', '-m', 'jdewitt.cli', 'export-smoke', '--gguf', gguf,
-                   '--server', '<llama-server>', '--out', str(out)]
-        command += list(server_args)
-        return [shlex.join(command)]
+        command = cli_line('export-smoke', '--gguf', gguf, '--server', '<llama-server>',
+                           '--out', out)
+        if server_args:
+            import shlex
+
+            return [command + ' ' + shlex.join(server_args)]
+        return [command]
     return [
-        shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-inspect', gguf]),
-        shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-tensor-diff',
-                    '<pristine.gguf>', gguf]),
+        cli_line('gguf-inspect', gguf),
+        cli_line('gguf-tensor-diff', '<pristine.gguf>', gguf),
     ]
 
 

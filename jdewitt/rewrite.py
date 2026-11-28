@@ -325,13 +325,16 @@ def edit_next_steps(source, output, records=None):
     the edit fingerprint from the two files, `gguf-tensor-diff` names every tensor
     the edit did not touch, and `board` reads behaviour only when capture records
     are supplied (without them the flag keeps a placeholder rather than inventing
-    a file the run never saw).
+    a file the run never saw). The commands use the interpreter that produced the
+    report, so replaying them does not hit a system Python without this package.
     """
-    hint = records if records is not None else '"<records.pt from capture>"'
+    from .nextsteps import cli_line
+
+    hint = records if records is not None else '<records.pt from capture>'
     return [
-        f'python -m jdewitt.cli verify --pristine {source} --edited {output}',
-        f'python -m jdewitt.cli gguf-tensor-diff {source} {output}',
-        f'python -m jdewitt.cli board --artifact {output} --records {hint} --base {source}',
+        cli_line('verify', '--pristine', source, '--edited', output),
+        cli_line('gguf-tensor-diff', source, output),
+        cli_line('board', '--artifact', output, '--records', hint, '--base', source),
     ]
 
 

@@ -89,7 +89,9 @@ def _probe_names(edits, per_kind=2):
 
 
 def _base_command(args, artifact):
-    return ['python', '-m', 'jdewitt.cli', 'edit', '--gguf', str(artifact['path'])]
+    from .nextsteps import cli_command
+
+    return cli_command('edit', '--gguf', artifact['path'])
 
 
 def _fitted_method(args, artifact, require_floor=True):
@@ -367,6 +369,8 @@ def _delta_method(args, artifact):
 
 def _vocabulary_method(args, artifact):
     """The static fallbacks: real edits, but no behaviour is measured on this arm."""
+    from .nextsteps import cli_line
+
     out = _out_path(args, artifact['path'])
     return {
         'method': 'vocabulary',
@@ -379,14 +383,11 @@ def _vocabulary_method(args, artifact):
                        'byte facts; it does not measure answers, so "removed" is GATED behind '
                        'a serve that this command never starts'),
         'commands': [
-            shlex.join(['python', '-m', 'jdewitt.cli', 'vocab-centroid', '--weights',
-                        str(artifact['path']), '--out', str(out), '--mode',
-                        'centroid-orthogonal', '--apply']),
-            shlex.join(['python', '-m', 'jdewitt.cli', 'vocab-delete', '--weights',
-                        str(artifact['path']), '--out', str(out), '--apply']),
-            shlex.join(['python', '-m', 'jdewitt.cli', 'grammar', '--compile', '--artifact',
-                        str(artifact['path']), '--out',
-                        str(Path('verification/denial-grammar'))]),
+            cli_line('vocab-centroid', '--weights', artifact['path'], '--out', out,
+                     '--mode', 'centroid-orthogonal', '--apply'),
+            cli_line('vocab-delete', '--weights', artifact['path'], '--out', out, '--apply'),
+            cli_line('grammar', '--compile', '--artifact', artifact['path'],
+                     '--out', 'verification/denial-grammar'),
         ],
     }
 
@@ -532,23 +533,23 @@ def edit_command(args):
         raise ValueError('no artifact edit is ready for this file; the plan lists the static '
                          'vocabulary fallbacks and why each artifact path refused')
     report['applied'] = applied
+    from .nextsteps import cli_line
+
     if args.in_place:
         sidecar = applied.get('revert_sidecar')
         report['next'] = [
-            shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-inspect', str(args.gguf)]),
-            shlex.join(['python', '-m', 'jdewitt.cli', 'board', '--artifact', str(args.gguf),
-                        '--records', str(args.records or '<records.pt from capture>')]),
-        ] + ([shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-revert', str(args.gguf),
-                          str(sidecar)])] if sidecar else [])
+            cli_line('gguf-inspect', args.gguf),
+            cli_line('board', '--artifact', args.gguf, '--records',
+                     args.records or '<records.pt from capture>'),
+        ] + ([cli_line('gguf-revert', args.gguf, sidecar)] if sidecar else [])
     else:
         from .rewrite import edit_next_steps
 
         report['next'] = edit_next_steps(str(args.gguf), str(report.get('output')),
                                          str(args.records) if args.records else None)
         if applied.get('revert_sidecar'):
-            report['next'].append(shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-revert',
-                                              str(report.get('output')),
-                                              str(applied['revert_sidecar'])]))
+            report['next'].append(cli_line('gguf-revert', report.get('output'),
+                                           applied['revert_sidecar']))
     report['elapsed_s'] = round(float(report.get('elapsed_s') or 0.0)
                                 + float(applied.get('elapsed_s') or 0.0), 2)
     return report

@@ -75,7 +75,9 @@ where each stage is its own command and its own JSON:
   verification.
 - decision: each step prints `options`, each a command with expected effect, cost
   and risk; `next` is the recommended one. Every option is a command, so a branch
-  is one invocation, not a script.
+  is one invocation, not a script, and the command uses the interpreter that
+  produced the report (`sys.executable`), so replaying it does not hit a system
+  Python without this package.
 - `gate` keeps the measured candidate and deletes the rejects; `apply` refuses a
   candidate whose sha does not match the gate record (`ROUTE_STALE`).
 - No step measures behaviour. `certify` writes `packet.json`, labels every

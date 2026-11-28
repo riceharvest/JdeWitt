@@ -1808,3 +1808,15 @@ help audit still has only the pre-existing `export-smoke` gap.
 - `route gate`'s recommended `apply` option is the concrete default output path
   (`<artifact>-edited.gguf`), not an `<OUT.gguf>` placeholder, so the printed
   handoff is runnable as-is.
+
+## 2026-11-28 — handoffs replay in the interpreter that printed them
+
+- Every emitted `next` command (edit, route, export-smoke, ablagent-import,
+  bank-apply) now goes through `jdewitt.nextsteps` and uses `sys.executable`.
+  A hardcoded `python` resolved to a system interpreter without the package on
+  this workstation, so a handoff read from one JSON failed at its first step
+  with an import error. The route chain was replayed end to end from a fresh
+  workdir: each printed command ran the next stage.
+- `route` with no step and no state is now a read-only first-contact map: the
+  artifact view, the six stages, and the exact survey/one-shot commands, with
+  no state file or workdir created. It used to be `ROUTE_ORDER`.

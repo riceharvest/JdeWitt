@@ -80,7 +80,9 @@ def _now():
 
 
 def _cmd(workdir, step, **options):
-    parts = ['python', '-m', 'jdewitt.cli', 'route', '--workdir', str(workdir), step]
+    from .nextsteps import cli_command
+
+    parts = cli_command('route', '--workdir', workdir, step)
     for key, value in options.items():
         if value is None or value is False:
             continue
@@ -228,7 +230,8 @@ def _base_report(step, state, workdir, view, evidence, risks, decision, started)
     return {'schema': SCHEMA_STEP, 'command': 'route', 'step': step, 'ok': True,
             'state': state_view, 'artifact': view,
             'evidence': evidence, 'risks': risks, 'decision': decision,
-            'next': next_command, 'history': (state.get('history') or [])[-8:],
+            'next': next_command,
+            'history': ((state or {}).get('history') or [])[-8:],
             'elapsed_s': round(time.monotonic() - started, 2)}
 
 
@@ -416,6 +419,7 @@ def _risks_from_inputs(view, census, evidence):
 
 def _survey(workdir, artifact, settings, state, started):
     from .edit import artifact_view
+    from .nextsteps import cli_line
 
     view = artifact_view(artifact)
     header, census = _census(artifact)
@@ -478,8 +482,9 @@ def _survey(workdir, artifact, settings, state, started):
     if not options:
         options.append(_option(
             'capture', 'capture contrast records first (GATED: HF checkpoint + compute device)',
-            'python -m jdewitt.cli capture --model <HF-CHECKPOINT> --suite <suite.jsonl> '
-            f'--out {Path(workdir) / "records.pt"} --ctx-size 4096 --gguf {artifact}',
+            cli_line('capture', '--model', '<HF-CHECKPOINT>', '--suite', '<suite.jsonl>',
+                     '--out', Path(workdir) / 'records.pt', '--ctx-size', 4096,
+                     '--gguf', artifact),
             'no records, axes, bank or delta is attached, so there is no axis to gate',
             expected='a fit-usable capture with both labels, cross-checked against the artifact',
             gated='needs the 16-bit checkpoint and a compute device; the route never fits blind'))
@@ -886,11 +891,12 @@ def _gate(workdir, artifact, settings, args, state, started):
             _cmd(workdir, 'plan', scale='<s>', layers='<a-b>'),
             'the plan is deterministic; the gate is the verdict'))
     from .edit import artifact_view as _view  # noqa: F401 - keep the lazy import contract
+    from .nextsteps import cli_line
+
     options.append(_option('static', 'static vocabulary route',
-                           shlex.join(['python', '-m', 'jdewitt.cli', 'vocab-centroid',
-                                       '--weights', str(artifact), '--out',
-                                       str(artifact.with_name(artifact.stem + '-centroid.gguf')),
-                                       '--mode', 'centroid-orthogonal', '--apply']),
+                           cli_line('vocab-centroid', '--weights', artifact, '--out',
+                                    artifact.with_name(artifact.stem + '-centroid.gguf'),
+                                    '--mode', 'centroid-orthogonal', '--apply'),
                            'a real in-place edit that measures rows and bytes, not answers'))
     decision = _classify(options, risks, options[0]['id'])
     report = _base_report('gate', state, workdir, view,
@@ -944,6 +950,7 @@ def _promote(candidate, output):
 def _apply(workdir, artifact, settings, args, state, started):
     from .edit import apply_in_place, artifact_view
     from .errors import RouteRefused
+    from .nextsteps import cli_line
 
     if not state or not state.get('gate') or not state['gate'].get('candidate'):
         raise RouteRefused('ROUTE_ORDER', 'apply needs a gated candidate in the same workdir')
@@ -982,8 +989,7 @@ def _apply(workdir, artifact, settings, args, state, started):
     if args.in_place:
         options.append(_option(
             'revert', 'restore the pre-apply bytes from the sidecar',
-            shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-revert', str(artifact),
-                        str(report.get('revert_sidecar'))]),
+            cli_line('gguf-revert', artifact, report.get('revert_sidecar')),
             'the original bytes were saved before the rename'))
     options.append(_option('certify', 'emit the certification packet', _cmd(workdir, 'certify'),
                            'certify states what is measured and what still needs a serve'))
@@ -1081,6 +1087,7 @@ def _untouched_identity(source, output, exclude):
 def _verify(workdir, artifact, settings, args, state, started):
     from .edit import artifact_view
     from .errors import RouteRefused
+    from .nextsteps import cli_line
     from .verify import verify_pair
 
     if not state or not state.get('apply'):
@@ -1149,10 +1156,9 @@ def _verify(workdir, artifact, settings, args, state, started):
         evidence.update({'checks': checks, 'measured': measured, 'pair': pair,
                          'untouched': untouched})
     commands = {
-        'board': shlex.join(['python', '-m', 'jdewitt.cli', 'board', '--artifact', str(output),
-                             '--records',
-                             str(state.get('inputs', {}).get('records') or '<records.pt>'),
-                             '--base', str(artifact)]),
+        'board': cli_line('board', '--artifact', output, '--records',
+                          state.get('inputs', {}).get('records') or '<records.pt>',
+                          '--base', artifact),
         'serve': 'start llama-server on the edited artifact and record the full argv',
     }
     evidence['commands'] = commands
@@ -1190,6 +1196,7 @@ def _certify(workdir, artifact, settings, args, state, started):
     from .answers import atomic_json
     from .edit import artifact_view
     from .errors import RouteRefused
+    from .nextsteps import cli_line
 
     if not state or not state.get('verify'):
         raise RouteRefused('ROUTE_ORDER', 'certify needs verify in the same workdir first')
@@ -1223,12 +1230,10 @@ def _certify(workdir, artifact, settings, args, state, started):
                    'retention': 'not measured: no capability suite was run',
                    'serve_config': 'not pinned: no server was started'},
         'next': {
-            'board': shlex.join(['python', '-m', 'jdewitt.cli', 'board', '--artifact',
-                                 str(output), '--records',
-                                 str(state.get('inputs', {}).get('records') or '<records.pt>'),
-                                 '--base', str(artifact)]),
-            'reproduce': shlex.join(['python', '-m', 'jdewitt.cli', 'verify', '--pristine',
-                                     str(artifact), '--edited', str(output)]),
+            'board': cli_line('board', '--artifact', output, '--records',
+                              state.get('inputs', {}).get('records') or '<records.pt>',
+                              '--base', artifact),
+            'reproduce': cli_line('verify', '--pristine', artifact, '--edited', output),
         },
     }
     atomic_json(Path(workdir) / 'packet.json', _clean(packet))
@@ -1236,7 +1241,7 @@ def _certify(workdir, artifact, settings, args, state, started):
         _option('board', 'measure behaviour on a real serve (GATED)', packet['next']['board'],
                 'the only remaining measurement is answers', gated=True),
         _option('done', 'stop here: the local edit is measured and the boundary is labelled',
-                shlex.join(['python', '-m', 'jdewitt.cli', 'gguf-inspect', str(output)]),
+                cli_line('gguf-inspect', output),
                 'no local step remains; inspect or ship the artifact'),
     ]
     decision = _classify(options, [], 'done')
@@ -1278,6 +1283,35 @@ def _status(workdir, artifact, settings, args, state, started):
 
 # ---------- entry ----------
 
+def _status_fresh(workdir, artifact, settings, started):
+    """First contact: a read-only status for a workdir that has no route state.
+
+    An agent's natural first call is `route --gguf ART` with no step. That used to
+    be ROUTE_ORDER; it is now the map: the artifact view, the stage list, and the
+    exact survey/one-shot commands. Nothing is written and no state is created.
+    """
+    from .edit import artifact_view
+    from .nextsteps import cli_line
+
+    view = artifact_view(artifact)
+    options = [
+        _option('survey', 'read the artifact, inputs and risks before any write',
+                _cmd(workdir, 'survey', gguf=artifact),
+                'this workdir has no state yet; survey starts the route',
+                expected='tensor-type census, writeback kinds, inputs, separability, risks'),
+        _option('edit', 'one-shot: decide and print the plan (add --apply to write)',
+                cli_line('edit', '--gguf', artifact),
+                'the one-shot path when the decision does not need inspecting'),
+    ]
+    decision = _classify(options, [], 'survey')
+    report = _base_report('status', None, workdir, view,
+                          {'steps_done': [], 'route_steps': list(STEPS),
+                           'artifact_sha256': _sha(artifact)},
+                          [], decision, started)
+    report['step'] = 'status'
+    return report
+
+
 def route_command(args):
     """CLI handler: run one route step and return its one JSON report."""
     from .errors import RouteRefused
@@ -1297,6 +1331,8 @@ def route_command(args):
     if artifact is None:
         raise RouteRefused('ROUTE_INPUT', 'no artifact: pass --gguf or point --workdir at a state')
     settings = _settings(args, state)
+    if step == 'status' and state is None:
+        return _clean(_status_fresh(workdir, artifact, settings, started))
     if step == 'survey':
         if state is None:
             state = {'schema': SCHEMA_STATE, 'artifact': str(artifact.resolve()),
